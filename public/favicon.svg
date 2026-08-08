@@ -1,4 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
-  <rect width="64" height="64" rx="10" fill="#1a1410"/>
-  <path d="M32 10 L38 28 L56 28 L42 40 L48 58 L32 46 L16 58 L22 40 L8 28 L26 28 Z" fill="#c9a227"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Magic: The Gathering">
+  <rect width="64" height="64" rx="12" fill="#1a120c"/>
+  <!-- Planeswalker mark (fan-site mark inspired by the official brand icon) -->
+  <g fill="#f0a020" transform="translate(32 33)">
+    <path d="M0-22c2.2 4.8 3.4 8.6 3.4 12.2 0 3.1-1 5.6-2.4 7.8 3.8-1.2 7.6-1.6 11.4-.6-3.6 2.2-6.4 5.4-8.2 9.2 2.8-.2 5.4.2 8.2 1.4-4.2 1.4-7.4 4-9.6 7.6-.2-3.2-1.2-6-3-8.4-1.8 2.4-2.8 5.2-3 8.4-2.2-3.6-5.4-6.2-9.6-7.6 2.8-1.2 5.4-1.6 8.2-1.4-1.8-3.8-4.6-7-8.2-9.2 3.8-1 7.6-.6 11.4.6C-2.4-4.4-3.4-6.9-3.4-10-3.4-13.6-2.2-17.4 0-22z"/>
+  </g>
 </svg>

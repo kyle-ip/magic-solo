@@ -1,0 +1,493 @@
+{
+  "code": "tbth",
+  "name": "Battle the Horde",
+  "setCode": "TBTH",
+  "theme": "horde",
+  "heroArt": "assets/cards/tbth/1-minotaur-goreseeker-art.jpg",
+  "backImage": "assets/cards/tbth/back.png",
+  "cards": [
+    {
+      "id": "3d2f2bcc-0db9-4aa1-b63d-587c62468015",
+      "collectorNumber": "1",
+      "quantity": 10,
+      "name": {
+        "en": "Minotaur Goreseeker",
+        "zh": "寻血牛头怪"
+      },
+      "typeLine": {
+        "en": "Creature — Minotaur",
+        "zh": "生物～牛头怪"
+      },
+      "oracleText": {
+        "en": "Haste\nMinotaur Goreseeker attacks each turn if able.",
+        "zh": "敏捷\n寻血牛头怪每次战斗若能攻击则须攻击。"
+      },
+      "power": "3",
+      "toughness": "2",
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [
+        "Haste"
+      ],
+      "artist": "Wayne Reynolds",
+      "rarity": "common",
+      "layout": "token",
+      "scryfallUri": "https://scryfall.com/card/tbth/1/minotaur-goreseeker?utm_source=api",
+      "images": {
+        "front": "assets/cards/tbth/1-minotaur-goreseeker-front.png",
+        "back": "assets/cards/tbth/back.png",
+        "artCrop": "assets/cards/tbth/1-minotaur-goreseeker-art.jpg"
+      }
+    },
+    {
+      "id": "2c8e22f9-6b70-425c-a0a8-09b6101a286e",
+      "collectorNumber": "2",
+      "quantity": 15,
+      "name": {
+        "en": "Minotaur Younghorn",
+        "zh": "幼角牛头怪"
+      },
+      "typeLine": {
+        "en": "Creature — Minotaur",
+        "zh": "生物～牛头怪"
+      },
+      "oracleText": {
+        "en": "Haste\nMinotaur Younghorn attacks each turn if able.",
+        "zh": "敏捷\n幼角牛头怪每次战斗若能攻击则须攻击。"
+      },
+      "power": "2",
+      "toughness": "2",
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [
+        "Haste"
+      ],
+      "artist": "Scott Murphy",
+      "rarity": "common",
+      "layout": "token",
+      "scryfallUri": "https://scryfall.com/card/tbth/2/minotaur-younghorn?utm_source=api",
+      "images": {
+        "front": "assets/cards/tbth/2-minotaur-younghorn-front.png",
+        "back": "assets/cards/tbth/back.png",
+        "artCrop": "assets/cards/tbth/2-minotaur-younghorn-art.jpg"
+      }
+    },
+    {
+      "id": "553ae9d2-3807-4ca8-a575-7fa6667ee212",
+      "collectorNumber": "3",
+      "quantity": 4,
+      "name": {
+        "en": "Mogis's Chosen",
+        "zh": "墨癸斯的选民"
+      },
+      "typeLine": {
+        "en": "Creature — Minotaur",
+        "zh": "生物～牛头怪"
+      },
+      "oracleText": {
+        "en": "Mogis's Chosen enters the battlefield tapped.\nMogis's Chosen attacks each turn if able.",
+        "zh": "墨癸斯的选民须横置进战场。\n墨癸斯的选民每次战斗若能攻击则须攻击。"
+      },
+      "power": "5",
+      "toughness": "4",
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [],
+      "artist": "Lars Grant-West",
+      "rarity": "common",
+      "layout": "token",
+      "scryfallUri": "https://scryfall.com/card/tbth/3/mogiss-chosen?utm_source=api",
+      "images": {
+        "front": "assets/cards/tbth/3-mogiss-chosen-front.png",
+        "back": "assets/cards/tbth/back.png",
+        "artCrop": "assets/cards/tbth/3-mogiss-chosen-art.jpg"
+      }
+    },
+    {
+      "id": "1eda2434-523d-4e9c-a8f1-acbee5c87aac",
+      "collectorNumber": "4",
+      "quantity": 10,
+      "name": {
+        "en": "Phoberos Reaver",
+        "zh": "弗伯洛掠夺者"
+      },
+      "typeLine": {
+        "en": "Creature — Minotaur",
+        "zh": "生物～牛头怪"
+      },
+      "oracleText": {
+        "en": "Haste\nPhoberos Reaver attacks each turn if able.",
+        "zh": "敏捷\n弗伯洛掠夺者每次战斗若能攻击则须攻击。"
+      },
+      "power": "2",
+      "toughness": "3",
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [
+        "Haste"
+      ],
+      "artist": "Michael Komarck",
+      "rarity": "common",
+      "layout": "token",
+      "scryfallUri": "https://scryfall.com/card/tbth/4/phoberos-reaver?utm_source=api",
+      "images": {
+        "front": "assets/cards/tbth/4-phoberos-reaver-front.png",
+        "back": "assets/cards/tbth/back.png",
+        "artCrop": "assets/cards/tbth/4-phoberos-reaver-art.jpg"
+      }
+    },
+    {
+      "id": "938272b2-8e1c-4196-8557-c597735dd96e",
+      "collectorNumber": "5",
+      "quantity": 4,
+      "name": {
+        "en": "Reckless Minotaur",
+        "zh": "鲁莽牛头怪"
+      },
+      "typeLine": {
+        "en": "Creature — Minotaur",
+        "zh": "生物～牛头怪"
+      },
+      "oracleText": {
+        "en": "Haste\nReckless Minotaur attacks each turn if able.\nAt the beginning of the end step, destroy Reckless Minotaur.",
+        "zh": "敏捷\n鲁莽牛头怪每次战斗若能攻击则须攻击。\n在结束步骤开始时，消灭鲁莽牛头怪。"
+      },
+      "power": "4",
+      "toughness": "1",
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [
+        "Haste"
+      ],
+      "artist": "Carl Critchlow",
+      "rarity": "common",
+      "layout": "token",
+      "scryfallUri": "https://scryfall.com/card/tbth/5/reckless-minotaur?utm_source=api",
+      "images": {
+        "front": "assets/cards/tbth/5-reckless-minotaur-front.png",
+        "back": "assets/cards/tbth/back.png",
+        "artCrop": "assets/cards/tbth/5-reckless-minotaur-art.jpg"
+      }
+    },
+    {
+      "id": "7e5d19fa-0f12-41cb-90a8-c027edbc893b",
+      "collectorNumber": "6",
+      "quantity": 2,
+      "name": {
+        "en": "Consuming Rage",
+        "zh": "吞噬怒火"
+      },
+      "typeLine": {
+        "en": "Sorcery",
+        "zh": "法术"
+      },
+      "oracleText": {
+        "en": "Whenever a Minotaur attacks this turn, it gets +2/+0 until end of turn. Destroy that creature at end of combat.",
+        "zh": "每当一个牛头怪本回合攻击时，它得+2/+0直到回合结束。在战斗结束时消灭该生物。"
+      },
+      "power": null,
+      "toughness": null,
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [],
+      "artist": "Svetlin Velinov",
+      "rarity": "common",
+      "layout": "normal",
+      "scryfallUri": "https://scryfall.com/card/tbth/6/consuming-rage?utm_source=api",
+      "images": {
+        "front": "assets/cards/tbth/6-consuming-rage-front.png",
+        "back": "assets/cards/tbth/back.png",
+        "artCrop": "assets/cards/tbth/6-consuming-rage-art.jpg"
+      }
+    },
+    {
+      "id": "95e0a522-2395-438a-83bc-ea092e4286c3",
+      "collectorNumber": "7",
+      "quantity": 2,
+      "name": {
+        "en": "Descend on the Prey",
+        "zh": "扑向猎物"
+      },
+      "typeLine": {
+        "en": "Sorcery",
+        "zh": "法术"
+      },
+      "oracleText": {
+        "en": "Whenever a Minotaur attacks this turn, it gains first strike until end of turn and must be blocked this turn if able.",
+        "zh": "每当一个牛头怪本回合攻击时，它获得先攻异能直到回合结束，且本回合若能被阻挡则须被阻挡。"
+      },
+      "power": null,
+      "toughness": null,
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [],
+      "artist": "Zoltan Boros",
+      "rarity": "common",
+      "layout": "normal",
+      "scryfallUri": "https://scryfall.com/card/tbth/7/descend-on-the-prey?utm_source=api",
+      "images": {
+        "front": "assets/cards/tbth/7-descend-on-the-prey-front.png",
+        "back": "assets/cards/tbth/back.png",
+        "artCrop": "assets/cards/tbth/7-descend-on-the-prey-art.jpg"
+      }
+    },
+    {
+      "id": "661e8959-4c63-439b-8cbf-837f84ad3e57",
+      "collectorNumber": "8",
+      "quantity": 2,
+      "name": {
+        "en": "Intervention of Keranos",
+        "zh": "刻拉诺斯干预"
+      },
+      "typeLine": {
+        "en": "Sorcery",
+        "zh": "法术"
+      },
+      "oracleText": {
+        "en": "At the beginning of combat this turn, Intervention of Keranos deals 3 damage to each creature.",
+        "zh": "在本回合的战斗开始时，刻拉诺斯干预对每个生物造成3点伤害。"
+      },
+      "power": null,
+      "toughness": null,
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [],
+      "artist": "Dan Murayama Scott",
+      "rarity": "common",
+      "layout": "normal",
+      "scryfallUri": "https://scryfall.com/card/tbth/8/intervention-of-keranos?utm_source=api",
+      "images": {
+        "front": "assets/cards/tbth/8-intervention-of-keranos-front.png",
+        "back": "assets/cards/tbth/back.png",
+        "artCrop": "assets/cards/tbth/8-intervention-of-keranos-art.jpg"
+      }
+    },
+    {
+      "id": "c58bacd4-e84b-4c73-802f-5f65e5c94a46",
+      "collectorNumber": "9",
+      "quantity": 2,
+      "name": {
+        "en": "Touch of the Horned God",
+        "zh": "角神之触"
+      },
+      "typeLine": {
+        "en": "Sorcery",
+        "zh": "法术"
+      },
+      "oracleText": {
+        "en": "Whenever a Minotaur attacks this turn, it gains deathtouch until end of turn.",
+        "zh": "每当一个牛头怪本回合攻击时，它获得死触异能直到回合结束。"
+      },
+      "power": null,
+      "toughness": null,
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [],
+      "artist": "Svetlin Velinov",
+      "rarity": "common",
+      "layout": "normal",
+      "scryfallUri": "https://scryfall.com/card/tbth/9/touch-of-the-horned-god?utm_source=api",
+      "images": {
+        "front": "assets/cards/tbth/9-touch-of-the-horned-god-front.png",
+        "back": "assets/cards/tbth/back.png",
+        "artCrop": "assets/cards/tbth/9-touch-of-the-horned-god-art.jpg"
+      }
+    },
+    {
+      "id": "d4d98fc6-da00-4d65-9469-9d2c5b111f2e",
+      "collectorNumber": "10",
+      "quantity": 2,
+      "name": {
+        "en": "Unquenchable Fury",
+        "zh": "难熄怒火"
+      },
+      "typeLine": {
+        "en": "Sorcery",
+        "zh": "法术"
+      },
+      "oracleText": {
+        "en": "Each Minotaur can't be blocked this turn except by two or more creatures.",
+        "zh": "本回合中，每个牛头怪都不能被少于两个生物阻挡。"
+      },
+      "power": null,
+      "toughness": null,
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [],
+      "artist": "Jason Rainville",
+      "rarity": "common",
+      "layout": "normal",
+      "scryfallUri": "https://scryfall.com/card/tbth/10/unquenchable-fury?utm_source=api",
+      "images": {
+        "front": "assets/cards/tbth/10-unquenchable-fury-front.png",
+        "back": "assets/cards/tbth/back.png",
+        "artCrop": "assets/cards/tbth/10-unquenchable-fury-art.jpg"
+      }
+    },
+    {
+      "id": "f6882d51-1db2-4b08-8873-cb6f2d96b260",
+      "collectorNumber": "11",
+      "quantity": 1,
+      "name": {
+        "en": "Altar of Mogis",
+        "zh": "墨癸斯祭坛"
+      },
+      "typeLine": {
+        "en": "Artifact",
+        "zh": "神器"
+      },
+      "oracleText": {
+        "en": "At the beginning of the Horde's first main phase, reveal an additional card from the top of the Horde's library. The Horde casts that card.\nHero's Reward — When Altar of Mogis is put into a graveyard from anywhere, the Horde sacrifices two Minotaurs.",
+        "zh": "在部落的第一个主阶段开始时，额外展示部落牌库顶牌。部落施放该牌。\n英雄赏赐 — 当墨癸斯祭坛从任何区域置入坟墓场时，部落牺牲两个牛头怪。"
+      },
+      "power": null,
+      "toughness": null,
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [
+        "Hero's Reward"
+      ],
+      "artist": "Aaron Miller",
+      "rarity": "common",
+      "layout": "normal",
+      "scryfallUri": "https://scryfall.com/card/tbth/11/altar-of-mogis?utm_source=api",
+      "images": {
+        "front": "assets/cards/tbth/11-altar-of-mogis-front.png",
+        "back": "assets/cards/tbth/back.png",
+        "artCrop": "assets/cards/tbth/11-altar-of-mogis-art.jpg"
+      }
+    },
+    {
+      "id": "a6e352e9-20ac-485b-bcaf-1d053c4ecb40",
+      "collectorNumber": "12",
+      "quantity": 1,
+      "name": {
+        "en": "Massacre Totem",
+        "zh": "屠杀图腾"
+      },
+      "typeLine": {
+        "en": "Artifact",
+        "zh": "神器"
+      },
+      "oracleText": {
+        "en": "At the beginning of the Horde's first main phase, reveal an additional card from the top of the Horde's library. The Horde casts that card.\nHero's Reward — When Massacre Totem is put into a graveyard from anywhere, put the top seven cards of the Horde's library into its graveyard.",
+        "zh": "在部落的第一个主阶段开始时，额外展示部落牌库顶牌。部落施放该牌。\n英雄赏赐 — 当屠杀图腾从任何区域置入坟墓场时，将部落牌库顶七张牌置入其坟墓场。"
+      },
+      "power": null,
+      "toughness": null,
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [
+        "Hero's Reward"
+      ],
+      "artist": "Filip Burburan",
+      "rarity": "common",
+      "layout": "normal",
+      "scryfallUri": "https://scryfall.com/card/tbth/12/massacre-totem?utm_source=api",
+      "images": {
+        "front": "assets/cards/tbth/12-massacre-totem-front.png",
+        "back": "assets/cards/tbth/back.png",
+        "artCrop": "assets/cards/tbth/12-massacre-totem-art.jpg"
+      }
+    },
+    {
+      "id": "8eea07ed-a321-4403-b3a9-ce5e69a175fd",
+      "collectorNumber": "13",
+      "quantity": 2,
+      "name": {
+        "en": "Plundered Statue",
+        "zh": "劫掠雕像"
+      },
+      "typeLine": {
+        "en": "Artifact",
+        "zh": "神器"
+      },
+      "oracleText": {
+        "en": "At the beginning of the Horde's first main phase, reveal an additional card from the top of the Horde's library. The Horde casts that card.\nHero's Reward — When Plundered Statue is put into a graveyard from anywhere, each player draws a card.",
+        "zh": "在部落的第一个主阶段开始时，额外展示部落牌库顶牌。部落施放该牌。\n英雄赏赐 — 当劫掠雕像从任何区域置入坟墓场时，每位牌手抓一张牌。"
+      },
+      "power": null,
+      "toughness": null,
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [
+        "Hero's Reward"
+      ],
+      "artist": "Daniel Ljunggren",
+      "rarity": "common",
+      "layout": "normal",
+      "scryfallUri": "https://scryfall.com/card/tbth/13/plundered-statue?utm_source=api",
+      "images": {
+        "front": "assets/cards/tbth/13-plundered-statue-front.png",
+        "back": "assets/cards/tbth/back.png",
+        "artCrop": "assets/cards/tbth/13-plundered-statue-art.jpg"
+      }
+    },
+    {
+      "id": "b1d75296-e2a5-48f3-a98d-3633be9f6138",
+      "collectorNumber": "14",
+      "quantity": 2,
+      "name": {
+        "en": "Refreshing Elixir",
+        "zh": "提神灵药"
+      },
+      "typeLine": {
+        "en": "Artifact",
+        "zh": "神器"
+      },
+      "oracleText": {
+        "en": "At the beginning of the Horde's first main phase, reveal an additional card from the top of the Horde's library. The Horde casts that card.\nHero's Reward — When Refreshing Elixir is put into a graveyard from anywhere, each player gains 5 life.",
+        "zh": "在部落的第一个主阶段开始时，额外展示部落牌库顶牌。部落施放该牌。\n英雄赏赐 — 当提神灵药从任何区域置入坟墓场时，每位牌手获得5点生命。"
+      },
+      "power": null,
+      "toughness": null,
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [
+        "Hero's Reward"
+      ],
+      "artist": "Cyril Van Der Haegen",
+      "rarity": "common",
+      "layout": "normal",
+      "scryfallUri": "https://scryfall.com/card/tbth/14/refreshing-elixir?utm_source=api",
+      "images": {
+        "front": "assets/cards/tbth/14-refreshing-elixir-front.png",
+        "back": "assets/cards/tbth/back.png",
+        "artCrop": "assets/cards/tbth/14-refreshing-elixir-art.jpg"
+      }
+    },
+    {
+      "id": "6ede8ada-95c6-426b-83f6-17f25afc3c21",
+      "collectorNumber": "15",
+      "quantity": 1,
+      "name": {
+        "en": "Vitality Salve",
+        "zh": "活力药膏"
+      },
+      "typeLine": {
+        "en": "Artifact",
+        "zh": "神器"
+      },
+      "oracleText": {
+        "en": "At the beginning of the Horde's first main phase, reveal an additional card from the top of the Horde's library. The Horde casts that card.\nHero's Reward — When Vitality Salve is put into a graveyard from anywhere, each player returns a creature card from their graveyard to the battlefield.",
+        "zh": "在部落的第一个主阶段开始时，额外展示部落牌库顶牌。部落施放该牌。\n英雄赏赐 — 当活力药膏从任何区域置入坟墓场时，每位牌手将其坟墓场中的一张生物牌移回战场。"
+      },
+      "power": null,
+      "toughness": null,
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [
+        "Hero's Reward"
+      ],
+      "artist": "Daren Bader",
+      "rarity": "common",
+      "layout": "normal",
+      "scryfallUri": "https://scryfall.com/card/tbth/15/vitality-salve?utm_source=api",
+      "images": {
+        "front": "assets/cards/tbth/15-vitality-salve-front.png",
+        "back": "assets/cards/tbth/back.png",
+        "artCrop": "assets/cards/tbth/15-vitality-salve-art.jpg"
+      }
+    }
+  ]
+}

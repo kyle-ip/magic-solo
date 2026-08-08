@@ -1,0 +1,105 @@
+{
+  "id": "forge",
+  "name": "Purphoros Forge",
+  "nameZh": "波洛芬斯熔炉",
+  "blurb": "Haste, double strike, and dragons — end games before they begin.",
+  "blurbZh": "敏捷、连击与巨龙——在对手站稳前结束战斗。",
+  "art": "assets/cards/player/4736a2c4-c89c-48db-a104-6303e7e2eee8-art.jpg",
+  "roster": [
+    {
+      "id": "forge-cavalry",
+      "name": "Firehoof Cavalry",
+      "nameZh": "火蹄骑兵",
+      "typeLine": "Creature — Human Berserker",
+      "typeLineZh": "生物～人类／狂战士",
+      "oracleText": "{3}{R}: This creature gets +2/+0 and gains trample until end of turn.",
+      "oracleTextZh": "{3}{R}：此生物得+2/+0且获得践踏直到回合结束。",
+      "power": 2,
+      "toughness": 1,
+      "cost": 1,
+      "keywords": [
+        "haste"
+      ],
+      "image": "assets/cards/player/edb2b284-f79c-41eb-a25f-4710d4a5228f-normal.jpg"
+    },
+    {
+      "id": "forge-cerberus",
+      "name": "Two-Headed Cerberus",
+      "nameZh": "双头地狱犬",
+      "typeLine": "Creature — Dog",
+      "typeLineZh": "生物～犬",
+      "oracleText": "Double strike (This creature deals both first-strike and regular combat damage.)",
+      "oracleTextZh": "连击（此生物造成先攻与普通战斗伤害。）",
+      "power": 2,
+      "toughness": 2,
+      "cost": 2,
+      "keywords": [
+        "double strike"
+      ],
+      "image": "assets/cards/player/f8d2f75c-ef2a-4d30-86d1-c47307fc47ac-normal.jpg"
+    },
+    {
+      "id": "forge-skullcleaver",
+      "name": "Minotaur Skullcleaver",
+      "nameZh": "牛头怪劈颅者",
+      "typeLine": "Creature — Minotaur Berserker",
+      "typeLineZh": "生物～牛头怪／狂战士",
+      "oracleText": "Haste\nWhen this creature enters, it gets +2/+0 until end of turn.",
+      "oracleTextZh": "敏捷\n当此生物进战场时，它得+2/+0直到回合结束。",
+      "power": 3,
+      "toughness": 2,
+      "cost": 3,
+      "keywords": [
+        "haste"
+      ],
+      "image": "assets/cards/player/b6fef9f8-ff3e-4a3f-a3ff-4534ff0c3946-normal.jpg"
+    },
+    {
+      "id": "forge-swallower",
+      "name": "Ember Swallower",
+      "nameZh": "余烬吞噬者",
+      "typeLine": "Creature — Elemental",
+      "typeLineZh": "生物～元素",
+      "oracleText": "{5}{R}{R}: Monstrosity 3. When monstrous, each player sacrifices three lands.",
+      "oracleTextZh": "{5}{R}{R}：蛮化3。当成为蛮化时，每位牌手牺牲三个地。",
+      "power": 4,
+      "toughness": 4,
+      "cost": 4,
+      "keywords": [],
+      "image": "assets/cards/player/e2715851-9def-42a0-bed4-0923e599e19a-normal.jpg"
+    },
+    {
+      "id": "forge-dragon",
+      "name": "Stormbreath Dragon",
+      "nameZh": "风暴吐息龙",
+      "typeLine": "Creature — Dragon",
+      "typeLineZh": "生物～龙",
+      "oracleText": "Flying, haste, protection from white\n{5}{R}{R}: Monstrosity 3.",
+      "oracleTextZh": "飞行，敏捷，反白保护\n{5}{R}{R}：蛮化3。",
+      "power": 5,
+      "toughness": 4,
+      "cost": 5,
+      "keywords": [
+        "flying",
+        "haste"
+      ],
+      "image": "assets/cards/player/3637d9b8-87bb-478d-bfb1-59ddab7b5e4c-normal.jpg"
+    },
+    {
+      "id": "forge-purphoros",
+      "name": "Purphoros, God of the Forge",
+      "nameZh": "熔炉神波洛芬斯",
+      "typeLine": "Legendary Enchantment Creature — God",
+      "typeLineZh": "传奇结界生物～神",
+      "oracleText": "Indestructible. Creatures entering deal 2 damage to each opponent.",
+      "oracleTextZh": "不灭。生物进战场时向每位对手造成 2 点伤害。",
+      "power": 6,
+      "toughness": 5,
+      "cost": 6,
+      "keywords": [
+        "indestructible"
+      ],
+      "image": "assets/cards/player/4736a2c4-c89c-48db-a104-6303e7e2eee8-normal.jpg"
+    }
+  ]
+}

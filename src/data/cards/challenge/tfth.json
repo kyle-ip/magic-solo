@@ -1,0 +1,485 @@
+{
+  "code": "tfth",
+  "name": "Face the Hydra",
+  "setCode": "TFTH",
+  "theme": "hydra",
+  "heroArt": "assets/cards/tfth/1-hydra-head-art.jpg",
+  "backImage": "assets/cards/tfth/back.png",
+  "cards": [
+    {
+      "id": "27d772a9-7542-4ffe-9cd4-e144d129f342",
+      "collectorNumber": "1",
+      "quantity": 11,
+      "name": {
+        "en": "Hydra Head",
+        "zh": "多头龙头颅"
+      },
+      "typeLine": {
+        "en": "Creature — Head",
+        "zh": "生物～头颅"
+      },
+      "oracleText": {
+        "en": "Hero's Reward — When Hydra Head leaves the battlefield, each player gains 2 life.",
+        "zh": "英雄赏赐 — 当多头龙头颅离开战场时，每位牌手获得2点生命。"
+      },
+      "power": "0",
+      "toughness": "3",
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [
+        "Hero's Reward"
+      ],
+      "artist": "Richard Wright",
+      "rarity": "common",
+      "layout": "token",
+      "scryfallUri": "https://scryfall.com/card/tfth/1/hydra-head?utm_source=api",
+      "images": {
+        "front": "assets/cards/tfth/1-hydra-head-front.png",
+        "back": "assets/cards/tfth/back.png",
+        "artCrop": "assets/cards/tfth/1-hydra-head-art.jpg"
+      }
+    },
+    {
+      "id": "a76d49f7-2860-4972-ab97-1e798ea017d1",
+      "collectorNumber": "2",
+      "quantity": 4,
+      "name": {
+        "en": "Ravenous Brute Head",
+        "zh": "贪食蛮力头颅"
+      },
+      "typeLine": {
+        "en": "Elite Creature — Head",
+        "zh": "精英生物～头颅"
+      },
+      "oracleText": {
+        "en": "Hero's Reward — When Ravenous Brute Head leaves the battlefield, each player gains 2 life and draws a card.",
+        "zh": "英雄赏赐 — 当贪食蛮力头颅离开战场时，每位牌手获得2点生命且抓一张牌。"
+      },
+      "power": "0",
+      "toughness": "6",
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [
+        "Hero's Reward"
+      ],
+      "artist": "Richard Wright",
+      "rarity": "common",
+      "layout": "token",
+      "scryfallUri": "https://scryfall.com/card/tfth/2/ravenous-brute-head?utm_source=api",
+      "images": {
+        "front": "assets/cards/tfth/2-ravenous-brute-head-front.png",
+        "back": "assets/cards/tfth/back.png",
+        "artCrop": "assets/cards/tfth/2-ravenous-brute-head-art.jpg"
+      }
+    },
+    {
+      "id": "4b90bd09-d6aa-4201-a7fe-78accbcfc4e8",
+      "collectorNumber": "3",
+      "quantity": 1,
+      "name": {
+        "en": "Savage Vigor Head",
+        "zh": "野性活力头颅"
+      },
+      "typeLine": {
+        "en": "Elite Creature — Head",
+        "zh": "精英生物～头颅"
+      },
+      "oracleText": {
+        "en": "At the beginning of the Hydra's end step, reveal the top card of the Hydra's library and the Hydra casts that card.\nHero's Reward — When Savage Vigor Head leaves the battlefield, each player gains 4 life and draws a card.",
+        "zh": "在多头龙的结束步骤开始时，展示多头龙牌库顶牌，且多头龙施放该牌。\n英雄赏赐 — 当野性活力头颅离开战场时，每位牌手获得4点生命且抓一张牌。"
+      },
+      "power": "0",
+      "toughness": "8",
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [
+        "Hero's Reward"
+      ],
+      "artist": "Richard Wright",
+      "rarity": "common",
+      "layout": "token",
+      "scryfallUri": "https://scryfall.com/card/tfth/3/savage-vigor-head?utm_source=api",
+      "images": {
+        "front": "assets/cards/tfth/3-savage-vigor-head-front.png",
+        "back": "assets/cards/tfth/back.png",
+        "artCrop": "assets/cards/tfth/3-savage-vigor-head-art.jpg"
+      }
+    },
+    {
+      "id": "44ef6754-b611-4e52-a04b-dc2c794d2cb8",
+      "collectorNumber": "4",
+      "quantity": 1,
+      "name": {
+        "en": "Shrieking Titan Head",
+        "zh": "尖啸泰坦头颅"
+      },
+      "typeLine": {
+        "en": "Elite Creature — Head",
+        "zh": "精英生物～头颅"
+      },
+      "oracleText": {
+        "en": "At the beginning of the Hydra's end step, each player discards a card.\nHero's Reward — When Shrieking Titan Head leaves the battlefield, each player gains 4 life and draws a card.",
+        "zh": "在多头龙的结束步骤开始时，每位牌手弃一张牌。\n英雄赏赐 — 当尖啸泰坦头颅离开战场时，每位牌手获得4点生命且抓一张牌。"
+      },
+      "power": "0",
+      "toughness": "8",
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [
+        "Hero's Reward"
+      ],
+      "artist": "Richard Wright",
+      "rarity": "common",
+      "layout": "token",
+      "scryfallUri": "https://scryfall.com/card/tfth/4/shrieking-titan-head?utm_source=api",
+      "images": {
+        "front": "assets/cards/tfth/4-shrieking-titan-head-front.png",
+        "back": "assets/cards/tfth/back.png",
+        "artCrop": "assets/cards/tfth/4-shrieking-titan-head-art.jpg"
+      }
+    },
+    {
+      "id": "11decc7a-58e7-43f3-acc5-9ec94cce858d",
+      "collectorNumber": "5",
+      "quantity": 1,
+      "name": {
+        "en": "Snapping Fang Head",
+        "zh": "猛咬尖牙头颅"
+      },
+      "typeLine": {
+        "en": "Elite Creature — Head",
+        "zh": "精英生物～头颅"
+      },
+      "oracleText": {
+        "en": "At the beginning of the Hydra's end step, Snapping Fang Head deals 1 damage to each player.\nHero's Reward — When Snapping Fang Head leaves the battlefield, each player gains 4 life and draws a card.",
+        "zh": "在多头龙的结束步骤开始时，猛咬尖牙头颅对每位牌手造成1点伤害。\n英雄赏赐 — 当猛咬尖牙头颅离开战场时，每位牌手获得4点生命且抓一张牌。"
+      },
+      "power": "0",
+      "toughness": "8",
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [
+        "Hero's Reward"
+      ],
+      "artist": "Richard Wright",
+      "rarity": "common",
+      "layout": "token",
+      "scryfallUri": "https://scryfall.com/card/tfth/5/snapping-fang-head?utm_source=api",
+      "images": {
+        "front": "assets/cards/tfth/5-snapping-fang-head-front.png",
+        "back": "assets/cards/tfth/back.png",
+        "artCrop": "assets/cards/tfth/5-snapping-fang-head-art.jpg"
+      }
+    },
+    {
+      "id": "7b0f9139-6366-4334-b532-1385336f5a04",
+      "collectorNumber": "6",
+      "quantity": 5,
+      "name": {
+        "en": "Disorienting Glower",
+        "zh": "迷乱怒视"
+      },
+      "typeLine": {
+        "en": "Sorcery",
+        "zh": "法术"
+      },
+      "oracleText": {
+        "en": "Players can't cast spells until the Hydra's next turn.",
+        "zh": "牌手不能施放咒语，直到多头龙的下一个回合。"
+      },
+      "power": null,
+      "toughness": null,
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [],
+      "artist": "Tomasz Jedruszek",
+      "rarity": "common",
+      "layout": "normal",
+      "scryfallUri": "https://scryfall.com/card/tfth/6/disorienting-glower?utm_source=api",
+      "images": {
+        "front": "assets/cards/tfth/6-disorienting-glower-front.png",
+        "back": "assets/cards/tfth/back.png",
+        "artCrop": "assets/cards/tfth/6-disorienting-glower-art.jpg"
+      }
+    },
+    {
+      "id": "263da86e-6e10-40fb-bbf0-5a577c63fc0a",
+      "collectorNumber": "7",
+      "quantity": 5,
+      "name": {
+        "en": "Distract the Hydra",
+        "zh": "牵制多头龙"
+      },
+      "typeLine": {
+        "en": "Sorcery",
+        "zh": "法术"
+      },
+      "oracleText": {
+        "en": "Each player may sacrifice a creature. Each player who sacrificed a creature this way chooses a Head and taps it. Each player who didn't sacrifice a creature loses 3 life.",
+        "zh": "每位牌手可以牺牲一个生物。以此法牺牲了生物的每位牌手选择一个头颅并横置它。未牺牲生物的每位牌手失去3点生命。"
+      },
+      "power": null,
+      "toughness": null,
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [],
+      "artist": "Alex Horley-Orlandelli",
+      "rarity": "common",
+      "layout": "normal",
+      "scryfallUri": "https://scryfall.com/card/tfth/7/distract-the-hydra?utm_source=api",
+      "images": {
+        "front": "assets/cards/tfth/7-distract-the-hydra-front.png",
+        "back": "assets/cards/tfth/back.png",
+        "artCrop": "assets/cards/tfth/7-distract-the-hydra-art.jpg"
+      }
+    },
+    {
+      "id": "e24e319f-494e-4ea8-8435-1207d18cc86b",
+      "collectorNumber": "8",
+      "quantity": 4,
+      "name": {
+        "en": "Grown from the Stump",
+        "zh": "残干再生"
+      },
+      "typeLine": {
+        "en": "Sorcery",
+        "zh": "法术"
+      },
+      "oracleText": {
+        "en": "Place exactly two cards named Hydra Head onto the battlefield from the Hydra's graveyard. If you can't, reveal cards from the top of the Hydra's library until you reveal a Head card. Put that card onto the battlefield and the rest into the Hydra's graveyard.",
+        "zh": "从多头龙的坟墓场中正好将两张名称为多头龙头颅的牌放置进战场。若你无法如此作，则展示多头龙牌库顶牌，直到展示出一张头颅牌为止。将该牌放置进战场，并将其余的牌置入多头龙的坟墓场。"
+      },
+      "power": null,
+      "toughness": null,
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [],
+      "artist": "Tomasz Jedruszek",
+      "rarity": "common",
+      "layout": "normal",
+      "scryfallUri": "https://scryfall.com/card/tfth/8/grown-from-the-stump?utm_source=api",
+      "images": {
+        "front": "assets/cards/tfth/8-grown-from-the-stump-front.png",
+        "back": "assets/cards/tfth/back.png",
+        "artCrop": "assets/cards/tfth/8-grown-from-the-stump-art.jpg"
+      }
+    },
+    {
+      "id": "6f85efed-56e7-488f-ac82-8829ad8b64ad",
+      "collectorNumber": "9",
+      "quantity": 4,
+      "name": {
+        "en": "Hydra's Impenetrable Hide",
+        "zh": "多头龙不透之皮"
+      },
+      "typeLine": {
+        "en": "Sorcery",
+        "zh": "法术"
+      },
+      "oracleText": {
+        "en": "Each Head gains indestructible until the end of the Hydra's next turn.",
+        "zh": "每个头颅获得不灭异能直到多头龙的下一个回合结束。"
+      },
+      "power": null,
+      "toughness": null,
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [],
+      "artist": "Steve Prescott",
+      "rarity": "common",
+      "layout": "normal",
+      "scryfallUri": "https://scryfall.com/card/tfth/9/hydras-impenetrable-hide?utm_source=api",
+      "images": {
+        "front": "assets/cards/tfth/9-hydras-impenetrable-hide-front.png",
+        "back": "assets/cards/tfth/back.png",
+        "artCrop": "assets/cards/tfth/9-hydras-impenetrable-hide-art.jpg"
+      }
+    },
+    {
+      "id": "b1f3cf6e-e681-461f-8754-b3e464b150d9",
+      "collectorNumber": "10",
+      "quantity": 3,
+      "name": {
+        "en": "Neck Tangle",
+        "zh": "颈项缠结"
+      },
+      "typeLine": {
+        "en": "Sorcery",
+        "zh": "法术"
+      },
+      "oracleText": {
+        "en": "If there are five or more Heads on the battlefield, tap two of them and they don't untap during the Hydra's next untap step. Otherwise, reveal the top card of the Hydra's library and the Hydra casts that card.",
+        "zh": "若战场上有五个或更多头颅，则横置其中两个，且它们于多头龙的下一个重置步骤中不能重置。否则，展示多头龙牌库顶牌，且多头龙施放该牌。"
+      },
+      "power": null,
+      "toughness": null,
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [],
+      "artist": "Jesper Ejsing",
+      "rarity": "common",
+      "layout": "normal",
+      "scryfallUri": "https://scryfall.com/card/tfth/10/neck-tangle?utm_source=api",
+      "images": {
+        "front": "assets/cards/tfth/10-neck-tangle-front.png",
+        "back": "assets/cards/tfth/back.png",
+        "artCrop": "assets/cards/tfth/10-neck-tangle-art.jpg"
+      }
+    },
+    {
+      "id": "21533aec-7c28-4d20-9cc8-96b962d445bf",
+      "collectorNumber": "11",
+      "quantity": 4,
+      "name": {
+        "en": "Noxious Hydra Breath",
+        "zh": "剧毒多头龙吐息"
+      },
+      "typeLine": {
+        "en": "Sorcery",
+        "zh": "法术"
+      },
+      "oracleText": {
+        "en": "Choose one — Noxious Hydra Breath deals 5 damage to each player; or destroy each tapped non-Head creature.",
+        "zh": "选择一项 — 剧毒多头龙吐息对每位牌手造成5点伤害；或消灭每个已横置的非头颅生物。"
+      },
+      "power": null,
+      "toughness": null,
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [],
+      "artist": "Igor Kieryluk",
+      "rarity": "common",
+      "layout": "normal",
+      "scryfallUri": "https://scryfall.com/card/tfth/11/noxious-hydra-breath?utm_source=api",
+      "images": {
+        "front": "assets/cards/tfth/11-noxious-hydra-breath-front.png",
+        "back": "assets/cards/tfth/back.png",
+        "artCrop": "assets/cards/tfth/11-noxious-hydra-breath-art.jpg"
+      }
+    },
+    {
+      "id": "40ffc5ec-67da-4af7-ae3a-e33fea136eac",
+      "collectorNumber": "12",
+      "quantity": 2,
+      "name": {
+        "en": "Strike the Weak Spot",
+        "zh": "直击弱点"
+      },
+      "typeLine": {
+        "en": "Sorcery",
+        "zh": "法术"
+      },
+      "oracleText": {
+        "en": "Destroy target Head. If that Head was elite, the Hydra takes an extra turn after this one.",
+        "zh": "消灭目标头颅。若该头颅是精英，则多头龙在此回合后额外进行一个回合。"
+      },
+      "power": null,
+      "toughness": null,
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [],
+      "artist": "Jason A. Engle",
+      "rarity": "common",
+      "layout": "normal",
+      "scryfallUri": "https://scryfall.com/card/tfth/12/strike-the-weak-spot?utm_source=api",
+      "images": {
+        "front": "assets/cards/tfth/12-strike-the-weak-spot-front.png",
+        "back": "assets/cards/tfth/back.png",
+        "artCrop": "assets/cards/tfth/12-strike-the-weak-spot-art.jpg"
+      }
+    },
+    {
+      "id": "9b1871c1-59e5-4c2f-8e05-944d6cbabf99",
+      "collectorNumber": "13",
+      "quantity": 5,
+      "name": {
+        "en": "Swallow the Hero Whole",
+        "zh": "囫囵吞下英雄"
+      },
+      "typeLine": {
+        "en": "Sorcery",
+        "zh": "法术"
+      },
+      "oracleText": {
+        "en": "Each player exiles a creature they control. Until the Hydra's next turn, when a Head leaves the battlefield, return the exiled cards to the battlefield under their owners' control.",
+        "zh": "每位牌手放逐一个由其操控的生物。直到多头龙的下一个回合，当一个头颅离开战场时，将所放逐的牌在其拥有者的操控下移回战场。"
+      },
+      "power": null,
+      "toughness": null,
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [],
+      "artist": "Scott Chou",
+      "rarity": "common",
+      "layout": "normal",
+      "scryfallUri": "https://scryfall.com/card/tfth/13/swallow-the-hero-whole?utm_source=api",
+      "images": {
+        "front": "assets/cards/tfth/13-swallow-the-hero-whole-front.png",
+        "back": "assets/cards/tfth/back.png",
+        "artCrop": "assets/cards/tfth/13-swallow-the-hero-whole-art.jpg"
+      }
+    },
+    {
+      "id": "0fe46ef0-86f6-42f7-b78e-a148d7f00456",
+      "collectorNumber": "14",
+      "quantity": 4,
+      "name": {
+        "en": "Torn Between Heads",
+        "zh": "头颅撕裂"
+      },
+      "typeLine": {
+        "en": "Sorcery",
+        "zh": "法术"
+      },
+      "oracleText": {
+        "en": "Tap up to two Heads. They don't untap during the Hydra's next untap step. Torn Between Heads deals 5 damage to each player.",
+        "zh": "横置最多两个头颅。它们于多头龙的下一个重置步骤中不能重置。头颅撕裂对每位牌手造成5点伤害。"
+      },
+      "power": null,
+      "toughness": null,
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [],
+      "artist": "Mike Sass",
+      "rarity": "common",
+      "layout": "normal",
+      "scryfallUri": "https://scryfall.com/card/tfth/14/torn-between-heads?utm_source=api",
+      "images": {
+        "front": "assets/cards/tfth/14-torn-between-heads-front.png",
+        "back": "assets/cards/tfth/back.png",
+        "artCrop": "assets/cards/tfth/14-torn-between-heads-art.jpg"
+      }
+    },
+    {
+      "id": "bbb3bcaf-73f4-4f41-a0dc-0a3d710ad507",
+      "collectorNumber": "15",
+      "quantity": 6,
+      "name": {
+        "en": "Unified Lunge",
+        "zh": "齐声猛扑"
+      },
+      "typeLine": {
+        "en": "Sorcery",
+        "zh": "法术"
+      },
+      "oracleText": {
+        "en": "Unified Lunge deals X damage to each player, where X is the number of Heads on the battlefield.",
+        "zh": "齐声猛扑对每位牌手造成X点伤害，X为战场上头颅的数量。"
+      },
+      "power": null,
+      "toughness": null,
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [],
+      "artist": "Jesper Ejsing",
+      "rarity": "common",
+      "layout": "normal",
+      "scryfallUri": "https://scryfall.com/card/tfth/15/unified-lunge?utm_source=api",
+      "images": {
+        "front": "assets/cards/tfth/15-unified-lunge-front.png",
+        "back": "assets/cards/tfth/back.png",
+        "artCrop": "assets/cards/tfth/15-unified-lunge-art.jpg"
+      }
+    }
+  ]
+}

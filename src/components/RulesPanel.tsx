@@ -28,19 +28,6 @@ export function RulesPanel({ rules }: RulesPanelProps) {
           </details>
         ))}
       </div>
-
-      <div className="rules-sources">
-        <h3>{t('deck.sources')}</h3>
-        <ul>
-          {rules.sources.map((source) => (
-            <li key={source.url}>
-              <a href={source.url} target="_blank" rel="noreferrer">
-                {source.label}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </div>
     </div>
   )
 }

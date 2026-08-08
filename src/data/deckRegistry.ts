@@ -1,4 +1,5 @@
 import type { DeckData, DeckIndexEntry, DeckRules, SharedRules } from '../types'
+import { loadChallengeCards } from './cards/loadChallengeCards'
 import deckIndex from './decks/index.json'
 import tfth from './decks/tfth.json'
 import tbth from './decks/tbth.json'
@@ -12,10 +13,15 @@ import tfthRulesZh from './rules/zh/tfth.json'
 import tbthRulesZh from './rules/zh/tbth.json'
 import tdagRulesZh from './rules/zh/tdag.json'
 
+function withCatalogCards(deck: DeckData): DeckData {
+  const cards = loadChallengeCards(deck.code)
+  return cards ? { ...deck, cards } : deck
+}
+
 const decksByCode: Record<string, DeckData> = {
-  tfth: tfth as DeckData,
-  tbth: tbth as DeckData,
-  tdag: tdag as DeckData,
+  tfth: withCatalogCards(tfth as DeckData),
+  tbth: withCatalogCards(tbth as DeckData),
+  tdag: withCatalogCards(tdag as DeckData),
 }
 
 const rulesEn: Record<string, DeckRules> = {

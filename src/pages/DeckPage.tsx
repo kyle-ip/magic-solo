@@ -50,20 +50,21 @@ export function DeckPage() {
               ← {t('app.backHome')}
             </Link>
             <p className="eyebrow reveal">
-              {t('deck.challenge', { n: deck.challengeNumber })} · {deck.setCode}
+              {t('deck.challenge', { n: deck.challengeNumber })} ·{' '}
+              {t('deck.setLine', {
+                expansion: meta?.expansion ?? deck.setCode,
+                code: deck.setCode,
+              })}
             </p>
             <h1 className="reveal delay-1">{meta?.name ?? deck.name}</h1>
             <p className="lede reveal delay-2">{meta?.overview}</p>
             <div className="cta-row reveal delay-3">
               <Link className="btn primary" to={`/challenge/${deck.code}`}>
-                {t('deck.startChallenge')}
+                {t('deck.startExperience')}
               </Link>
-              <a className="btn ghost" href="#rules">
-                {t('deck.viewRules')}
-              </a>
-              <a className="btn ghost" href="#cards">
-                {t('deck.viewCards')}
-              </a>
+              <Link className="btn ghost" to={`/assistant/${deck.code}`}>
+                {t('deck.startAssistant')}
+              </Link>
             </div>
           </div>
           <div className="deck-hero-card reveal delay-2">

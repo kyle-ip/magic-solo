@@ -1,0 +1,487 @@
+{
+  "code": "tdag",
+  "name": "Defeat a God",
+  "setCode": "TDAG",
+  "theme": "god",
+  "heroArt": "assets/cards/tdag/1-xenagos-ascended-art.jpg",
+  "backImage": "assets/cards/tdag/back.png",
+  "cards": [
+    {
+      "id": "fe9dd9f0-3071-4bbd-80d2-e35b153006d7",
+      "collectorNumber": "1",
+      "quantity": 1,
+      "name": {
+        "en": "Xenagos Ascended",
+        "zh": "晋升神明泽纳加思"
+      },
+      "typeLine": {
+        "en": "Legendary Enchantment Creature — God",
+        "zh": "传奇结界生物～神"
+      },
+      "oracleText": {
+        "en": "Xenagos Ascended can't leave the battlefield as long as a Reveler is on the battlefield.\nWhen Xenagos Ascended leaves the battlefield, each player wins the game.",
+        "zh": "只要战场上有狂欢者，晋升神明泽纳加思便不能离开战场。\n当晋升神明泽纳加思离开战场时，每位牌手赢得这盘游戏。"
+      },
+      "power": "6",
+      "toughness": "5",
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [],
+      "artist": "Tyler Jacobson",
+      "rarity": "common",
+      "layout": "token",
+      "scryfallUri": "https://scryfall.com/card/tdag/1/xenagos-ascended?utm_source=api",
+      "images": {
+        "front": "assets/cards/tdag/1-xenagos-ascended-front.png",
+        "back": "assets/cards/tdag/back.png",
+        "artCrop": "assets/cards/tdag/1-xenagos-ascended-art.jpg"
+      }
+    },
+    {
+      "id": "8da84d4f-5526-401f-9762-4fcfbc313c81",
+      "collectorNumber": "2",
+      "quantity": 6,
+      "name": {
+        "en": "Rollicking Throng",
+        "zh": "喧闹人潮"
+      },
+      "typeLine": {
+        "en": "Creature — Human Reveler",
+        "zh": "生物～人类／狂欢者"
+      },
+      "oracleText": {
+        "en": "When Rollicking Throng enters the battlefield, reveal the top card of Xenagos's library and Xenagos casts that card. (This ability doesn't trigger as the game begins.)",
+        "zh": "当喧闹人潮进战场时，展示泽纳加思牌库顶牌，且泽纳加思施放该牌。（此异能不会在游戏开始时触发。）"
+      },
+      "power": "1",
+      "toughness": "3",
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [],
+      "artist": "Karl Kopinski",
+      "rarity": "common",
+      "layout": "token",
+      "scryfallUri": "https://scryfall.com/card/tdag/2/rollicking-throng?utm_source=api",
+      "images": {
+        "front": "assets/cards/tdag/2-rollicking-throng-front.png",
+        "back": "assets/cards/tdag/back.png",
+        "artCrop": "assets/cards/tdag/2-rollicking-throng-art.jpg"
+      }
+    },
+    {
+      "id": "8f960d71-b55d-4730-9b3f-49e9afd2809c",
+      "collectorNumber": "3",
+      "quantity": 16,
+      "name": {
+        "en": "Ecstatic Piper",
+        "zh": "狂喜吹笛手"
+      },
+      "typeLine": {
+        "en": "Creature — Satyr Reveler",
+        "zh": "生物～萨特／狂欢者"
+      },
+      "oracleText": {
+        "en": "When Ecstatic Piper enters the battlefield, Xenagos Ascended attacks this turn if able.\nHero's Reward — When Ecstatic Piper leaves the battlefield, each player gains 2 life.",
+        "zh": "当狂喜吹笛手进战场时，晋升神明泽纳加思本回合若能攻击则须攻击。\n英雄赏赐 — 当狂喜吹笛手离开战场时，每位牌手获得2点生命。"
+      },
+      "power": "2",
+      "toughness": "2",
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [
+        "Hero's Reward"
+      ],
+      "artist": "Steve Argyle",
+      "rarity": "common",
+      "layout": "token",
+      "scryfallUri": "https://scryfall.com/card/tdag/3/ecstatic-piper?utm_source=api",
+      "images": {
+        "front": "assets/cards/tdag/3-ecstatic-piper-front.png",
+        "back": "assets/cards/tdag/back.png",
+        "artCrop": "assets/cards/tdag/3-ecstatic-piper-art.jpg"
+      }
+    },
+    {
+      "id": "076ad38c-30ec-41a4-be18-c287f65d1d86",
+      "collectorNumber": "4",
+      "quantity": 2,
+      "name": {
+        "en": "Maddened Oread",
+        "zh": "发狂山林仙灵"
+      },
+      "typeLine": {
+        "en": "Enchantment Creature — Nymph Reveler",
+        "zh": "结界生物～仙灵／狂欢者"
+      },
+      "oracleText": {
+        "en": "As long as five or more Revelers are on the battlefield, Maddened Oread attacks each turn if able.\nHero's Reward — When Maddened Oread leaves the battlefield, each player gains 3 life.",
+        "zh": "只要战场上有五个或更多狂欢者，发狂山林仙灵每次战斗若能攻击则须攻击。\n英雄赏赐 — 当发狂山林仙灵离开战场时，每位牌手获得3点生命。"
+      },
+      "power": "4",
+      "toughness": "2",
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [
+        "Hero's Reward"
+      ],
+      "artist": "Julie Dillon",
+      "rarity": "common",
+      "layout": "token",
+      "scryfallUri": "https://scryfall.com/card/tdag/4/maddened-oread?utm_source=api",
+      "images": {
+        "front": "assets/cards/tdag/4-maddened-oread-front.png",
+        "back": "assets/cards/tdag/back.png",
+        "artCrop": "assets/cards/tdag/4-maddened-oread-art.jpg"
+      }
+    },
+    {
+      "id": "ae0182f2-31c0-4927-9ca5-0b3f4d342409",
+      "collectorNumber": "5",
+      "quantity": 4,
+      "name": {
+        "en": "Pheres-Band Revelers",
+        "zh": "费利斯群狂欢者"
+      },
+      "typeLine": {
+        "en": "Creature — Centaur Reveler",
+        "zh": "生物～半人马／狂欢者"
+      },
+      "oracleText": {
+        "en": "Hero's Reward — When Pheres-Band Revelers leaves the battlefield, each player draws a card.",
+        "zh": "英雄赏赐 — 当费利斯群狂欢者离开战场时，每位牌手抓一张牌。"
+      },
+      "power": "4",
+      "toughness": "4",
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [
+        "Hero's Reward"
+      ],
+      "artist": "Mathias Kollros",
+      "rarity": "common",
+      "layout": "token",
+      "scryfallUri": "https://scryfall.com/card/tdag/5/pheres-band-revelers?utm_source=api",
+      "images": {
+        "front": "assets/cards/tdag/5-pheres-band-revelers-front.png",
+        "back": "assets/cards/tdag/back.png",
+        "artCrop": "assets/cards/tdag/5-pheres-band-revelers-art.jpg"
+      }
+    },
+    {
+      "id": "f4210dae-7248-4a7b-9646-99683c0dce17",
+      "collectorNumber": "6",
+      "quantity": 2,
+      "name": {
+        "en": "Serpent Dancers",
+        "zh": "弄蛇舞者"
+      },
+      "typeLine": {
+        "en": "Creature — Human Reveler",
+        "zh": "生物～人类／狂欢者"
+      },
+      "oracleText": {
+        "en": "Deathtouch\nHero's Reward — When Serpent Dancers leaves the battlefield, each player draws a card.",
+        "zh": "死触\n英雄赏赐 — 当弄蛇舞者离开战场时，每位牌手抓一张牌。"
+      },
+      "power": "2",
+      "toughness": "4",
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [
+        "Hero's Reward",
+        "Deathtouch"
+      ],
+      "artist": "Ulrich Brunin",
+      "rarity": "common",
+      "layout": "token",
+      "scryfallUri": "https://scryfall.com/card/tdag/6/serpent-dancers?utm_source=api",
+      "images": {
+        "front": "assets/cards/tdag/6-serpent-dancers-front.png",
+        "back": "assets/cards/tdag/back.png",
+        "artCrop": "assets/cards/tdag/6-serpent-dancers-art.jpg"
+      }
+    },
+    {
+      "id": "7b8ec95a-e728-446b-8c4a-a3571e6aa458",
+      "collectorNumber": "7",
+      "quantity": 2,
+      "name": {
+        "en": "Wild Maenads",
+        "zh": "狂野酒神女祭司"
+      },
+      "typeLine": {
+        "en": "Creature — Human Reveler",
+        "zh": "生物～人类／狂欢者"
+      },
+      "oracleText": {
+        "en": "First strike\nHero's Reward — When Wild Maenads leaves the battlefield, each player gains 3 life.",
+        "zh": "先攻\n英雄赏赐 — 当狂野酒神女祭司离开战场时，每位牌手获得3点生命。"
+      },
+      "power": "3",
+      "toughness": "1",
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [
+        "First strike",
+        "Hero's Reward"
+      ],
+      "artist": "Winona Nelson",
+      "rarity": "common",
+      "layout": "token",
+      "scryfallUri": "https://scryfall.com/card/tdag/7/wild-maenads?utm_source=api",
+      "images": {
+        "front": "assets/cards/tdag/7-wild-maenads-front.png",
+        "back": "assets/cards/tdag/back.png",
+        "artCrop": "assets/cards/tdag/7-wild-maenads-art.jpg"
+      }
+    },
+    {
+      "id": "6eaba998-11dc-4a0c-a755-4332f22e6dfc",
+      "collectorNumber": "8",
+      "quantity": 7,
+      "name": {
+        "en": "Impulsive Charge",
+        "zh": "冲动冲锋"
+      },
+      "typeLine": {
+        "en": "Sorcery",
+        "zh": "法术"
+      },
+      "oracleText": {
+        "en": "At the beginning of combat this turn, all Revelers gain haste until end of turn and attack this combat if able.",
+        "zh": "在本回合的战斗开始时，所有狂欢者获得敏捷异能直到回合结束，且本战斗若能攻击则须攻击。"
+      },
+      "power": null,
+      "toughness": null,
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [],
+      "artist": "Willian Murai",
+      "rarity": "common",
+      "layout": "normal",
+      "scryfallUri": "https://scryfall.com/card/tdag/8/impulsive-charge?utm_source=api",
+      "images": {
+        "front": "assets/cards/tdag/8-impulsive-charge-front.png",
+        "back": "assets/cards/tdag/back.png",
+        "artCrop": "assets/cards/tdag/8-impulsive-charge-art.jpg"
+      }
+    },
+    {
+      "id": "8262a9f7-010a-4fc0-bcb6-86b2b1253000",
+      "collectorNumber": "9",
+      "quantity": 2,
+      "name": {
+        "en": "Impulsive Destruction",
+        "zh": "冲动破坏"
+      },
+      "typeLine": {
+        "en": "Sorcery",
+        "zh": "法术"
+      },
+      "oracleText": {
+        "en": "Each player may sacrifice an artifact or enchantment. Impulsive Destruction deals 3 damage to each player who didn't sacrifice a permanent this way.",
+        "zh": "每位牌手可以牺牲一个神器或结界。冲动破坏对未以此法牺牲永久物的每位牌手造成3点伤害。"
+      },
+      "power": null,
+      "toughness": null,
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [],
+      "artist": "Zoltan Boros",
+      "rarity": "common",
+      "layout": "normal",
+      "scryfallUri": "https://scryfall.com/card/tdag/9/impulsive-destruction?utm_source=api",
+      "images": {
+        "front": "assets/cards/tdag/9-impulsive-destruction-front.png",
+        "back": "assets/cards/tdag/back.png",
+        "artCrop": "assets/cards/tdag/9-impulsive-destruction-art.jpg"
+      }
+    },
+    {
+      "id": "b52d516f-d425-49f1-99cc-17f743aa41b2",
+      "collectorNumber": "10",
+      "quantity": 4,
+      "name": {
+        "en": "Impulsive Return",
+        "zh": "冲动归来"
+      },
+      "typeLine": {
+        "en": "Sorcery",
+        "zh": "法术"
+      },
+      "oracleText": {
+        "en": "Return two cards named Ecstatic Piper from Xenagos's graveyard to the battlefield. At the beginning of combat this turn, Impulsive Return deals damage to each player equal to the number of Revelers on the battlefield.",
+        "zh": "将两张名称为狂喜吹笛手的牌从泽纳加思的坟墓场移回战场。在本回合的战斗开始时，冲动归来对每位牌手造成伤害，其数量等同于战场上狂欢者的数量。"
+      },
+      "power": null,
+      "toughness": null,
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [],
+      "artist": "Cyril Van Der Haegen",
+      "rarity": "common",
+      "layout": "normal",
+      "scryfallUri": "https://scryfall.com/card/tdag/10/impulsive-return?utm_source=api",
+      "images": {
+        "front": "assets/cards/tdag/10-impulsive-return-front.png",
+        "back": "assets/cards/tdag/back.png",
+        "artCrop": "assets/cards/tdag/10-impulsive-return-art.jpg"
+      }
+    },
+    {
+      "id": "33307f9a-9c09-402a-9c76-a0a76b3a9a6a",
+      "collectorNumber": "11",
+      "quantity": 2,
+      "name": {
+        "en": "Rip to Pieces",
+        "zh": "撕成碎片"
+      },
+      "typeLine": {
+        "en": "Sorcery",
+        "zh": "法术"
+      },
+      "oracleText": {
+        "en": "At the beginning of combat this turn, each Reveler deals 1 damage to each player and each creature those players control.",
+        "zh": "在本回合的战斗开始时，每个狂欢者对每位牌手及其操控的每个生物各造成1点伤害。"
+      },
+      "power": null,
+      "toughness": null,
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [],
+      "artist": "Kev Walker",
+      "rarity": "common",
+      "layout": "normal",
+      "scryfallUri": "https://scryfall.com/card/tdag/11/rip-to-pieces?utm_source=api",
+      "images": {
+        "front": "assets/cards/tdag/11-rip-to-pieces-front.png",
+        "back": "assets/cards/tdag/back.png",
+        "artCrop": "assets/cards/tdag/11-rip-to-pieces-art.jpg"
+      }
+    },
+    {
+      "id": "d1b30dc4-9d7c-4098-87a6-f7434030a427",
+      "collectorNumber": "12",
+      "quantity": 3,
+      "name": {
+        "en": "Xenagos's Scorn",
+        "zh": "泽纳加思的轻蔑"
+      },
+      "typeLine": {
+        "en": "Sorcery",
+        "zh": "法术"
+      },
+      "oracleText": {
+        "en": "Xenagos Ascended gains trample until end of turn and attacks this turn if able.",
+        "zh": "晋升神明泽纳加思获得践踏异能直到回合结束，且本回合若能攻击则须攻击。"
+      },
+      "power": null,
+      "toughness": null,
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [],
+      "artist": "Lucas Graciano",
+      "rarity": "common",
+      "layout": "normal",
+      "scryfallUri": "https://scryfall.com/card/tdag/12/xenagoss-scorn?utm_source=api",
+      "images": {
+        "front": "assets/cards/tdag/12-xenagoss-scorn-front.png",
+        "back": "assets/cards/tdag/back.png",
+        "artCrop": "assets/cards/tdag/12-xenagoss-scorn-art.jpg"
+      }
+    },
+    {
+      "id": "6b5fef7d-b8bb-43e2-a36b-d4cc98c3ef13",
+      "collectorNumber": "13",
+      "quantity": 5,
+      "name": {
+        "en": "Xenagos's Strike",
+        "zh": "泽纳加思的打击"
+      },
+      "typeLine": {
+        "en": "Sorcery",
+        "zh": "法术"
+      },
+      "oracleText": {
+        "en": "Xenagos's Strike deals 4 damage to each player.",
+        "zh": "泽纳加思的打击对每位牌手造成4点伤害。"
+      },
+      "power": null,
+      "toughness": null,
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [],
+      "artist": "Zoltan Boros",
+      "rarity": "common",
+      "layout": "normal",
+      "scryfallUri": "https://scryfall.com/card/tdag/13/xenagoss-strike?utm_source=api",
+      "images": {
+        "front": "assets/cards/tdag/13-xenagoss-strike-front.png",
+        "back": "assets/cards/tdag/back.png",
+        "artCrop": "assets/cards/tdag/13-xenagoss-strike-art.jpg"
+      }
+    },
+    {
+      "id": "3c85c8c7-e415-411d-b1b3-edc45c0e3fb0",
+      "collectorNumber": "14",
+      "quantity": 2,
+      "name": {
+        "en": "Dance of Flame",
+        "zh": "火焰之舞"
+      },
+      "typeLine": {
+        "en": "Enchantment",
+        "zh": "结界"
+      },
+      "oracleText": {
+        "en": "Whenever a Reveler attacks, Dance of Flame deals 1 damage to each player.",
+        "zh": "每当一个狂欢者攻击时，火焰之舞对每位牌手造成1点伤害。"
+      },
+      "power": null,
+      "toughness": null,
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [],
+      "artist": "Christopher Moeller",
+      "rarity": "common",
+      "layout": "normal",
+      "scryfallUri": "https://scryfall.com/card/tdag/14/dance-of-flame?utm_source=api",
+      "images": {
+        "front": "assets/cards/tdag/14-dance-of-flame-front.png",
+        "back": "assets/cards/tdag/back.png",
+        "artCrop": "assets/cards/tdag/14-dance-of-flame-art.jpg"
+      }
+    },
+    {
+      "id": "6ce2817d-bb90-4cc0-beca-9f8af865c7a2",
+      "collectorNumber": "15",
+      "quantity": 2,
+      "name": {
+        "en": "Dance of Panic",
+        "zh": "恐慌之舞"
+      },
+      "typeLine": {
+        "en": "Enchantment",
+        "zh": "结界"
+      },
+      "oracleText": {
+        "en": "As long as five or more Revelers are on the battlefield, all Revelers have haste and attack each turn if able.",
+        "zh": "只要战场上有五个或更多狂欢者，所有狂欢者便具有敏捷异能，且每次战斗若能攻击则须攻击。"
+      },
+      "power": null,
+      "toughness": null,
+      "manaCost": "",
+      "cmc": 0,
+      "keywords": [],
+      "artist": "Mike Bierek",
+      "rarity": "common",
+      "layout": "normal",
+      "scryfallUri": "https://scryfall.com/card/tdag/15/dance-of-panic?utm_source=api",
+      "images": {
+        "front": "assets/cards/tdag/15-dance-of-panic-front.png",
+        "back": "assets/cards/tdag/back.png",
+        "artCrop": "assets/cards/tdag/15-dance-of-panic-art.jpg"
+      }
+    }
+  ]
+}

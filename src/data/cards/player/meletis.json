@@ -1,0 +1,98 @@
+{
+  "id": "meletis",
+  "name": "Meletis Tide",
+  "nameZh": "迈勒提斯潮涌",
+  "blurb": "Scholars, tritons, and sea gods — clever lines and flying pressure.",
+  "blurbZh": "学者、人鱼与海洋神祇——机巧阵线与飞行施压。",
+  "art": "assets/cards/player/9f9db424-e668-48b4-b275-7b35be4e1bf8-art.jpg",
+  "roster": [
+    {
+      "id": "meletis-hoplite",
+      "name": "Battlewise Hoplite",
+      "nameZh": "战智步兵",
+      "typeLine": "Creature — Human Soldier",
+      "typeLineZh": "生物～人类／士兵",
+      "oracleText": "Heroic — Whenever you cast a spell that targets this creature, put a +1/+1 counter on it, then scry 1.",
+      "oracleTextZh": "英雄纪元～每当你施放以本生物为目标的咒语时，在其上放置一个+1/+1指示物，然后占卜1。",
+      "power": 2,
+      "toughness": 2,
+      "cost": 2,
+      "keywords": [],
+      "image": "assets/cards/player/4c929a57-2c23-4bbf-b265-666630a4fde8-normal.jpg"
+    },
+    {
+      "id": "meletis-triton",
+      "name": "Triton Fortune Hunter",
+      "nameZh": "特里同寻运者",
+      "typeLine": "Creature — Merfolk Soldier",
+      "typeLineZh": "生物～人鱼／士兵",
+      "oracleText": "Heroic — Whenever you cast a spell that targets this creature, draw a card.",
+      "oracleTextZh": "英雄纪元～每当你施放以本生物为目标的咒语时，抓一张牌。",
+      "power": 2,
+      "toughness": 3,
+      "cost": 3,
+      "keywords": [],
+      "image": "assets/cards/player/1173ff96-998c-4fe7-9b28-602d990e0339-normal.jpg"
+    },
+    {
+      "id": "meletis-chimera",
+      "name": "Coastline Chimera",
+      "nameZh": "海岸奇美拉",
+      "typeLine": "Creature — Chimera",
+      "typeLineZh": "生物～奇美拉",
+      "oracleText": "Flying\n{1}{W}: This creature can block an additional creature this turn.",
+      "oracleTextZh": "飞行\n{1}{W}：本回合此生物能额外阻挡一个生物。",
+      "power": 2,
+      "toughness": 4,
+      "cost": 3,
+      "keywords": [
+        "flying"
+      ],
+      "image": "assets/cards/player/01320a31-25fa-4324-8225-d150c6aa58a1-normal.jpg"
+    },
+    {
+      "id": "meletis-waves",
+      "name": "Master of Waves",
+      "nameZh": "浪潮大师",
+      "typeLine": "Creature — Merfolk Wizard",
+      "typeLineZh": "生物～人鱼／法术师",
+      "oracleText": "Protection from red. Elementals you control get +1/+1.",
+      "oracleTextZh": "反红保护。由你操控的元素得+1/+1。",
+      "power": 3,
+      "toughness": 3,
+      "cost": 4,
+      "keywords": [],
+      "image": "assets/cards/player/14cd5387-c6aa-4430-8edb-05da6b4e2ff5-normal.jpg"
+    },
+    {
+      "id": "meletis-prophet",
+      "name": "Prophet of Kruphix",
+      "nameZh": "克洛菲斯先知",
+      "typeLine": "Creature — Human Wizard",
+      "typeLineZh": "生物～人类／法术师",
+      "oracleText": "Untap your creatures and lands on each other player’s untap step.",
+      "oracleTextZh": "在每位其他牌手的重置步骤中，重置由你操控的所有生物与地。",
+      "power": 3,
+      "toughness": 4,
+      "cost": 5,
+      "keywords": [],
+      "image": "assets/cards/player/45de923f-fdab-460c-96f4-f62aefa9ad73-normal.jpg"
+    },
+    {
+      "id": "meletis-thassa",
+      "name": "Thassa, God of the Sea",
+      "nameZh": "海洋神塔萨",
+      "typeLine": "Legendary Enchantment Creature — God",
+      "typeLineZh": "传奇结界生物～神",
+      "oracleText": "Indestructible. Devotion matters. Scry when creatures attack.",
+      "oracleTextZh": "不灭。献力影响是否为生物。生物攻击时占卜。",
+      "power": 5,
+      "toughness": 5,
+      "cost": 6,
+      "keywords": [
+        "indestructible"
+      ],
+      "image": "assets/cards/player/9f9db424-e668-48b4-b275-7b35be4e1bf8-normal.jpg"
+    }
+  ]
+}

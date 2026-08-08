@@ -71,7 +71,9 @@ export function DeckRosterModal({
                   className={`deck-roster-tile ${selected ? 'is-selected' : ''}`}
                   onClick={() => setFocusId(card.id)}
                 >
-                  <img src={assetUrl(card.image)} alt="" loading="lazy" />
+                  <span className="deck-roster-tile-art">
+                    <img src={assetUrl(card.image)} alt="" loading="lazy" />
+                  </span>
                   <span className="deck-roster-tile-meta">
                     <strong>{zh ? card.nameZh : card.name}</strong>
                     <em>
@@ -86,7 +88,9 @@ export function DeckRosterModal({
 
           {focus ? (
             <aside className="deck-roster-detail">
-              <img src={assetUrl(focus.image)} alt="" className="deck-roster-art" />
+              <div className="deck-roster-art">
+                <img src={assetUrl(focus.image)} alt="" />
+              </div>
               <div className="deck-roster-detail-body">
                 <h3>{zh ? focus.nameZh : focus.name}</h3>
                 <p className="deck-roster-type">

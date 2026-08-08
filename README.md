@@ -1,6 +1,6 @@
 # Magic Solo — Challenge Decks
 
-Solo web recreation of the three *Magic: The Gathering* Challenge Decks from the Theros block — deck archives, card art, rules, and a simplified PvE challenge board.
+Solo web recreation of the three *Magic: The Gathering* Challenge Decks from Theros-block Game Days — Face the Hydra (*Theros*), Battle the Horde (*Born of the Gods*), and Defeat a God (*Journey into Nyx*) — with deck archives, card art, rules, a simplified PvE **Challenge Experience**, and a **Game Assistant** for mixed online/offline play.
 
 **Live site:** [https://kyle-ip.github.io/magic-solo/](https://kyle-ip.github.io/magic-solo/)
 
@@ -19,12 +19,13 @@ Each deck page includes card fronts/backs (via Scryfall), oracle text, decklist 
 ## Features
 
 - **Home** — hero intro, three challenge paths, shared Challenge Deck overview
-- **Deck pages** (`/decks/:setCode`) — blurred art atmosphere, collapsible rules, card gallery with flip/modal
-- **Solo challenge** (`/challenge/:setCode`) — Arena-inspired board (see below)
+- **Deck pages** (`/decks/:setCode`) — rules + card gallery, with entries for **Challenge Experience** and **Game Assistant**
+- **Challenge Experience** (`/challenge/:setCode`) — full automated PvE board (see below)
+- **Game Assistant** (`/assistant/:setCode`) — challenge half-board for offline player decks (see below)
 - **i18n** — English + 中文 (header language switch)
 - **Floating nav** — back-to-top (and home on deck pages), parked in the page gutter so it does not cover content
 
-## Solo challenge mode
+## Challenge Experience
 
 Route: `/challenge/:setCode`
 
@@ -47,6 +48,21 @@ Player forces use a simplified **muster** system — **not** a full Magic rules 
 
 Click a force on the setup screen to preview every card before starting.
 
+## Game Assistant
+
+Route: `/assistant/:setCode`
+
+For players who use a physical deck offline while the Challenge Deck runs online:
+
+- Shows only the **challenge** half-board: library, battlefield, graveyard, exile
+- Setup: **blank library** (full shuffle) or **rules setup** (official starting permanents)
+- Manual operations via pointer — no turn automation
+  - Click library to blind-draw (staging card must be dragged away)
+  - Drag between zones (library drop = bottom by default)
+  - Right-click for tap / notes / library moves
+  - Double-click library to search, reorder, or play any card
+- Custom **player values** and per-card **notes**
+
 ## Stack
 
 - Vite 5 + React 19 + TypeScript
@@ -57,15 +73,19 @@ Click a force on the setup screen to preview every card before starting.
 
 ```
 src/
-  pages/           Home, deck archive, challenge arena
-  components/      Header, rules, cards, floating nav, arena chrome
-  game/            Challenge rules engine (hydra / horde / god)
-  data/decks/      Deck manifests (from Scryfall fetch)
+  pages/           Home, deck archive, challenge arena, assistant
+  components/      Header, rules, cards, floating nav, arena / assistant chrome
+  game/            Challenge Experience engine (hydra / horde / god)
+  assistant/       Game Assistant state machine (manual zones)
+  data/cards/      ★ Edit card copy + image paths here (challenge + player)
+  data/decks/      Deck manifests / metadata (from Scryfall fetch)
   data/rules/      EN + ZH rules JSON
   i18n/            UI strings + battle-log messages
 scripts/           Scryfall / cover / local asset fetchers
 .github/workflows/ GitHub Pages deploy
 ```
+
+Card text and art paths for challenge decks and muster forces live under [`src/data/cards/`](src/data/cards/README.md).
 
 ## Setup
 

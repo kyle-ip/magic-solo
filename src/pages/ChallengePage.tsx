@@ -1,4 +1,12 @@
-import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ArenaCard } from '../components/challenge/ArenaCard'
@@ -6,6 +14,7 @@ import { AttackArrows } from '../components/challenge/AttackArrows'
 import { CastStage } from '../components/challenge/CastStage'
 import { DeckRosterModal } from '../components/challenge/DeckRosterModal'
 import { ZonePile } from '../components/challenge/ZonePile'
+import { LanguageSwitch } from '../components/LanguageSwitch'
 import { getDeck } from '../data/deckRegistry'
 import { getCardZh } from '../data/locale/cardsZh'
 import { deckMetaEn, deckMetaZh } from '../data/locale/deckMeta'
@@ -37,6 +46,7 @@ import { assetUrl } from '../utils/assetUrl'
 const CODES: ChallengeCode[] = ['tfth', 'tbth', 'tdag']
 const COACH_KEY = 'magic-solo-coach'
 const LOG_KEY = 'magic-solo-log-open'
+const LOG_VISIBLE_KEY = 'magic-solo-log-visible'
 
 function readCoachEnabled(): boolean {
   try {
@@ -53,6 +63,18 @@ function readLogOpen(): boolean {
   } catch {
     return true
   }
+}
+
+function readLogVisible(): boolean {
+  try {
+    return localStorage.getItem(LOG_VISIBLE_KEY) !== '0'
+  } catch {
+    return true
+  }
+}
+
+function clamp(n: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, n))
 }
 
 export function ChallengePage() {
@@ -83,7 +105,18 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
   const [inspect, setInspect] = useState<'graveyard' | null>(null)
   const [coachOn, setCoachOn] = useState(readCoachEnabled)
   const [logOpen, setLogOpen] = useState(readLogOpen)
+  const [logVisible, setLogVisible] = useState(readLogVisible)
+  const [logPos, setLogPos] = useState<{ left: number; top: number } | null>(null)
+  const [logDragging, setLogDragging] = useState(false)
   const arenaRef = useRef<HTMLElement | null>(null)
+  const logPanelRef = useRef<HTMLElement | null>(null)
+  const logDragRef = useRef<{
+    pointerId: number
+    startX: number
+    startY: number
+    origLeft: number
+    origTop: number
+  } | null>(null)
 
   const act = useCallback((action: GameAction) => dispatch(action), [])
 
@@ -194,6 +227,58 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
       }
       return next
     })
+  }, [])
+
+  const setLogVisibility = useCallback((visible: boolean) => {
+    setLogVisible(visible)
+    try {
+      localStorage.setItem(LOG_VISIBLE_KEY, visible ? '1' : '0')
+    } catch {
+      /* ignore */
+    }
+  }, [])
+
+  const logPanelStyle = logPos
+    ? { left: logPos.left, top: logPos.top, right: 'auto', bottom: 'auto' }
+    : undefined
+
+  const onLogDragStart = useCallback((e: ReactPointerEvent<HTMLElement>) => {
+    if (e.button !== 0) return
+    const el = logPanelRef.current
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    logDragRef.current = {
+      pointerId: e.pointerId,
+      startX: e.clientX,
+      startY: e.clientY,
+      origLeft: rect.left,
+      origTop: rect.top,
+    }
+    setLogDragging(true)
+    el.setPointerCapture(e.pointerId)
+  }, [])
+
+  const onLogDragMove = useCallback((e: ReactPointerEvent<HTMLElement>) => {
+    const drag = logDragRef.current
+    if (!drag || drag.pointerId !== e.pointerId) return
+    const el = logPanelRef.current
+    const w = el?.offsetWidth ?? 280
+    const h = el?.offsetHeight ?? 48
+    const left = clamp(drag.origLeft + (e.clientX - drag.startX), 8, window.innerWidth - w - 8)
+    const top = clamp(drag.origTop + (e.clientY - drag.startY), 8, window.innerHeight - h - 8)
+    setLogPos({ left, top })
+  }, [])
+
+  const onLogDragEnd = useCallback((e: ReactPointerEvent<HTMLElement>) => {
+    const drag = logDragRef.current
+    if (!drag || drag.pointerId !== e.pointerId) return
+    logDragRef.current = null
+    setLogDragging(false)
+    try {
+      logPanelRef.current?.releasePointerCapture(e.pointerId)
+    } catch {
+      /* ignore */
+    }
   }, [])
 
   const previewChallengeCard = useCallback(
@@ -422,6 +507,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
           <button type="button" className="btn ghost" onClick={() => act({ type: 'RESET' })}>
             {t('challenge.resign')}
           </button>
+          <LanguageSwitch />
         </div>
       </header>
 
@@ -471,30 +557,75 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
         </div>
       </div>
 
-      <aside className={`arena-log ${logOpen ? '' : 'is-collapsed'}`}>
+      {logVisible ? (
+        <aside
+          ref={logPanelRef}
+          className={[
+            'arena-log',
+            logOpen ? '' : 'is-collapsed',
+            logDragging ? 'is-dragging' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+          style={logPanelStyle}
+          onPointerMove={onLogDragMove}
+          onPointerUp={onLogDragEnd}
+          onPointerCancel={onLogDragEnd}
+        >
+          <div
+            className="arena-log-head"
+            onPointerDown={onLogDragStart}
+            title={t('challenge.log')}
+          >
+            <span className="arena-log-title">{t('challenge.log')}</span>
+            <div className="arena-log-tools">
+              <button
+                type="button"
+                className="arena-log-tool"
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={toggleLog}
+                aria-expanded={logOpen}
+                aria-controls="arena-log-list"
+                title={logOpen ? t('challenge.logCollapse') : t('challenge.logExpand')}
+                aria-label={logOpen ? t('challenge.logCollapse') : t('challenge.logExpand')}
+              >
+                <span className="arena-log-chevron" aria-hidden>
+                  ▾
+                </span>
+              </button>
+              <button
+                type="button"
+                className="arena-log-tool"
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={() => setLogVisibility(false)}
+                title={t('challenge.logClose')}
+                aria-label={t('challenge.logClose')}
+              >
+                ×
+              </button>
+            </div>
+          </div>
+          {logOpen ? (
+            <ul id="arena-log-list" className="arena-log-list">
+              {state.log.slice(0, 12).map((e) => (
+                <li key={e.id} className={`tone-${e.tone ?? 'info'}`}>
+                  {formatLog(e)}
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </aside>
+      ) : (
         <button
           type="button"
-          className="arena-log-head"
-          onClick={toggleLog}
-          aria-expanded={logOpen}
-          aria-controls="arena-log-list"
-          title={logOpen ? t('challenge.logCollapse') : t('challenge.logExpand')}
+          className="arena-log-reopen"
+          style={logPanelStyle}
+          onClick={() => setLogVisibility(true)}
+          title={t('challenge.logShow')}
         >
-          <span>{t('challenge.log')}</span>
-          <span className="arena-log-chevron" aria-hidden>
-            ▾
-          </span>
+          {t('challenge.log')}
         </button>
-        {logOpen ? (
-          <ul id="arena-log-list" className="arena-log-list">
-            {state.log.slice(0, 12).map((e) => (
-              <li key={e.id} className={`tone-${e.tone ?? 'info'}`}>
-                {formatLog(e)}
-              </li>
-            ))}
-          </ul>
-        ) : null}
-      </aside>
+      )}
 
       <div className="arena-battlefield">
         <section className="bf-row opponent-row">
