@@ -1,0 +1,21 @@
+{
+  "title": "Challenge Decks",
+  "summary": "A Challenge Deck is a preconstructed, self-running theme deck with special Magic: The Gathering cards. It is a player-vs-environment (PvE) experience: the deck follows its own rules and casts its own cards.",
+  "points": [
+    "Challenge cards have special card backs and are not treated as regular Magic cards for constructed formats.",
+    "When playing against a Challenge Deck, players may use Hero cards. These begin the game on the battlefield and act like a vanguard-style aid.",
+    "Players each have 20 life. In multiplayer, players typically take their turns simultaneously.",
+    "Players win by meeting the Challenge Deck’s win condition. The Challenge Deck wins if all players are eliminated.",
+    "So far, three Challenge Decks have been released: Face the Hydra (Theros; green card backs), Battle the Horde (Born of the Gods; red card backs), and Defeat a God (Journey into Nyx; indigo card backs). Theros Beyond Death did not include a Challenge Deck."
+  ],
+  "sources": [
+    {
+      "label": "MTG Wiki — Challenge Deck",
+      "url": "https://mtg.wiki/page/Challenge_Deck"
+    },
+    {
+      "label": "Wizards — Challenge Decks (Trick Jarrett)",
+      "url": "https://web.archive.org/web/20181119071444/https://magic.wizards.com/en/articles/archive/arcana/challenge-decks-2013-09-11"
+    }
+  ]
+}

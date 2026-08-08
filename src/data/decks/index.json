@@ -1,0 +1,50 @@
+{
+  "decks": [
+    {
+      "code": "tfth",
+      "name": "Face the Hydra",
+      "challengeNumber": 1,
+      "setCode": "TFTH",
+      "backColor": "green",
+      "theme": "hydra",
+      "wikiUrl": "https://mtg.wiki/page/Face_the_Hydra",
+      "scryfallSetUri": "https://scryfall.com/sets/tfth",
+      "heroArt": "assets/cards/tfth/1-hydra-head-art.jpg",
+      "backImage": "assets/cards/tfth/back.png",
+      "totalUniqueCards": 15,
+      "totalDeckSize": 60,
+      "coverImage": "assets/covers/tfth.webp"
+    },
+    {
+      "code": "tbth",
+      "name": "Battle the Horde",
+      "challengeNumber": 2,
+      "setCode": "TBTH",
+      "backColor": "red",
+      "theme": "horde",
+      "wikiUrl": "https://mtg.wiki/page/Battle_the_Horde",
+      "scryfallSetUri": "https://scryfall.com/sets/tbth",
+      "heroArt": "assets/cards/tbth/1-minotaur-goreseeker-art.jpg",
+      "backImage": "assets/cards/tbth/back.png",
+      "totalUniqueCards": 15,
+      "totalDeckSize": 60,
+      "coverImage": "assets/covers/tbth.webp"
+    },
+    {
+      "code": "tdag",
+      "name": "Defeat a God",
+      "challengeNumber": 3,
+      "setCode": "TDAG",
+      "backColor": "indigo",
+      "theme": "god",
+      "wikiUrl": "https://mtg.wiki/page/Defeat_a_God",
+      "scryfallSetUri": "https://scryfall.com/sets/tdag",
+      "heroArt": "assets/cards/tdag/1-xenagos-ascended-art.jpg",
+      "backImage": "assets/cards/tdag/back.png",
+      "totalUniqueCards": 15,
+      "totalDeckSize": 60,
+      "coverImage": "assets/covers/tdag.webp"
+    }
+  ],
+  "fetchedAt": "2026-08-08T07:21:52.165Z"
+}

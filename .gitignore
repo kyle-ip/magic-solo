@@ -1,0 +1,13 @@
+node_modules
+dist
+.DS_Store
+*.local
+.env
+.env.*
+!.env.example
+
+# High-res Scryfall downloads. Regenerated via `npm run fetch:cards` / `fetch:display`.
+public/assets/cards/**/*.png
+public/assets/cards/**/*-display.jpg
+public/assets/covers/_probe/
+

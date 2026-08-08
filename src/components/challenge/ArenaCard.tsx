@@ -1,0 +1,122 @@
+import type { ButtonHTMLAttributes } from 'react'
+import { assetUrl } from '../../utils/assetUrl'
+
+interface ArenaCardProps {
+  image: string
+  name: string
+  /** Used for attack-arrow targeting */
+  instanceId?: string
+  power?: number | null
+  toughness?: number | null
+  markedDamage?: number
+  tapped?: boolean
+  selected?: boolean
+  attacking?: boolean
+  targetable?: boolean
+  /** Soft highlight: can be declared as attacker */
+  attackReady?: boolean
+  dimmed?: boolean
+  compact?: boolean
+  badge?: string | null
+  /** Transient combat VFX */
+  hitFx?: boolean
+  strikeFx?: boolean
+  floater?: { kind: 'damage' | 'attack' | 'heal' | 'mill'; amount?: number } | null
+  onClick?: () => void
+  onMouseEnter?: () => void
+  onMouseLeave?: () => void
+}
+
+export function ArenaCard({
+  image,
+  name,
+  instanceId,
+  power,
+  toughness,
+  markedDamage = 0,
+  tapped,
+  selected,
+  attacking,
+  targetable,
+  attackReady,
+  dimmed,
+  compact,
+  badge,
+  hitFx,
+  strikeFx,
+  floater,
+  onClick,
+  onMouseEnter,
+  onMouseLeave,
+}: ArenaCardProps) {
+  const className = [
+    'arena-card',
+    compact ? 'is-compact' : '',
+    tapped ? 'is-tapped' : '',
+    selected ? 'is-selected' : '',
+    attacking ? 'is-attacking' : '',
+    targetable ? 'is-targetable' : '',
+    attackReady ? 'is-attack-ready' : '',
+    dimmed ? 'is-dimmed' : '',
+    hitFx ? 'is-hit' : '',
+    strikeFx ? 'is-striking' : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
+
+  // Card art already prints P/T — only overlay when damage changes the effective toughness.
+  const showPt = power != null && toughness != null && markedDamage > 0
+  const pt = showPt ? `${power}/${Math.max(0, toughness - markedDamage)}` : null
+
+  const floaterText =
+    floater?.amount != null
+      ? floater.kind === 'heal'
+        ? `+${floater.amount}`
+        : floater.kind === 'attack'
+          ? `${floater.amount}`
+          : `−${floater.amount}`
+      : null
+
+  const inner = (
+    <>
+      <img src={assetUrl(image)} alt={name} draggable={false} />
+      {badge ? <span className="arena-card-badge">{badge}</span> : null}
+      {pt ? <span className="arena-card-pt">{pt}</span> : null}
+      {markedDamage > 0 ? (
+        <span className="arena-card-dmg">−{markedDamage}</span>
+      ) : null}
+      {floaterText ? (
+        <span className={`combat-floater kind-${floater!.kind}`} key={`${floater!.kind}-${floaterText}`}>
+          {floaterText}
+        </span>
+      ) : null}
+    </>
+  )
+
+  const dataProps = instanceId ? { 'data-instance-id': instanceId } : {}
+
+  if (onClick) {
+    const btnProps: ButtonHTMLAttributes<HTMLButtonElement> = {
+      type: 'button',
+      className,
+      onClick,
+      onMouseEnter,
+      onMouseLeave,
+      title: badge ? `${name} — ${badge}` : name,
+      ...dataProps,
+    }
+    return <button {...btnProps}>{inner}</button>
+  }
+
+  return (
+    <div
+      className={className}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      title={name}
+      {...dataProps}
+    >
+      {inner}
+    </div>
+  )
+}

@@ -1,0 +1,70 @@
+{
+  "code": "tbth",
+  "title": "How to Play — Battle the Horde",
+  "intro": "Battle the Horde uses the regular Magic rules with important differences from Face the Hydra. It was designed as a single-player challenge (with a later official multiplayer option). Rules are printed on the Game Day playmat included with the product.",
+  "sections": [
+    {
+      "id": "setup",
+      "title": "Setup",
+      "bullets": [
+        "You start with up to three different Hero cards on the battlefield. (You don’t need a Hero to play.) You may use Hero cards from any of the five earlier Hero’s Path quests; you may only use each Hero card once.",
+        "You take three turns at the start of the game before the Horde takes its first turn.",
+        "For a more difficult challenge, take only two turns before the Horde’s first turn. For an easier challenge, take four turns.",
+        "You can attack the Horde with your creatures as though it were a player, even before the Horde takes a turn.",
+        "You can target the Horde with spells and abilities as though it were a player, even before the Horde takes a turn.",
+        "Each player starts at 20 life."
+      ]
+    },
+    {
+      "id": "horde",
+      "title": "How the Horde Works",
+      "bullets": [
+        "The Horde doesn’t have a life total. Its library serves a similar purpose.",
+        "If the Horde would lose life, put that many cards from the top of its library into its graveyard. (For each 1 damage dealt to the Horde, one card is put into its graveyard.)",
+        "At the beginning of the Horde’s precombat main phase each turn, reveal the top two cards of the Horde’s library. Then the Horde casts those cards.",
+        "The Horde’s artifacts each cause an additional card to be revealed and cast, starting the turn after the artifact enters the battlefield.",
+        "Watch for artifact cards in the Horde’s library. They each have a Hero’s Reward ability that triggers when the artifact is put into the graveyard."
+      ]
+    },
+    {
+      "id": "winlose",
+      "title": "Win / Lose",
+      "bullets": [
+        "You win the game if the Horde has no cards left in its library and the Horde controls no creatures on the battlefield.",
+        "You lose the game if you have 0 or less life or if you have to draw a card and your library is empty.",
+        "Defeating the Horde earns another Hero card on the Hero’s Path."
+      ]
+    },
+    {
+      "id": "special",
+      "title": "Special Rules",
+      "bullets": [
+        "You make the choice if the Horde needs to make a decision.",
+        "Ignore effects that would cause the Horde to draw or discard cards, or perform any other impossible actions.",
+        "If one of the Horde’s permanents would move to any zone other than its library or graveyard, that card is put into the Horde’s graveyard."
+      ]
+    },
+    {
+      "id": "multiplayer",
+      "title": "Multiplayer Option",
+      "bullets": [
+        "All players share 20 life (maximum four players recommended).",
+        "The Minotaur deck flips and casts an additional card per turn for each additional player."
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "label": "MTG Wiki — Battle the Horde",
+      "url": "https://mtg.wiki/page/Battle_the_Horde"
+    },
+    {
+      "label": "Official Battle the Horde playmat (PDF)",
+      "url": "https://media.wizards.com/images/magic/daily/arcana/EN_9lakm7zfyxoe.pdf"
+    },
+    {
+      "label": "Wizards — Battle the Horde with Your Friends!",
+      "url": "https://magic.wizards.com/en/news/feature/battle-horde-your-friends-2014-02-28"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "title": "挑战套牌",
+  "summary": "",
+  "points": [
+    "挑战套牌是一种预组主题套牌，包含特殊的《万智牌》卡牌。它是自运行套牌，并有一套专属规则，也称为“牌手对环境”（PvE）体验。",
+    "挑战卡牌具有特殊卡背，因此不计为常规《万智牌》卡牌，也不能用于构组赛制。",
+    "对抗挑战套牌时，牌手可以使用英雄卡。这些卡在游戏开始时便在战场上，作用类似先驱／替身援助。",
+    "每位牌手通常有20点生命。在多人游戏中，牌手通常同时进行其回合。",
+    "牌手达成该挑战套牌的胜利条件即获胜；若所有牌手都被淘汰，则挑战套牌获胜。",
+    "迄今共发行三套挑战套牌：勇战多头龙（塞洛斯，绿色卡背）、勇战蛮群（神生万象，红色卡背）、勇战天神（尼克斯踏临，靛蓝色卡背）。《塞洛斯：冥界已逝》未再推出挑战套牌。"
+  ],
+  "sources": [
+    {
+      "label": "MTG Wiki — Challenge Deck",
+      "url": "https://mtg.wiki/page/Challenge_Deck"
+    },
+    {
+      "label": "威世智 — Challenge Decks（Trick Jarrett）",
+      "url": "https://web.archive.org/web/20181119071444/https://magic.wizards.com/en/articles/archive/arcana/challenge-decks-2013-09-11"
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "code": "tdag",
+  "title": "How to Play — Defeat a God",
+  "intro": "Defeat a God uses the regular Magic rules with the following exceptions. Xenagos Ascended and his revelers begin already celebrating on the battlefield. The God may be battled with the customized Godslayer forged in step #7 of the Hero’s Path.",
+  "sections": [
+    {
+      "id": "setup",
+      "title": "Setup",
+      "bullets": [
+        "You start with up to three different Hero cards on the battlefield. (You don’t need a Hero to play.)",
+        "Xenagos Ascended and two cards named Rollicking Throng begin the game on the battlefield. Shuffle the rest of Xenagos’s deck to begin the game.",
+        "Each player starts at 20 life."
+      ]
+    },
+    {
+      "id": "player",
+      "title": "Player Rules",
+      "bullets": [
+        "You attack Xenagos Ascended and the Revelers directly with your creatures. Any number of creatures can attack a single Reveler.",
+        "You may target Xenagos Ascended as though it were a player."
+      ]
+    },
+    {
+      "id": "turn",
+      "title": "Xenagos’s Turn",
+      "bullets": [
+        "At the beginning of Xenagos’s main phase each turn, reveal the top two cards of Xenagos’s library. Then Xenagos casts those cards.",
+        "Xenagos Ascended and reveler creatures don’t attack unless a card specifically says they do."
+      ]
+    },
+    {
+      "id": "winlose",
+      "title": "Win / Lose",
+      "bullets": [
+        "Xenagos Ascended can’t leave the battlefield as long as a Reveler is on the battlefield. (Per the card’s abilities.)",
+        "When Xenagos Ascended leaves the battlefield, each player wins the game. (Per the card’s oracle text.)",
+        "You lose if your life total is 0 or less, or if you would draw a card and your library is empty."
+      ]
+    },
+    {
+      "id": "special",
+      "title": "Special Rules",
+      "bullets": [
+        "You make the choice if Xenagos needs to make a decision.",
+        "Ignore effects that would cause Xenagos to draw or discard cards, or perform any other impossible actions.",
+        "If one of Xenagos’s permanents would go to any zone other than his library or graveyard, that card is put into Xenagos’s graveyard."
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "label": "MTG Wiki — Defeat a God",
+      "url": "https://mtg.wiki/page/Defeat_a_God"
+    },
+    {
+      "label": "Wizards — Journey into Nyx Game Day and Challenge Deck",
+      "url": "https://magic.wizards.com/en/news/feature/journey-nyx-game-day-and-challenge-deck-multiplayer-2014-05-23"
+    },
+    {
+      "label": "Scryfall — Xenagos Ascended",
+      "url": "https://scryfall.com/card/tdag/1/xenagos-ascended"
+    }
+  ]
+}

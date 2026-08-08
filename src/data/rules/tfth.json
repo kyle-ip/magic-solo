@@ -1,0 +1,84 @@
+{
+  "code": "tfth",
+  "title": "How to Play — Face the Hydra",
+  "intro": "You can battle the Hydra alone or with friends (replace “you” with “each player” in these rules). At the end of any turn, if there are no Heads on the battlefield, you win! Use the regular Magic rules with the following exceptions.",
+  "sections": [
+    {
+      "id": "setup",
+      "title": "Setup",
+      "bullets": [
+        "You start with up to two Hero cards on the battlefield. (You don’t need a Hero to play.)",
+        "Choose a starting number of Heads. Take that many cards named Hydra Head from the Challenge Deck and place them on the battlefield. Shuffle the remaining cards to form the Hydra’s library.",
+        "Up to four of the eighteen Heads typically start on the battlefield, based on difficulty.",
+        "You go first. (Don’t draw a card on your first turn.) Then the Hydra takes its turn, and so on.",
+        "Each player starts at 20 life."
+      ]
+    },
+    {
+      "id": "combat",
+      "title": "Fighting the Hydra",
+      "bullets": [
+        "You can attack Heads directly with your creatures. Any number of creatures can attack a single Head.",
+        "Growing New Heads: Whenever a Head leaves the battlefield, reveal the top two cards of the Hydra’s library. Put any Heads onto the battlefield and any sorcery cards into the Hydra’s graveyard.",
+        "If the Hydra would be dealt damage or lose life, instead deal that much damage to a Head of your choice."
+      ]
+    },
+    {
+      "id": "turn",
+      "title": "The Hydra’s Turn",
+      "bullets": [
+        "At the start of the Hydra’s turn, untap any tapped Heads.",
+        "Reveal the top card of the Hydra’s library. The Hydra casts that card. When the spell resolves, if it’s a Head, put it onto the battlefield. If it’s a sorcery, follow its instructions and then put it into the Hydra’s graveyard.",
+        "The Hydra deals 1 damage to you for each untapped card named Hydra Head it controls and 2 damage to you for each untapped elite Head it controls.",
+        "Damage dealt by the Hydra is dealt all at once. Although the Hydra never attacks, this damage is considered combat damage for cards such as Fog."
+      ]
+    },
+    {
+      "id": "winlose",
+      "title": "Win / Lose",
+      "bullets": [
+        "At the end of any turn, if there are no Heads on the battlefield, you win!",
+        "You lose if your life total is 0 or less, or if you would draw a card and your library is empty."
+      ]
+    },
+    {
+      "id": "special",
+      "title": "Special Rules",
+      "bullets": [
+        "Ignore effects that would cause the Hydra to draw or discard cards, or any impossible actions.",
+        "If a Head would move to any zone other than the graveyard, instead put it into the Hydra’s graveyard.",
+        "You make any choices for the Hydra.",
+        "All cards in the Hydra Deck, including Heads on the battlefield, are colorless and have a mana value of 0.",
+        "Heads and sorceries cast by the Hydra can be countered like other spells.",
+        "Players can’t gain control of any Heads.",
+        "The Hydra plays on even if its library is empty.",
+        "Growing new heads is a triggered ability and is not regeneration."
+      ]
+    },
+    {
+      "id": "additional",
+      "title": "Additional Rulings",
+      "bullets": [
+        "Prevention effects (such as one the Hero card The Protector creates) still work, but since Heads (and the Hydra itself) have no color, effects that prevent damage from a color (for example, a green source) won’t do anything.",
+        "If a Head would go to any zone other than the Hydra’s graveyard, it’s put into the Hydra’s graveyard instead."
+      ]
+    },
+    {
+      "id": "multiplayer",
+      "title": "Multiplayer Notes",
+      "bullets": [
+        "If teams face the Hydra, a shared team turn (similar to Archenemy) is recommended, with up to four players per team, so players attack the Hydra together."
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "label": "MTG Wiki — Face the Hydra",
+      "url": "https://mtg.wiki/page/Face_the_Hydra"
+    },
+    {
+      "label": "Wizards — Theros Game Day and Challenge Deck",
+      "url": "https://magic.wizards.com/en/news/feature/theros-game-day-and-challenge-deck-2013-10-17"
+    }
+  ]
+}
