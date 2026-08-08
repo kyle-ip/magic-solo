@@ -1,7 +1,8 @@
 {
   "title": "Challenge Decks",
-  "summary": "A Challenge Deck is a preconstructed, self-running theme deck with special Magic: The Gathering cards. It is a player-vs-environment (PvE) experience: the deck follows its own rules and casts its own cards.",
+  "summary": "",
   "points": [
+    "A Challenge Deck is a preconstructed, self-running theme deck with special Magic. It is a player-vs-environment (PvE) experience: the deck follows its own rules and casts its own cards.",
     "Challenge cards have special card backs and are not treated as regular Magic cards for constructed formats.",
     "When playing against a Challenge Deck, players may use Hero cards. These begin the game on the battlefield and act like a vanguard-style aid.",
     "Players each have 20 life. In multiplayer, players typically take their turns simultaneously.",

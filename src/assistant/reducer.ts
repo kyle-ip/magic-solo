@@ -2,7 +2,6 @@ import { shuffle } from '../game/shuffle'
 import type { CardDef } from '../game/types'
 import { buildAssistantStart, createInitialSetup, nextValueId } from './setup'
 import {
-  BATTLEFIELD_SLOT_COUNT,
   type AssistantAction,
   type AssistantCard,
   type AssistantState,
@@ -78,9 +77,10 @@ function insertIntoZone(
   }
   if (zone === 'battlefield') {
     const slots = [...state.battlefield]
+    const last = Math.max(0, slots.length - 1)
     let target =
       opts?.index != null
-        ? Math.max(0, Math.min(opts.index, BATTLEFIELD_SLOT_COUNT - 1))
+        ? Math.max(0, Math.min(opts.index, last))
         : firstEmptySlot(slots)
     if (target < 0) return state
     if (slots[target] != null) {
@@ -177,9 +177,10 @@ export function createAssistantReducer(ctx: AssistantReducerContext) {
 
         // Same-board slot move / swap
         if (found.zone === 'battlefield' && action.to === 'battlefield') {
+          const last = Math.max(0, state.battlefield.length - 1)
           const toSlot =
             action.index != null
-              ? Math.max(0, Math.min(action.index, BATTLEFIELD_SLOT_COUNT - 1))
+              ? Math.max(0, Math.min(action.index, last))
               : firstEmptySlot(state.battlefield)
           if (toSlot < 0 || toSlot === found.index) return state
           const slots = [...state.battlefield]

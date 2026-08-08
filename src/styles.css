@@ -166,21 +166,43 @@ select {
 .site-header-actions {
   display: flex;
   align-items: center;
-  gap: 0.55rem;
+  gap: 0.85rem;
   flex-shrink: 0;
+  justify-content: flex-end;
+}
+
+.references-text-btn {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: none;
+  color: rgba(231, 215, 184, 0.78);
+  font: inherit;
+  font-size: 0.88rem;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  border-bottom: 1px solid transparent;
+  transition: color 140ms ease, border-color 140ms ease;
+}
+
+.references-text-btn:hover {
+  color: #f0d48a;
+  border-bottom-color: rgba(240, 212, 138, 0.45);
 }
 
 .brand-lockup {
   display: flex;
   gap: 0.75rem;
   align-items: center;
+  flex-shrink: 0;
   color: inherit;
   text-decoration: none;
 }
 
 .brand-logo {
   width: auto;
-  height: 2.35rem;
+  height: 2.95rem;
   display: block;
   flex-shrink: 0;
 }
@@ -701,7 +723,7 @@ h2 {
 
 .reference-list {
   list-style: none;
-  margin: 1.25rem 0 0;
+  margin: 1.1rem 0 0;
   padding: 0;
   display: grid;
   gap: 0.65rem;
@@ -760,21 +782,10 @@ h2 {
 }
 
 .references-modal-head h2 {
-  margin: 0.2rem 0 0;
+  margin: 0;
   font-family: var(--font-display);
-  font-size: clamp(1.35rem, 2.5vw, 1.7rem);
+  font-size: clamp(1.25rem, 2.4vw, 1.55rem);
   letter-spacing: 0.02em;
-}
-
-.references-modal-lead {
-  margin: 0.45rem 0 0;
-  color: var(--muted);
-  font-size: 0.95rem;
-  line-height: 1.45;
-}
-
-.references-modal .reference-list {
-  margin-top: 1.1rem;
 }
 
 /* Deck page — hero art atmosphere spans the full page, soft edges */
@@ -784,29 +795,25 @@ h2 {
 }
 
 .deck-atmosphere {
-  position: absolute;
-  /* Sit below the sticky site header (shared with home) */
-  top: 0;
-  bottom: -2rem;
-  left: 50%;
-  width: 100vw;
-  margin-left: -50vw;
+  /* Viewport-fixed layer — must not grow with accordion / page height */
+  position: fixed;
+  inset: 0;
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
-  /* Soft dissolve into the page ground — no hard panel edge */
+  /* Soft dissolve toward the lower viewport edge */
   -webkit-mask-image: linear-gradient(
     180deg,
     #000 0%,
-    #000 52%,
-    rgba(0, 0, 0, 0.82) 76%,
+    #000 48%,
+    rgba(0, 0, 0, 0.78) 72%,
     transparent 100%
   );
   mask-image: linear-gradient(
     180deg,
     #000 0%,
-    #000 52%,
-    rgba(0, 0, 0, 0.82) 76%,
+    #000 48%,
+    rgba(0, 0, 0, 0.78) 72%,
     transparent 100%
   );
 }
@@ -823,7 +830,7 @@ h2 {
   background-position: center 22%;
   filter: blur(14px) saturate(1.02) contrast(1.02) brightness(0.88);
   transform: scale(1.12);
-  transform-origin: center top;
+  transform-origin: center center;
 }
 
 .deck-atmosphere-veil {
@@ -3824,11 +3831,21 @@ button.arena-card {
 }
 
 .assistant-slot-board {
-  --assistant-card-w: min(198px, 16.5vw);
-  --assistant-slot-gap: 0.55rem;
+  --assistant-row-slots: 6;
+  --assistant-slot-gap: 0.45rem;
   --assistant-slot-ratio: 744 / 1040;
+  /* Prefer large faces; width is capped by row capacity and available height. */
+  --assistant-card-w: min(
+    236px,
+    22vh,
+    calc(
+      (min(100vw, 1560px) - 5.5rem) / var(--assistant-row-slots) -
+        var(--assistant-slot-gap)
+    ),
+    calc(62vh * 744 / 1040)
+  );
   display: grid;
-  gap: 0.85rem;
+  gap: 1rem;
   width: max-content;
   max-width: 100%;
   margin: auto;
@@ -3839,14 +3856,53 @@ button.arena-card {
   padding: 0;
 }
 
+.assistant-slot-board[data-rows='1'] {
+  --assistant-card-w: min(
+    252px,
+    26vh,
+    calc(
+      (min(100vw, 1680px) - 4.5rem) / var(--assistant-row-slots) -
+        var(--assistant-slot-gap)
+    ),
+    calc(72vh * 744 / 1040)
+  );
+}
+
+.assistant-root.setup-blank .assistant-slot-board {
+  --assistant-card-w: min(
+    220px,
+    18.5vw,
+    calc(
+      (min(100vw, 1400px) - 5rem) / var(--assistant-row-slots) -
+        var(--assistant-slot-gap)
+    )
+  );
+}
+
 .assistant-slot-row {
   display: flex;
   flex-wrap: nowrap;
   gap: var(--assistant-slot-gap);
   justify-content: center;
   align-items: center;
-  width: calc(var(--assistant-card-w) * 6 + var(--assistant-slot-gap) * 5);
+  width: calc(
+    var(--assistant-card-w) * var(--assistant-row-slots) +
+      var(--assistant-slot-gap) * (var(--assistant-row-slots) - 1)
+  );
   max-width: 100%;
+}
+
+/* Support row (artifacts / god) sits slightly smaller above the creature line. */
+.assistant-slot-row.is-back {
+  --assistant-card-w: min(
+    200px,
+    18vh,
+    calc(
+      (min(100vw, 1560px) - 5.5rem) / var(--assistant-row-slots) -
+        var(--assistant-slot-gap)
+    ),
+    calc(48vh * 744 / 1040)
+  );
 }
 
 .assistant-card-slot {
@@ -3905,7 +3961,23 @@ button.arena-card {
 
 @media (max-width: 900px) {
   .assistant-slot-board {
-    --assistant-card-w: min(150px, 17vw);
+    --assistant-card-w: min(
+      168px,
+      calc(
+        (100vw - 3.5rem) / var(--assistant-row-slots) - var(--assistant-slot-gap)
+      ),
+      calc(48vh * 744 / 1040)
+    );
+  }
+
+  .assistant-slot-board[data-rows='1'] {
+    --assistant-card-w: min(
+      188px,
+      calc(
+        (100vw - 2.75rem) / var(--assistant-row-slots) - var(--assistant-slot-gap)
+      ),
+      calc(58vh * 744 / 1040)
+    );
   }
 
   .assistant-zone-piles .zone-pile {

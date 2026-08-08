@@ -56,14 +56,10 @@ export function ReferencesButton() {
               aria-labelledby="references-modal-title"
             >
               <header className="references-modal-head">
-                <div>
-                  <p className="eyebrow">{t('deck.sources')}</p>
-                  <h2 id="references-modal-title">{t('home.references')}</h2>
-                  <p className="references-modal-lead">{t('home.referencesLead')}</p>
-                </div>
+                <h2 id="references-modal-title">{t('home.references')}</h2>
                 <button
                   type="button"
-                  className="btn ghost tiny"
+                  className="references-text-btn"
                   onClick={() => setOpen(false)}
                 >
                   {t('deck.close')}
@@ -88,7 +84,7 @@ export function ReferencesButton() {
     <>
       <button
         type="button"
-        className="btn ghost tiny references-trigger"
+        className="references-text-btn"
         onClick={() => setOpen(true)}
       >
         {t('home.references')}

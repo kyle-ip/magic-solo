@@ -3,6 +3,7 @@ import type { CardDef, ChallengeCode } from '../game/types'
 import type { DeckTheme } from '../types'
 import {
   emptyBattlefield,
+  placeFeaturedOnBattlefield,
   placeOnBattlefield,
   type AssistantCard,
   type AssistantSetupKind,
@@ -38,7 +39,7 @@ export function createInitialSetup(
     startingHeads: 2,
     library: [],
     staging: null,
-    battlefield: emptyBattlefield(),
+    battlefield: emptyBattlefield(code, 'blank'),
     graveyard: [],
     exile: [],
     playerValues: defaultPlayerValues(lifeLabel),
@@ -64,7 +65,7 @@ export function buildAssistantStart(
     return {
       ...base,
       library: expandLibrary(defs).map(withNote),
-      battlefield: emptyBattlefield(),
+      battlefield: emptyBattlefield(code, 'blank'),
     }
   }
 
@@ -89,7 +90,7 @@ export function buildAssistantStart(
       ...base,
       startingHeads: starting,
       library: filtered.map(withNote),
-      battlefield: placeOnBattlefield(heads),
+      battlefield: placeOnBattlefield(code, heads, 'rules'),
     }
   }
 
@@ -119,7 +120,7 @@ export function buildAssistantStart(
     return {
       ...base,
       library: library.map(withNote),
-      battlefield: placeOnBattlefield([xenagos, ...throngs]),
+      battlefield: placeFeaturedOnBattlefield(code, xenagos, throngs, 'rules'),
     }
   }
 
@@ -127,6 +128,6 @@ export function buildAssistantStart(
   return {
     ...base,
     library: expandLibrary(defs).map(withNote),
-    battlefield: emptyBattlefield(),
+    battlefield: emptyBattlefield(code, 'rules'),
   }
 }

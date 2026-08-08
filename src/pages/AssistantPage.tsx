@@ -1,15 +1,22 @@
-import { useCallback, useMemo, useReducer, useRef, useState } from 'react'
+import {
+  useCallback,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+  type CSSProperties,
+} from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import type { DragPayload, DropTarget } from '../assistant/dnd'
 import { createAssistantReducer } from '../assistant/reducer'
 import { createInitialSetup } from '../assistant/setup'
 import {
-  BATTLEFIELD_FRONT_SLOTS,
-  BATTLEFIELD_SLOT_COUNT,
-  type AssistantAction,
-  type AssistantCard,
-} from '../assistant/types'
+  battlefieldRowRanges,
+  getBattlefieldLayout,
+  maxRowSlots,
+} from '../assistant/layouts'
+import type { AssistantAction, AssistantCard } from '../assistant/types'
 import { ContextMenu, type ContextMenuItem } from '../components/assistant/ContextMenu'
 import { DropZone } from '../components/assistant/DropZone'
 import { LibrarySearchModal } from '../components/assistant/LibrarySearchModal'
@@ -387,15 +394,13 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
     )
   }
 
-  const frontSlots = Array.from({ length: BATTLEFIELD_FRONT_SLOTS }, (_, i) => i)
-  const backSlots = Array.from(
-    { length: BATTLEFIELD_SLOT_COUNT - BATTLEFIELD_FRONT_SLOTS },
-    (_, i) => i + BATTLEFIELD_FRONT_SLOTS,
-  )
+  const layout = getBattlefieldLayout(code, state.setupKind)
+  const rowRanges = battlefieldRowRanges(code, state.setupKind)
+  const boardSlots = maxRowSlots(code, state.setupKind)
 
   return (
     <main
-      className={`arena-root assistant-root theme-${deck.theme} is-playing${
+      className={`arena-root assistant-root theme-${deck.theme} is-playing layout-${code} setup-${state.setupKind}${
         drag ? ' is-dragging' : ''
       }`}
     >
@@ -503,13 +508,32 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
         zone="battlefield"
         className="arena-battlefield assistant-battlefield-half"
       >
-        <section className="assistant-slot-board">
-          <div className="assistant-slot-row is-front">
-            {frontSlots.map((i) => renderSlot(i))}
-          </div>
-          <div className="assistant-slot-row is-back">
-            {backSlots.map((i) => renderSlot(i))}
-          </div>
+        <section
+          className="assistant-slot-board"
+          data-rows={layout.rows.length}
+          style={
+            {
+              '--assistant-row-slots': boardSlots,
+            } as CSSProperties
+          }
+        >
+          {rowRanges.map((row, rowIndex) => {
+            const isLower = rowIndex === rowRanges.length - 1
+            const slots = Array.from({ length: row.count }, (_, i) => row.start + i)
+            return (
+              <div
+                key={`row-${rowIndex}`}
+                className={`assistant-slot-row ${isLower ? 'is-front' : 'is-back'}`}
+                style={
+                  {
+                    '--assistant-row-slots': row.count,
+                  } as CSSProperties
+                }
+              >
+                {slots.map((i) => renderSlot(i, !isLower && layout.rows.length > 1))}
+              </div>
+            )
+          })}
         </section>
       </DropZone>
 

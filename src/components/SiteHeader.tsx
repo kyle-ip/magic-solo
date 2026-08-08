@@ -15,8 +15,8 @@ export function SiteHeader() {
             className="brand-logo"
             src={assetUrl('mtg-logo.svg')}
             alt={t('app.brand')}
-            width={168}
-            height={38}
+            width={210}
+            height={48}
           />
           <span className="brand-solo">
             <strong>{t('app.brand')}</strong>
