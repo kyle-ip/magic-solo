@@ -364,9 +364,9 @@ const decks: PlayerDeckDef[] = [
       {
         id: 'forge-skullcleaver',
         name: 'Minotaur Skullcleaver',
-        nameZh: '牛头人劈颅者',
+        nameZh: '牛头怪劈颅者',
         typeLine: 'Creature — Minotaur Berserker',
-        typeLineZh: '生物～牛头人／狂战士',
+        typeLineZh: '生物～牛头怪／狂战士',
         oracleText: 'Haste\nWhen this creature enters, it gets +2/+0 until end of turn.',
         oracleTextZh: '敏捷\n当此生物进战场时，它得+2/+0直到回合结束。',
         power: 3,

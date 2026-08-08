@@ -475,6 +475,40 @@ h2 {
   margin-top: 1rem;
 }
 
+.home-references {
+  padding: 2rem 0 1rem;
+  border-top: 1px solid rgba(184, 137, 58, 0.2);
+}
+
+.reference-list {
+  list-style: none;
+  margin: 1.25rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.reference-list a {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  color: var(--bronze-bright);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(224, 180, 90, 0.28);
+  padding-bottom: 0.12rem;
+}
+
+.reference-list a::before {
+  content: '↗';
+  font-size: 0.85em;
+  opacity: 0.75;
+}
+
+.reference-list a:hover {
+  color: #f0d48a;
+  border-bottom-color: rgba(240, 212, 138, 0.55);
+}
+
 /* Deck page — hero art atmosphere spans the full page, soft edges */
 .deck-page {
   position: relative;

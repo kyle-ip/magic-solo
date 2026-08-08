@@ -1,6 +1,7 @@
+import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { getDeck, getDeckIndex, getSharedRules } from '../data/deckRegistry'
+import { getDeck, getDeckIndex, getDeckRules, getSharedRules } from '../data/deckRegistry'
 import { deckMetaEn, deckMetaZh } from '../data/locale/deckMeta'
 import { assetUrl } from '../utils/assetUrl'
 
@@ -24,6 +25,22 @@ export function HomePage() {
       art,
     }
   })
+
+  const referenceLinks = useMemo(() => {
+    const seen = new Set<string>()
+    const links: { label: string; url: string }[] = []
+    const push = (label: string, url: string) => {
+      if (seen.has(url)) return
+      seen.add(url)
+      links.push({ label, url })
+    }
+    for (const source of shared.sources) push(source.label, source.url)
+    for (const entry of decks) {
+      const rules = getDeckRules(entry.code, i18n.language)
+      for (const source of rules?.sources ?? []) push(source.label, source.url)
+    }
+    return links
+  }, [decks, i18n.language, shared.sources])
 
   return (
     <main className="page home-page">
@@ -95,8 +112,16 @@ export function HomePage() {
             <li key={point}>{point}</li>
           ))}
         </ul>
-        <ul className="inline-sources">
-          {shared.sources.map((source) => (
+      </section>
+
+      <section className="home-references" aria-labelledby="home-references-title">
+        <div className="section-head">
+          <p className="eyebrow">{t('deck.sources')}</p>
+          <h2 id="home-references-title">{t('home.references')}</h2>
+          <p className="lede">{t('home.referencesLead')}</p>
+        </div>
+        <ul className="reference-list">
+          {referenceLinks.map((source) => (
             <li key={source.url}>
               <a href={source.url} target="_blank" rel="noreferrer">
                 {source.label}

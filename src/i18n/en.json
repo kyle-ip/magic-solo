@@ -18,6 +18,8 @@
     "lead": "Three self-running Challenge Decks from the Theros block: Face the Hydra (Theros), Battle the Horde (Born of the Gods), and Defeat a God (Journey into Nyx).",
     "cta": "Enter the Challenge",
     "sharedTitle": "What is a Challenge Deck?",
+    "references": "References",
+    "referencesLead": "Primary sources used for rules and product history.",
     "viewDeck": "Open Challenge",
     "cardsLabel": "{{count}} unique cards · {{total}} in deck"
   },
