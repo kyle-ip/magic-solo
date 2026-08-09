@@ -1192,6 +1192,9 @@ h2 {
 
 /* Modal */
 .modal-backdrop {
+  /* Space left for the card after shell padding (shell itself is capped at 94vh) */
+  --modal-shell-pad-y: 2.9rem;
+  --modal-card-max-h: calc(min(94dvh, 94vh, 980px) - var(--modal-shell-pad-y));
   position: fixed;
   inset: 0;
   z-index: 40;
@@ -1204,10 +1207,12 @@ h2 {
 
 .modal-shell {
   width: min(1180px, 100%);
-  max-height: min(94vh, 980px);
+  max-height: min(94dvh, 94vh, 980px);
   overflow: hidden;
   display: grid;
-  grid-template-columns: minmax(320px, 480px) minmax(0, 1fr);
+  /* auto column follows the height-capped card width (avoid % → circular 0-size) */
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
   gap: 1.75rem;
   background:
     linear-gradient(180deg, #2a221a, #17120e);
@@ -1237,9 +1242,10 @@ h2 {
   perspective: 1200px;
   align-self: center;
   justify-self: center;
-  width: 100%;
-  max-width: 480px;
-  max-height: calc(94vh - 3.5rem);
+  /* Cap width by available height so aspect-ratio never overflows the viewport.
+     Do not use % widths here — they collapse inside an auto grid track. */
+  width: min(480px, calc(var(--modal-card-max-h) * 744 / 1040));
+  max-height: var(--modal-card-max-h);
   /* Keep visible so 3D tilt isn't clipped by a rectangular paint box */
   overflow: visible;
   transform: translateZ(0);
@@ -1249,7 +1255,7 @@ h2 {
   position: relative;
   display: block;
   width: 100%;
-  max-height: inherit;
+  height: auto;
   aspect-ratio: 744 / 1040;
   border: 0;
   padding: 0;
@@ -1301,7 +1307,7 @@ h2 {
 
 .modal-copy {
   min-width: 0;
-  max-height: calc(94vh - 3.5rem);
+  max-height: var(--modal-card-max-h);
   overflow-x: hidden;
   overflow-y: auto;
   padding-right: 0.35rem;
@@ -1320,6 +1326,24 @@ h2 {
 .modal-copy .pt-line {
   font-family: var(--font-display);
   margin: 0 0 1rem;
+}
+
+/* Wide but short viewports: keep the two-column preview fully on-screen */
+@media (min-width: 901px) and (max-height: 720px) {
+  .modal-backdrop {
+    --modal-shell-pad-y: 2.1rem;
+    padding: 0.75rem;
+  }
+
+  .modal-shell {
+    gap: 1.15rem;
+    padding: 1.1rem 1.25rem 1rem;
+  }
+
+  .modal-close {
+    top: 0.55rem;
+    right: 0.55rem;
+  }
 }
 
 .oracle-text {
@@ -1501,7 +1525,7 @@ h2 {
 
   .modal-shell {
     overflow-y: auto;
-    max-height: min(94dvh, 920px);
+    max-height: min(94dvh, 94vh, 920px);
     padding: 2.75rem 1.15rem 1.25rem;
     justify-items: center;
   }
@@ -1513,17 +1537,15 @@ h2 {
   }
 
   .card-flip {
+    /* Stacked layout scrolls as a whole — reserve ~half the viewport for the card */
+    width: min(312px, 72vw, calc(min(52dvh, 52vh) * 744 / 1040));
     max-width: min(312px, 72vw);
-    width: min(312px, 72vw);
+    max-height: min(52dvh, 52vh);
     justify-self: center;
   }
 
-  .card-flip,
   .modal-copy {
     max-height: none;
-  }
-
-  .modal-copy {
     overflow: visible;
     width: 100%;
     padding-top: 0;
@@ -4884,8 +4906,9 @@ button.arena-card {
   }
 
   .card-flip {
+    width: min(260px, 62vw, calc(min(48dvh, 48vh) * 744 / 1040));
     max-width: min(260px, 62vw);
-    width: min(260px, 62vw);
+    max-height: min(48dvh, 48vh);
   }
 
   .floating-nav {
