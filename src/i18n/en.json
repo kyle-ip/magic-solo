@@ -56,7 +56,7 @@
     "noteSimplified": "Draws become muster; discards become life loss.",
     "pickDeck": "Choose your force",
     "pickDeckHint": "Click a force to preview every card, then confirm your pick.",
-    "viewRoster": "View cards",
+    "viewRoster": "",
     "previewDeck": "Force preview",
     "useDeck": "Use this force",
     "deckRoster": "{{name}} · {{count}} creatures",

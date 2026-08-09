@@ -56,7 +56,7 @@
     "noteSimplified": "抓牌改为获得集结；弃牌改为失去生命。",
     "pickDeck": "选择你的部队牌组",
     "pickDeckHint": "点击牌组可预览其中每一张卡牌，并确认选用。",
-    "viewRoster": "查看卡牌",
+    "viewRoster": "",
     "previewDeck": "牌组预览",
     "useDeck": "使用此牌组",
     "deckRoster": "{{name}} · {{count}} 种生物",
