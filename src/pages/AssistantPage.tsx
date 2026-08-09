@@ -1,5 +1,6 @@
 import {
   useCallback,
+  useEffect,
   useMemo,
   useReducer,
   useRef,
@@ -12,9 +13,11 @@ import type { DragPayload, DropTarget } from '../assistant/dnd'
 import { createAssistantReducer } from '../assistant/reducer'
 import { createInitialSetup } from '../assistant/setup'
 import {
-  battlefieldRowRanges,
-  getBattlefieldLayout,
-  maxRowSlots,
+  MAX_BOARD_CELLS,
+  MAX_BOARD_COLS,
+  MAX_BOARD_ROWS,
+  boardBounds,
+  groupCellsByRow,
 } from '../assistant/layouts'
 import type { AssistantAction, AssistantCard } from '../assistant/types'
 import { ContextMenu, type ContextMenuItem } from '../components/assistant/ContextMenu'
@@ -24,6 +27,10 @@ import { NamedValuesEditor } from '../components/assistant/NamedValuesEditor'
 import { findDropAttr, usePointerDrag } from '../components/assistant/usePointerDrag'
 import { ArenaCard } from '../components/challenge/ArenaCard'
 import { ZonePile } from '../components/challenge/ZonePile'
+import {
+  ArenaToolButton,
+  arenaToolIcons,
+} from '../components/ArenaToolButton'
 import { LanguageSwitch } from '../components/LanguageSwitch'
 import { getDeck } from '../data/deckRegistry'
 import { getCardZh } from '../data/locale/cardsZh'
@@ -91,6 +98,7 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
     image: string
     name: string
     text: string
+    instanceId?: string
   } | null>(null)
   const [menu, setMenu] = useState<{
     x: number
@@ -98,6 +106,19 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
     card: AssistantCard
   } | null>(null)
   const [noteEditId, setNoteEditId] = useState<string | null>(null)
+  /** Which blank-board seat shows +/−. */
+  const [activeSeatId, setActiveSeatId] = useState<string | null>(null)
+  /** Desktop: after add/remove, ignore hover until the pointer leaves the seat. */
+  const suppressSeatHoverRef = useRef(false)
+
+  const [coarsePointer, setCoarsePointer] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia('(hover: none), (pointer: coarse)')
+    const sync = () => setCoarsePointer(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
 
   const previewCard = useCallback(
     (card: AssistantCard) => {
@@ -105,11 +126,28 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
         image: card.image,
         name: localizeName(card.name),
         text: localizeCardText(card),
+        instanceId: card.instanceId,
       })
     },
     [localizeName, localizeCardText],
   )
   const clearPreview = useCallback(() => setPreview(null), [])
+
+  const toggleTouchPreview = useCallback(
+    (card: AssistantCard) => {
+      setPreview((prev) =>
+        prev?.instanceId === card.instanceId
+          ? null
+          : {
+              image: card.image,
+              name: localizeName(card.name),
+              text: localizeCardText(card),
+              instanceId: card.instanceId,
+            },
+      )
+    },
+    [localizeName, localizeCardText],
+  )
 
   const onLibraryClick = useCallback(() => {
     if (drawClickTimer.current != null) window.clearTimeout(drawClickTimer.current)
@@ -154,6 +192,7 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
 
   const handleDrop = useCallback(
     (payload: DragPayload, target: DropTarget) => {
+      clearPreview()
       if (target.zone === 'search') {
         const from =
           payload.source.zone === 'library' || payload.source.zone === 'search'
@@ -189,13 +228,47 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
       })
       if (searchOpen && payload.source.zone === 'search') setSearchOpen(false)
     },
-    [act, searchOpen, state.library],
+    [act, clearPreview, searchOpen, state.library],
   )
+
+  const battlefieldRef = useRef(state.battlefield)
+  battlefieldRef.current = state.battlefield
+  const coarseRef = useRef(coarsePointer)
+  coarseRef.current = coarsePointer
 
   const { drag, startDrag } = usePointerDrag({
     onDrop: handleDrop,
     resolveDropTarget,
+    onTap: (payload) => {
+      if (!coarseRef.current) return
+      if (payload.source.zone !== 'battlefield') return
+      const card = battlefieldRef.current.find(
+        (c) => c?.instanceId === payload.instanceId,
+      )
+      if (card) toggleTouchPreview(card)
+    },
   })
+
+  // Dragging skips mouseleave on the source card — clear the hover preview.
+  useEffect(() => {
+    if (drag) clearPreview()
+  }, [drag, clearPreview])
+
+  useEffect(() => {
+    if (!preview || !coarsePointer) return
+    const onPointerDown = (e: PointerEvent) => {
+      const el = e.target
+      if (!(el instanceof Element)) return
+      if (el.closest('.assistant-card-slot.has-card')) return
+      if (el.closest('.assistant-preview-pane')) return
+      if (el.closest('.assistant-context-menu')) return
+      if (el.closest('.assistant-modal')) return
+      if (el.closest('.assistant-modal-backdrop')) return
+      clearPreview()
+    }
+    document.addEventListener('pointerdown', onPointerDown, true)
+    return () => document.removeEventListener('pointerdown', onPointerDown, true)
+  }, [preview, coarsePointer, clearPreview])
 
   const openCardMenu = (e: React.MouseEvent, card: AssistantCard) => {
     e.preventDefault()
@@ -246,15 +319,19 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
     if (id === 'tap') act({ type: 'TOGGLE_TAP', instanceId: card.instanceId })
     if (id === 'note') setNoteEditId(card.instanceId)
     if (id === 'battlefield') {
+      clearPreview()
       act({ type: 'MOVE_CARD', instanceId: card.instanceId, to: 'battlefield' })
     }
     if (id === 'gy' || id === 'clear') {
+      clearPreview()
       act({ type: 'MOVE_CARD', instanceId: card.instanceId, to: 'graveyard' })
     }
     if (id === 'exile') {
+      clearPreview()
       act({ type: 'MOVE_CARD', instanceId: card.instanceId, to: 'exile' })
     }
     if (id === 'top') {
+      clearPreview()
       act({
         type: 'MOVE_CARD',
         instanceId: card.instanceId,
@@ -263,6 +340,7 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
       })
     }
     if (id === 'bottom') {
+      clearPreview()
       act({
         type: 'MOVE_CARD',
         instanceId: card.instanceId,
@@ -341,21 +419,141 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
     )
   }
 
+  const isBlankBoard = state.setupKind === 'blank'
+  const bounds = boardBounds(state.boardCells)
+  const boardSlots = bounds.cols
+  const boardRows = bounds.rows
+  const canEditSlots = isBlankBoard && state.status === 'playing'
+
+  const canAddFrom = (
+    slotIndex: number,
+    direction: 'up' | 'down' | 'left' | 'right',
+  ) => {
+    if (!canEditSlots || state.boardCells.length >= MAX_BOARD_CELLS) return false
+    const cell = state.boardCells[slotIndex]
+    if (!cell) return false
+    const colRows = state.boardCells
+      .filter((c) => c.col === cell.col)
+      .map((c) => c.row)
+    const rowCols = state.boardCells
+      .filter((c) => c.row === cell.row)
+      .map((c) => c.col)
+    const colMax = colRows.length ? Math.max(...colRows) : -1
+    const rowMax = rowCols.length ? Math.max(...rowCols) : -1
+
+    if (direction === 'up') {
+      const above = cell.row - 1
+      if (
+        above >= 0 &&
+        !state.boardCells.some((c) => c.row === above && c.col === cell.col)
+      ) {
+        return true
+      }
+      return colMax + 1 < MAX_BOARD_ROWS
+    }
+    if (direction === 'down') {
+      const below = cell.row + 1
+      if (below >= MAX_BOARD_ROWS) return false
+      if (!state.boardCells.some((c) => c.row === below && c.col === cell.col)) {
+        return true
+      }
+      return colMax + 1 < MAX_BOARD_ROWS
+    }
+    if (direction === 'left') {
+      const left = cell.col - 1
+      if (
+        left >= 0 &&
+        !state.boardCells.some((c) => c.row === cell.row && c.col === left)
+      ) {
+        return true
+      }
+      return rowMax + 1 < MAX_BOARD_COLS
+    }
+    const right = cell.col + 1
+    if (right >= MAX_BOARD_COLS) return false
+    if (!state.boardCells.some((c) => c.row === cell.row && c.col === right)) {
+      return true
+    }
+    return rowMax + 1 < MAX_BOARD_COLS
+  }
+
+  const afterBoardEdit = () => {
+    if (!coarsePointer) suppressSeatHoverRef.current = true
+    setActiveSeatId(null)
+    const el = document.activeElement
+    if (el instanceof HTMLElement) el.blur()
+  }
+
   const renderSlot = (slotIndex: number, compact?: boolean) => {
     const card = state.battlefield[slotIndex]
+    const cell = state.boardCells[slotIndex]
+    const seatId = cell?.id ?? `slot-${slotIndex}`
+    const controlsOpen = canEditSlots && activeSeatId === seatId
+    const tapToEdit = canEditSlots && coarsePointer && !card
     return (
       <div
-        key={`slot-${slotIndex}`}
+        key={seatId}
         className={[
           'assistant-card-slot',
           card ? 'has-card' : 'is-empty',
           drag ? 'is-droppable' : '',
+          canEditSlots ? 'is-editable' : '',
+          controlsOpen ? 'is-controls-open' : '',
         ]
           .filter(Boolean)
           .join(' ')}
+        style={
+          isBlankBoard && cell
+            ? ({
+                gridColumn: cell.col + 1,
+                gridRow: cell.row + 1,
+              } as CSSProperties)
+            : undefined
+        }
         data-drop-zone="battlefield"
         data-drop-index={String(slotIndex)}
-        aria-label={card ? localizeName(card.name) : t('assistant.emptySlot')}
+        aria-label={
+          card
+            ? localizeName(card.name)
+            : t(coarsePointer ? 'assistant.emptySlotTap' : 'assistant.emptySlot')
+        }
+        aria-expanded={tapToEdit ? controlsOpen : undefined}
+        role={tapToEdit ? 'button' : undefined}
+        tabIndex={tapToEdit ? 0 : undefined}
+        onPointerEnter={
+          canEditSlots && !coarsePointer
+            ? () => {
+                if (suppressSeatHoverRef.current) return
+                setActiveSeatId(seatId)
+              }
+            : undefined
+        }
+        onPointerLeave={
+          canEditSlots && !coarsePointer
+            ? () => {
+                suppressSeatHoverRef.current = false
+                setActiveSeatId((cur) => (cur === seatId ? null : cur))
+              }
+            : undefined
+        }
+        onClick={
+          tapToEdit
+            ? (e) => {
+                e.stopPropagation()
+                setActiveSeatId((cur) => (cur === seatId ? null : seatId))
+              }
+            : undefined
+        }
+        onKeyDown={
+          tapToEdit
+            ? (e) => {
+                if (e.key !== 'Enter' && e.key !== ' ') return
+                e.preventDefault()
+                e.stopPropagation()
+                setActiveSeatId((cur) => (cur === seatId ? null : seatId))
+              }
+            : undefined
+        }
       >
         {card ? (
           <ArenaCard
@@ -368,8 +566,8 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
             tapped={card.tapped}
             compact={compact}
             note={card.note || null}
-            onMouseEnter={() => previewCard(card)}
-            onMouseLeave={clearPreview}
+            onMouseEnter={coarsePointer ? undefined : () => previewCard(card)}
+            onMouseLeave={coarsePointer ? undefined : clearPreview}
             onDoubleClick={(e) => {
               e.preventDefault()
               e.stopPropagation()
@@ -390,13 +588,63 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
         ) : (
           <span className="assistant-slot-marker" aria-hidden="true" />
         )}
+        {canEditSlots ? (
+          <>
+            <button
+              type="button"
+              className="assistant-slot-ctrl is-remove"
+              tabIndex={controlsOpen ? 0 : -1}
+              disabled={state.boardCells.length <= 1}
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                act({ type: 'REMOVE_BOARD_SLOT', index: slotIndex })
+                afterBoardEdit()
+              }}
+              aria-label={t('assistant.removeSlot')}
+              title={t('assistant.removeSlot')}
+            >
+              −
+            </button>
+            {(
+              [
+                ['up', 'expandUp', 'is-add-up'],
+                ['down', 'expandDown', 'is-add-down'],
+                ['left', 'expandLeft', 'is-add-left'],
+                ['right', 'expandRight', 'is-add-right'],
+              ] as const
+            ).map(([direction, labelKey, className]) => (
+              <button
+                key={direction}
+                type="button"
+                className={`assistant-slot-ctrl ${className}`}
+                tabIndex={controlsOpen ? 0 : -1}
+                disabled={!canAddFrom(slotIndex, direction)}
+                onPointerDown={(e) => {
+                  // Capture before layout shifts / neighbor hit-testing can steal the click.
+                  e.stopPropagation()
+                }}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  act({
+                    type: 'ADD_BOARD_SLOT',
+                    fromIndex: slotIndex,
+                    direction,
+                  })
+                  afterBoardEdit()
+                }}
+                aria-label={t(`assistant.${labelKey}`)}
+                title={t(`assistant.${labelKey}`)}
+              >
+                +
+              </button>
+            ))}
+          </>
+        ) : null}
       </div>
     )
   }
-
-  const layout = getBattlefieldLayout(code, state.setupKind)
-  const rowRanges = battlefieldRowRanges(code, state.setupKind)
-  const boardSlots = maxRowSlots(code, state.setupKind)
 
   return (
     <main
@@ -412,25 +660,22 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
       />
       <div className="arena-bg-veil" />
 
-      <header className="arena-topbar">
+      <header className="arena-topbar assistant-topbar">
         <Link to={`/decks/${code}`} className="arena-link">
           ← {t('assistant.backDeck')}
         </Link>
-        <div className="arena-title">
-          <strong>{meta?.name ?? deck.name}</strong>
-          <span>{t('assistant.eyebrow')}</span>
-        </div>
         <div className="arena-topbar-actions">
-          <button type="button" className="btn ghost" onClick={() => act({ type: 'SHUFFLE_LIBRARY' })}>
-            {t('assistant.shuffle')}
-          </button>
-          <button type="button" className="btn ghost" onClick={() => setSearchOpen(true)}>
-            {t('assistant.search')}
-          </button>
-          <button type="button" className="btn ghost" onClick={() => act({ type: 'RESET' })}>
-            {t('assistant.reset')}
-          </button>
-          <LanguageSwitch />
+          <ArenaToolButton
+            label={t('assistant.shuffle')}
+            icon={arenaToolIcons.shuffle}
+            onClick={() => act({ type: 'SHUFFLE_LIBRARY' })}
+          />
+          <ArenaToolButton
+            label={t('assistant.search')}
+            icon={arenaToolIcons.search}
+            onClick={() => setSearchOpen(true)}
+          />
+          <LanguageSwitch compact />
         </div>
       </header>
 
@@ -508,33 +753,51 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
         zone="battlefield"
         className="arena-battlefield assistant-battlefield-half"
       >
-        <section
-          className="assistant-slot-board"
-          data-rows={layout.rows.length}
-          style={
-            {
-              '--assistant-row-slots': boardSlots,
-            } as CSSProperties
+        <div
+          className={`assistant-board-shell${isBlankBoard ? ' is-dynamic' : ''}`}
+          onClick={
+            canEditSlots && coarsePointer
+              ? () => setActiveSeatId(null)
+              : undefined
           }
         >
-          {rowRanges.map((row, rowIndex) => {
-            const isLower = rowIndex === rowRanges.length - 1
-            const slots = Array.from({ length: row.count }, (_, i) => row.start + i)
-            return (
-              <div
-                key={`row-${rowIndex}`}
-                className={`assistant-slot-row ${isLower ? 'is-front' : 'is-back'}`}
-                style={
-                  {
-                    '--assistant-row-slots': row.count,
-                  } as CSSProperties
-                }
-              >
-                {slots.map((i) => renderSlot(i, !isLower && layout.rows.length > 1))}
-              </div>
-            )
-          })}
-        </section>
+          <section
+            className={`assistant-slot-board${isBlankBoard ? ' is-sparse' : ''}`}
+            data-rows={boardRows}
+            style={
+              {
+                '--assistant-row-slots': boardSlots,
+                ...(isBlankBoard
+                  ? {
+                      '--assistant-grid-cols': bounds.cols,
+                      '--assistant-grid-rows': bounds.rows,
+                    }
+                  : null),
+              } as CSSProperties
+            }
+          >
+            {isBlankBoard
+              ? state.boardCells.map((_, i) => renderSlot(i, false))
+              : groupCellsByRow(state.boardCells).map((row, rowIndex, rows) => {
+                  const isLower = rowIndex === rows.length - 1
+                  return (
+                    <div
+                      key={`row-${row.row}`}
+                      className={`assistant-slot-row ${isLower ? 'is-front' : 'is-back'}`}
+                      style={
+                        {
+                          '--assistant-row-slots': row.entries.length,
+                        } as CSSProperties
+                      }
+                    >
+                      {row.entries.map(({ index }) =>
+                        renderSlot(index, !isLower && rows.length > 1),
+                      )}
+                    </div>
+                  )
+                })}
+          </section>
+        </div>
       </DropZone>
 
       <div className="arena-player-chrome is-you assistant-player-chrome">

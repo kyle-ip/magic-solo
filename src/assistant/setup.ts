@@ -1,6 +1,7 @@
 import { expandLibrary, makeInstance, resetIdSeq } from '../game/buildDeck'
 import type { CardDef, ChallengeCode } from '../game/types'
 import type { DeckTheme } from '../types'
+import { resetBoardCellSeq } from './layouts'
 import {
   emptyBattlefield,
   placeFeaturedOnBattlefield,
@@ -31,6 +32,7 @@ export function createInitialSetup(
   theme: DeckTheme,
   lifeLabel: string,
 ): AssistantState {
+  const board = emptyBattlefield(code, 'blank')
   return {
     code,
     theme,
@@ -39,7 +41,8 @@ export function createInitialSetup(
     startingHeads: 2,
     library: [],
     staging: null,
-    battlefield: emptyBattlefield(code, 'blank'),
+    boardCells: board.boardCells,
+    battlefield: board.battlefield,
     graveyard: [],
     exile: [],
     playerValues: defaultPlayerValues(lifeLabel),
@@ -56,16 +59,19 @@ export function buildAssistantStart(
 ): AssistantState {
   resetIdSeq()
   valueSeq = 0
+  resetBoardCellSeq()
   const base = createInitialSetup(code, theme, lifeLabel)
   base.status = 'playing'
   base.setupKind = setupKind
   base.startingHeads = startingHeads
 
   if (setupKind === 'blank') {
+    const board = emptyBattlefield(code, 'blank')
     return {
       ...base,
       library: expandLibrary(defs).map(withNote),
-      battlefield: emptyBattlefield(code, 'blank'),
+      boardCells: board.boardCells,
+      battlefield: board.battlefield,
     }
   }
 
@@ -86,11 +92,13 @@ export function buildAssistantStart(
       return true
     })
 
+    const board = placeOnBattlefield(code, heads, 'rules')
     return {
       ...base,
       startingHeads: starting,
       library: filtered.map(withNote),
-      battlefield: placeOnBattlefield(code, heads, 'rules'),
+      boardCells: board.boardCells,
+      battlefield: board.battlefield,
     }
   }
 
@@ -117,17 +125,21 @@ export function buildAssistantStart(
       return true
     })
 
+    const board = placeFeaturedOnBattlefield(code, xenagos, throngs, 'rules')
     return {
       ...base,
       library: library.map(withNote),
-      battlefield: placeFeaturedOnBattlefield(code, xenagos, throngs, 'rules'),
+      boardCells: board.boardCells,
+      battlefield: board.battlefield,
     }
   }
 
   // Horde: empty board, full shuffled library
+  const board = emptyBattlefield(code, 'rules')
   return {
     ...base,
     library: expandLibrary(defs).map(withNote),
-    battlefield: emptyBattlefield(code, 'rules'),
+    boardCells: board.boardCells,
+    battlefield: board.battlefield,
   }
 }

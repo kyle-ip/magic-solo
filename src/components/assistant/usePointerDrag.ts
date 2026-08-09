@@ -12,18 +12,22 @@ export type DragState = {
 type Options = {
   onDrop: (payload: DragPayload, target: DropTarget) => void
   resolveDropTarget: (el: Element | null) => DropTarget | null
+  /** Fires on pointer-up when the gesture never crossed the drag threshold. */
+  onTap?: (payload: DragPayload) => void
 }
 
 const DRAG_THRESHOLD_PX = 6
 
-export function usePointerDrag({ onDrop, resolveDropTarget }: Options) {
+export function usePointerDrag({ onDrop, resolveDropTarget, onTap }: Options) {
   const [drag, setDrag] = useState<DragState>(null)
   const dragRef = useRef<DragState>(null)
   const onDropRef = useRef(onDrop)
   const resolveRef = useRef(resolveDropTarget)
+  const onTapRef = useRef(onTap)
   const cleanupRef = useRef<(() => void) | null>(null)
   onDropRef.current = onDrop
   resolveRef.current = resolveDropTarget
+  onTapRef.current = onTap
 
   const startDrag = useCallback(
     (
@@ -98,7 +102,11 @@ export function usePointerDrag({ onDrop, resolveDropTarget }: Options) {
           /* ignore */
         }
 
-        if (!wasActive || !cur) return
+        if (!wasActive) {
+          onTapRef.current?.(payload)
+          return
+        }
+        if (!cur) return
         const el = document.elementFromPoint(ev.clientX, ev.clientY)
         const drop = resolveRef.current(el)
         if (drop) onDropRef.current(cur.payload, drop)

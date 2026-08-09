@@ -1,5 +1,13 @@
 import { shuffle } from '../game/shuffle'
 import type { CardDef } from '../game/types'
+import {
+  MAX_BOARD_CELLS,
+  MAX_BOARD_COLS,
+  MAX_BOARD_ROWS,
+  hasCellAt,
+  nextBoardCellId,
+  type BoardCell,
+} from './layouts'
 import { buildAssistantStart, createInitialSetup, nextValueId } from './setup'
 import {
   type AssistantAction,
@@ -9,6 +17,186 @@ import {
   type LibraryPlacement,
   type NamedValue,
 } from './types'
+
+type BoardDirection = 'up' | 'down' | 'left' | 'right'
+
+function sortBoardPairs(
+  cells: BoardCell[],
+  battlefield: (AssistantCard | null)[],
+): { boardCells: BoardCell[]; battlefield: (AssistantCard | null)[] } {
+  const pairs = cells.map((cell, i) => ({
+    cell,
+    card: battlefield[i] ?? null,
+  }))
+  pairs.sort((a, b) => a.cell.row - b.cell.row || a.cell.col - b.cell.col)
+  return {
+    boardCells: pairs.map((p) => p.cell),
+    battlefield: pairs.map((p) => p.card),
+  }
+}
+
+/** Keep the occupied bounding box at (0,0) so the board stays centered. */
+function normalizeBoardOrigin(cells: BoardCell[]): BoardCell[] {
+  if (cells.length === 0) return cells
+  const minRow = Math.min(...cells.map((c) => c.row))
+  const minCol = Math.min(...cells.map((c) => c.col))
+  if (minRow === 0 && minCol === 0) return cells
+  return cells.map((c) => ({
+    ...c,
+    row: c.row - minRow,
+    col: c.col - minCol,
+  }))
+}
+
+function finalizeBoard(
+  cells: BoardCell[],
+  battlefield: (AssistantCard | null)[],
+): { boardCells: BoardCell[]; battlefield: (AssistantCard | null)[] } {
+  return sortBoardPairs(normalizeBoardOrigin(cells), battlefield)
+}
+
+function columnMaxRow(cells: BoardCell[], col: number): number {
+  const rows = cells.filter((c) => c.col === col).map((c) => c.row)
+  return rows.length ? Math.max(...rows) : -1
+}
+
+function rowMaxCol(cells: BoardCell[], row: number): number {
+  const cols = cells.filter((c) => c.row === row).map((c) => c.col)
+  return cols.length ? Math.max(...cols) : -1
+}
+
+/**
+ * Add one seat in `direction` from `fromIndex`.
+ * Empty neighbor → place there (origin stays put).
+ * Occupied / past the edge → insert by shifting this column/row.
+ */
+function addBoardSlot(
+  state: AssistantState,
+  fromIndex: number,
+  direction: BoardDirection,
+): AssistantState {
+  if (
+    state.status !== 'playing' ||
+    state.setupKind !== 'blank' ||
+    fromIndex < 0 ||
+    fromIndex >= state.boardCells.length ||
+    state.boardCells.length >= MAX_BOARD_CELLS
+  ) {
+    return state
+  }
+
+  const origin = state.boardCells[fromIndex]
+  let cells = state.boardCells.map((c) => ({ ...c }))
+  const cards = [...state.battlefield]
+  let insertRow = origin.row
+  let insertCol = origin.col
+
+  if (direction === 'up') {
+    const above = origin.row - 1
+    if (above >= 0 && !hasCellAt(cells, above, origin.col)) {
+      insertRow = above
+      insertCol = origin.col
+    } else if (above < 0) {
+      // Grow past the top edge: shift this column down, place at row 0.
+      if (columnMaxRow(cells, origin.col) + 1 >= MAX_BOARD_ROWS) return state
+      cells = cells.map((c) =>
+        c.col === origin.col ? { ...c, row: c.row + 1 } : c,
+      )
+      insertRow = 0
+      insertCol = origin.col
+    } else {
+      // Occupied above — insert between by pushing this seat (and below) down.
+      if (columnMaxRow(cells, origin.col) + 1 >= MAX_BOARD_ROWS) return state
+      cells = cells.map((c) =>
+        c.col === origin.col && c.row >= origin.row
+          ? { ...c, row: c.row + 1 }
+          : c,
+      )
+      insertRow = origin.row
+      insertCol = origin.col
+    }
+  } else if (direction === 'down') {
+    insertRow = origin.row + 1
+    insertCol = origin.col
+    if (insertRow >= MAX_BOARD_ROWS) return state
+    if (hasCellAt(cells, insertRow, insertCol)) {
+      if (columnMaxRow(cells, origin.col) + 1 >= MAX_BOARD_ROWS) return state
+      cells = cells.map((c) =>
+        c.col === origin.col && c.row >= insertRow
+          ? { ...c, row: c.row + 1 }
+          : c,
+      )
+    }
+  } else if (direction === 'left') {
+    const left = origin.col - 1
+    if (left >= 0 && !hasCellAt(cells, origin.row, left)) {
+      insertRow = origin.row
+      insertCol = left
+    } else if (left < 0) {
+      if (rowMaxCol(cells, origin.row) + 1 >= MAX_BOARD_COLS) return state
+      cells = cells.map((c) =>
+        c.row === origin.row ? { ...c, col: c.col + 1 } : c,
+      )
+      insertRow = origin.row
+      insertCol = 0
+    } else {
+      if (rowMaxCol(cells, origin.row) + 1 >= MAX_BOARD_COLS) return state
+      cells = cells.map((c) =>
+        c.row === origin.row && c.col >= origin.col
+          ? { ...c, col: c.col + 1 }
+          : c,
+      )
+      insertRow = origin.row
+      insertCol = origin.col
+    }
+  } else {
+    // right
+    insertRow = origin.row
+    insertCol = origin.col + 1
+    if (insertCol >= MAX_BOARD_COLS) return state
+    if (hasCellAt(cells, insertRow, insertCol)) {
+      if (rowMaxCol(cells, origin.row) + 1 >= MAX_BOARD_COLS) return state
+      cells = cells.map((c) =>
+        c.row === origin.row && c.col >= insertCol
+          ? { ...c, col: c.col + 1 }
+          : c,
+      )
+    }
+  }
+
+  if (hasCellAt(cells, insertRow, insertCol)) return state
+
+  cells.push({ id: nextBoardCellId(), row: insertRow, col: insertCol })
+  cards.push(null)
+  return { ...state, ...finalizeBoard(cells, cards) }
+}
+
+function removeBoardSlot(
+  state: AssistantState,
+  index: number,
+): AssistantState {
+  if (
+    state.status !== 'playing' ||
+    state.setupKind !== 'blank' ||
+    index < 0 ||
+    index >= state.boardCells.length ||
+    state.boardCells.length <= 1
+  ) {
+    return state
+  }
+
+  const card = state.battlefield[index]
+  const boardCells = state.boardCells.filter((_, i) => i !== index)
+  const battlefield = state.battlefield.filter((_, i) => i !== index)
+  const next = finalizeBoard(boardCells, battlefield)
+
+  if (!card) return { ...state, ...next }
+  return {
+    ...state,
+    ...next,
+    graveyard: [...state.graveyard, card],
+  }
+}
 
 export type AssistantReducerContext = {
   defs: CardDef[]
@@ -258,6 +446,10 @@ export function createAssistantReducer(ctx: AssistantReducerContext) {
           ...c,
           note: action.note,
         }))
+      case 'ADD_BOARD_SLOT':
+        return addBoardSlot(state, action.fromIndex, action.direction)
+      case 'REMOVE_BOARD_SLOT':
+        return removeBoardSlot(state, action.index)
       default:
         return state
     }
