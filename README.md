@@ -129,7 +129,7 @@ High-res PNG fronts and `*-display.jpg` under `public/assets/cards/` are gitigno
 
 ### Language
 
-Default UI is English. Switch to 中文 in the header. Challenge Deck cards have **no official Chinese printing**, so card/rules Chinese uses official Magic Simplified Chinese terminology (e.g. 战场、坟墓场、英雄赏赐).
+Default UI is English. Switch to 中文 in the header. Challenge Deck cards have **no official Chinese printing**, so card/rules Chinese uses official Magic Simplified Chinese terminology (e.g. 战场、坟场、英雄赏赐).
 
 ## Attribution
 

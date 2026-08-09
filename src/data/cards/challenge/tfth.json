@@ -247,7 +247,7 @@
       },
       "oracleText": {
         "en": "Place exactly two cards named Hydra Head onto the battlefield from the Hydra's graveyard. If you can't, reveal cards from the top of the Hydra's library until you reveal a Head card. Put that card onto the battlefield and the rest into the Hydra's graveyard.",
-        "zh": "从多头龙的坟墓场中正好将两张名称为多头龙头颅的牌放置进战场。若你无法如此作，则展示多头龙牌库顶牌，直到展示出一张头颅牌为止。将该牌放置进战场，并将其余的牌置入多头龙的坟墓场。"
+        "zh": "从多头龙的坟场中正好将两张名称为多头龙头颅的牌放置进战场。若你无法如此作，则展示多头龙牌库顶牌，直到展示出一张头颅牌为止。将该牌放置进战场，并将其余的牌置入多头龙的坟场。"
       },
       "power": null,
       "toughness": null,

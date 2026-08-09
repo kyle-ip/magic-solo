@@ -87,7 +87,7 @@
       "typeLine": "Creature — Snake",
       "typeLineZh": "生物～蛇",
       "oracleText": "Costs less for each creature card in your graveyard.\n{7}{G}{G}: Monstrosity 5.",
-      "oracleTextZh": "你坟墓场中每有一张生物牌，此咒语减少{1}来施放。\n{7}{G}{G}：蛮化5。",
+      "oracleTextZh": "你坟场中每有一张生物牌，此咒语减少{1}来施放。\n{7}{G}{G}：蛮化5。",
       "power": 6,
       "toughness": 6,
       "cost": 6,
