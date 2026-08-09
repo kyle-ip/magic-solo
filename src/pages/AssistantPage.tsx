@@ -705,6 +705,11 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
                 label={t('assistant.library')}
                 count={state.library.length}
                 hint={t('assistant.drawHint')}
+                stackImage={
+                  deck?.cards[0]?.images.back
+                    ? assetUrl(deck.cards[0].images.back)
+                    : undefined
+                }
                 onClick={onLibraryClick}
                 onDoubleClick={onLibraryDoubleClick}
                 dropZone="library"
@@ -767,10 +772,12 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
             style={
               {
                 '--assistant-row-slots': boardSlots,
+                '--assistant-rows': boardRows,
                 ...(isBlankBoard
                   ? {
                       '--assistant-grid-cols': bounds.cols,
                       '--assistant-grid-rows': bounds.rows,
+                      '--assistant-rows': bounds.rows,
                     }
                   : null),
               } as CSSProperties
@@ -805,6 +812,8 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
           title={t('assistant.playerValues')}
           values={state.playerValues}
           compact
+          floating
+          storageKey={`ms-named-values:${code}`}
           onAdd={() => act({ type: 'ADD_PLAYER_VALUE' })}
           onUpdate={(id, patch) => act({ type: 'UPDATE_PLAYER_VALUE', id, ...patch })}
           onRemove={(id) => act({ type: 'REMOVE_PLAYER_VALUE', id })}

@@ -525,6 +525,11 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
               label={t('challenge.library')}
               count={state.challenge.library.length}
               kind="library"
+              stackImage={
+                deck?.cards[0]?.images.back
+                  ? assetUrl(deck.cards[0].images.back)
+                  : undefined
+              }
             />
             {fxFor(FX_HORDE) ? (
               <span className="combat-floater kind-mill chrome-floater">

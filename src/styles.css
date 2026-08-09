@@ -1635,11 +1635,19 @@ h2 {
   .assistant-slot-board {
     --mobile-row-cap: 4;
     --assistant-slot-gap: 0.35rem;
-    --assistant-card-w: min(
-      110px,
-      calc(
-        (100vw - 2rem - var(--safe-left) - var(--safe-right)) /
-          var(--mobile-row-cap) - var(--assistant-slot-gap)
+    --assistant-card-w: max(
+      64px,
+      min(
+        110px,
+        calc(
+          (100cqi - 0.5rem) / var(--mobile-row-cap) - var(--assistant-slot-gap)
+        ),
+        calc(
+          (
+              100cqb - 0.5rem -
+                (var(--assistant-rows) - 1) * var(--assistant-row-gap)
+            ) / var(--assistant-rows) * 744 / 1040
+        )
       )
     );
     width: 100%;
@@ -2533,7 +2541,7 @@ h2 {
   flex-direction: column;
   align-items: flex-end;
   gap: 0.55rem;
-  padding: 0.15rem 0.85rem 0.35rem;
+  padding: 0.25rem 1.15rem 0.45rem 0.85rem;
   min-width: 0;
   /* Chrome only — battle log is fixed and must not affect board size */
   pointer-events: none;
@@ -2565,14 +2573,17 @@ h2 {
 .zone-pile {
   appearance: none;
   border: 1px solid rgba(224, 180, 90, 0.35);
-  background: rgba(20, 14, 10, 0.85);
+  background:
+    linear-gradient(180deg, rgba(36, 28, 20, 0.92), rgba(14, 10, 8, 0.94));
   color: inherit;
-  width: 58px;
-  height: 72px;
-  border-radius: 4px;
+  width: 68px;
+  height: 92px;
+  border-radius: 5px;
   position: relative;
   cursor: default;
   padding: 0;
+  overflow: visible;
+  box-shadow: inset 0 1px 0 rgba(255, 244, 214, 0.08);
 }
 
 .zone-pile:not(:disabled) {
@@ -2581,35 +2592,109 @@ h2 {
 
 .zone-pile-stack {
   position: absolute;
-  inset: 6px;
+  left: 9px;
+  right: 11px;
+  top: 9px;
+  bottom: 24px;
   border-radius: 3px;
-  background:
-    linear-gradient(145deg, #2a221a, #15100c);
-  box-shadow:
-    2px 2px 0 rgba(0, 0, 0, 0.45),
-    4px 4px 0 rgba(0, 0, 0, 0.25);
+  pointer-events: none;
 }
 
-.zone-pile.kind-library .zone-pile-stack {
-  background: linear-gradient(145deg, color-mix(in srgb, var(--accent) 35%, #1a1410), #120e0b);
+.zone-pile-sheet {
+  --sheet-i: 0;
+  position: absolute;
+  inset: 0;
+  border-radius: 3.5px / 2.6px;
+  background:
+    linear-gradient(145deg, #3a3026 0%, #1a1410 55%, #0e0a08 100%);
+  border: 1px solid rgba(224, 180, 90, 0.28);
+  box-shadow:
+    0 1px 0 rgba(255, 244, 214, 0.08),
+    0 2px 4px rgba(0, 0, 0, 0.35);
+  /* Offset toward the interior so edge piles aren't clipped */
+  transform: translate(
+    calc(var(--sheet-i) * -1.8px),
+    calc(var(--sheet-i) * -2px)
+  );
+  overflow: hidden;
+}
+
+.zone-pile-sheet.is-top {
+  border-color: rgba(224, 180, 90, 0.42);
+}
+
+.zone-pile-sheet img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  /* Keep card-back art from kissing the sheet edge */
+  box-sizing: border-box;
+  border: 2px solid rgba(12, 9, 6, 0.55);
+  border-radius: inherit;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.zone-pile.kind-library .zone-pile-sheet.is-top {
+  /* Extra inset so the printed back doesn’t look flush in the tray */
+  inset: 2px;
+}
+
+.zone-pile.kind-library .zone-pile-sheet:not(:has(img)) {
+  background:
+    radial-gradient(ellipse 55% 40% at 50% 42%, color-mix(in srgb, var(--accent) 45%, transparent), transparent 70%),
+    linear-gradient(
+      160deg,
+      color-mix(in srgb, var(--accent) 42%, #2a221a) 0%,
+      #15100c 55%,
+      #0c0907 100%
+    );
+}
+
+.zone-pile.kind-graveyard .zone-pile-sheet {
+  background: linear-gradient(145deg, #2a2420, #12100e 60%, #0a0807);
+  border-color: rgba(184, 137, 58, 0.22);
+}
+
+.zone-pile.kind-exile .zone-pile-sheet {
+  background: linear-gradient(145deg, #262038, #121018 60%, #0a0810);
+  border-color: rgba(138, 107, 181, 0.35);
+}
+
+.zone-pile.is-empty .zone-pile-stack {
+  opacity: 0.35;
+  border: 1px dashed rgba(224, 180, 90, 0.28);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.zone-pile.is-empty .zone-pile-sheet {
+  display: none;
 }
 
 .zone-pile-count {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   font-family: var(--font-display);
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   display: block;
-  margin-top: 1.1rem;
+  margin-top: 0.85rem;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
 }
 
 .zone-pile-label {
-  position: relative;
-  z-index: 1;
-  font-size: 0.58rem;
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  right: 0;
+  bottom: 0.28rem;
+  font-size: 0.56rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: rgba(231, 215, 184, 0.65);
+  color: rgba(231, 215, 184, 0.72);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .life-orb {
@@ -2650,6 +2735,8 @@ h2 {
   min-height: 0;
   padding: 0.5rem 0.85rem;
   gap: 0.45rem;
+  container-type: size;
+  container-name: arena-bf;
 }
 
 .bf-row {
@@ -2674,7 +2761,7 @@ h2 {
   gap: 0.65rem 0.45rem;
   justify-content: center;
   align-items: center;
-  min-height: 110px;
+  min-height: 0;
   overflow: visible;
   padding-block: 0.35rem;
 }
@@ -2698,7 +2785,8 @@ h2 {
   border: var(--card-border);
   padding: 0;
   background: var(--card-face-bg);
-  width: min(148px, 17vw);
+  /* Fit width and the half-row height inside the battlefield container */
+  width: min(148px, 17vw, calc(42cqb * 744 / 1040));
   border-radius: var(--card-radius);
   overflow: hidden;
   position: relative;
@@ -2723,7 +2811,7 @@ h2 {
 }
 
 .opponent-row .arena-card {
-  width: min(168px, 19vw);
+  width: min(168px, 19vw, calc(46cqb * 744 / 1040));
 }
 
 button.arena-card {
@@ -4067,16 +4155,30 @@ button.arena-card {
 .assistant-zone-piles {
   display: flex;
   align-items: flex-start;
-  gap: 0.75rem;
+  gap: 0.9rem;
+  padding-right: 0.15rem;
 }
 
 .assistant-zone-piles .zone-pile {
-  width: 78px;
-  height: 100px;
+  width: 102px;
+  height: 136px;
+}
+
+.assistant-zone-piles .zone-pile-stack {
+  left: 11px;
+  right: 13px;
+  top: 11px;
+  bottom: 28px;
 }
 
 .assistant-zone-piles .zone-pile-count {
-  font-size: 1.35rem;
+  font-size: 1.55rem;
+  margin-top: 1.15rem;
+}
+
+.assistant-zone-piles .zone-pile-label {
+  bottom: 0.38rem;
+  font-size: 0.64rem;
 }
 
 .assistant-library-anchor {
@@ -4141,6 +4243,8 @@ button.arena-card {
   padding: 0.5rem 0.85rem;
   overflow: auto;
   overscroll-behavior: contain;
+  container-type: size;
+  container-name: assistant-bf;
 }
 
 .assistant-battlefield-half.is-scrolling {
@@ -4187,12 +4291,19 @@ button.arena-card {
 
 .assistant-root.setup-blank .assistant-slot-board.is-sparse {
   /* Keep every seat the same size — no back-row shrink. */
-  --assistant-card-w: min(
-    220px,
-    18.5vw,
-    calc(
-      (min(100vw, 1400px) - 5rem) / var(--assistant-row-slots) -
-        var(--assistant-slot-gap)
+  --assistant-card-w: max(
+    72px,
+    min(
+      220px,
+      calc(
+        (100cqi - 1.25rem) / var(--assistant-row-slots) - var(--assistant-slot-gap)
+      ),
+      calc(
+        (
+            100cqb - 1.5rem -
+              (var(--assistant-rows) - 1) * var(--assistant-row-gap)
+          ) / var(--assistant-rows) * 744 / 1040
+      )
     )
   );
 }
@@ -4307,6 +4418,16 @@ button.arena-card {
   pointer-events: none;
 }
 
+.assistant-player-chrome:has(.named-values.is-positioned),
+.assistant-player-chrome:has(.named-values-restore) {
+  position: static;
+  width: 0;
+  max-width: 0;
+  left: auto;
+  bottom: auto;
+  overflow: visible;
+}
+
 .assistant-player-chrome .named-values {
   pointer-events: auto;
   width: 100%;
@@ -4316,11 +4437,83 @@ button.arena-card {
   padding: 0.45rem 0.5rem 0.5rem;
 }
 
+.assistant-player-chrome .named-values.is-floating {
+  width: min(15.5rem, 42vw);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(6px);
+  background: rgba(22, 16, 12, 0.82);
+}
+
+.assistant-player-chrome .named-values.is-floating.is-positioned {
+  position: fixed;
+  z-index: 20;
+  margin: 0;
+}
+
+.assistant-player-chrome .named-values.is-floating.is-collapsed {
+  max-height: none;
+  overflow: visible;
+}
+
+.assistant-player-chrome .named-values.is-floating.is-dragging {
+  cursor: grabbing;
+  user-select: none;
+  opacity: 0.96;
+}
+
 .assistant-player-chrome .named-values-head {
   justify-content: flex-start;
   gap: 0.4rem;
   margin-bottom: 0.4rem;
   font-size: 0.74rem;
+}
+
+.assistant-player-chrome .named-values.is-floating .named-values-head {
+  cursor: grab;
+  touch-action: none;
+  align-items: center;
+}
+
+.assistant-player-chrome .named-values.is-floating.is-dragging .named-values-head {
+  cursor: grabbing;
+}
+
+.named-values-drag {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0.1rem 0;
+}
+
+.named-values-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+.named-values-restore {
+  position: fixed;
+  left: clamp(0.65rem, 1.8vw, 1.35rem);
+  bottom: clamp(0.65rem, 2vh, 1.25rem);
+  z-index: 20;
+  pointer-events: auto;
+  appearance: none;
+  border: 1px solid rgba(184, 137, 58, 0.45);
+  background: rgba(22, 16, 12, 0.88);
+  color: var(--parchment);
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.45rem 0.7rem;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+}
+
+.named-values-restore:hover {
+  border-color: rgba(224, 180, 90, 0.65);
 }
 
 .assistant-player-chrome .named-values-head .btn.tiny {
@@ -4352,20 +4545,28 @@ button.arena-card {
 
 .assistant-slot-board {
   --assistant-row-slots: 6;
+  --assistant-rows: 1;
   --assistant-slot-gap: 0.45rem;
+  --assistant-row-gap: 0.85rem;
   --assistant-slot-ratio: 744 / 1040;
-  /* Prefer large faces; width is capped by row capacity and available height. */
-  --assistant-card-w: min(
-    236px,
-    22vh,
-    calc(
-      (min(100vw, 1560px) - 5.5rem) / var(--assistant-row-slots) -
-        var(--assistant-slot-gap)
-    ),
-    calc(62vh * 744 / 1040)
+  /* Fit both row width and available battlefield height (container queries). */
+  --assistant-card-w: max(
+    72px,
+    min(
+      236px,
+      calc(
+        (100cqi - 1.25rem) / var(--assistant-row-slots) - var(--assistant-slot-gap)
+      ),
+      calc(
+        (
+            100cqb - 1rem -
+              (var(--assistant-rows) - 1) * var(--assistant-row-gap)
+          ) / var(--assistant-rows) * 744 / 1040
+      )
+    )
   );
   display: grid;
-  gap: 1rem;
+  gap: var(--assistant-row-gap);
   width: max-content;
   max-width: 100%;
   margin: auto;
@@ -4379,22 +4580,24 @@ button.arena-card {
 .assistant-slot-board[data-rows='1'] {
   --assistant-card-w: min(
     252px,
-    26vh,
     calc(
-      (min(100vw, 1680px) - 4.5rem) / var(--assistant-row-slots) -
-        var(--assistant-slot-gap)
+      (100cqi - 1rem) / var(--assistant-row-slots) - var(--assistant-slot-gap)
     ),
-    calc(72vh * 744 / 1040)
+    calc((100cqb - 0.75rem) * 744 / 1040)
   );
 }
 
 .assistant-root.setup-blank .assistant-slot-board {
   --assistant-card-w: min(
     220px,
-    18.5vw,
     calc(
-      (min(100vw, 1400px) - 5rem) / var(--assistant-row-slots) -
-        var(--assistant-slot-gap)
+      (100cqi - 1.25rem) / var(--assistant-row-slots) - var(--assistant-slot-gap)
+    ),
+    calc(
+      (
+          100cqb - 1.5rem -
+            (var(--assistant-rows) - 1) * var(--assistant-row-gap)
+        ) / var(--assistant-rows) * 744 / 1040
     )
   );
 }
@@ -4416,12 +4619,15 @@ button.arena-card {
 .assistant-slot-row.is-back {
   --assistant-card-w: min(
     200px,
-    18vh,
     calc(
-      (min(100vw, 1560px) - 5.5rem) / var(--assistant-row-slots) -
-        var(--assistant-slot-gap)
+      (100cqi - 1.25rem) / var(--assistant-row-slots) - var(--assistant-slot-gap)
     ),
-    calc(48vh * 744 / 1040)
+    calc(
+      (
+          100cqb - 1rem -
+            (var(--assistant-rows) - 1) * var(--assistant-row-gap)
+        ) / var(--assistant-rows) * 0.88 * 744 / 1040
+    )
   );
 }
 
@@ -4484,9 +4690,14 @@ button.arena-card {
     --assistant-card-w: min(
       168px,
       calc(
-        (100vw - 3.5rem) / var(--assistant-row-slots) - var(--assistant-slot-gap)
+        (100cqi - 1rem) / var(--assistant-row-slots) - var(--assistant-slot-gap)
       ),
-      calc(48vh * 744 / 1040)
+      calc(
+        (
+            100cqb - 0.85rem -
+              (var(--assistant-rows) - 1) * var(--assistant-row-gap)
+          ) / var(--assistant-rows) * 744 / 1040
+      )
     );
   }
 
@@ -4494,15 +4705,19 @@ button.arena-card {
     --assistant-card-w: min(
       188px,
       calc(
-        (100vw - 2.75rem) / var(--assistant-row-slots) - var(--assistant-slot-gap)
+        (100cqi - 0.75rem) / var(--assistant-row-slots) - var(--assistant-slot-gap)
       ),
-      calc(58vh * 744 / 1040)
+      calc((100cqb - 0.6rem) * 744 / 1040)
     );
   }
 
   .assistant-zone-piles .zone-pile {
-    width: 68px;
-    height: 88px;
+    width: 88px;
+    height: 118px;
+  }
+
+  .assistant-zone-piles .zone-pile-count {
+    font-size: 1.35rem;
   }
 }
 
@@ -4983,18 +5198,27 @@ button.arena-card {
   }
 
   .assistant-zone-piles {
-    gap: 0.45rem;
+    gap: 0.55rem;
     width: 100%;
     justify-content: flex-end;
+    padding-right: 0.1rem;
   }
 
   .assistant-zone-piles .zone-pile {
-    width: 58px;
-    height: 76px;
+    width: 72px;
+    height: 96px;
+  }
+
+  .assistant-zone-piles .zone-pile-stack {
+    left: 8px;
+    right: 10px;
+    top: 8px;
+    bottom: 22px;
   }
 
   .assistant-zone-piles .zone-pile-count {
-    font-size: 1.05rem;
+    font-size: 1.15rem;
+    margin-top: 0.95rem;
   }
 
   .assistant-drag-source {
@@ -5017,8 +5241,13 @@ button.arena-card {
     --assistant-card-w: min(
       96px,
       calc(
-        (100vw - 1.4rem - var(--safe-left) - var(--safe-right)) /
-          var(--mobile-row-cap) - var(--assistant-slot-gap)
+        (100cqi - 0.4rem) / var(--mobile-row-cap) - var(--assistant-slot-gap)
+      ),
+      calc(
+        (
+            100cqb - 0.6rem -
+              (var(--assistant-rows) - 1) * var(--assistant-row-gap)
+          ) / var(--assistant-rows) * 744 / 1040
       )
     );
     gap: 0.55rem;
@@ -5029,9 +5258,9 @@ button.arena-card {
     --assistant-card-w: min(
       108px,
       calc(
-        (100vw - 1.2rem - var(--safe-left) - var(--safe-right)) /
-          var(--mobile-row-cap) - var(--assistant-slot-gap)
-      )
+        (100cqi - 0.3rem) / var(--mobile-row-cap) - var(--assistant-slot-gap)
+      ),
+      calc((100cqb - 0.45rem) * 744 / 1040)
     );
   }
 
@@ -5039,8 +5268,13 @@ button.arena-card {
     --assistant-card-w: min(
       92px,
       calc(
-        (100vw - 1.4rem - var(--safe-left) - var(--safe-right)) /
-          var(--mobile-row-cap) - var(--assistant-slot-gap)
+        (100cqi - 0.4rem) / var(--mobile-row-cap) - var(--assistant-slot-gap)
+      ),
+      calc(
+        (
+            100cqb - 0.8rem -
+              (var(--assistant-rows) - 1) * var(--assistant-row-gap)
+          ) / var(--assistant-rows) * 744 / 1040
       )
     );
   }
