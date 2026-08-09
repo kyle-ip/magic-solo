@@ -4,6 +4,9 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import './i18n'
 import './styles.css'
+import { installScrollRevealScrollbars } from './utils/scrollReveal'
+
+installScrollRevealScrollbars()
 
 const redirect = sessionStorage.getItem('spa-redirect')
 if (redirect) {

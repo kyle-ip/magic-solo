@@ -49,6 +49,60 @@ html {
   height: 100%;
 }
 
+/* Firefox: hide until `.is-scrolling` (see scrollReveal.ts) */
+* {
+  scrollbar-width: none;
+  scrollbar-color: transparent transparent;
+}
+
+*.is-scrolling,
+html.is-scrolling {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(204, 160, 82, 0.45) rgba(12, 9, 6, 0.35);
+}
+
+/* WebKit / Chromium / Safari — thin bronze, visible only while scrolling */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.is-scrolling::-webkit-scrollbar-track {
+  background: rgba(12, 9, 6, 0.35);
+}
+
+.is-scrolling::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    rgba(204, 160, 82, 0.42),
+    rgba(120, 88, 40, 0.55)
+  );
+  border: 1px solid rgba(12, 9, 6, 0.35);
+}
+
+.is-scrolling::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    180deg,
+    rgba(240, 204, 120, 0.62),
+    rgba(160, 112, 48, 0.7)
+  );
+}
+
 body {
   margin: 0;
   min-width: 320px;
@@ -4065,6 +4119,19 @@ button.arena-card {
   padding: 0.5rem 0.85rem;
   overflow: auto;
   overscroll-behavior: contain;
+}
+
+.assistant-battlefield-half.is-scrolling {
+  scrollbar-color: rgba(204, 160, 82, 0.45) transparent;
+}
+
+.assistant-battlefield-half.is-scrolling::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.assistant-battlefield-half.is-scrolling::-webkit-scrollbar-thumb {
+  background: rgba(204, 160, 82, 0.45);
+  border: none;
 }
 
 .assistant-board-shell {
