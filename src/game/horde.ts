@@ -3,6 +3,7 @@ import {
   baseState,
   beginPlayerTurn,
   checkHordeWin,
+  creatureToGyCard,
   damagePlayer,
   damagePlayerCreatures,
   destroyChallengePermanent,
@@ -233,6 +234,23 @@ export function runHordeTurn(state: GameState): GameState {
 export function resolveHordeCombat(state: GameState): GameState {
   let next: GameState = { ...state, prompt: null, phase: 'combat' }
   const attackers = minotaursOf(next).filter((m) => !m.tapped)
+
+  // Descend on the Prey: must be blocked if able
+  if (next.flags.descendPrey) {
+    let available = next.player.creatures.filter(
+      (c) => !c.tapped && !next.blockAssignments[c.instanceId],
+    )
+    const blockAssignments = { ...next.blockAssignments }
+    for (const atk of attackers) {
+      const already = Object.values(blockAssignments).includes(atk.instanceId)
+      if (already || available.length === 0) continue
+      const blocker = available[0]
+      available = available.slice(1)
+      blockAssignments[blocker.instanceId] = atk.instanceId
+    }
+    next = { ...next, blockAssignments }
+  }
+
   let totalDamage = 0
   const deadAttackers: string[] = []
 
@@ -305,7 +323,10 @@ export function resolveHordeCombat(state: GameState): GameState {
             creatures: next.player.creatures.filter(
               (c) => !deadBlockers.includes(c.instanceId),
             ),
-            graveyard: [...dead, ...next.player.graveyard],
+            graveyard: [
+              ...dead.map((d) => creatureToGyCard(d, next.playerDeckId)),
+              ...next.player.graveyard,
+            ],
           },
         }
       }
@@ -326,7 +347,11 @@ export function resolveHordeCombat(state: GameState): GameState {
   }
 
   if (totalDamage > 0) {
-    next = damagePlayer(next, totalDamage)
+    if (next.flags.preventCombatDamageThisTurn) {
+      next = pushLog(next, 'fogPreventedCombat', 'good', { n: totalDamage })
+    } else {
+      next = damagePlayer(next, totalDamage)
+    }
   }
 
   for (const id of [...new Set(deadAttackers)]) {

@@ -10,36 +10,19 @@ Edit **this folder** when you need to change card text or image paths. The app r
 | `challenge/tbth.json` | Battle the Horde |
 | `challenge/tdag.json` | Defeat a God |
 
-Each card entry has bilingual copy and asset paths:
+Each card entry has bilingual copy and asset paths under `images` (relative to `public/` via `assetUrl`).
 
-```json
-{
-  "id": "…",
-  "collectorNumber": "1",
-  "quantity": 11,
-  "name": { "en": "Hydra Head", "zh": "多头龙头颅" },
-  "typeLine": { "en": "…", "zh": "…" },
-  "oracleText": { "en": "…", "zh": "…" },
-  "images": {
-    "front": "assets/cards/tfth/1-hydra-head-front.png",
-    "back": "assets/cards/tfth/back.png",
-    "artCrop": "assets/cards/tfth/1-hydra-head-art.jpg"
-  }
-}
-```
+## Player Constructed deck (Challenge Experience)
 
-Image paths are relative to `public/` (via `assetUrl`).
-
-## Player muster decks (Challenge Experience)
-
-| File | Force |
+| File | Deck |
 | --- | --- |
-| `player/akroan.json` | Akroan Legion |
-| `player/nessian.json` | Nessian Wilds |
-| `player/meletis.json` | Meletis Tide |
-| `player/forge.json` | Forge of Purphoros |
+| `player/wildfire.json` | Wildfire Host — RG midrange (60 cards) |
 
-Roster cards include `name` / `nameZh`, `typeLine` / `typeLineZh`, `oracleText` / `oracleTextZh`, and `image`.
+One list is used for all three challenges. Each entry includes `quantity`, `manaCost`, `kind`, `effect` hooks the engine resolves, and `image`.
+
+**Oracle policy:** only listed keywords and `effect` hooks resolve. Monstrosity / protection-from-white on printed Stormbreath / Ember Swallower / Polukranos are noted as omitted.
+
+Legacy muster roster files (`akroan.json`, etc.) are unused by the Experience engine.
 
 ## Related (not card faces)
 

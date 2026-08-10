@@ -22,7 +22,18 @@ export function ReferencesButton() {
       const rules = getDeckRules(entry.code, i18n.language)
       for (const source of rules?.sources ?? []) push(source.label, source.url)
     }
-    return links
+    const siteKey = (url: string) => {
+      try {
+        return new URL(url).hostname.replace(/^www\./, '').toLowerCase()
+      } catch {
+        return url
+      }
+    }
+    return links.sort((a, b) => {
+      const bySite = siteKey(a.url).localeCompare(siteKey(b.url))
+      if (bySite !== 0) return bySite
+      return a.label.localeCompare(b.label, i18n.language)
+    })
   }, [decks, i18n.language, shared.sources])
 
   useEffect(() => {

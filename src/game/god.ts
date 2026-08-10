@@ -2,6 +2,7 @@ import { expandLibrary, makeInstance, resetIdSeq } from './buildDeck'
 import {
   baseState,
   beginPlayerTurn,
+  creatureToGyCard,
   damagePlayer,
   damagePlayerCreatures,
   destroyChallengePermanent,
@@ -53,39 +54,41 @@ export function startGod(
   return beginPlayerTurn(state)
 }
 
+function enterGodPermanent(state: GameState, card: CardInstance): GameState {
+  let next: GameState = {
+    ...state,
+    challenge: {
+      ...state.challenge,
+      battlefield: [...state.challenge.battlefield, { ...card, markedDamage: 0 }],
+    },
+  }
+  next = pushLog(next, 'enters', 'bad', { name: card.name })
+
+  if (card.name === 'Rollicking Throng') {
+    const top = next.challenge.library[0]
+    if (top) {
+      next = {
+        ...next,
+        challenge: { ...next.challenge, library: next.challenge.library.slice(1) },
+      }
+      next = castGodCard(next, top)
+    }
+  }
+  if (card.name === 'Ecstatic Piper') {
+    next = {
+      ...next,
+      flags: { ...next.flags, xenagosMustAttack: true },
+    }
+    next = pushLog(next, 'ecstaticPiper', 'bad')
+  }
+  return next
+}
+
 export function castGodCard(state: GameState, card: CardInstance): GameState {
   let next = pushLog(state, 'xenagosCasts', 'cast', { name: card.name })
 
   if (card.isReveler || card.isGod || (card.power != null && !card.isEnchantment)) {
-    next = {
-      ...next,
-      challenge: {
-        ...next.challenge,
-        battlefield: [...next.challenge.battlefield, { ...card, markedDamage: 0 }],
-      },
-    }
-    next = pushLog(next, 'enters', 'bad', { name: card.name })
-
-    // ETB effects
-    if (card.name === 'Rollicking Throng') {
-      // Doesn't trigger as game begins — only when cast later
-      const top = next.challenge.library[0]
-      if (top) {
-        next = {
-          ...next,
-          challenge: { ...next.challenge, library: next.challenge.library.slice(1) },
-        }
-        next = castGodCard(next, top)
-      }
-    }
-    if (card.name === 'Ecstatic Piper') {
-      next = {
-        ...next,
-        flags: { ...next.flags, xenagosMustAttack: true },
-      }
-      next = pushLog(next, 'ecstaticPiper', 'bad')
-    }
-    return next
+    return enterGodPermanent(next, card)
   }
 
   if (card.isEnchantment) {
@@ -150,7 +153,9 @@ export function castGodCard(state: GameState, card: CardInstance): GameState {
           graveyard: [card, ...next.challenge.graveyard],
         },
       }
-      const pipers = next.challenge.graveyard.filter((c) => c.name === 'Ecstatic Piper').slice(0, 2)
+      const pipers = next.challenge.graveyard
+        .filter((c) => c.name === 'Ecstatic Piper')
+        .slice(0, 2)
       next = {
         ...next,
         challenge: {
@@ -158,12 +163,12 @@ export function castGodCard(state: GameState, card: CardInstance): GameState {
           graveyard: next.challenge.graveyard.filter(
             (c) => !pipers.some((p) => p.instanceId === c.instanceId),
           ),
-          battlefield: [
-            ...next.challenge.battlefield,
-            ...pipers.map((p) => ({ ...p, markedDamage: 0 })),
-          ],
         },
         flags: { ...next.flags, impulsiveReturnDamage: true },
+      }
+      // Return via ETB path so Ecstatic Piper forces Xenagos to attack
+      for (const piper of pipers) {
+        next = enterGodPermanent(next, { ...piper, markedDamage: 0 })
       }
       return pushLog(next, 'impulsiveReturn', 'bad', { n: pipers.length })
     }
@@ -182,9 +187,19 @@ export function castGodCard(state: GameState, card: CardInstance): GameState {
     case "Xenagos's Scorn":
       next = {
         ...next,
-        flags: { ...next.flags, xenagosMustAttack: true },
+        flags: { ...next.flags, xenagosMustAttack: true, xenagosTrample: true },
         challenge: {
           ...next.challenge,
+          battlefield: next.challenge.battlefield.map((c) =>
+            c.isGod
+              ? {
+                  ...c,
+                  keywords: c.keywords.includes('trample')
+                    ? c.keywords
+                    : [...c.keywords, 'trample'],
+                }
+              : c,
+          ),
           graveyard: [card, ...next.challenge.graveyard],
         },
       }
@@ -328,6 +343,9 @@ export function resolveGodCombat(state: GameState): GameState {
   let totalDamage = 0
   for (const atk of attackers) {
     let power = atk.power ?? 0
+    const hasTrample =
+      (next.flags.xenagosTrample && atk.isGod) ||
+      atk.keywords.some((k) => /trample/i.test(k))
     const blockers = next.player.creatures.filter(
       (c) => next.blockAssignments[c.instanceId] === atk.instanceId,
     )
@@ -339,7 +357,7 @@ export function resolveGodCombat(state: GameState): GameState {
       }
     } else {
       const blockPower = blockers.reduce((s, b) => s + b.power, 0)
-      const deadBlockers = blockers.filter(() => true) // all die if deathtouch attacker
+      const blockToughness = blockers.reduce((s, b) => s + (b.toughness - b.markedDamage), 0)
       if (atk.keywords.some((k) => /deathtouch/i.test(k)) || /deathtouch/i.test(atk.oracleText)) {
         next = {
           ...next,
@@ -348,7 +366,10 @@ export function resolveGodCombat(state: GameState): GameState {
             creatures: next.player.creatures.filter(
               (c) => !blockers.some((b) => b.instanceId === c.instanceId),
             ),
-            graveyard: [...blockers, ...next.player.graveyard],
+            graveyard: [
+              ...blockers.map((b) => creatureToGyCard(b, next.playerDeckId)),
+              ...next.player.graveyard,
+            ],
           },
         }
       } else {
@@ -360,10 +381,12 @@ export function resolveGodCombat(state: GameState): GameState {
             creatures: next.player.creatures.filter(
               (c) => !dead.some((d) => d.instanceId === c.instanceId),
             ),
-            graveyard: [...dead, ...next.player.graveyard],
+            graveyard: [
+              ...dead.map((d) => creatureToGyCard(d, next.playerDeckId)),
+              ...next.player.graveyard,
+            ],
           },
         }
-        void deadBlockers
       }
       // Damage to attacker (not Xenagos if revelers remain — lethal still marks)
       if (!atk.isGod || revelersOf(next).length === 0) {
@@ -371,7 +394,6 @@ export function resolveGodCombat(state: GameState): GameState {
           next = destroyChallengePermanent(next, atk.instanceId)
         }
       } else if (atk.isGod) {
-        // Can mark damage but can't leave
         next = {
           ...next,
           challenge: {
@@ -384,13 +406,23 @@ export function resolveGodCombat(state: GameState): GameState {
           },
         }
       }
+      if (hasTrample) {
+        const excess = Math.max(0, power - blockToughness)
+        totalDamage += excess
+      }
       if (next.flags.danceOfFlame && atk.isReveler) {
         totalDamage += 1
       }
     }
   }
 
-  if (totalDamage > 0) next = damagePlayer(next, totalDamage)
+  if (totalDamage > 0) {
+    if (next.flags.preventCombatDamageThisTurn) {
+      next = pushLog(next, 'fogPreventedCombat', 'good', { n: totalDamage })
+    } else {
+      next = damagePlayer(next, totalDamage)
+    }
+  }
 
   next = clearGodCombatFlags(next)
   next = { ...next, blockAssignments: {}, revealed: [] }
@@ -405,6 +437,15 @@ function clearGodCombatFlags(state: GameState): GameState {
       ...state.flags,
       impulsiveCharge: false,
       xenagosMustAttack: false,
+      xenagosTrample: false,
+    },
+    challenge: {
+      ...state.challenge,
+      battlefield: state.challenge.battlefield.map((c) =>
+        c.isGod
+          ? { ...c, keywords: c.keywords.filter((k) => !/trample/i.test(k)) }
+          : c,
+      ),
     },
   }
 }

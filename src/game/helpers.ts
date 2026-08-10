@@ -1,10 +1,24 @@
 import { nextId } from './buildDeck'
 import { addFxPop, FX_HORDE, FX_PLAYER_LIFE } from './fx'
-import { DEFAULT_PLAYER_DECK, findTemplate, musterForTurn } from './playerDecks'
+import {
+  createHeroInstance,
+  getHeroDef,
+  heroBoost,
+  heroExtraDraw,
+  heroKeywords,
+  maxHeroesFor,
+  type HeroInstance,
+} from './heroes'
+import { DEFAULT_PLAYER_DECK } from './playerDecks'
+import { buildPlayerLibrary, drawCards } from './playerDraw'
+import { emptyManaPool } from './mana'
+import { makePlayerCardInstance } from './playerDraw'
+import { findCardDef } from './playerDecks'
 import type {
   CardInstance,
   ChallengeCode,
   GameState,
+  PlayerCardInstance,
   PlayerCreature,
   SetupConfig,
 } from './types'
@@ -30,10 +44,42 @@ export function effectiveToughness(card: CardInstance): number {
   return (card.toughness ?? 0) - card.markedDamage
 }
 
+export function creatureToGyCard(
+  c: PlayerCreature,
+  deckId?: string,
+): PlayerCardInstance {
+  const def = findCardDef(c.defId, deckId)
+  if (def) return { ...makePlayerCardInstance(def), instanceId: c.instanceId }
+  return {
+    instanceId: c.instanceId,
+    defId: c.defId,
+    name: c.name,
+    nameZh: c.name,
+    typeLine: 'Creature',
+    typeLineZh: '',
+    oracleText: '',
+    oracleTextZh: '',
+    manaCost: '',
+    cmc: 0,
+    power: c.power,
+    toughness: c.toughness,
+    keywords: [...c.keywords],
+    kind: 'creature',
+    image: c.image,
+    effect: { type: 'none' },
+    produces: c.produces ? [...c.produces] : undefined,
+  }
+}
+
 export function playerAlive(creature: PlayerCreature): boolean {
   return creature.toughness - creature.markedDamage > 0
 }
 
+export function isIndestructible(state: GameState, card: CardInstance): boolean {
+  return card.indestructible || (card.isHead && state.flags.headsIndestructible)
+}
+
+/** Mark damage; indestructible does not prevent damage (official Magic). */
 export function dealDamageToChallengeCreature(
   state: GameState,
   instanceId: string,
@@ -43,17 +89,25 @@ export function dealDamageToChallengeCreature(
   const idx = next.challenge.battlefield.findIndex((c) => c.instanceId === instanceId)
   if (idx < 0 || amount <= 0) return state
   const card = { ...next.challenge.battlefield[idx] }
-  if (card.indestructible || (card.isHead && next.flags.headsIndestructible)) {
-    return pushLog(next, 'indestructiblePrevented', 'info', { name: card.name })
-  }
   card.markedDamage += amount
   next.challenge.battlefield[idx] = card
   next = pushLog(next, 'takesDamage', 'info', { name: card.name, n: amount })
   next = addFxPop(next, { targetId: instanceId, kind: 'damage', amount }, 'damage')
-  if (effectiveToughness(card) <= 0) {
+  if (effectiveToughness(card) <= 0 && !isIndestructible(next, card)) {
     next = destroyChallengePermanent(next, instanceId)
   }
   return next
+}
+
+export function checkXenagosSba(state: GameState): GameState {
+  if (state.code !== 'tdag' || state.status !== 'playing') return state
+  const god = state.challenge.battlefield.find((c) => c.isGod)
+  if (!god) return state
+  if (revelersOf(state).length > 0) return state
+  if (effectiveToughness(god) <= 0) {
+    return destroyChallengePermanent(state, god.instanceId)
+  }
+  return state
 }
 
 export function destroyChallengePermanent(
@@ -64,10 +118,16 @@ export function destroyChallengePermanent(
   const card = state.challenge.battlefield.find((c) => c.instanceId === instanceId)
   if (!card) return state
 
+  if (isIndestructible(state, card)) {
+    return pushLog(state, 'indestructiblePrevented', 'info', { name: card.name })
+  }
+
   // Xenagos Ascended can't leave while a Reveler is present
   if (card.isGod && revelersOf(state).length > 0) {
     return pushLog(state, 'xenagosCantLeave', 'info')
   }
+
+  const wasReveler = card.isReveler
 
   let next: GameState = {
     ...state,
@@ -84,7 +144,7 @@ export function destroyChallengePermanent(
   }
   next = pushLog(next, 'destroyed', 'bad', { name: card.name })
 
-  // Hero's Reward — simplified: life / muster for player
+  // Hero's Reward — life / draw for player
   if (/Hero's Reward/i.test(card.oracleText)) {
     next = applyHeroReward(next, card)
   }
@@ -122,13 +182,54 @@ export function destroyChallengePermanent(
     next = pushLog(next, 'xenagosLeaves', 'good')
   }
 
-  return checkWinLoss(next)
+  next = checkWinLoss(next)
+  if (wasReveler && next.status === 'playing') {
+    next = checkXenagosSba(next)
+  }
+  return next
 }
 
-function applyHeroReward(state: GameState, card: CardInstance): GameState {
+/** Exported for tests and Horde milling. */
+export function applyHeroReward(state: GameState, card: CardInstance): GameState {
   let next = state
+
+  // Named Horde artifacts with non-generic (or nested) rewards first
+  if (card.name === 'Altar of Mogis') {
+    const mins = minotaursOf(next).slice(0, 2)
+    for (const m of mins) {
+      next = destroyChallengePermanent(next, m.instanceId)
+    }
+    return next
+  }
+  if (card.name === 'Massacre Totem') {
+    next = pushLog(next, 'massacreTotem', 'good')
+    return millHorde(next, 7)
+  }
+  if (card.name === 'Vitality Salve') {
+    const gy = next.player.graveyard.filter((c) => c.kind === 'creature')
+    if (gy.length === 0) return next
+    if (gy.length === 1) return returnCreatureFromGraveyard(next, gy[0].instanceId)
+    return {
+      ...next,
+      prompt: {
+        id: `p-${Date.now()}`,
+        kind: 'vitality_return',
+        titleKey: 'vitalitySalve',
+        messageKey: 'vitalitySalveMsg',
+        resume: 'vitality',
+        options: gy.map((c) => ({
+          id: c.instanceId,
+          labelKey: 'returnCreatureOpt',
+          labelParams: { pt: `${c.power}/${c.toughness}` },
+          name: c.name,
+        })),
+      },
+    }
+  }
+
+  // Generic Hero's Reward parsing (Elixir / Statue / Heads / Revelers, etc.)
+  // Do NOT add named double-dips for Refreshing Elixir / Plundered Statue.
   const text = card.oracleText
-  // Life gains
   const lifeMatch = text.match(/gains? (\d+) life/i)
   if (lifeMatch) {
     const n = Number(lifeMatch[1])
@@ -140,63 +241,46 @@ function applyHeroReward(state: GameState, card: CardInstance): GameState {
     next = addFxPop(next, { targetId: FX_PLAYER_LIFE, kind: 'heal', amount: n }, 'heal')
   }
   if (/draws? a card/i.test(text)) {
-    next = {
-      ...next,
-      player: { ...next.player, muster: next.player.muster + 1 },
-    }
-    next = pushLog(next, 'heroRewardMuster', 'good')
-  }
-  // Horde artifacts
-  if (card.name === 'Altar of Mogis') {
-    const mins = minotaursOf(next).slice(0, 2)
-    for (const m of mins) {
-      next = destroyChallengePermanent(next, m.instanceId)
-    }
-  }
-  if (card.name === 'Massacre Totem') {
-    const mill = next.challenge.library.slice(0, 7)
-    next = {
-      ...next,
-      challenge: {
-        ...next.challenge,
-        library: next.challenge.library.slice(7),
-        graveyard: [...mill, ...next.challenge.graveyard],
-      },
-    }
-    next = pushLog(next, 'massacreTotem', 'good')
-  }
-  if (card.name === 'Refreshing Elixir') {
-    next = {
-      ...next,
-      player: { ...next.player, life: next.player.life + 5 },
-    }
-    next = pushLog(next, 'refreshingElixir', 'good')
-  }
-  if (card.name === 'Plundered Statue') {
-    next = {
-      ...next,
-      player: { ...next.player, muster: next.player.muster + 1 },
-    }
-    next = pushLog(next, 'plunderedStatue', 'good')
-  }
-  if (card.name === 'Vitality Salve') {
-    const g = next.player.graveyard[0]
-    if (g) {
-      next = {
-        ...next,
-        player: {
-          ...next.player,
-          graveyard: next.player.graveyard.slice(1),
-          creatures: [
-            { ...g, markedDamage: 0, tapped: false, summoningSickness: true },
-            ...next.player.creatures,
-          ],
-        },
-      }
-      next = pushLog(next, 'vitalitySalve', 'good', { name: g.name })
+    next = drawCards(next, 1)
+    if (next.status === 'playing') {
+      next = pushLog(next, 'heroRewardDraw', 'good')
     }
   }
   return next
+}
+
+export function returnCreatureFromGraveyard(
+  state: GameState,
+  instanceId: string,
+): GameState {
+  const g = state.player.graveyard.find((c) => c.instanceId === instanceId)
+  if (!g || g.kind !== 'creature') return state
+  const returned = applyHeroCreatureMods(state, {
+    instanceId: nextId('pl'),
+    defId: g.defId,
+    templateId: g.defId,
+    name: g.name,
+    power: g.power ?? 0,
+    toughness: g.toughness ?? 0,
+    markedDamage: 0,
+    tapped: false,
+    summoningSickness: true,
+    keywords: [...g.keywords],
+    image: g.image,
+    produces: g.produces ? [...g.produces] : undefined,
+    tempPower: 0,
+    tempToughness: 0,
+  })
+  let next: GameState = {
+    ...state,
+    prompt: null,
+    player: {
+      ...state.player,
+      graveyard: state.player.graveyard.filter((c) => c.instanceId !== instanceId),
+      creatures: [returned, ...state.player.creatures],
+    },
+  }
+  return pushLog(next, 'vitalitySalve', 'good', { name: g.name })
 }
 
 export function growNewHeads(state: GameState): GameState {
@@ -213,11 +297,16 @@ export function growNewHeads(state: GameState): GameState {
   next = pushLog(next, 'growingNewHeads', 'cast')
   for (const card of revealed) {
     if (card.isHead) {
+      const entered = {
+        ...card,
+        markedDamage: 0,
+        indestructible: next.flags.headsIndestructible,
+      }
       next = {
         ...next,
         challenge: {
           ...next.challenge,
-          battlefield: [...next.challenge.battlefield, { ...card, markedDamage: 0 }],
+          battlefield: [...next.challenge.battlefield, entered],
         },
       }
       next = pushLog(next, 'growsOntoBattlefield', 'bad', { name: card.name })
@@ -248,19 +337,11 @@ export function millHorde(state: GameState, amount: number): GameState {
   }
   next = pushLog(next, 'hordeMills', 'good', { n: amount, milled: mill.length })
   next = addFxPop(next, { targetId: FX_HORDE, kind: 'mill', amount: mill.length }, 'mill')
-  // Hero rewards on milled artifacts
+  // Hero rewards on milled artifacts (nested, e.g. Massacre Totem)
   for (const card of mill) {
     if (card.isArtifact && /Hero's Reward/i.test(card.oracleText)) {
-      next = applyHeroReward(
-        {
-          ...next,
-          challenge: {
-            ...next.challenge,
-            // already in graveyard
-          },
-        },
-        card,
-      )
+      next = applyHeroReward(next, card)
+      if (next.prompt) break
     }
   }
   return checkWinLoss(next)
@@ -268,12 +349,38 @@ export function millHorde(state: GameState, amount: number): GameState {
 
 export function damagePlayer(state: GameState, amount: number): GameState {
   if (amount <= 0) return state
+  let remaining = amount
+  let heroes = state.player.heroes.map((h) => ({ ...h }))
+  for (let i = 0; i < heroes.length; i += 1) {
+    const h = heroes[i]
+    if (
+      h.effect.type === 'preventDamagePerTurn' &&
+      !h.preventUsedThisTurn &&
+      remaining > 0
+    ) {
+      const prevented = Math.min(remaining, h.effect.amount)
+      remaining -= prevented
+      heroes[i] = { ...h, preventUsedThisTurn: true }
+      if (prevented > 0) {
+        state = pushLog(state, 'heroPrevented', 'good', {
+          name: h.name,
+          n: prevented,
+        })
+      }
+    }
+  }
   let next: GameState = {
     ...state,
-    player: { ...state.player, life: state.player.life - amount },
+    player: {
+      ...state.player,
+      heroes,
+      life: state.player.life - remaining,
+    },
   }
-  next = pushLog(next, 'youTakeDamage', 'bad', { n: amount, life: next.player.life })
-  next = addFxPop(next, { targetId: FX_PLAYER_LIFE, kind: 'damage', amount }, 'damage')
+  if (remaining > 0) {
+    next = pushLog(next, 'youTakeDamage', 'bad', { n: remaining, life: next.player.life })
+    next = addFxPop(next, { targetId: FX_PLAYER_LIFE, kind: 'damage', amount: remaining }, 'damage')
+  }
   return checkWinLoss(next)
 }
 
@@ -288,16 +395,10 @@ export function checkWinLoss(state: GameState): GameState {
     }
   }
 
-  if (state.code === 'tfth') {
-    if (headsOf(state).length === 0 && state.status === 'playing') {
-      // Win checked at end of turn in engine; allow mid-turn empty for grow
-      // Only win if library grow finished and still no heads — handled by endTurn check
-    }
-  }
-
   return state
 }
 
+/** Official: win only at end of turn if no Heads remain. */
 export function checkHydraWin(state: GameState): GameState {
   if (state.code !== 'tfth' || state.status !== 'playing') return state
   if (headsOf(state).length === 0) {
@@ -323,48 +424,70 @@ export function checkHordeWin(state: GameState): GameState {
   return state
 }
 
-export function summonPlayerCreature(
+export function applyHeroCreatureMods(
   state: GameState,
-  templateId: string,
-): GameState {
-  const template = findTemplate(templateId, state.playerDeckId)
-  if (!template) return state
-  if (state.player.muster < template.cost) {
-    return pushLog(state, 'notEnoughMuster', 'info')
+  creature: PlayerCreature,
+): PlayerCreature {
+  const boost = heroBoost(state.player.heroes)
+  const extraKw = heroKeywords(state.player.heroes)
+  const keywords = [...new Set([...creature.keywords, ...extraKw])]
+  return {
+    ...creature,
+    power: creature.power + boost.power,
+    toughness: creature.toughness + boost.toughness,
+    keywords,
   }
-  if (state.flags.cannotCastSpells && state.code === 'tfth') {
-    // Disorienting Glower — treat summons as spells
-    return pushLog(state, 'cannotCastUntilHydra', 'bad')
+}
+
+function clearMarkedDamageOnChallenge(state: GameState): GameState {
+  return {
+    ...state,
+    challenge: {
+      ...state.challenge,
+      battlefield: state.challenge.battlefield.map((c) =>
+        c.markedDamage ? { ...c, markedDamage: 0 } : c,
+      ),
+    },
   }
-  const creature: PlayerCreature = {
-    instanceId: nextId('pl'),
-    templateId: template.id,
-    name: template.name,
-    power: template.power,
-    toughness: template.toughness,
-    markedDamage: 0,
-    tapped: false,
-    summoningSickness: true,
-    keywords: [...template.keywords],
-    image: template.image,
-  }
-  let next: GameState = {
+}
+
+function resetHeroTurnFlags(heroes: HeroInstance[]): HeroInstance[] {
+  return heroes.map((h) => ({ ...h, preventUsedThisTurn: false }))
+}
+
+function clearEotPlayerEffects(state: GameState): GameState {
+  return {
     ...state,
     player: {
       ...state.player,
-      muster: state.player.muster - template.cost,
-      creatures: [...state.player.creatures, creature],
+      creatures: state.player.creatures.map((c) => ({
+        ...c,
+        power: c.power - (c.tempPower ?? 0),
+        toughness: Math.max(0, c.toughness - (c.tempToughness ?? 0)),
+        tempPower: 0,
+        tempToughness: 0,
+      })),
+      manaPool: emptyManaPool(),
+      landsPlayedThisTurn: 0,
     },
+    flags: {
+      ...state.flags,
+      preventCombatDamageThisTurn: false,
+    },
+    pendingCast: null,
   }
-  return pushLog(next, 'musterCreature', 'good', { name: template.name, pt: `${template.power}/${template.toughness}` })
 }
 
 export function beginPlayerTurn(state: GameState): GameState {
-  const turnNumber = state.turnNumber + 1
-  const musterGain = musterForTurn(turnNumber)
+  // End previous turn's until-EOT effects, then start new turn
+  let next = clearEotPlayerEffects(state)
+  next = clearMarkedDamageOnChallenge(next)
 
-  let next: GameState = {
-    ...state,
+  const turnNumber = next.turnNumber + 1
+  const skipDraw = turnNumber === 1
+
+  next = {
+    ...next,
     activeSide: 'player',
     phase: 'main',
     playerPhase: 'main',
@@ -377,10 +500,14 @@ export function beginPlayerTurn(state: GameState): GameState {
     castQueue: [],
     awaitingAdvance: false,
     fx: null,
+    pendingCast: null,
     player: {
-      ...state.player,
-      muster: state.player.muster + musterGain,
-      creatures: state.player.creatures.map((c) => ({
+      ...next.player,
+      heroes: resetHeroTurnFlags(next.player.heroes),
+      landsPlayedThisTurn: 0,
+      manaPool: emptyManaPool(),
+      lands: next.player.lands.map((l) => ({ ...l, tapped: false })),
+      creatures: next.player.creatures.map((c) => ({
         ...c,
         tapped: false,
         summoningSickness: false,
@@ -397,9 +524,29 @@ export function beginPlayerTurn(state: GameState): GameState {
         playerTurnsRemaining: next.flags.playerTurnsRemaining - 1,
       },
     }
-    next = pushLog(next, 'yourTurnMusterHorde', 'info', { turn: turnNumber, n: musterGain, left: next.flags.playerTurnsRemaining })
+  }
+
+  if (!skipDraw) {
+    next = drawCards(next, 1 + heroExtraDraw(next.player.heroes))
+  } else if (heroExtraDraw(next.player.heroes) > 0) {
+    // Provider still draws on turn 1? Official: don't draw on first turn.
+    // Extra draw from Provider is "beginning of turn" — allow it as additional.
+    next = drawCards(next, heroExtraDraw(next.player.heroes))
+  }
+
+  if (next.status !== 'playing') return next
+
+  if (next.code === 'tbth') {
+    next = pushLog(next, 'yourTurnDrawHorde', 'info', {
+      turn: turnNumber,
+      left: next.flags.playerTurnsRemaining,
+      hand: next.player.hand.length,
+    })
   } else {
-    next = pushLog(next, 'yourTurnMuster', 'info', { turn: turnNumber, n: musterGain })
+    next = pushLog(next, 'yourTurnDraw', 'info', {
+      turn: turnNumber,
+      hand: next.player.hand.length,
+    })
   }
   return next
 }
@@ -409,6 +556,7 @@ export function emptyFlags() {
     playerTurnsRemaining: 0,
     cannotCastSpells: false,
     headsIndestructible: false,
+    hideExpiresInHydraEnds: 0,
     swallowExileActive: false,
     extraChallengeTurn: false,
     consumingRage: false,
@@ -420,10 +568,25 @@ export function emptyFlags() {
     impulsiveReturnDamage: false,
     ripToPieces: false,
     xenagosMustAttack: false,
+    xenagosTrample: false,
     danceOfFlame: false,
     danceOfPanic: false,
     hydraTriggersDone: false,
+    hydraBreathDone: false,
+    preventCombatDamageThisTurn: false,
   }
+}
+
+function buildHeroes(config: SetupConfig, code: ChallengeCode): HeroInstance[] {
+  const max = maxHeroesFor(code)
+  const ids = [...new Set(config.heroIds ?? [])].slice(0, max)
+  const heroes: HeroInstance[] = []
+  for (const id of ids) {
+    const def = getHeroDef(id)
+    if (!def) continue
+    heroes.push(createHeroInstance(def, nextId('hero')))
+  }
+  return heroes
 }
 
 export function baseState(
@@ -431,6 +594,11 @@ export function baseState(
   theme: GameState['theme'],
   config: SetupConfig,
 ): Omit<GameState, 'challenge'> & { challenge: GameState['challenge'] } {
+  const playerDeckId = config.playerDeckId ?? DEFAULT_PLAYER_DECK
+  const library = buildPlayerLibrary(playerDeckId)
+  const hand = library.slice(0, 7)
+  const rest = library.slice(7)
+
   return {
     code,
     theme,
@@ -440,15 +608,21 @@ export function baseState(
     phase: 'main',
     playerPhase: 'main',
     challengePhase: 'idle',
-    playerDeckId: config.playerDeckId ?? DEFAULT_PLAYER_DECK,
+    playerDeckId,
     castQueue: [],
     awaitingAdvance: false,
+    pendingCast: null,
     player: {
       life: 20,
-      muster: 0,
+      library: rest,
+      hand,
+      lands: [],
       creatures: [],
       graveyard: [],
       exile: [],
+      heroes: buildHeroes(config, code),
+      landsPlayedThisTurn: 0,
+      manaPool: emptyManaPool(),
     },
     challenge: {
       library: [],
@@ -478,12 +652,35 @@ export function damagePlayerCreatures(
   if (amount <= 0) return state
   let next = { ...state, player: { ...state.player, creatures: [...state.player.creatures] } }
   const survivors: PlayerCreature[] = []
-  const dead: PlayerCreature[] = []
+  const dead: PlayerCardInstance[] = []
   for (const c of next.player.creatures) {
     next = addFxPop(next, { targetId: c.instanceId, kind: 'damage', amount }, 'damage')
     const dmg = c.markedDamage + amount
-    if (c.toughness - dmg <= 0) dead.push(c)
-    else survivors.push({ ...c, markedDamage: dmg })
+    if (c.toughness - dmg <= 0) {
+      const def = findCardDef(c.defId, state.playerDeckId)
+      dead.push(
+        def
+          ? { ...makePlayerCardInstance(def), instanceId: c.instanceId }
+          : {
+              instanceId: c.instanceId,
+              defId: c.defId,
+              name: c.name,
+              nameZh: c.name,
+              typeLine: 'Creature',
+              typeLineZh: '',
+              oracleText: '',
+              oracleTextZh: '',
+              manaCost: '',
+              cmc: 0,
+              power: c.power,
+              toughness: c.toughness,
+              keywords: [...c.keywords],
+              kind: 'creature',
+              image: c.image,
+              effect: { type: 'none' },
+            },
+      )
+    } else survivors.push({ ...c, markedDamage: dmg })
   }
   next = {
     ...next,
@@ -497,4 +694,55 @@ export function damagePlayerCreatures(
     next = pushLog(next, 'yourCreaturesDie', 'bad', { n: dead.length })
   }
   return next
+}
+
+/** Tick Hide duration at end of a Hydra turn. Cast sets countdown to 2. */
+export function tickHydraHide(state: GameState): GameState {
+  if (!state.flags.headsIndestructible && state.flags.hideExpiresInHydraEnds <= 0) {
+    return state
+  }
+  const remaining = state.flags.hideExpiresInHydraEnds - 1
+  if (remaining <= 0) {
+    let next: GameState = {
+      ...state,
+      flags: {
+        ...state.flags,
+        headsIndestructible: false,
+        hideExpiresInHydraEnds: 0,
+      },
+      challenge: {
+        ...state.challenge,
+        battlefield: state.challenge.battlefield.map((c) =>
+          c.isHead ? { ...c, indestructible: false } : c,
+        ),
+      },
+    }
+    // SBAs: heads with lethal marked damage die once Hide ends
+    for (const head of [...headsOf(next)]) {
+      if (effectiveToughness(head) <= 0) {
+        next = destroyChallengePermanent(next, head.instanceId)
+      }
+    }
+    return next
+  }
+  return {
+    ...state,
+    flags: { ...state.flags, hideExpiresInHydraEnds: remaining },
+  }
+}
+
+export function clearSwallowWindow(state: GameState): GameState {
+  if (!state.flags.swallowExileActive) return state
+  let next: GameState = {
+    ...state,
+    flags: { ...state.flags, swallowExileActive: false },
+  }
+  if (next.player.exile.length) {
+    next = pushLog(next, 'swallowExpired', 'info')
+  }
+  return next
+}
+
+export function clearChallengeDamage(state: GameState): GameState {
+  return clearMarkedDamageOnChallenge(state)
 }

@@ -1,13 +1,17 @@
 import { addFxPop, FX_HORDE, setFx } from './fx'
 import {
   checkHordeWin,
-  checkHydraWin,
   dealDamageToChallengeCreature,
-  destroyChallengePermanent,
   millHorde,
 } from './helpers'
 import { pushLog } from './log'
-import type { AttackLink, GameState } from './types'
+import type { AttackLink, GameState, PlayerCreature } from './types'
+
+function attackPower(creature: PlayerCreature): number {
+  let power = creature.power
+  if (creature.keywords.some((k) => /double strike/i.test(k))) power *= 2
+  return power
+}
 
 /** Resolve player attacks based on selectedAttackers + attackAssignments. */
 export function resolvePlayerCombat(state: GameState): GameState {
@@ -32,24 +36,24 @@ export function resolvePlayerCombat(state: GameState): GameState {
     }
   }
 
-  // Attack lunge FX on each attacker (+ arrows during resolve)
+  const powers = attackers.map((a) => attackPower(a))
   next = setFx(next, 'attack', {
-    amount: attackers.reduce((s, a) => s + a.power, 0),
-    pops: attackers.map((a) => ({
+    amount: powers.reduce((s, p) => s + p, 0),
+    pops: attackers.map((a, i) => ({
       targetId: a.instanceId,
       kind: 'attack' as const,
-      amount: a.power,
+      amount: powers[i],
     })),
     links,
   })
 
-  // Tap attackers
   next = {
     ...next,
     player: {
       ...next.player,
       creatures: next.player.creatures.map((c) =>
-        next.selectedAttackers.includes(c.instanceId)
+        next.selectedAttackers.includes(c.instanceId) &&
+        !c.keywords.some((k) => /vigilance/i.test(k))
           ? { ...c, tapped: true }
           : c,
       ),
@@ -57,7 +61,7 @@ export function resolvePlayerCombat(state: GameState): GameState {
   }
 
   if (next.code === 'tbth') {
-    const total = attackers.reduce((s, a) => s + a.power, 0)
+    const total = powers.reduce((s, p) => s + p, 0)
     next = millHorde(next, total)
     next = {
       ...next,
@@ -69,13 +73,14 @@ export function resolvePlayerCombat(state: GameState): GameState {
   }
 
   const byTarget: Record<string, number> = {}
-  for (const a of attackers) {
+  for (let i = 0; i < attackers.length; i += 1) {
+    const a = attackers[i]
     const target = next.attackAssignments[a.instanceId]
     if (!target) {
       next = pushLog(next, 'attackNoTarget', 'info', { name: a.name })
       continue
     }
-    byTarget[target] = (byTarget[target] ?? 0) + a.power
+    byTarget[target] = (byTarget[target] ?? 0) + powers[i]
   }
 
   for (const [targetId, dmg] of Object.entries(byTarget)) {
@@ -100,12 +105,6 @@ export function resolvePlayerCombat(state: GameState): GameState {
         }
         next = pushLog(next, 'xenagosDamagedStuck', 'info', { n: dmg })
         next = addFxPop(next, { targetId, kind: 'damage', amount: dmg }, 'damage')
-        if (
-          (updated.toughness ?? 0) - updated.markedDamage <= 0 &&
-          !next.challenge.battlefield.some((c) => c.isReveler)
-        ) {
-          next = destroyChallengePermanent(next, targetId)
-        }
       } else {
         next = dealDamageToChallengeCreature(next, targetId, dmg)
       }
@@ -119,6 +118,5 @@ export function resolvePlayerCombat(state: GameState): GameState {
     phase: 'main',
   }
 
-  if (next.code === 'tfth') next = checkHydraWin(next)
   return next
 }

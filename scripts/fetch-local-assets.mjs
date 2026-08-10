@@ -165,45 +165,69 @@ async function fetchChallengeArtCrops() {
 }
 
 async function fetchPlayerDecks() {
-  console.log('\n=== Player muster decks ===')
-  const playerTsPath = path.join(root, 'src', 'game', 'playerDecks.ts')
-  let source = await readFile(playerTsPath, 'utf8')
-  const urlRe =
-    /https:\/\/cards\.scryfall\.io\/(normal|art_crop)\/front\/[0-9a-f]\/[0-9a-f]\/([0-9a-f-]{36})\.jpg(?:\?[^\s'"]*)?/gi
+  console.log('\n=== Player muster decks + heroes ===')
+  const playerDirRel = path.join('src', 'data', 'cards', 'player')
+  const playerDirAbs = path.join(root, playerDirRel)
+  const index = JSON.parse(
+    await readFile(path.join(playerDirAbs, 'index.json'), 'utf8'),
+  )
+
+  /** Scryfall UUID embedded in local asset paths like `…/{uuid}-normal.jpg` */
+  const idRe =
+    /(assets\/cards\/(?:player|heroes)\/)([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})-(normal|art)\.jpg/gi
 
   const jobs = new Map()
-  for (const match of source.matchAll(urlRe)) {
-    const kind = match[1].toLowerCase() === 'art_crop' ? 'art' : 'normal'
-    const id = match[2]
-    const key = `${id}:${kind}`
-    if (!jobs.has(key)) {
-      jobs.set(key, {
-        id,
-        kind,
-        url: match[0].split('?')[0],
-        local: `assets/cards/player/${id}-${kind}.jpg`,
-      })
-    }
-  }
-
-  // Ensure each unique id has both normal + art when we only saw one type
-  const ids = new Set([...jobs.values()].map((j) => j.id))
-  for (const id of ids) {
-    for (const kind of ['normal', 'art']) {
-      const key = `${id}:${kind}`
+  const consider = (text) => {
+    for (const match of text.matchAll(idRe)) {
+      const prefix = match[1]
+      const id = match[2]
+      const kind = match[3].toLowerCase()
+      const key = `${prefix}${id}:${kind}`
       if (!jobs.has(key)) {
         jobs.set(key, {
           id,
           kind,
           url: kind === 'art' ? artCropUrl(id) : normalUrl(id),
-          local: `assets/cards/player/${id}-${kind}.jpg`,
+          local: `${prefix}${id}-${kind}.jpg`,
         })
       }
     }
   }
 
-  const playerDir = path.join(root, 'public', 'assets', 'cards', 'player')
-  await mkdir(playerDir, { recursive: true })
+  for (const deckId of index.decks ?? []) {
+    const file = path.join(playerDirAbs, `${deckId}.json`)
+    const raw = await readFile(file, 'utf8')
+    consider(raw)
+  }
+
+  const heroesTs = path.join(root, 'src', 'game', 'heroes.ts')
+  consider(await readFile(heroesTs, 'utf8'))
+
+  // Also ensure each unique id+folder has both normal + art
+  const pairs = [...jobs.values()].map((j) => ({
+    id: j.id,
+    prefix: j.local.replace(/[0-9a-f-]{36}-(normal|art)\.jpg$/i, ''),
+  }))
+  for (const { id, prefix } of pairs) {
+    for (const kind of ['normal', 'art']) {
+      const key = `${prefix}${id}:${kind}`
+      if (!jobs.has(key)) {
+        jobs.set(key, {
+          id,
+          kind,
+          url: kind === 'art' ? artCropUrl(id) : normalUrl(id),
+          local: `${prefix}${id}-${kind}.jpg`,
+        })
+      }
+    }
+  }
+
+  await mkdir(path.join(root, 'public', 'assets', 'cards', 'player'), {
+    recursive: true,
+  })
+  await mkdir(path.join(root, 'public', 'assets', 'cards', 'heroes'), {
+    recursive: true,
+  })
 
   for (const job of jobs.values()) {
     const abs = path.join(root, 'public', job.local)
@@ -215,13 +239,6 @@ async function fetchPlayerDecks() {
     )
     await sleep(110)
   }
-
-  source = source.replace(urlRe, (full, type, id) => {
-    const kind = String(type).toLowerCase() === 'art_crop' ? 'art' : 'normal'
-    return `assets/cards/player/${id}-${kind}.jpg`
-  })
-  await writeFile(playerTsPath, source, 'utf8')
-  console.log(`  updated ${path.relative(root, playerTsPath)}`)
 }
 
 async function main() {

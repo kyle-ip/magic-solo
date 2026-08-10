@@ -31,22 +31,28 @@ Route: `/challenge/:setCode`
 
 An MTG Arena–inspired board with:
 
-- Mirrored battlefields, life / library chrome, phase strip, and muster hand dock
+- Mirrored battlefields, life / library chrome, phase strip, and real hand dock
 - Challenge turns that reveal and cast cards one-by-one (localized oracle text)
 - Click-to-declare combat, attack arrows, and light combat VFX
+- Optional **Hero’s Path** heroes at setup (up to 2 vs Hydra, 3 vs Horde/God)
 - Optional coach tips and a floating battle log
 - Win / loss **settlement screen** (turns, life, board / graveyard summary)
 
-Player forces use a simplified **muster** system — **not** a full Magic rules engine. At setup you pick one of four Scryfall-themed muster decks:
+Players use one **Theros-era red-green Constructed deck** (`wildfire` / Wildfire Host) for all three challenges — lands, mana, library, hand, and deck-driven abilities (not a full CR engine). Preview the 60-card list on the setup screen.
 
-| Id | Force |
+### Experience vs official rules
+
+Challenge-side loops (setup, cast cadence, Hydra grow/breath, Horde mill-as-life, God reveler lock, Hero’s Rewards) follow the official Challenge Deck rules summarized under **References**. Intentional Experience differences:
+
+| Official | Experience |
 | --- | --- |
-| `akroan` | Akroan Legion / 阿喀洛斯军团 |
-| `nessian` | Nessian Wilds / 涅西恩荒野 |
-| `meletis` | Meletis Tide / 迈勒提斯潮涌 |
-| `forge` | Forge of Purphoros / 波洛芬斯熔炉 |
+| Any Constructed deck | Curated RG 60-card list (abilities implemented only for cards in that list) |
+| Full stack / priority | Spells resolve immediately; Fog still stops Hydra breath / combat damage |
+| All Theros mechanics | Evergreen + Fog, burn, fight, pumps; monstrosity / bestow omitted |
+| Multiplayer variants | Solo only |
+| Hero cards optional | Optional curated Hero’s Path set with simplified effects |
 
-Click a force on the setup screen to preview every card before starting.
+Use **Game Assistant** when you want an arbitrary physical player deck with a manual challenge half-board.
 
 ## Game Assistant
 

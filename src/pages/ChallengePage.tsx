@@ -22,13 +22,15 @@ import { coachTipKey } from '../game/coachTip'
 import { challengeAttackLinks, FX_HORDE, FX_PLAYER_LIFE } from '../game/fx'
 import {
   DEFAULT_PLAYER_DECK,
-  findTemplate,
-  findTemplateByName,
+  findCardDef,
+  findCardDefByName,
+  getDeckCards,
   getPlayerDeck,
-  getRoster,
   PLAYER_DECKS,
   type PlayerDeckId,
 } from '../game/playerDecks'
+import { canAfford } from '../game/playerCast'
+import { HERO_DEFS, maxHeroesFor } from '../game/heroes'
 import {
   createInitialSetup,
   gameReducer,
@@ -95,6 +97,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
   const [heads, setHeads] = useState(2)
   const [hordeDelay, setHordeDelay] = useState(3)
   const [playerDeckId, setPlayerDeckId] = useState<PlayerDeckId>(DEFAULT_PLAYER_DECK)
+  const [heroIds, setHeroIds] = useState<string[]>([])
   const [rosterModalId, setRosterModalId] = useState<PlayerDeckId | null>(null)
   const [focusAttacker, setFocusAttacker] = useState<string | null>(null)
   const [preview, setPreview] = useState<{
@@ -124,17 +127,12 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
 
   const clearPreview = useCallback(() => setPreview(null), [])
 
-  const roster = useMemo(
-    () => getRoster(state.status === 'setup' ? playerDeckId : state.playerDeckId),
-    [state.status, state.playerDeckId, playerDeckId],
-  )
-
   const localizeName = useCallback(
     (name: string) => {
       if (!zh) return name
       return (
         getCardZh(code, name)?.name ??
-        findTemplateByName(name)?.nameZh ??
+        findCardDefByName(name)?.nameZh ??
         name
       )
     },
@@ -329,7 +327,16 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
   )
 
   const canTarget = (card: CardInstance) => {
-    if (state.activeSide !== 'player' || state.playerPhase !== 'combat') return false
+    if (state.status !== 'playing' || state.activeSide !== 'player') return false
+    if (state.pendingCast) {
+      const mode = state.pendingCast.mode
+      if (mode === 'damage') return true
+      if (mode === 'fight_theirs') {
+        return card.power != null || card.isHead || card.isGod || card.isReveler
+      }
+      return false
+    }
+    if (state.playerPhase !== 'combat') return false
     if (state.selectedAttackers.length === 0) return false
     if (state.code === 'tfth') return card.isHead
     if (state.code === 'tdag') return card.isReveler || card.isGod
@@ -394,6 +401,50 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
               <strong>{hordeDelay}</strong>
             </label>
           ) : null}
+          <div className="setup-heroes">
+            <p className="setup-decks-label">{t('challenge.pickHeroes')}</p>
+            <p className="setup-deck-hint">
+              {t('challenge.pickHeroesHint', { max: maxHeroesFor(code) })}
+            </p>
+            <p className="setup-deck-preview">
+              {t('challenge.heroSelected', {
+                n: heroIds.length,
+                max: maxHeroesFor(code),
+              })}
+            </p>
+            <div className="setup-hero-grid" role="listbox" aria-multiselectable="true">
+              {HERO_DEFS.map((hero) => {
+                const selected = heroIds.includes(hero.id)
+                const atCap = heroIds.length >= maxHeroesFor(code) && !selected
+                return (
+                  <button
+                    key={hero.id}
+                    type="button"
+                    role="option"
+                    aria-selected={selected}
+                    disabled={atCap}
+                    className={`setup-hero-card ${selected ? 'is-selected' : ''}`}
+                    onClick={() => {
+                      setHeroIds((prev) => {
+                        if (prev.includes(hero.id)) return prev.filter((id) => id !== hero.id)
+                        if (prev.length >= maxHeroesFor(code)) return prev
+                        return [...prev, hero.id]
+                      })
+                    }}
+                  >
+                    <span
+                      className="setup-hero-art"
+                      style={{
+                        backgroundImage: `url(${assetUrl(hero.art || hero.image)})`,
+                      }}
+                    />
+                    <strong>{zh ? hero.nameZh : hero.name}</strong>
+                    <span>{zh ? hero.oracleTextZh : hero.oracleText}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
           <div className="setup-decks">
             <p className="setup-decks-label">{t('challenge.pickDeck')}</p>
             <p className="setup-deck-hint">{t('challenge.pickDeckHint')}</p>
@@ -430,14 +481,16 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                 name: zh
                   ? getPlayerDeck(playerDeckId).nameZh
                   : getPlayerDeck(playerDeckId).name,
-                count: getRoster(playerDeckId).length,
+                count: getDeckCards(playerDeckId).reduce((s, c) => s + c.quantity, 0 as number),
               })}
             </p>
           </div>
           <ul className="setup-notes">
-            <li>{t('challenge.noteMuster')}</li>
+            <li>{t('challenge.noteConstructed')}</li>
             <li>{t('challenge.noteCombat')}</li>
-            <li>{t('challenge.noteSimplified')}</li>
+            <li>{t('challenge.noteMana')}</li>
+            <li>{t('challenge.noteHeroes')}</li>
+            <li>{t('challenge.noteOfficial')}</li>
           </ul>
           <button
             type="button"
@@ -450,6 +503,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                   startingHeads: heads,
                   playerTurnsBeforeHorde: hordeDelay,
                   playerDeckId,
+                  heroIds,
                 },
               })
             }
@@ -513,7 +567,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
 
       {/* Opponent chrome (log is fixed overlay — does not affect board size) */}
       <div className="arena-opponent-rail">
-        <div className="arena-player-chrome is-opponent">
+        <div className="arena-player-chrome is-opponent challenge-zone-piles">
           <ZonePile
             label={t('challenge.graveyard')}
             count={state.challenge.graveyard.length}
@@ -528,6 +582,16 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
               stackImage={
                 deck?.cards[0]?.images.back
                   ? assetUrl(deck.cards[0].images.back)
+                  : undefined
+              }
+              onClick={
+                state.code === 'tbth' && state.pendingCast?.mode === 'damage'
+                  ? () =>
+                      act({
+                        type: 'ASSIGN_TARGET',
+                        attackerId: '',
+                        targetId: FX_HORDE,
+                      })
                   : undefined
               }
             />
@@ -632,7 +696,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
         </button>
       )}
 
-      <div className="arena-battlefield">
+      <div className={`arena-battlefield ${inCombat ? 'is-combat' : ''}`}>
         <section className="bf-row opponent-row">
           <div className="bf-creatures">
             {challengeCreatures.map((card) => {
@@ -676,6 +740,14 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                       previewChallengeCard(card)
                       return
                     }
+                    if (state.pendingCast) {
+                      act({
+                        type: 'ASSIGN_TARGET',
+                        attackerId: '',
+                        targetId: card.instanceId,
+                      })
+                      return
+                    }
                     const ids =
                       focusAttacker && state.selectedAttackers.includes(focusAttacker)
                         ? [focusAttacker]
@@ -693,9 +765,6 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                 />
               )
             })}
-            {challengeCreatures.length === 0 ? (
-              <p className="bf-empty">{t('challenge.emptyBoard')}</p>
-            ) : null}
           </div>
           <div className="bf-others">
             {challengeOthers.map((card) => (
@@ -752,8 +821,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                 {t('challenge.combatStep.resolve')}
               </li>
             </ol>
-          ) : null}
-          {state.fx ? (
+          ) : state.fx ? (
             <div className={`fx-toast kind-${state.fx.kind}`} key={state.fx.id}>
               {state.fx.label ?? state.fx.kind}
               {state.fx.amount != null ? ` ${state.fx.amount}` : ''}
@@ -770,9 +838,50 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                 : t('challenge.theirTurn')}
             </span>
           )}
+          {inCombat && state.fx ? (
+            <div className={`fx-toast kind-${state.fx.kind}`} key={state.fx.id}>
+              {state.fx.label ?? state.fx.kind}
+              {state.fx.amount != null ? ` ${state.fx.amount}` : ''}
+            </div>
+          ) : null}
         </div>
 
         <section className="bf-row player-row">
+          {state.player.heroes.length > 0 ? (
+            <div className="hero-strip" aria-label={t('challenge.heroesOnBoard')}>
+              <span className="hero-strip-label">{t('challenge.heroesOnBoard')}</span>
+              {state.player.heroes.map((h) => {
+                const def = HERO_DEFS.find((d) => d.id === h.defId)
+                return (
+                  <button
+                    key={h.instanceId}
+                    type="button"
+                    className="hero-chip"
+                    onMouseEnter={() =>
+                      setPreview({
+                        image: def?.image || h.image || '',
+                        name: zh ? (def?.nameZh ?? h.name) : h.name,
+                        text: zh
+                          ? `${def?.typeLineZh ?? ''}\n${def?.oracleTextZh ?? h.oracleText}`
+                          : `${def?.typeLine ?? 'Hero'}\n${h.oracleText}`,
+                      })
+                    }
+                    onMouseLeave={clearPreview}
+                  >
+                    {def?.art || def?.image || h.image ? (
+                      <img
+                        className="hero-chip-art"
+                        src={assetUrl(def?.art || def?.image || h.image)}
+                        alt=""
+                        draggable={false}
+                      />
+                    ) : null}
+                    <span>{zh ? (def?.nameZh ?? h.name) : h.name}</span>
+                  </button>
+                )
+              })}
+            </div>
+          ) : null}
           <div className="bf-creatures">
             {state.player.creatures.map((c) => {
               const selected = state.selectedAttackers.includes(c.instanceId)
@@ -785,21 +894,26 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                 !c.tapped &&
                 !c.summoningSickness
               const label = zh
-                ? (findTemplate(c.templateId, state.playerDeckId)?.nameZh ?? c.name)
+                ? (findCardDef(c.defId, state.playerDeckId)?.nameZh ?? c.name)
                 : c.name
+              const pendingMine =
+                state.pendingCast?.mode === 'fight_mine' ||
+                state.pendingCast?.mode === 'pump'
               const showReady =
                 canDeclare &&
                 !selected &&
                 (inCombat || state.playerPhase === 'main')
               const badge = blocking
                 ? null
-                : selected
-                  ? aimed
-                    ? t('challenge.badge.aimed')
-                    : t('challenge.badge.attacking')
-                  : showReady
-                    ? t('challenge.badge.ready')
-                    : null
+                : pendingMine
+                  ? t('challenge.badge.target')
+                  : selected
+                    ? aimed
+                      ? t('challenge.badge.aimed')
+                      : t('challenge.badge.attacking')
+                    : showReady
+                      ? t('challenge.badge.ready')
+                      : null
               const pop = fxFor(c.instanceId)
               return (
                 <ArenaCard
@@ -814,6 +928,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                   selected={selected}
                   attacking={selected || pop?.kind === 'attack'}
                   attackReady={showReady}
+                  targetable={pendingMine}
                   dimmed={c.summoningSickness || (c.tapped && !selected)}
                   hitFx={pop?.kind === 'damage'}
                   strikeFx={pop?.kind === 'attack'}
@@ -825,6 +940,14 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                   badge={badge}
                   onClick={() => {
                     if (over) return
+                    if (state.pendingCast?.mode === 'fight_mine' || state.pendingCast?.mode === 'pump') {
+                      act({
+                        type: 'ASSIGN_TARGET',
+                        attackerId: '',
+                        targetId: c.instanceId,
+                      })
+                      return
+                    }
                     if (blocking) {
                       const attackers = state.revealed
                       if (!attackers.length) return
@@ -844,7 +967,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                     declareOrToggleAttacker(c.instanceId)
                   }}
                   onMouseEnter={() => {
-                    const tpl = findTemplate(c.templateId, state.playerDeckId)
+                    const tpl = findCardDef(c.defId, state.playerDeckId)
                     setPreview({
                       image: c.image,
                       name: label,
@@ -857,19 +980,44 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                 />
               )
             })}
-            {state.player.creatures.length === 0 ? (
-              <p className="bf-empty">{t('challenge.musterHint')}</p>
-            ) : null}
+            {state.player.lands.map((land) => {
+              const label = zh
+                ? (findCardDef(land.defId, state.playerDeckId)?.nameZh ?? land.name)
+                : land.name
+              return (
+                <ArenaCard
+                  key={land.instanceId}
+                  instanceId={land.instanceId}
+                  image={land.image}
+                  name={label}
+                  tapped={land.tapped}
+                  dimmed={land.tapped}
+                  onMouseEnter={() =>
+                    setPreview({
+                      image: land.image,
+                      name: label,
+                      text: land.typeLine,
+                    })
+                  }
+                  onMouseLeave={clearPreview}
+                />
+              )
+            })}
           </div>
         </section>
       </div>
 
       {/* Player chrome + hand */}
-      <div className="arena-player-chrome is-you">
+      <div className="arena-player-chrome is-you challenge-zone-piles">
         <ZonePile
           label={t('challenge.graveyard')}
           count={state.player.graveyard.length}
           kind="graveyard"
+        />
+        <ZonePile
+          label={t('challenge.library')}
+          count={state.player.library.length}
+          kind="library"
         />
         <div
           className={`life-orb is-you ${
@@ -880,7 +1028,10 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
           <span className="life-orb-label">{t('challenge.life')}</span>
           <strong>{state.player.life}</strong>
           <span className="life-orb-sub">
-            {t('challenge.muster')} {state.player.muster}
+            {t('challenge.handCount', { n: state.player.hand.length })}
+            {state.flags.preventCombatDamageThisTurn
+              ? ` · ${t('challenge.fogActive')}`
+              : ''}
           </span>
           {fxFor(FX_PLAYER_LIFE) ? (
             <span
@@ -892,6 +1043,15 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
           ) : null}
         </div>
         <div className="arena-actions">
+          {state.pendingCast ? (
+            <button
+              type="button"
+              className="btn ghost"
+              onClick={() => act({ type: 'CANCEL_PENDING' })}
+            >
+              {t('challenge.cancelTarget')}
+            </button>
+          ) : null}
           {state.activeSide === 'player' && !over ? (
             <>
               {state.playerPhase === 'main' && attackables.length > 0 ? (
@@ -935,43 +1095,65 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
           {zh
             ? getPlayerDeck(state.playerDeckId).nameZh
             : getPlayerDeck(state.playerDeckId).name}{' '}
-          · {t('challenge.muster')} {state.player.muster}
+          · {t('challenge.handCount', { n: state.player.hand.length })}
+          {state.pendingCast ? ` · ${t(`challenge.pending.${state.pendingCast.mode}`)}` : ''}
         </p>
         <div className="hand-fan">
-          {roster.map((tpl, i) => {
+          {state.player.hand.map((card, i) => {
             const unaffordable =
-              state.player.muster < tpl.cost ||
+              !canAfford(state, card.manaCost) ||
               state.flags.cannotCastSpells ||
               state.activeSide !== 'player' ||
-              state.playerPhase !== 'main' ||
-              over
+              over ||
+              (card.kind === 'sorcery' && state.playerPhase !== 'main') ||
+              (card.kind === 'land' &&
+                (state.playerPhase !== 'main' || state.player.landsPlayedThisTurn >= 1)) ||
+              (card.kind !== 'instant' &&
+                card.kind !== 'land' &&
+                state.playerPhase !== 'main' &&
+                state.playerPhase !== 'combat')
+            const pending = state.pendingCast?.handInstanceId === card.instanceId
             return (
               <button
-                key={tpl.id}
+                key={card.instanceId}
                 type="button"
-                className={`hand-card ${unaffordable ? 'is-disabled' : ''}`}
+                className={`hand-card ${unaffordable ? 'is-disabled' : ''} ${pending ? 'is-pending' : ''}`}
                 style={{ '--i': i } as React.CSSProperties}
-                disabled={unaffordable}
-                onClick={() => act({ type: 'SUMMON', templateId: tpl.id })}
+                disabled={unaffordable && !pending}
+                onClick={() => {
+                  if (pending) {
+                    act({ type: 'CANCEL_PENDING' })
+                    return
+                  }
+                  act({ type: 'CAST', handId: card.instanceId })
+                }}
                 onMouseEnter={() =>
                   setPreview({
-                    image: tpl.image,
-                    name: zh ? tpl.nameZh : tpl.name,
+                    image: card.image,
+                    name: zh ? card.nameZh : card.name,
                     text: [
-                      zh ? tpl.typeLineZh : tpl.typeLine,
-                      `${tpl.power}/${tpl.toughness} · ${t('challenge.musterCost', { n: tpl.cost })}`,
-                      zh ? tpl.oracleTextZh : tpl.oracleText,
-                    ].join('\n'),
+                      zh ? card.typeLineZh : card.typeLine,
+                      card.kind === 'land'
+                        ? t('challenge.land')
+                        : card.power != null
+                          ? `${card.power}/${card.toughness} · ${card.manaCost}`
+                          : card.manaCost,
+                      zh ? card.oracleTextZh : card.oracleText,
+                    ]
+                      .filter(Boolean)
+                      .join('\n'),
                   })
                 }
                 onMouseLeave={clearPreview}
               >
-                <img src={assetUrl(tpl.image)} alt="" draggable={false} />
-                <span className="hand-cost">{tpl.cost}</span>
+                <img src={assetUrl(card.image)} alt="" draggable={false} />
+                <span className="hand-cost">
+                  {card.kind === 'land' ? t('challenge.landShort') : card.manaCost || '0'}
+                </span>
                 <span className="hand-meta">
-                  <strong>{zh ? tpl.nameZh : tpl.name}</strong>
+                  <strong>{zh ? card.nameZh : card.name}</strong>
                   <em>
-                    {tpl.power}/{tpl.toughness}
+                    {card.power != null ? `${card.power}/${card.toughness}` : card.kind}
                   </em>
                 </span>
               </button>

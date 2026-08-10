@@ -1,10 +1,38 @@
-import type { PlayerTemplate } from './types'
-import akroan from '../data/cards/player/akroan.json'
-import nessian from '../data/cards/player/nessian.json'
-import meletis from '../data/cards/player/meletis.json'
-import forge from '../data/cards/player/forge.json'
+import type { ManaColor } from './mana'
+import wildfire from '../data/cards/player/wildfire.json'
 
-export type PlayerDeckId = 'akroan' | 'nessian' | 'meletis' | 'forge'
+export type PlayerDeckId = 'wildfire'
+
+export type PlayerCardKind = 'land' | 'creature' | 'instant' | 'sorcery'
+
+export type PlayerEffect =
+  | { type: 'none' }
+  | { type: 'mana_dork'; color: ManaColor }
+  | { type: 'etb_self_pump'; power: number; toughness: number }
+  | { type: 'damage_any'; amount: number }
+  | { type: 'fog' }
+  | { type: 'fight' }
+  | { type: 'pump_target'; power: number; toughness: number }
+
+export interface ConstructedCardDef {
+  id: string
+  quantity: number
+  name: string
+  nameZh: string
+  typeLine: string
+  typeLineZh: string
+  oracleText: string
+  oracleTextZh: string
+  manaCost: string
+  cmc: number
+  power: number | null
+  toughness: number | null
+  keywords: string[]
+  kind: PlayerCardKind
+  produces?: ManaColor[]
+  effect: PlayerEffect
+  image: string
+}
 
 export interface PlayerDeckDef {
   id: PlayerDeckId
@@ -12,53 +40,66 @@ export interface PlayerDeckDef {
   nameZh: string
   blurb: string
   blurbZh: string
-  /** Scryfall art_crop for setup tile */
   art: string
-  roster: PlayerTemplate[]
+  cards: ConstructedCardDef[]
 }
 
-/** Source of truth: `src/data/cards/player/*.json` — edit card copy & images there. */
-export const PLAYER_DECKS: PlayerDeckDef[] = [
-  akroan as PlayerDeckDef,
-  nessian as PlayerDeckDef,
-  meletis as PlayerDeckDef,
-  forge as PlayerDeckDef,
-]
+/** Source of truth: `src/data/cards/player/*.json` */
+export const PLAYER_DECKS: PlayerDeckDef[] = [wildfire as PlayerDeckDef]
 
-export const DEFAULT_PLAYER_DECK: PlayerDeckId = 'akroan'
+export const DEFAULT_PLAYER_DECK: PlayerDeckId = 'wildfire'
 
-export function getPlayerDeck(id: string | undefined | null): PlayerDeckDef {
+export function getPlayerDeck(id?: string | null): PlayerDeckDef {
   return PLAYER_DECKS.find((d) => d.id === id) ?? PLAYER_DECKS[0]
 }
 
-export function getRoster(deckId?: string | null): PlayerTemplate[] {
-  return getPlayerDeck(deckId).roster
+export function getDeckCards(deckId?: string | null): ConstructedCardDef[] {
+  return getPlayerDeck(deckId).cards
 }
 
+export function findCardDef(
+  defId: string,
+  deckId?: string | null,
+): ConstructedCardDef | undefined {
+  const preferred = getDeckCards(deckId).find((c) => c.id === defId)
+  if (preferred) return preferred
+  for (const deck of PLAYER_DECKS) {
+    const hit = deck.cards.find((c) => c.id === defId)
+    if (hit) return hit
+  }
+  return undefined
+}
+
+export function findCardDefByName(name: string): ConstructedCardDef | undefined {
+  for (const deck of PLAYER_DECKS) {
+    const hit = deck.cards.find((c) => c.name === name)
+    if (hit) return hit
+  }
+  return undefined
+}
+
+/** Unique card defs in deck order (for setup preview). */
+export function getUniqueCards(deckId?: string | null): ConstructedCardDef[] {
+  return getDeckCards(deckId)
+}
+
+/** @deprecated muster roster helpers — use getDeckCards / findCardDef */
+export type PlayerTemplate = ConstructedCardDef
+export function getRoster(deckId?: string | null): ConstructedCardDef[] {
+  return getDeckCards(deckId)
+}
 export function findTemplate(
   templateId: string,
   deckId?: string | null,
-): PlayerTemplate | undefined {
-  const preferred = getRoster(deckId).find((t) => t.id === templateId)
-  if (preferred) return preferred
-  for (const deck of PLAYER_DECKS) {
-    const hit = deck.roster.find((t) => t.id === templateId)
-    if (hit) return hit
-  }
-  return undefined
+): ConstructedCardDef | undefined {
+  return findCardDef(templateId, deckId)
+}
+export function findTemplateByName(name: string): ConstructedCardDef | undefined {
+  return findCardDefByName(name)
+}
+export function musterForTurn(_turnNumber: number): number {
+  return 0
 }
 
-export function findTemplateByName(name: string): PlayerTemplate | undefined {
-  for (const deck of PLAYER_DECKS) {
-    const hit = deck.roster.find((t) => t.name === name)
-    if (hit) return hit
-  }
-  return undefined
-}
-
-export function musterForTurn(turnNumber: number): number {
-  return Math.min(10, 3 + Math.floor((turnNumber - 1) / 2))
-}
-
-/** @deprecated use getRoster / PLAYER_DECKS — kept for brief compatibility */
-export const PLAYER_ROSTER = getRoster(DEFAULT_PLAYER_DECK)
+/** @deprecated */
+export const PLAYER_ROSTER = getDeckCards(DEFAULT_PLAYER_DECK)

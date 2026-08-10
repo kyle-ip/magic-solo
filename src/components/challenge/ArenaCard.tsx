@@ -81,9 +81,11 @@ export function ArenaCard({
     .filter(Boolean)
     .join(' ')
 
-  // Card art already prints P/T — only overlay when damage changes the effective toughness.
-  const showPt = power != null && toughness != null && markedDamage > 0
-  const pt = showPt ? `${power}/${Math.max(0, toughness - markedDamage)}` : null
+  // Card art already prints P/T — overlay when damaged so effective toughness is obvious.
+  const showPt = toughness != null && markedDamage > 0
+  const pt = showPt
+    ? `${power ?? 0}/${Math.max(0, toughness - markedDamage)}`
+    : null
 
   const floaterText =
     floater?.amount != null
@@ -99,9 +101,15 @@ export function ArenaCard({
       <img src={assetUrl(image)} alt={name} draggable={false} />
       {badge ? <span className="arena-card-badge">{badge}</span> : null}
       {note ? <span className="arena-card-note">{note}</span> : null}
-      {pt ? <span className="arena-card-pt">{pt}</span> : null}
       {markedDamage > 0 ? (
-        <span className="arena-card-dmg">−{markedDamage}</span>
+        <span className="arena-card-dmg" title={`−${markedDamage}`}>
+          −{markedDamage}
+        </span>
+      ) : null}
+      {pt ? (
+        <span className="arena-card-pt is-damaged" title={pt}>
+          {pt}
+        </span>
       ) : null}
       {floaterText ? (
         <span
@@ -120,6 +128,13 @@ export function ArenaCard({
     onClick || onDoubleClick || onPointerDown || onContextMenu,
   )
 
+  const damageTitle =
+    markedDamage > 0 && toughness != null
+      ? `${name} (−${markedDamage}, ${power ?? 0}/${Math.max(0, toughness - markedDamage)})`
+      : badge
+        ? `${name} — ${badge}`
+        : name
+
   if (interactive) {
     const btnProps: ButtonHTMLAttributes<HTMLButtonElement> = {
       type: 'button',
@@ -131,7 +146,7 @@ export function ArenaCard({
       onContextMenu,
       onPointerDown,
       onDragStart: (e) => e.preventDefault(),
-      title: badge ? `${name} — ${badge}` : name,
+      title: damageTitle,
       style: onPointerDown ? { touchAction: 'none', userSelect: 'none' } : undefined,
       ...dataProps,
     }
@@ -143,7 +158,7 @@ export function ArenaCard({
       className={className}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
-      title={name}
+      title={damageTitle}
       {...dataProps}
     >
       {inner}

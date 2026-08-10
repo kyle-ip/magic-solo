@@ -3,13 +3,17 @@ import {
   beginPlayerTurn,
   checkHydraWin,
   checkHordeWin,
+  clearChallengeDamage,
+  clearSwallowWindow,
   damagePlayer,
   damagePlayerCreatures,
   destroyChallengePermanent,
   headsOf,
   minotaursOf,
   revelersOf,
+  tickHydraHide,
 } from './helpers'
+import { discardCards } from './playerDraw'
 import { castHydraCard } from './hydra'
 import { castHordeCard, resolveHordeCombat } from './horde'
 import { castGodCard, resolveGodCombat } from './god'
@@ -28,8 +32,10 @@ function nextFx(
 
 /** Begin challenge turn: untap / build cast queue / show first reveal. */
 export function beginChallengeTurn(state: GameState): GameState {
-  let next: GameState = {
-    ...state,
+  // Cleanup from previous (player) turn
+  let next: GameState = clearChallengeDamage(state)
+  next = {
+    ...next,
     activeSide: 'challenge',
     playerPhase: 'end',
     selectedAttackers: [],
@@ -37,24 +43,34 @@ export function beginChallengeTurn(state: GameState): GameState {
     awaitingAdvance: false,
     castQueue: [],
     revealed: [],
-    flags: { ...state.flags, hydraTriggersDone: false },
+    flags: {
+      ...next.flags,
+      hydraTriggersDone: false,
+      hydraBreathDone: false,
+    },
+    player: {
+      ...next.player,
+      heroes: next.player.heroes.map((h) => ({ ...h, preventUsedThisTurn: false })),
+    },
   }
   next = pushLog(next, 'challengeTurn', 'cast')
 
   if (next.code === 'tfth') {
+    // Swallow window ends at the start of the Hydra's next turn
+    next = clearSwallowWindow(next)
     next = {
       ...next,
       flags: {
         ...next.flags,
         cannotCastSpells: false,
-        headsIndestructible: false,
+        // Do NOT clear Hide here — lasts until end of Hydra's next turn
       },
       challenge: {
         ...next.challenge,
         battlefield: next.challenge.battlefield.map((c) => {
-          if (!c.isHead) return { ...c, indestructible: false }
-          if (c.skipUntap) return { ...c, skipUntap: false, indestructible: false }
-          return { ...c, tapped: false, skipUntap: false, indestructible: false }
+          if (!c.isHead) return c
+          if (c.skipUntap) return { ...c, skipUntap: false }
+          return { ...c, tapped: false, skipUntap: false }
         }),
       },
     }
@@ -185,11 +201,41 @@ function afterCasts(state: GameState): GameState {
 function finishHydra(state: GameState): GameState {
   let next = state
 
+  // Official order: Hydra "combat" breath first, then end-step elite triggers
+  if (!next.flags.hydraBreathDone) {
+    next = { ...next, challengePhase: 'breath', revealed: [] }
+    const untapped = headsOf(next).filter((h) => !h.tapped)
+    let breath = 0
+    for (const h of untapped) breath += h.isElite ? 2 : 1
+    if (breath > 0) {
+      if (next.flags.preventCombatDamageThisTurn) {
+        next = pushLog(next, 'fogPreventedBreath', 'good', { n: breath })
+      } else {
+        next = damagePlayer(next, breath)
+        next = nextFx(next, 'damage', breath, 'Hydra breath')
+        next = pushLog(next, 'hydraBreath', 'bad', { n: breath })
+      }
+    }
+    next = { ...next, flags: { ...next.flags, hydraBreathDone: true } }
+    if (next.status !== 'playing') return next
+  }
+
   if (!next.flags.hydraTriggersDone) {
     next = {
       ...next,
       challengePhase: 'triggers',
-      flags: { ...next.flags, hydraTriggersDone: true },
+    }
+
+    // Non-cast triggers first so a Savage cast doesn't skip them
+    for (const head of headsOf(next)) {
+      if (head.name === 'Shrieking Titan Head') {
+        next = discardCards(next, 2)
+        next = pushLog(next, 'shriekingDiscard', 'bad')
+      }
+      if (head.name === 'Snapping Fang Head') {
+        next = damagePlayer(next, 1)
+        next = nextFx(next, 'damage', 1)
+      }
     }
 
     for (const head of headsOf(next)) {
@@ -200,50 +246,45 @@ function finishHydra(state: GameState): GameState {
             ...next,
             challenge: { ...next.challenge, library: next.challenge.library.slice(1) },
             castQueue: [extra],
+            flags: { ...next.flags, hydraTriggersDone: true },
           }
           return presentNextCast(next)
         }
       }
-      if (head.name === 'Shrieking Titan Head') {
-        next = damagePlayer(next, 2)
-        next = nextFx(next, 'damage', 2, 'Discard')
-        next = pushLog(next, 'shriekingDiscard', 'bad')
-      }
-      if (head.name === 'Snapping Fang Head') {
-        next = damagePlayer(next, 1)
-        next = nextFx(next, 'damage', 1)
-      }
     }
-  }
-
-  next = { ...next, challengePhase: 'breath', revealed: [] }
-  const untapped = headsOf(next).filter((h) => !h.tapped)
-  let breath = 0
-  for (const h of untapped) breath += h.isElite ? 2 : 1
-  if (breath > 0) {
-    next = damagePlayer(next, breath)
-    next = nextFx(next, 'damage', breath, 'Hydra breath')
-    next = pushLog(next, 'hydraBreath', 'bad', { n: breath })
+    next = { ...next, flags: { ...next.flags, hydraTriggersDone: true } }
   }
 
   if (next.status !== 'playing') return next
 
+  next = tickHydraHide(next)
+
   if (next.flags.extraChallengeTurn) {
     next = {
       ...next,
-      flags: { ...next.flags, extraChallengeTurn: false, hydraTriggersDone: false },
+      flags: {
+        ...next.flags,
+        extraChallengeTurn: false,
+        hydraTriggersDone: false,
+        hydraBreathDone: false,
+      },
     }
     next = pushLog(next, 'hydraExtraTurn', 'bad')
     return beginChallengeTurn(next)
   }
 
+  // End of Hydra turn — check win
   next = checkHydraWin(next)
   if (next.status !== 'playing') return next
   next = {
     ...next,
     challengePhase: 'done',
     activeSide: 'player',
-    flags: { ...next.flags, hydraTriggersDone: false },
+    flags: {
+      ...next.flags,
+      hydraTriggersDone: false,
+      hydraBreathDone: false,
+    },
   }
   return beginPlayerTurn(next)
 }
@@ -388,6 +429,15 @@ function clearGodFlags(state: GameState): GameState {
       ...state.flags,
       impulsiveCharge: false,
       xenagosMustAttack: false,
+      xenagosTrample: false,
+    },
+    challenge: {
+      ...state.challenge,
+      battlefield: state.challenge.battlefield.map((c) =>
+        c.isGod
+          ? { ...c, keywords: c.keywords.filter((k) => !/trample/i.test(k)) }
+          : c,
+      ),
     },
   }
 }

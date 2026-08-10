@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   getPlayerDeck,
+  type ConstructedCardDef,
   type PlayerDeckId,
 } from '../../game/playerDecks'
-import type { PlayerTemplate } from '../../game/types'
 import { assetUrl } from '../../utils/assetUrl'
 
 interface DeckRosterModalProps {
@@ -22,12 +22,12 @@ export function DeckRosterModal({
 }: DeckRosterModalProps) {
   const { t } = useTranslation()
   const deck = getPlayerDeck(deckId)
-  const [focusId, setFocusId] = useState(deck.roster[0]?.id ?? '')
-  const focus: PlayerTemplate | undefined =
-    deck.roster.find((c) => c.id === focusId) ?? deck.roster[0]
+  const [focusId, setFocusId] = useState(deck.cards[0]?.id ?? '')
+  const focus: ConstructedCardDef | undefined =
+    deck.cards.find((c) => c.id === focusId) ?? deck.cards[0]
 
   useEffect(() => {
-    setFocusId(getPlayerDeck(deckId).roster[0]?.id ?? '')
+    setFocusId(getPlayerDeck(deckId).cards[0]?.id ?? '')
   }, [deckId])
 
   useEffect(() => {
@@ -37,6 +37,11 @@ export function DeckRosterModal({
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
+
+  const costLabel = (card: ConstructedCardDef) => {
+    if (card.kind === 'land') return t('challenge.land')
+    return card.manaCost || t('challenge.manaCost', { n: card.cmc })
+  }
 
   return (
     <div className="prompt-backdrop" role="presentation" onClick={onClose}>
@@ -60,7 +65,7 @@ export function DeckRosterModal({
 
         <div className="deck-roster-layout">
           <div className="deck-roster-grid" role="listbox">
-            {deck.roster.map((card) => {
+            {deck.cards.map((card) => {
               const selected = focus?.id === card.id
               return (
                 <button
@@ -77,8 +82,10 @@ export function DeckRosterModal({
                   <span className="deck-roster-tile-meta">
                     <strong>{zh ? card.nameZh : card.name}</strong>
                     <em>
-                      {card.power}/{card.toughness} ·{' '}
-                      {t('challenge.musterCost', { n: card.cost })}
+                      {card.power != null
+                        ? `${card.power}/${card.toughness} · `
+                        : ''}
+                      {card.quantity}× · {costLabel(card)}
                     </em>
                   </span>
                 </button>
@@ -97,8 +104,10 @@ export function DeckRosterModal({
                   {zh ? focus.typeLineZh : focus.typeLine}
                 </p>
                 <p className="deck-roster-stats">
-                  {focus.power}/{focus.toughness} ·{' '}
-                  {t('challenge.musterCost', { n: focus.cost })}
+                  {focus.power != null
+                    ? `${focus.power}/${focus.toughness} · `
+                    : ''}
+                  {focus.quantity}× · {costLabel(focus)}
                 </p>
                 <p className="deck-roster-oracle">
                   {zh ? focus.oracleTextZh : focus.oracleText}

@@ -8,6 +8,8 @@ import {
   resolveHordeCombat,
 } from './challengeTurn'
 import { DEFAULT_PLAYER_DECK } from './playerDecks'
+import { castFromHand } from './playerCast'
+import { emptyManaPool } from './mana'
 import { defsFromDeck, type ChallengeCode, type GameState, type SetupConfig } from './types'
 import {
   applyHeadDamageChoice,
@@ -20,13 +22,16 @@ import {
   beginPlayerTurn,
   checkHydraWin,
   dealDamageToChallengeCreature,
-  summonPlayerCreature,
+  emptyFlags,
+  returnCreatureFromGraveyard,
 } from './helpers'
 import { pushLog } from './log'
 
 export type GameAction =
   | { type: 'START'; config: SetupConfig }
-  | { type: 'SUMMON'; templateId: string }
+  | { type: 'PLAY_LAND'; handId: string }
+  | { type: 'CAST'; handId: string; targetId?: string; fighterId?: string }
+  | { type: 'CANCEL_PENDING' }
   | { type: 'TOGGLE_ATTACKER'; id: string }
   | { type: 'ASSIGN_TARGET'; attackerId: string; targetId: string }
   | { type: 'SET_PHASE'; phase: 'main' | 'combat' | 'end' }
@@ -38,26 +43,6 @@ export type GameAction =
   | { type: 'DEAL_DIRECT_HEAD'; headId: string; amount: number }
   | { type: 'CLEAR_FX' }
   | { type: 'RESET' }
-
-const baseFlags = {
-  playerTurnsRemaining: 3,
-  cannotCastSpells: false,
-  headsIndestructible: false,
-  swallowExileActive: false,
-  extraChallengeTurn: false,
-  consumingRage: false,
-  descendPrey: false,
-  touchHorned: false,
-  unquenchable: false,
-  interventionDamage: false,
-  impulsiveCharge: false,
-  impulsiveReturnDamage: false,
-  ripToPieces: false,
-  xenagosMustAttack: false,
-  danceOfFlame: false,
-  danceOfPanic: false,
-  hydraTriggersDone: false,
-}
 
 export function createInitialSetup(code: ChallengeCode): GameState {
   return {
@@ -72,9 +57,21 @@ export function createInitialSetup(code: ChallengeCode): GameState {
     playerDeckId: DEFAULT_PLAYER_DECK,
     castQueue: [],
     awaitingAdvance: false,
-    player: { life: 20, muster: 0, creatures: [], graveyard: [], exile: [] },
+    pendingCast: null,
+    player: {
+      life: 20,
+      library: [],
+      hand: [],
+      lands: [],
+      creatures: [],
+      graveyard: [],
+      exile: [],
+      heroes: [],
+      landsPlayedThisTurn: 0,
+      manaPool: emptyManaPool(),
+    },
     challenge: { library: [], battlefield: [], graveyard: [] },
-    flags: { ...baseFlags },
+    flags: { ...emptyFlags(), playerTurnsRemaining: 3 },
     log: [],
     prompt: null,
     selectedAttackers: [],
@@ -98,22 +95,29 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return startGod(defs, theme, action.config)
     }
 
-    case 'SUMMON': {
+    case 'PLAY_LAND': {
       if (state.status !== 'playing' || state.activeSide !== 'player') return state
-      if (state.playerPhase !== 'main') {
-        return pushLog(state, 'musterMainOnly', 'info')
-      }
-      return summonPlayerCreature(state, action.templateId)
+      return castFromHand(state, action.handId)
     }
+
+    case 'CAST': {
+      if (state.status !== 'playing' || state.activeSide !== 'player') return state
+      return castFromHand(state, action.handId, {
+        targetId: action.targetId,
+        fighterId: action.fighterId,
+      })
+    }
+
+    case 'CANCEL_PENDING':
+      return { ...state, pendingCast: null }
 
     case 'SET_PHASE': {
       if (state.activeSide !== 'player' || state.status !== 'playing') return state
-      return { ...state, playerPhase: action.phase, phase: action.phase }
+      return { ...state, playerPhase: action.phase, phase: action.phase, pendingCast: null }
     }
 
     case 'TOGGLE_ATTACKER': {
       if (state.activeSide !== 'player' || state.status !== 'playing') return state
-      // Clicking a creature on main jumps into combat — no dragging required.
       let next = state
       if (next.playerPhase === 'main') {
         next = { ...next, playerPhase: 'combat', phase: 'combat' }
@@ -137,6 +141,21 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'ASSIGN_TARGET': {
+      if (state.pendingCast) {
+        const p = state.pendingCast
+        if (p.mode === 'damage' || p.mode === 'pump') {
+          return castFromHand(state, p.handInstanceId, { targetId: action.targetId })
+        }
+        if (p.mode === 'fight_mine') {
+          return castFromHand(state, p.handInstanceId, { fighterId: action.targetId })
+        }
+        if (p.mode === 'fight_theirs') {
+          return castFromHand(state, p.handInstanceId, {
+            fighterId: p.fighterId,
+            targetId: action.targetId,
+          })
+        }
+      }
       if (!state.selectedAttackers.includes(action.attackerId)) return state
       return {
         ...state,
@@ -180,9 +199,18 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case 'ANSWER_PROMPT': {
       if (!state.prompt) return state
       const resume = state.prompt.resume
+      const kind = state.prompt.kind
+
+      if (kind === 'vitality_return') {
+        let next = returnCreatureFromGraveyard(state, action.optionId)
+        if (next.activeSide === 'challenge' && !next.prompt && next.status === 'playing') {
+          next = continueAfterPrompt(next)
+        }
+        return next
+      }
 
       if (state.code === 'tfth') {
-        if (state.prompt.kind === 'choose_head_damage') {
+        if (kind === 'choose_head_damage') {
           return applyHeadDamageChoice(
             state,
             action.optionId,
@@ -198,7 +226,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
       if (state.code === 'tbth' && resume === 'horde_combat') {
         const cleared =
-          action.optionId === 'no_blocks'
+          action.optionId === 'no_blocks' && !state.flags.descendPrey
             ? { ...state, blockAssignments: {} }
             : state
         let next = resolveHordeCombat(cleared)
@@ -231,6 +259,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             ...next.flags,
             impulsiveCharge: false,
             xenagosMustAttack: false,
+            xenagosTrample: false,
           },
         }
         return next

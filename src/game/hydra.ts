@@ -2,10 +2,12 @@ import { makeInstance } from './buildDeck'
 import {
   beginPlayerTurn,
   checkHydraWin,
+  creatureToGyCard,
   damagePlayer,
   destroyChallengePermanent,
   effectiveToughness,
   headsOf,
+  isIndestructible,
 } from './helpers'
 import { pushLog } from './log'
 import type { CardDef, CardInstance, GameState, SetupConfig } from './types'
@@ -27,7 +29,6 @@ export function startHydra(
   const heads: CardInstance[] = []
   for (let i = 0; i < starting; i += 1) heads.push(makeInstance(headDef))
 
-  // Library: full deck minus starting heads taken from Hydra Head copies
   const library = expandLibrary(defs)
   let removed = 0
   const filtered = library.filter((c) => {
@@ -47,8 +48,10 @@ export function startHydra(
     },
   }
   state = pushLog(state, 'hydraStart', 'info', { n: starting })
+  if (state.player.heroes.length) {
+    state = pushLog(state, 'heroesReady', 'info', { n: state.player.heroes.length })
+  }
   state = beginPlayerTurn(state)
-  // Official: you go first, don't draw — muster already granted as simplified draw replacement
   return state
 }
 
@@ -60,13 +63,19 @@ export function castHydraCard(state: GameState, card: CardInstance): GameState {
       ...next,
       challenge: {
         ...next.challenge,
-        battlefield: [...next.challenge.battlefield, { ...card, markedDamage: 0 }],
+        battlefield: [
+          ...next.challenge.battlefield,
+          {
+            ...card,
+            markedDamage: 0,
+            indestructible: next.flags.headsIndestructible,
+          },
+        ],
       },
     }
     return pushLog(next, 'entersBattlefield', 'bad', { name: card.name })
   }
 
-  // Sorceries
   switch (card.name) {
     case 'Disorienting Glower':
       next = {
@@ -120,13 +129,17 @@ export function castHydraCard(state: GameState, card: CardInstance): GameState {
             ),
             battlefield: [
               ...next.challenge.battlefield,
-              ...revive.map((h) => ({ ...h, markedDamage: 0, tapped: false })),
+              ...revive.map((h) => ({
+                ...h,
+                markedDamage: 0,
+                tapped: false,
+                indestructible: next.flags.headsIndestructible,
+              })),
             ],
           },
         }
         return pushLog(next, 'grownFromStumpTwo', 'bad')
       }
-      // Reveal until Head
       const lib = [...next.challenge.library]
       const milled: CardInstance[] = []
       let found: CardInstance | null = null
@@ -145,17 +158,34 @@ export function castHydraCard(state: GameState, card: CardInstance): GameState {
           library: lib,
           graveyard: [...milled, ...next.challenge.graveyard],
           battlefield: found
-            ? [...next.challenge.battlefield, { ...found, markedDamage: 0 }]
+            ? [
+                ...next.challenge.battlefield,
+                {
+                  ...found,
+                  markedDamage: 0,
+                  indestructible: next.flags.headsIndestructible,
+                },
+              ]
             : next.challenge.battlefield,
         },
       }
-      return pushLog(next, found ? 'grownFromStumpFinds' : 'grownFromStumpNone', 'bad', found ? { name: found.name } : undefined)
+      return pushLog(
+        next,
+        found ? 'grownFromStumpFinds' : 'grownFromStumpNone',
+        'bad',
+        found ? { name: found.name } : undefined,
+      )
     }
 
     case "Hydra's Impenetrable Hide":
       next = {
         ...next,
-        flags: { ...next.flags, headsIndestructible: true },
+        flags: {
+          ...next.flags,
+          headsIndestructible: true,
+          // Survives through this Hydra turn-end and the next (official: until end of Hydra's next turn)
+          hideExpiresInHydraEnds: 2,
+        },
         challenge: {
           ...next.challenge,
           battlefield: next.challenge.battlefield.map((c) =>
@@ -228,20 +258,28 @@ export function castHydraCard(state: GameState, card: CardInstance): GameState {
           graveyard: [card, ...next.challenge.graveyard],
         },
       }
-      // Hydra casting this against itself per oracle — destroy target Head (player chooses / auto weakest)
-      const heads = headsOf(next).sort(
-        (a, b) => effectiveToughness(a) - effectiveToughness(b),
-      )
+      const heads = headsOf(next)
       if (!heads.length) return pushLog(next, 'strikeNoHeads', 'info')
-      const target = heads[0]
-      const elite = target.isElite
-      next = destroyChallengePermanent(next, target.instanceId)
-      if (elite) {
-        next = {
-          ...next,
-          flags: { ...next.flags, extraChallengeTurn: true },
-        }
-        next = pushLog(next, 'eliteHeadExtraTurn', 'bad')
+      if (heads.length === 1) {
+        return resolveStrikeHead(next, heads[0].instanceId)
+      }
+      next = {
+        ...next,
+        prompt: {
+          id: `p-${Date.now()}`,
+          kind: 'choose_strike_head',
+          titleKey: 'strikeWeakSpot',
+          messageKey: 'chooseHeadDestroy',
+          resume: 'strike_head',
+          options: heads.map((h) => ({
+            id: h.instanceId,
+            labelKey: 'chooseHeadOpt',
+            labelParams: {
+              pt: `${h.power ?? 0}/${effectiveToughness(h)}`,
+            },
+            name: h.name,
+          })),
+        },
       }
       return next
     }
@@ -321,6 +359,26 @@ export function castHydraCard(state: GameState, card: CardInstance): GameState {
   }
 }
 
+export function resolveStrikeHead(state: GameState, headId: string): GameState {
+  let next: GameState = { ...state, prompt: null }
+  const target = next.challenge.battlefield.find((c) => c.instanceId === headId)
+  if (!target || !target.isHead) return pushLog(next, 'strikeNoHeads', 'info')
+  const elite = target.isElite
+  next = destroyChallengePermanent(next, target.instanceId)
+  if (elite && next.status === 'playing') {
+    // Only if destroy succeeded (not prevented by indestructible)
+    const stillThere = next.challenge.battlefield.some((c) => c.instanceId === headId)
+    if (!stillThere) {
+      next = {
+        ...next,
+        flags: { ...next.flags, extraChallengeTurn: true },
+      }
+      next = pushLog(next, 'eliteHeadExtraTurn', 'bad')
+    }
+  }
+  return next
+}
+
 function exilePlayerCreature(state: GameState, id: string): GameState {
   const creature = state.player.creatures.find((c) => c.instanceId === id)
   if (!creature) return state
@@ -336,6 +394,21 @@ function exilePlayerCreature(state: GameState, id: string): GameState {
   return pushLog(next, 'exiledSwallow', 'bad', { name: creature.name })
 }
 
+function tapHead(state: GameState, headId: string): GameState {
+  let next: GameState = {
+    ...state,
+    challenge: {
+      ...state.challenge,
+      battlefield: state.challenge.battlefield.map((c) =>
+        c.instanceId === headId ? { ...c, tapped: true } : c,
+      ),
+    },
+  }
+  const head = next.challenge.battlefield.find((c) => c.instanceId === headId)
+  if (head) next = pushLog(next, 'headTapped', 'good', { name: head.name })
+  return next
+}
+
 export function resolveHydraPrompt(
   state: GameState,
   optionId: string,
@@ -348,31 +421,37 @@ export function resolveHydraPrompt(
     if (optionId === 'life' || next.player.creatures.length === 0) {
       return damagePlayer(next, 3)
     }
-    // Sacrifice first creature, tap a head
-    const [sac, ...rest] = next.player.creatures
-    next = {
+    if (next.player.creatures.length === 1) {
+      return afterDistractSacrifice(next, next.player.creatures[0].instanceId)
+    }
+    return {
       ...next,
-      player: {
-        ...next.player,
-        creatures: rest,
-        graveyard: [sac, ...next.player.graveyard],
+      prompt: {
+        id: `p-${Date.now()}`,
+        kind: 'choose_distract_creature',
+        titleKey: 'distractHydra',
+        messageKey: 'chooseSacrificeCreature',
+        resume: 'distract_creature',
+        options: next.player.creatures.map((c) => ({
+          id: c.instanceId,
+          labelKey: 'sacrificeCreatureOpt',
+          labelParams: { pt: `${c.power}/${c.toughness}` },
+          name: c.name,
+        })),
       },
     }
-    next = pushLog(next, 'youSacrifice', 'info', { name: sac.name })
-    const head = headsOf(next)[0]
-    if (head) {
-      next = {
-        ...next,
-        challenge: {
-          ...next.challenge,
-          battlefield: next.challenge.battlefield.map((c) =>
-            c.instanceId === head.instanceId ? { ...c, tapped: true } : c,
-          ),
-        },
-      }
-      next = pushLog(next, 'headTapped', 'good', { name: head.name })
-    }
-    return next
+  }
+
+  if (kind === 'choose_distract_creature') {
+    return afterDistractSacrifice(next, optionId)
+  }
+
+  if (kind === 'choose_distract_head') {
+    return tapHead(next, optionId)
+  }
+
+  if (kind === 'choose_strike_head') {
+    return resolveStrikeHead(next, optionId)
   }
 
   if (kind === 'noxious_mode') {
@@ -383,7 +462,10 @@ export function resolveHydraPrompt(
         player: {
           ...next.player,
           creatures: next.player.creatures.filter((c) => !c.tapped),
-          graveyard: [...tapped, ...next.player.graveyard],
+          graveyard: [
+            ...tapped.map((c) => creatureToGyCard(c, next.playerDeckId)),
+            ...next.player.graveyard,
+          ],
         },
       }
       return pushLog(next, 'noxiousBreath', 'bad', { n: tapped.length })
@@ -395,11 +477,40 @@ export function resolveHydraPrompt(
     return exilePlayerCreature(next, optionId)
   }
 
-  if (kind === 'choose_head_damage' && next.prompt?.amount) {
-    // handled in reducer with amount — fallthrough
-  }
-
   return next
+}
+
+function afterDistractSacrifice(state: GameState, creatureId: string): GameState {
+  const sac = state.player.creatures.find((c) => c.instanceId === creatureId)
+  if (!sac) return damagePlayer(state, 3)
+  let next: GameState = {
+    ...state,
+    player: {
+      ...state.player,
+      creatures: state.player.creatures.filter((c) => c.instanceId !== creatureId),
+      graveyard: [creatureToGyCard(sac, state.playerDeckId), ...state.player.graveyard],
+    },
+  }
+  next = pushLog(next, 'youSacrifice', 'info', { name: sac.name })
+  const heads = headsOf(next)
+  if (heads.length === 0) return next
+  if (heads.length === 1) return tapHead(next, heads[0].instanceId)
+  return {
+    ...next,
+    prompt: {
+      id: `p-${Date.now()}`,
+      kind: 'choose_distract_head',
+      titleKey: 'distractHydra',
+      messageKey: 'chooseHeadTap',
+      resume: 'distract_head',
+      options: heads.map((h) => ({
+        id: h.instanceId,
+        labelKey: 'chooseHeadOpt',
+        labelParams: { pt: `${h.power ?? 0}/${effectiveToughness(h)}` },
+        name: h.name,
+      })),
+    },
+  }
 }
 
 export function applyHeadDamageChoice(
@@ -410,9 +521,7 @@ export function applyHeadDamageChoice(
   let next: GameState = { ...state, prompt: null }
   const card = next.challenge.battlefield.find((c) => c.instanceId === headId)
   if (!card) return next
-  if (card.indestructible || next.flags.headsIndestructible) {
-    return pushLog(next, 'damagePrevented', 'info')
-  }
+  // Indestructible does not prevent damage
   const updated = { ...card, markedDamage: card.markedDamage + amount }
   next = {
     ...next,
@@ -424,126 +533,17 @@ export function applyHeadDamageChoice(
     },
   }
   next = pushLog(next, 'takesDamage', 'info', { name: card.name, n: amount })
-  if (effectiveToughness(updated) <= 0) {
+  if (effectiveToughness(updated) <= 0 && !isIndestructible(next, updated)) {
     next = destroyChallengePermanent(next, headId)
   }
   return next
 }
 
+/** Legacy bulk turn — Challenge Experience uses challengeTurn.ts instead. */
 export function runHydraTurn(state: GameState): GameState {
-  let next: GameState = {
-    ...state,
-    activeSide: 'challenge',
-    phase: 'hydra',
-    selectedAttackers: [],
-    attackAssignments: {},
-  }
-  next = pushLog(next, 'hydraTurn', 'cast')
-
-  // Clear cannot cast from previous glower at start of hydra turn (after player's restricted turn)
-  // Rules: until Hydra's next turn — so clear at beginning of this hydra turn
-  next = {
-    ...next,
-    flags: {
-      ...next.flags,
-      cannotCastSpells: false,
-      headsIndestructible: false,
-    },
-    challenge: {
-      ...next.challenge,
-      battlefield: next.challenge.battlefield.map((c) => ({
-        ...c,
-        indestructible: false,
-        tapped: c.skipUntap ? c.tapped : false,
-        skipUntap: false,
-        // Untap heads that aren't skipUntap
-      })),
-    },
-  }
-  // Proper untap
-  next = {
-    ...next,
-    challenge: {
-      ...next.challenge,
-      battlefield: next.challenge.battlefield.map((c) => {
-        if (!c.isHead) return c
-        if (c.skipUntap) return { ...c, skipUntap: false }
-        return { ...c, tapped: false }
-      }),
-    },
-  }
-
-  // Return swallowed creatures if any when a head left — handled on destroy; at hydra turn clear flag returns
-  if (next.flags.swallowExileActive && next.player.exile.length) {
-    // Keep until a head leaves — already returned in destroyChallengePermanent? Add return on head leave in helpers
-  }
-
-  // Cast top card
-  const top = next.challenge.library[0]
-  if (top) {
-    next = {
-      ...next,
-      challenge: { ...next.challenge, library: next.challenge.library.slice(1) },
-      revealed: [top],
-    }
-    next = castHydraCard(next, top)
-    if (next.prompt) return next
-  } else {
-    next = pushLog(next, 'hydraLibraryEmpty', 'info')
-  }
-
-  // End step head triggers
-  for (const head of headsOf(next)) {
-    if (head.name === 'Savage Vigor Head') {
-      const extra = next.challenge.library[0]
-      if (extra) {
-        next = {
-          ...next,
-          challenge: { ...next.challenge, library: next.challenge.library.slice(1) },
-        }
-        next = castHydraCard(next, extra)
-        if (next.prompt) return next
-      }
-    }
-    if (head.name === 'Shrieking Titan Head') {
-      // Discard → lose 2 life as simplified
-      next = damagePlayer(next, 2)
-      next = pushLog(next, 'shriekingDiscard', 'bad')
-    }
-    if (head.name === 'Snapping Fang Head') {
-      next = damagePlayer(next, 1)
-    }
-  }
-
-  // Breath damage from untapped heads
-  const untapped = headsOf(next).filter((h) => !h.tapped)
-  let breath = 0
-  for (const h of untapped) {
-    breath += h.isElite ? 2 : 1
-  }
-  if (breath > 0) {
-    next = damagePlayer(next, breath)
-    next = pushLog(next, 'hydraBreathHeads', 'bad', { n: breath })
-  }
-
-  if (next.status !== 'playing') return next
-
-  // Extra turn?
-  if (next.flags.extraChallengeTurn) {
-    next = {
-      ...next,
-      flags: { ...next.flags, extraChallengeTurn: false },
-    }
-    next = pushLog(next, 'hydraExtraTurn', 'bad')
-    return runHydraTurn(next)
-  }
-
-  next = checkHydraWin(next)
-  if (next.status !== 'playing') return next
-  return beginPlayerTurn(next)
+  return beginPlayerTurn(checkHydraWin(state))
 }
 
-/** When a head leaves and swallow is active, return exiled creatures */
 export function maybeReturnSwallow(state: GameState): GameState {
   if (!state.flags.swallowExileActive || !state.player.exile.length) return state
   let next: GameState = {

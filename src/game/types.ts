@@ -1,4 +1,10 @@
 import type { DeckCard, DeckTheme } from '../types'
+import type { HeroInstance } from './heroes'
+import type { ManaPool } from './mana'
+import type { PlayerCardKind, PlayerEffect } from './playerDecks'
+
+export type { HeroInstance } from './heroes'
+export type { ManaPool } from './mana'
 
 export type ChallengeCode = 'tfth' | 'tbth' | 'tdag'
 
@@ -39,9 +45,31 @@ export interface CardInstance {
   isGod: boolean
 }
 
+export interface PlayerCardInstance {
+  instanceId: string
+  defId: string
+  name: string
+  nameZh: string
+  typeLine: string
+  typeLineZh: string
+  oracleText: string
+  oracleTextZh: string
+  manaCost: string
+  cmc: number
+  power: number | null
+  toughness: number | null
+  keywords: string[]
+  kind: PlayerCardKind
+  produces?: Array<'W' | 'U' | 'B' | 'R' | 'G' | 'C'>
+  effect: PlayerEffect
+  image: string
+}
+
 export interface PlayerCreature {
   instanceId: string
-  templateId: string
+  defId: string
+  /** @deprecated alias of defId for older call sites */
+  templateId?: string
   name: string
   power: number
   toughness: number
@@ -50,7 +78,30 @@ export interface PlayerCreature {
   summoningSickness: boolean
   keywords: string[]
   image: string
+  produces?: Array<'W' | 'U' | 'B' | 'R' | 'G' | 'C'>
+  /** Until-EOT pumps to clear on turn begin */
+  tempPower?: number
+  tempToughness?: number
 }
+
+export interface PlayerLand {
+  instanceId: string
+  defId: string
+  name: string
+  typeLine: string
+  tapped: boolean
+  produces: Array<'W' | 'U' | 'B' | 'R' | 'G' | 'C'>
+  image: string
+  isLand: true
+}
+
+export type PendingCast =
+  | { handInstanceId: string; mode: 'damage' | 'pump' | 'fight_mine' }
+  | {
+      handInstanceId: string
+      mode: 'fight_theirs'
+      fighterId: string
+    }
 
 export interface PlayerTemplate {
   id: string
@@ -64,12 +115,14 @@ export interface PlayerTemplate {
   toughness: number
   cost: number
   keywords: string[]
-  /** Scryfall (or local) card art for Arena hand / board */
   image: string
 }
 
 export type PromptKind =
   | 'choose_head_damage'
+  | 'choose_strike_head'
+  | 'choose_distract_creature'
+  | 'choose_distract_head'
   | 'distract_choice'
   | 'noxious_mode'
   | 'choose_exile_creature'
@@ -119,8 +172,10 @@ export interface SetupConfig {
   startingHeads?: number
   /** Horde: player turns before Horde acts */
   playerTurnsBeforeHorde?: number
-  /** Selected player muster deck */
+  /** Selected player constructed deck */
   playerDeckId?: string
+  /** Selected Hero's Path hero def ids (unique; max 2 Hydra / 3 Horde&God) */
+  heroIds?: string[]
 }
 
 export type PlayerPhase = 'main' | 'combat' | 'end'
@@ -170,18 +225,25 @@ export interface GameState {
   phase: string
   playerPhase: PlayerPhase
   challengePhase: ChallengePhase
-  /** Selected player muster deck id */
+  /** Selected player constructed deck id */
   playerDeckId: string
   /** Cards waiting to be revealed/cast one-by-one (for Arena-like pacing) */
   castQueue: CardInstance[]
   /** UI should play reveal animation then dispatch ADVANCE */
   awaitingAdvance: boolean
+  /** Player spell awaiting a click target */
+  pendingCast: PendingCast | null
   player: {
     life: number
-    muster: number
+    library: PlayerCardInstance[]
+    hand: PlayerCardInstance[]
+    lands: PlayerLand[]
     creatures: PlayerCreature[]
-    graveyard: PlayerCreature[]
+    graveyard: PlayerCardInstance[]
     exile: PlayerCreature[]
+    heroes: HeroInstance[]
+    landsPlayedThisTurn: number
+    manaPool: ManaPool
   }
   challenge: {
     library: CardInstance[]
@@ -192,6 +254,8 @@ export interface GameState {
     playerTurnsRemaining: number
     cannotCastSpells: boolean
     headsIndestructible: boolean
+    /** Countdown: Hide expires after this many Hydra turn-ends (cast sets to 2). */
+    hideExpiresInHydraEnds: number
     swallowExileActive: boolean
     extraChallengeTurn: boolean
     consumingRage: boolean
@@ -203,9 +267,13 @@ export interface GameState {
     impulsiveReturnDamage: boolean
     ripToPieces: boolean
     xenagosMustAttack: boolean
+    xenagosTrample: boolean
     danceOfFlame: boolean
     danceOfPanic: boolean
     hydraTriggersDone: boolean
+    hydraBreathDone: boolean
+    /** Fog: prevent combat damage this turn (incl. Hydra breath) */
+    preventCombatDamageThisTurn: boolean
   }
   log: LogEntry[]
   prompt: PromptState | null

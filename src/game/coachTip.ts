@@ -1,31 +1,34 @@
 import type { GameState } from './types'
 
-/** Returns an i18n key under challenge.tip.* for the next suggested action. */
 export function coachTipKey(state: GameState): string {
-  if (state.status === 'won') return 'won'
-  if (state.status === 'lost') return 'lost'
-  if (state.status !== 'playing') return 'muster'
-
-  if (state.prompt?.kind === 'choose_blockers') return 'block'
-  if (state.awaitingAdvance && state.challengePhase === 'reveal') return 'advance'
-  if (state.activeSide === 'challenge') return 'waiting'
-
-  if (state.playerPhase === 'main') {
-    const canMuster =
-      !state.flags.cannotCastSpells &&
-      state.player.muster > 0
-    if (state.player.creatures.length === 0 && canMuster) return 'muster'
-    if (canMuster) return 'mainReady'
-    return 'toCombat'
+  if (state.status !== 'playing') return 'cast'
+  if (state.pendingCast) {
+    if (state.pendingCast.mode === 'damage') return 'targetDamage'
+    if (state.pendingCast.mode === 'pump') return 'targetPump'
+    if (state.pendingCast.mode === 'fight_mine') return 'fightMine'
+    return 'fightTheirs'
   }
-
-  if (state.playerPhase === 'combat') {
-    if (state.selectedAttackers.length === 0) return 'declareAttackers'
-    if (state.code === 'tbth') return 'attackHorde'
-    const needsTarget = state.selectedAttackers.some((id) => !state.attackAssignments[id])
-    if (needsTarget) return 'assignTargets'
-    return 'resolveCombat'
+  if (state.activeSide === 'player') {
+    const canLand =
+      state.playerPhase === 'main' &&
+      state.player.landsPlayedThisTurn === 0 &&
+      state.player.hand.some((c) => c.kind === 'land')
+    if (state.player.lands.length === 0 && canLand) return 'playLand'
+    if (state.player.creatures.length === 0 && state.player.hand.some((c) => c.kind === 'creature')) {
+      return 'cast'
+    }
+    if (state.playerPhase === 'main') return 'mainReady'
+    if (state.playerPhase === 'combat') {
+      if (state.selectedAttackers.length === 0) return 'declareAttackers'
+      if (
+        state.code !== 'tbth' &&
+        state.selectedAttackers.some((id) => !state.attackAssignments[id])
+      ) {
+        return 'assignTargets'
+      }
+      return 'resolveCombat'
+    }
   }
-
-  return 'endTurn'
+  if (state.awaitingAdvance) return 'advance'
+  return 'theirTurn'
 }
