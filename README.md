@@ -2,7 +2,7 @@
 
 Solo web recreation of the three *Magic: The Gathering* Challenge Decks from Theros-block Game Days — Face the Hydra (*Theros*), Battle the Horde (*Born of the Gods*), and Defeat a God (*Journey into Nyx*) — with deck archives, card art, rules, a simplified PvE **Challenge Experience**, and a **Game Assistant** for mixed online/offline play.
 
-**Live:** [GitHub Pages](https://kyle-ip.github.io/magic-solo/) · [Gitee Pages](https://kyle-ip.gitee.io/magic-solo/)
+**Live site:** [https://kyle-ip.github.io/magic-solo/](https://kyle-ip.github.io/magic-solo/)
 
 ## Challenge decks
 
@@ -82,7 +82,7 @@ src/
   data/rules/      EN + ZH rules JSON
   i18n/            UI strings + battle-log messages
 scripts/           Scryfall / cover / local asset fetchers
-.github/workflows/ GitHub + Gitee Pages deploy
+.github/workflows/ GitHub Pages deploy
 ```
 
 Card text and art paths for challenge decks and muster forces live under [`src/data/cards/`](src/data/cards/README.md).
@@ -106,14 +106,16 @@ npm run build
 npm run preview
 ```
 
-## Deploy
+## Deploy (GitHub Pages)
 
-Push to `main` (or run the workflow from **Actions**) fetches assets, builds with `BASE_PATH=/magic-solo/`, and publishes the same `dist/` to GitHub Pages and Gitee Pages (`gh-pages`).
+Repo: [`kyle-ip/magic-solo`](https://github.com/kyle-ip/magic-solo)
 
-| Host | URL | Notes |
-| --- | --- | --- |
-| GitHub | https://kyle-ip.github.io/magic-solo/ | Pages source = GitHub Actions |
-| Gitee | https://kyle-ip.gitee.io/magic-solo/ | Needs repo secrets `GITEE_RSA_PRIVATE_KEY`, `GITEE_PASSWORD` and variable `GITEE_OWNER`; first Pages start on Gitee is manual (`gh-pages`, `/`) |
+1. **Settings → Pages → Source → GitHub Actions**
+2. Push to `main` (or run **Deploy to GitHub Pages** from Actions)
+
+The workflow runs `fetch:cards`, `fetch:display`, and `fetch:local`, then builds with `BASE_PATH=/magic-solo/` and publishes `dist/`.
+
+Site URL: `https://kyle-ip.github.io/magic-solo/`
 
 ## Assets
 

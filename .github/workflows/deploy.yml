@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages and Gitee Pages
+name: Deploy to GitHub Pages
 
 on:
   push:
@@ -38,10 +38,6 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
-      - uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: dist
 
   deploy:
     needs: build
@@ -52,54 +48,3 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
-
-  # Pushes the same built dist/ to Gitee gh-pages, then triggers Pages rebuild.
-  # Enable by setting repository variable GITEE_OWNER (and secrets below).
-  deploy-gitee:
-    needs: build
-    if: ${{ vars.GITEE_OWNER != '' }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: dist
-
-      - name: Push dist to Gitee gh-pages
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.GITEE_RSA_PRIVATE_KEY }}
-          GITEE_OWNER: ${{ vars.GITEE_OWNER }}
-          GITEE_REPO: ${{ vars.GITEE_REPO || 'magic-solo' }}
-        run: |
-          set -euo pipefail
-          if [ -z "${SSH_PRIVATE_KEY}" ]; then
-            echo "Missing secret GITEE_RSA_PRIVATE_KEY"
-            exit 1
-          fi
-          mkdir -p ~/.ssh
-          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -t rsa,ed25519 gitee.com >> ~/.ssh/known_hosts 2>/dev/null
-
-          # Gitee SPA history-mode marker (also shipped via public/.spa)
-          : > dist/.spa
-          : > dist/.nojekyll
-
-          cd dist
-          git init
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -m "Deploy $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          git branch -M gh-pages
-          git remote add origin "git@gitee.com:${GITEE_OWNER}/${GITEE_REPO}.git"
-          git push -f origin gh-pages
-
-      - name: Rebuild Gitee Pages
-        uses: yanglbme/gitee-pages-action@main
-        with:
-          gitee-username: ${{ vars.GITEE_OWNER }}
-          gitee-password: ${{ secrets.GITEE_PASSWORD }}
-          gitee-repo: ${{ vars.GITEE_OWNER }}/${{ vars.GITEE_REPO || 'magic-solo' }}
-          branch: gh-pages
-          https: true
