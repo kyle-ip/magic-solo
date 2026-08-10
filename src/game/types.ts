@@ -96,7 +96,7 @@ export interface PlayerLand {
 }
 
 export type PendingCast =
-  | { handInstanceId: string; mode: 'damage' | 'pump' | 'fight_mine' }
+  | { handInstanceId: string; mode: 'damage' | 'pump' | 'destroy' | 'fangs' | 'fight_mine' }
   | {
       handInstanceId: string
       mode: 'fight_theirs'

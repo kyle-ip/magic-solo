@@ -143,7 +143,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case 'ASSIGN_TARGET': {
       if (state.pendingCast) {
         const p = state.pendingCast
-        if (p.mode === 'damage' || p.mode === 'pump') {
+        if (p.mode === 'damage' || p.mode === 'pump' || p.mode === 'destroy' || p.mode === 'fangs') {
           return castFromHand(state, p.handInstanceId, { targetId: action.targetId })
         }
         if (p.mode === 'fight_mine') {

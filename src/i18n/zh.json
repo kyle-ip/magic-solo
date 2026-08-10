@@ -87,6 +87,8 @@
     "pending": {
       "damage": "选择伤害目标",
       "pump": "选择要巨化的生物",
+      "destroy": "选择要消灭的生物",
+      "fangs": "选择接受突生长牙的生物",
       "fight_mine": "选择你的互斗生物",
       "fight_theirs": "选择敌方互斗生物"
     },

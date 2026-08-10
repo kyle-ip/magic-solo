@@ -42,6 +42,15 @@ export function costTotal(cost: ManaCost): number {
   return cost.generic + cost.W + cost.U + cost.B + cost.R + cost.G + cost.C
 }
 
+export function formatManaCost(cost: ManaCost): string {
+  const parts: string[] = []
+  if (cost.generic > 0) parts.push(`{${cost.generic}}`)
+  for (const c of ['W', 'U', 'B', 'R', 'G', 'C'] as ManaColor[]) {
+    for (let i = 0; i < cost[c]; i += 1) parts.push(`{${c}}`)
+  }
+  return parts.join('')
+}
+
 /** Try to pay `need` from `pool`. Returns new pool or null if unpaid. */
 export function tryPayFromPool(pool: ManaPool, need: ManaCost): ManaPool | null {
   const next = { ...pool }

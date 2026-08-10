@@ -1,0 +1,385 @@
+{
+  "id": "terror",
+  "name": "UB Terror",
+  "nameZh": "蓝黑惧兽",
+  "blurb": "Pauper Dimir Tolarian Terror: mill/filter into the yard, then land discounted Terrors and delved Anglers. Soft counters are inert in Challenge Experience.",
+  "blurbZh": "蓝黑惧兽：用洗牌与滤牌填坟，减费拍出陶拉利亚惧兽与掘坟谷尔玛钓客。点破/反击在挑战体验中无交互堆叠，暂不生效。",
+  "art": "assets/cards/player/2569d4f3-55ed-4f99-9592-34c7df0aab72-art.jpg",
+  "cards": [
+    {
+      "id": "1f343724-6ecd-494f-8bfc-93676af4e173",
+      "quantity": 4,
+      "name": "Mental Note",
+      "nameZh": "读心记事",
+      "typeLine": "Instant",
+      "typeLineZh": "Instant",
+      "oracleText": "Mill two cards.\nDraw a card.",
+      "oracleTextZh": "Mill two cards.\nDraw a card.",
+      "manaCost": "{U}",
+      "cmc": 1,
+      "power": null,
+      "toughness": null,
+      "keywords": [
+        "Mill"
+      ],
+      "kind": "instant",
+      "effect": {
+        "type": "mill_draw",
+        "mill": 2,
+        "draw": 1
+      },
+      "image": "assets/cards/player/1f343724-6ecd-494f-8bfc-93676af4e173-normal.jpg"
+    },
+    {
+      "id": "b5545882-6963-4729-b2c6-fb4bdc75ffcc",
+      "quantity": 4,
+      "name": "Brainstorm",
+      "nameZh": "脑力激荡",
+      "typeLine": "Instant",
+      "typeLineZh": "瞬间",
+      "oracleText": "Draw three cards, then put two cards from your hand on top of your library in any order.",
+      "oracleTextZh": "抓三张牌，然后将两张牌从你手上以任意顺序置于你的牌库顶。",
+      "manaCost": "{U}",
+      "cmc": 1,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "instant",
+      "effect": {
+        "type": "brainstorm"
+      },
+      "image": "assets/cards/player/b5545882-6963-4729-b2c6-fb4bdc75ffcc-normal.jpg"
+    },
+    {
+      "id": "4afee6b3-55a4-44e5-b08c-85e0c813cd09",
+      "quantity": 4,
+      "name": "Thought Scour",
+      "nameZh": "洗清思想",
+      "typeLine": "Instant",
+      "typeLineZh": "瞬间",
+      "oracleText": "Target player mills two cards.\nDraw a card.",
+      "oracleTextZh": "目标牌手磨两张牌。\n抓一张牌。",
+      "manaCost": "{U}",
+      "cmc": 1,
+      "power": null,
+      "toughness": null,
+      "keywords": [
+        "Mill"
+      ],
+      "kind": "instant",
+      "effect": {
+        "type": "mill_draw",
+        "mill": 2,
+        "draw": 1,
+        "target": "self"
+      },
+      "image": "assets/cards/player/4afee6b3-55a4-44e5-b08c-85e0c813cd09-normal.jpg"
+    },
+    {
+      "id": "8dd4374f-0301-4b2e-bc99-2cd19568cb3b",
+      "quantity": 3,
+      "name": "Spell Pierce",
+      "nameZh": "点破咒语",
+      "typeLine": "Instant",
+      "typeLineZh": "瞬间",
+      "oracleText": "Counter target noncreature spell unless its controller pays {2}.",
+      "oracleTextZh": "除非目标非生物咒语的操控者支付{2}，否则反击之。",
+      "manaCost": "{U}",
+      "cmc": 1,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "instant",
+      "effect": {
+        "type": "none"
+      },
+      "image": "assets/cards/player/8dd4374f-0301-4b2e-bc99-2cd19568cb3b-normal.jpg"
+    },
+    {
+      "id": "4f616706-ec97-4923-bb1e-11a69fbaa1f8",
+      "quantity": 3,
+      "name": "Counterspell",
+      "nameZh": "反击咒语",
+      "typeLine": "Instant",
+      "typeLineZh": "瞬间",
+      "oracleText": "Counter target spell.",
+      "oracleTextZh": "反击目标咒语。",
+      "manaCost": "{U}{U}",
+      "cmc": 2,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "instant",
+      "effect": {
+        "type": "none"
+      },
+      "image": "assets/cards/player/4f616706-ec97-4923-bb1e-11a69fbaa1f8-normal.jpg"
+    },
+    {
+      "id": "1a297bae-f259-4fc7-b76a-285f972d69e3",
+      "quantity": 2,
+      "name": "Deep Analysis",
+      "nameZh": "深入分析",
+      "typeLine": "Sorcery",
+      "typeLineZh": "法术",
+      "oracleText": "Target player draws two cards.\nFlashback—{1}{U}, Pay 3 life. (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+      "oracleTextZh": "目标牌手抓两张牌。\n返照～{1}{U}，支付3点生命。（你可以从你坟墓场中施放此牌，并支付其返照费用，然后将它放逐。）",
+      "manaCost": "{3}{U}",
+      "cmc": 4,
+      "power": null,
+      "toughness": null,
+      "keywords": [
+        "Flashback"
+      ],
+      "kind": "sorcery",
+      "effect": {
+        "type": "draw",
+        "amount": 2
+      },
+      "image": "assets/cards/player/1a297bae-f259-4fc7-b76a-285f972d69e3-normal.jpg"
+    },
+    {
+      "id": "aa6494ad-a35e-4b09-8623-7740f3c20b0b",
+      "quantity": 1,
+      "name": "Unexpected Fangs",
+      "nameZh": "突生长牙",
+      "typeLine": "Instant",
+      "typeLineZh": "瞬间",
+      "oracleText": "Put a +1/+1 counter and a lifelink counter on target creature.",
+      "oracleTextZh": "在目标生物上放置一个+1/+1指示物和一个系命指示物。",
+      "manaCost": "{1}{B}",
+      "cmc": 2,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "instant",
+      "effect": {
+        "type": "fangs"
+      },
+      "image": "assets/cards/player/aa6494ad-a35e-4b09-8623-7740f3c20b0b-normal.jpg"
+    },
+    {
+      "id": "8c204471-d908-4a08-83e4-cf38999fa80f",
+      "quantity": 1,
+      "name": "Chainer's Edict",
+      "nameZh": "崔娜的勒令",
+      "typeLine": "Sorcery",
+      "typeLineZh": "法术",
+      "oracleText": "Target player sacrifices a creature of their choice.\nFlashback {5}{B}{B} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+      "oracleTextZh": "目标牌手牺牲一个生物。\n返照{5}{B}{B}（你可以从你的坟墓场施放此牌，并支付其返照费用，然后将它放逐。）",
+      "manaCost": "{1}{B}",
+      "cmc": 2,
+      "power": null,
+      "toughness": null,
+      "keywords": [
+        "Flashback"
+      ],
+      "kind": "sorcery",
+      "effect": {
+        "type": "edict"
+      },
+      "image": "assets/cards/player/8c204471-d908-4a08-83e4-cf38999fa80f-normal.jpg"
+    },
+    {
+      "id": "79563dd1-640c-4ebd-a347-0b71439b79d3",
+      "quantity": 1,
+      "name": "Crawl from the Cellar",
+      "nameZh": "爬出地窖",
+      "typeLine": "Sorcery",
+      "typeLineZh": "法术",
+      "oracleText": "Return target creature card from your graveyard to your hand. Put a +1/+1 counter on up to one target Zombie you control.\nFlashback {3}{B} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+      "oracleTextZh": "将目标生物牌从你的坟墓场移回你手上。在至多一个目标由你操控的灵俑上放置一个+1/+1指示物。\n返照{3}{B}（你可以从你坟墓场中施放此牌，并支付其返照费用，然后将它放逐。）",
+      "manaCost": "{B}",
+      "cmc": 1,
+      "power": null,
+      "toughness": null,
+      "keywords": [
+        "Flashback"
+      ],
+      "kind": "sorcery",
+      "effect": {
+        "type": "crawl_cellar"
+      },
+      "image": "assets/cards/player/79563dd1-640c-4ebd-a347-0b71439b79d3-normal.jpg"
+    },
+    {
+      "id": "aba79021-39af-4e74-beb5-f2f508c865b2",
+      "quantity": 4,
+      "name": "Cast Down",
+      "nameZh": "湮灭",
+      "typeLine": "Instant",
+      "typeLineZh": "瞬间",
+      "oracleText": "Destroy target nonlegendary creature.",
+      "oracleTextZh": "消灭目标非传奇的生物。",
+      "manaCost": "{1}{B}",
+      "cmc": 2,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "instant",
+      "effect": {
+        "type": "destroy_creature"
+      },
+      "image": "assets/cards/player/aba79021-39af-4e74-beb5-f2f508c865b2-normal.jpg"
+    },
+    {
+      "id": "b0eab397-25a6-4377-8e12-e8acef9675cf",
+      "quantity": 4,
+      "name": "Fallaji Archaeologist",
+      "nameZh": "法拉吉考古学家",
+      "typeLine": "Creature — Human Scout",
+      "typeLineZh": "生物 ～人类／斥候",
+      "oracleText": "When this creature enters, mill three cards. You may put a noncreature, nonland card from among the cards milled this way into your hand. If you don't, put a +1/+1 counter on this creature. (To mill a card, put the top card of your library into your graveyard.)",
+      "oracleTextZh": "当法拉吉考古学家进战场时，磨三张牌。你可以将以此法磨掉的一张非生物且非地的牌置于你手上。若你未如此作，则在法拉吉考古学家上放置一个+1/+1指示物。（磨一张牌的流程是将你牌库顶的牌置入你坟墓场。）",
+      "manaCost": "{1}{U}",
+      "cmc": 2,
+      "power": 0,
+      "toughness": 3,
+      "keywords": [
+        "Mill"
+      ],
+      "kind": "creature",
+      "effect": {
+        "type": "etb_mill_loot",
+        "mill": 3
+      },
+      "image": "assets/cards/player/b0eab397-25a6-4377-8e12-e8acef9675cf-normal.jpg"
+    },
+    {
+      "id": "2569d4f3-55ed-4f99-9592-34c7df0aab72",
+      "quantity": 4,
+      "name": "Tolarian Terror",
+      "nameZh": "陶拉利亚惧兽",
+      "typeLine": "Creature — Serpent",
+      "typeLineZh": "生物 ～巨蛇",
+      "oracleText": "This spell costs {1} less to cast for each instant and sorcery card in your graveyard.\nWard {2} (Whenever this creature becomes the target of a spell or ability an opponent controls, counter it unless that player pays {2}.)",
+      "oracleTextZh": "你坟墓场中每有一张瞬间与法术牌，此咒语便减少{1}来施放。\n守护{2}（每当此生物成为由对手操控之咒语或异能的目标时，除非该牌手支付{2}，否则反击之。）",
+      "manaCost": "{6}{U}",
+      "cmc": 7,
+      "power": 5,
+      "toughness": 5,
+      "keywords": [
+        "Ward"
+      ],
+      "kind": "creature",
+      "effect": {
+        "type": "terror_discount"
+      },
+      "image": "assets/cards/player/2569d4f3-55ed-4f99-9592-34c7df0aab72-normal.jpg"
+    },
+    {
+      "id": "cedd44eb-f381-46e1-bcb0-88416b4ce33d",
+      "quantity": 4,
+      "name": "Gurmag Angler",
+      "nameZh": "谷尔玛钓客",
+      "typeLine": "Creature — Zombie Fish",
+      "typeLineZh": "生物 ～灵俑／鱼",
+      "oracleText": "Delve (Each card you exile from your graveyard while casting this spell pays for {1}.)",
+      "oracleTextZh": "掘穴（你于施放此咒语时每从你坟墓场中放逐一张牌，就能为此咒语支付{1}。）",
+      "manaCost": "{6}{B}",
+      "cmc": 7,
+      "power": 5,
+      "toughness": 5,
+      "keywords": [
+        "Delve"
+      ],
+      "kind": "creature",
+      "effect": {
+        "type": "delve"
+      },
+      "image": "assets/cards/player/cedd44eb-f381-46e1-bcb0-88416b4ce33d-normal.jpg"
+    },
+    {
+      "id": "f3cc07cd-cc79-4745-b0b7-eade60175cc3",
+      "quantity": 12,
+      "name": "Island",
+      "nameZh": "海岛",
+      "typeLine": "Basic Land — Island",
+      "typeLineZh": "基本地 — 海岛",
+      "oracleText": "({T}: Add {U}.)",
+      "oracleTextZh": "({T}: Add {U}.)",
+      "manaCost": "",
+      "cmc": 0,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "land",
+      "produces": [
+        "U"
+      ],
+      "effect": {
+        "type": "none"
+      },
+      "image": "assets/cards/player/f3cc07cd-cc79-4745-b0b7-eade60175cc3-normal.jpg"
+    },
+    {
+      "id": "b7387103-1df1-4fd0-9e91-1544509792c7",
+      "quantity": 7,
+      "name": "Swamp",
+      "nameZh": "沼泽",
+      "typeLine": "Basic Land — Swamp",
+      "typeLineZh": "基本地 — 沼泽",
+      "oracleText": "({T}: Add {B}.)",
+      "oracleTextZh": "({T}: Add {B}.)",
+      "manaCost": "",
+      "cmc": 0,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "land",
+      "produces": [
+        "B"
+      ],
+      "effect": {
+        "type": "none"
+      },
+      "image": "assets/cards/player/b7387103-1df1-4fd0-9e91-1544509792c7-normal.jpg"
+    },
+    {
+      "id": "082b52c9-c46e-44d3-b723-546ba528e07b",
+      "quantity": 1,
+      "name": "Dismal Backwater",
+      "nameZh": "阴沉死水",
+      "typeLine": "Land",
+      "typeLineZh": "地",
+      "oracleText": "This land enters tapped.\nWhen this land enters, you gain 1 life.\n{T}: Add {U} or {B}.",
+      "oracleTextZh": "阴沉死水须横置进战场。\n当阴沉死水进战场时，你获得1点生命。\n{T}：加{U}或{B}。",
+      "manaCost": "",
+      "cmc": 0,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "land",
+      "produces": [
+        "U",
+        "B"
+      ],
+      "effect": {
+        "type": "etb_gain_life",
+        "amount": 1
+      },
+      "image": "assets/cards/player/082b52c9-c46e-44d3-b723-546ba528e07b-normal.jpg"
+    },
+    {
+      "id": "55b5b094-9d2d-4d96-b90c-78fecdae725a",
+      "quantity": 1,
+      "name": "Bojuka Bog",
+      "nameZh": "放逐墓地沼泽",
+      "typeLine": "Land",
+      "typeLineZh": "地",
+      "oracleText": "This land enters tapped.\nWhen this land enters, exile target player's graveyard.\n{T}: Add {B}.",
+      "oracleTextZh": "泊卒卡腐沼须横置进战场。\n当泊卒卡腐沼进战场时，放逐目标牌手的坟墓场。\n{T}：加{B}。",
+      "manaCost": "",
+      "cmc": 0,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "land",
+      "produces": ["B"],
+      "effect": {
+        "type": "etb_exile_opp_graveyard"
+      },
+      "image": "assets/cards/player/55b5b094-9d2d-4d96-b90c-78fecdae725a-normal.jpg"
+    }
+  ]
+}

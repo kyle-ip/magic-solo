@@ -87,6 +87,8 @@
     "pending": {
       "damage": "Choose damage target",
       "pump": "Choose creature to pump",
+      "destroy": "Choose creature to destroy",
+      "fangs": "Choose creature for Unexpected Fangs",
       "fight_mine": "Choose your fighter",
       "fight_theirs": "Choose enemy fighter"
     },

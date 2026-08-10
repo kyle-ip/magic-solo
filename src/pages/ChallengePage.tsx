@@ -29,7 +29,7 @@ import {
   PLAYER_DECKS,
   type PlayerDeckId,
 } from '../game/playerDecks'
-import { canAfford } from '../game/playerCast'
+import { canAffordCard } from '../game/playerCast'
 import { HERO_DEFS, maxHeroesFor } from '../game/heroes'
 import {
   createInitialSetup,
@@ -331,6 +331,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
     if (state.pendingCast) {
       const mode = state.pendingCast.mode
       if (mode === 'damage') return true
+      if (mode === 'destroy') return !card.isGod
       if (mode === 'fight_theirs') {
         return card.power != null || card.isHead || card.isGod || card.isReveler
       }
@@ -898,7 +899,8 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                 : c.name
               const pendingMine =
                 state.pendingCast?.mode === 'fight_mine' ||
-                state.pendingCast?.mode === 'pump'
+                state.pendingCast?.mode === 'pump' ||
+                state.pendingCast?.mode === 'fangs'
               const showReady =
                 canDeclare &&
                 !selected &&
@@ -940,7 +942,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                   badge={badge}
                   onClick={() => {
                     if (over) return
-                    if (state.pendingCast?.mode === 'fight_mine' || state.pendingCast?.mode === 'pump') {
+                    if (state.pendingCast?.mode === 'fight_mine' || state.pendingCast?.mode === 'pump' || state.pendingCast?.mode === 'fangs') {
                       act({
                         type: 'ASSIGN_TARGET',
                         attackerId: '',
@@ -1101,7 +1103,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
         <div className="hand-fan">
           {state.player.hand.map((card, i) => {
             const unaffordable =
-              !canAfford(state, card.manaCost) ||
+              !canAffordCard(state, card) ||
               state.flags.cannotCastSpells ||
               state.activeSide !== 'player' ||
               over ||

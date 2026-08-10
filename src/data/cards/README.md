@@ -17,8 +17,9 @@ Each card entry has bilingual copy and asset paths under `images` (relative to `
 | File | Deck |
 | --- | --- |
 | `player/wildfire.json` | Wildfire Host — RG midrange (60 cards) |
+| `player/terror.json` | UB Terror — Dimir Tolarian Terror (60 cards) |
 
-One list is used for all three challenges. Each entry includes `quantity`, `manaCost`, `kind`, `effect` hooks the engine resolves, and `image`.
+Setup lets you pick either list for all three challenges. Each entry includes `quantity`, `manaCost`, `kind`, `effect` hooks the engine resolves, and `image`.
 
 **Oracle policy:** only listed keywords and `effect` hooks resolve. Monstrosity / protection-from-white on printed Stormbreath / Ember Swallower / Polukranos are noted as omitted.
 

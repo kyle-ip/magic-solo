@@ -1,7 +1,8 @@
 import type { ManaColor } from './mana'
 import wildfire from '../data/cards/player/wildfire.json'
+import terror from '../data/cards/player/terror.json'
 
-export type PlayerDeckId = 'wildfire'
+export type PlayerDeckId = 'wildfire' | 'terror'
 
 export type PlayerCardKind = 'land' | 'creature' | 'instant' | 'sorcery'
 
@@ -13,6 +14,18 @@ export type PlayerEffect =
   | { type: 'fog' }
   | { type: 'fight' }
   | { type: 'pump_target'; power: number; toughness: number }
+  | { type: 'mill_draw'; mill: number; draw: number }
+  | { type: 'brainstorm' }
+  | { type: 'draw'; amount: number }
+  | { type: 'destroy_creature' }
+  | { type: 'edict' }
+  | { type: 'fangs' }
+  | { type: 'crawl_cellar' }
+  | { type: 'etb_mill_loot'; mill: number }
+  | { type: 'terror_discount' }
+  | { type: 'delve' }
+  | { type: 'etb_gain_life'; amount: number }
+  | { type: 'etb_exile_opp_graveyard' }
 
 export interface ConstructedCardDef {
   id: string
@@ -45,7 +58,10 @@ export interface PlayerDeckDef {
 }
 
 /** Source of truth: `src/data/cards/player/*.json` */
-export const PLAYER_DECKS: PlayerDeckDef[] = [wildfire as PlayerDeckDef]
+export const PLAYER_DECKS: PlayerDeckDef[] = [
+  wildfire as PlayerDeckDef,
+  terror as PlayerDeckDef,
+]
 
 export const DEFAULT_PLAYER_DECK: PlayerDeckId = 'wildfire'
 

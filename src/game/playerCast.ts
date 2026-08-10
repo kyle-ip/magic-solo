@@ -1,12 +1,14 @@
 import { findCardDef, type PlayerEffect } from './playerDecks'
 import {
   emptyManaPool,
+  formatManaCost,
   parseManaCost,
   tryPayFromPool,
   type ManaColor,
+  type ManaCost,
   type ManaPool,
 } from './mana'
-import { makePlayerCardInstance } from './playerDraw'
+import { drawCards, makePlayerCardInstance } from './playerDraw'
 import type {
   GameState,
   PlayerCardInstance,
@@ -18,6 +20,7 @@ import {
   applyHeroCreatureMods,
   dealDamageToChallengeCreature,
   damagePlayer,
+  destroyChallengePermanent,
   millHorde,
   checkHordeWin,
   checkWinLoss,
@@ -113,6 +116,78 @@ export function canAfford(state: GameState, manaCost: string): boolean {
   return autoTapForCost(state, manaCost) != null
 }
 
+export function canAffordCard(state: GameState, card: PlayerCardInstance): boolean {
+  const prepared = prepareCastCost(state, card, false)
+  return autoTapForCost(prepared.state, prepared.manaCost) != null
+}
+
+function millOwnLibrary(state: GameState, n: number): GameState {
+  if (n <= 0) return state
+  const mill = state.player.library.slice(0, n)
+  if (mill.length === 0) return state
+  return {
+    ...state,
+    player: {
+      ...state.player,
+      library: state.player.library.slice(mill.length),
+      graveyard: [...mill, ...state.player.graveyard],
+    },
+  }
+}
+
+function gyInstantSorceryCount(state: GameState): number {
+  return state.player.graveyard.filter(
+    (c) => c.kind === 'instant' || c.kind === 'sorcery',
+  ).length
+}
+
+function reduceGeneric(cost: ManaCost, by: number): ManaCost {
+  return { ...cost, generic: Math.max(0, cost.generic - by) }
+}
+
+/** Apply Terror / Delve cost reductions. Delve exile only when `commit` is true. */
+function prepareCastCost(
+  state: GameState,
+  card: PlayerCardInstance,
+  commit = false,
+): { state: GameState; manaCost: string } {
+  let need = parseManaCost(card.manaCost)
+  let next = state
+
+  if (card.effect.type === 'terror_discount') {
+    need = reduceGeneric(need, gyInstantSorceryCount(state))
+    return { state: next, manaCost: formatManaCost(need) }
+  }
+
+  if (card.effect.type === 'delve') {
+    const available = next.player.graveyard.length
+    const base = parseManaCost(card.manaCost)
+    let exileCount = Math.min(base.generic, available)
+    need = reduceGeneric(base, exileCount)
+    for (let ex = 0; ex <= Math.min(base.generic, available); ex += 1) {
+      const trial = reduceGeneric(base, ex)
+      if (autoTapForCost(next, formatManaCost(trial)) != null) {
+        exileCount = ex
+        need = trial
+        break
+      }
+    }
+    if (commit && exileCount > 0) {
+      next = {
+        ...next,
+        player: {
+          ...next.player,
+          graveyard: next.player.graveyard.slice(0, -exileCount),
+        },
+      }
+      next = pushLog(next, 'delveExile', 'info', { n: exileCount })
+    }
+    return { state: next, manaCost: formatManaCost(need) }
+  }
+
+  return { state: next, manaCost: card.manaCost }
+}
+
 export function playLand(state: GameState, handId: string): GameState {
   if (state.activeSide !== 'player' || state.playerPhase !== 'main') {
     return pushLog(state, 'playLandMainOnly', 'info')
@@ -123,18 +198,23 @@ export function playLand(state: GameState, handId: string): GameState {
   const card = state.player.hand.find((c) => c.instanceId === handId)
   if (!card || card.kind !== 'land') return state
 
+  const entersTapped =
+    card.effect.type === 'etb_gain_life' ||
+    card.effect.type === 'etb_exile_opp_graveyard' ||
+    /enters the battlefield tapped/i.test(card.oracleText)
+
   const land: PlayerLand = {
     instanceId: card.instanceId,
     defId: card.defId,
     name: card.name,
     typeLine: card.typeLine,
-    tapped: false,
+    tapped: entersTapped,
     produces: (card.produces ?? []) as PlayerLand['produces'],
     image: card.image,
     isLand: true,
   }
 
-  const next: GameState = {
+  let next: GameState = {
     ...state,
     player: {
       ...state.player,
@@ -144,7 +224,27 @@ export function playLand(state: GameState, handId: string): GameState {
     },
     pendingCast: null,
   }
-  return pushLog(next, 'playLand', 'good', { name: card.name })
+  next = pushLog(next, 'playLand', 'good', { name: card.name })
+
+  if (card.effect.type === 'etb_gain_life') {
+    next = {
+      ...next,
+      player: {
+        ...next.player,
+        life: next.player.life + card.effect.amount,
+      },
+    }
+    next = pushLog(next, 'gainLife', 'good', { n: card.effect.amount })
+  }
+  if (card.effect.type === 'etb_exile_opp_graveyard') {
+    const n = next.challenge.graveyard.length
+    next = {
+      ...next,
+      challenge: { ...next.challenge, graveyard: [] },
+    }
+    if (n > 0) next = pushLog(next, 'exileOppGraveyard', 'good', { n })
+  }
+  return next
 }
 
 function revelersPresent(state: GameState): boolean {
@@ -219,6 +319,8 @@ function resolveEffect(
   switch (effect.type) {
     case 'none':
     case 'mana_dork':
+    case 'terror_discount':
+    case 'delve':
       return next
     case 'etb_self_pump': {
       if (!opts.selfId) return next
@@ -296,6 +398,152 @@ function resolveEffect(
       }
       return next
     }
+    case 'mill_draw': {
+      next = millOwnLibrary(next, effect.mill)
+      next = pushLog(next, 'millSelf', 'info', { n: effect.mill })
+      next = drawCards(next, effect.draw)
+      return pushLog(next, 'drawCards', 'good', { n: effect.draw })
+    }
+    case 'brainstorm': {
+      next = drawCards(next, 3)
+      if (next.status !== 'playing') return next
+      const hand = [...next.player.hand]
+      const putBack: PlayerCardInstance[] = []
+      const score = (c: PlayerCardInstance) => {
+        if (c.kind === 'land') return 100
+        if (c.effect.type === 'none' && (c.kind === 'instant' || c.kind === 'sorcery'))
+          return 80
+        return c.cmc
+      }
+      hand.sort((a, b) => score(b) - score(a))
+      while (putBack.length < 2 && hand.length > 0) {
+        putBack.push(hand.shift()!)
+      }
+      next = {
+        ...next,
+        player: {
+          ...next.player,
+          hand,
+          library: [...putBack, ...next.player.library],
+        },
+      }
+      return pushLog(next, 'brainstorm', 'good')
+    }
+    case 'draw': {
+      next = drawCards(next, effect.amount)
+      return pushLog(next, 'drawCards', 'good', { n: effect.amount })
+    }
+    case 'destroy_creature': {
+      if (!opts.targetId) return pushLog(next, 'needTarget', 'info')
+      const enemy = next.challenge.battlefield.find((c) => c.instanceId === opts.targetId)
+      if (!enemy || enemy.isGod) return pushLog(next, 'invalidTarget', 'info')
+      next = destroyChallengePermanent(next, opts.targetId)
+      return checkWinLoss(next)
+    }
+    case 'edict': {
+      const victims = next.challenge.battlefield
+        .filter((c) => !c.isGod && (c.power != null || c.isHead || c.isReveler || c.isMinotaur))
+        .slice()
+        .sort((a, b) => (a.power ?? 0) - (b.power ?? 0))
+      const victim = victims[0]
+      if (!victim) return pushLog(next, 'edictNoVictim', 'info')
+      next = destroyChallengePermanent(next, victim.instanceId)
+      next = pushLog(next, 'edictSac', 'good', { name: victim.name })
+      return checkWinLoss(next)
+    }
+    case 'fangs': {
+      if (!opts.targetId) return pushLog(next, 'needTarget', 'info')
+      const mine = next.player.creatures.find((c) => c.instanceId === opts.targetId)
+      if (!mine) return pushLog(next, 'invalidTarget', 'info')
+      next = {
+        ...next,
+        player: {
+          ...next.player,
+          creatures: next.player.creatures.map((c) =>
+            c.instanceId === opts.targetId
+              ? {
+                  ...c,
+                  power: c.power + 1,
+                  toughness: c.toughness + 1,
+                  keywords: c.keywords.some((k) => /lifelink/i.test(k))
+                    ? c.keywords
+                    : [...c.keywords, 'Lifelink'],
+                }
+              : c,
+          ),
+        },
+      }
+      return pushLog(next, 'fangs', 'good', { name: mine.name })
+    }
+    case 'crawl_cellar': {
+      const creatures = next.player.graveyard
+        .filter((c) => c.kind === 'creature')
+        .slice()
+        .sort((a, b) => b.cmc - a.cmc)
+      const card = creatures[0]
+      if (!card) return pushLog(next, 'crawlEmpty', 'info')
+      const hasHaste = card.keywords.some((k) => /haste/i.test(k))
+      const creature = applyHeroCreatureMods(next, {
+        instanceId: card.instanceId,
+        defId: card.defId,
+        templateId: card.defId,
+        name: card.name,
+        power: (card.power ?? 0) + 1,
+        toughness: (card.toughness ?? 0) + 1,
+        markedDamage: 0,
+        tapped: false,
+        summoningSickness: !hasHaste,
+        keywords: [...card.keywords],
+        image: card.image,
+        produces: card.produces ? [...card.produces] : undefined,
+        tempPower: 0,
+        tempToughness: 0,
+      })
+      next = {
+        ...next,
+        player: {
+          ...next.player,
+          graveyard: next.player.graveyard.filter((c) => c.instanceId !== card.instanceId),
+          creatures: [...next.player.creatures, creature],
+        },
+      }
+      return pushLog(next, 'crawlReturn', 'good', { name: card.name })
+    }
+    case 'etb_mill_loot': {
+      if (!opts.selfId) return next
+      const milled = next.player.library.slice(0, effect.mill)
+      const restLib = next.player.library.slice(milled.length)
+      const loot = milled.find((c) => c.kind === 'instant' || c.kind === 'sorcery')
+      if (loot) {
+        next = {
+          ...next,
+          player: {
+            ...next.player,
+            library: restLib,
+            graveyard: [...milled.filter((c) => c.instanceId !== loot.instanceId), ...next.player.graveyard],
+            hand: [...next.player.hand, loot],
+          },
+        }
+        return pushLog(next, 'fallajiLoot', 'good', { name: loot.name })
+      }
+      const bounced = next.player.creatures.find((c) => c.instanceId === opts.selfId)
+      next = {
+        ...next,
+        player: {
+          ...next.player,
+          library: restLib,
+          graveyard: [...milled, ...next.player.graveyard],
+          creatures: next.player.creatures.filter((c) => c.instanceId !== opts.selfId),
+          hand: bounced
+            ? [...next.player.hand, cardToGy(bounced)]
+            : next.player.hand,
+        },
+      }
+      return pushLog(next, 'fallajiBounce', 'info')
+    }
+    case 'etb_gain_life':
+    case 'etb_exile_opp_graveyard':
+      return next
     default:
       return next
   }
@@ -333,8 +581,17 @@ export function castFromHand(
   if (effect.type === 'damage_any' && !opts.targetId) {
     return { ...state, pendingCast: { handInstanceId: handId, mode: 'damage' } }
   }
-  if (effect.type === 'pump_target' && !opts.targetId) {
-    return { ...state, pendingCast: { handInstanceId: handId, mode: 'pump' } }
+  if ((effect.type === 'pump_target' || effect.type === 'fangs') && !opts.targetId) {
+    return {
+      ...state,
+      pendingCast: {
+        handInstanceId: handId,
+        mode: effect.type === 'fangs' ? 'fangs' : 'pump',
+      },
+    }
+  }
+  if (effect.type === 'destroy_creature' && !opts.targetId) {
+    return { ...state, pendingCast: { handInstanceId: handId, mode: 'destroy' } }
   }
   if (effect.type === 'fight') {
     if (!opts.fighterId) {
@@ -352,7 +609,8 @@ export function castFromHand(
     }
   }
 
-  const paid = autoTapForCost(state, card.manaCost)
+  const prepared = prepareCastCost(state, card, true)
+  const paid = autoTapForCost(prepared.state, prepared.manaCost)
   if (!paid) {
     return pushLog(state, 'notEnoughMana', 'info')
   }
@@ -395,7 +653,7 @@ export function castFromHand(
       name: card.name,
       pt: `${creature.power}/${creature.toughness}`,
     })
-    if (effect.type === 'etb_self_pump') {
+    if (effect.type === 'etb_self_pump' || effect.type === 'etb_mill_loot') {
       next = resolveEffect(next, effect, { selfId: creature.instanceId })
     }
     return next

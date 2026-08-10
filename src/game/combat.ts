@@ -62,7 +62,17 @@ export function resolvePlayerCombat(state: GameState): GameState {
 
   if (next.code === 'tbth') {
     const total = powers.reduce((s, p) => s + p, 0)
+    const lifeGain = attackers
+      .filter((a) => a.keywords.some((k) => /lifelink/i.test(k)))
+      .reduce((s, a) => s + attackPower(a), 0)
     next = millHorde(next, total)
+    if (lifeGain > 0) {
+      next = {
+        ...next,
+        player: { ...next.player, life: next.player.life + lifeGain },
+      }
+      next = pushLog(next, 'lifelinkGain', 'good', { n: lifeGain })
+    }
     next = {
       ...next,
       selectedAttackers: [],
@@ -73,6 +83,7 @@ export function resolvePlayerCombat(state: GameState): GameState {
   }
 
   const byTarget: Record<string, number> = {}
+  let lifeGain = 0
   for (let i = 0; i < attackers.length; i += 1) {
     const a = attackers[i]
     const target = next.attackAssignments[a.instanceId]
@@ -81,6 +92,7 @@ export function resolvePlayerCombat(state: GameState): GameState {
       continue
     }
     byTarget[target] = (byTarget[target] ?? 0) + powers[i]
+    if (a.keywords.some((k) => /lifelink/i.test(k))) lifeGain += powers[i]
   }
 
   for (const [targetId, dmg] of Object.entries(byTarget)) {
@@ -109,6 +121,14 @@ export function resolvePlayerCombat(state: GameState): GameState {
         next = dealDamageToChallengeCreature(next, targetId, dmg)
       }
     }
+  }
+
+  if (lifeGain > 0) {
+    next = {
+      ...next,
+      player: { ...next.player, life: next.player.life + lifeGain },
+    }
+    next = pushLog(next, 'lifelinkGain', 'good', { n: lifeGain })
   }
 
   next = {
