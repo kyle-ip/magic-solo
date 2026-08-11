@@ -12,7 +12,6 @@ import {
 import {
   defaultCardBackUrl,
   drawWeightedPack,
-  isPremiumRarity,
   type DrawnCard,
 } from '../data/randomCard'
 
@@ -354,11 +353,29 @@ function tear2dStyles(
   }
 }
 
-function rarityGlowClass(card: DrawnCard | null | undefined): string {
-  if (!card || !isPremiumRarity(card.rarity)) return ''
-  return card.rarity === 'mythic' || card.rarity === 'special'
-    ? 'pack-glow-mythic'
-    : 'pack-glow-rare'
+function rarityFxClass(card: DrawnCard | null | undefined): string {
+  if (!card) return ''
+  const r = card.rarity
+  if (r === 'mythic' || r === 'special') return 'pack-fx-mythic'
+  if (r === 'rare') return 'pack-fx-rare'
+  if (r === 'uncommon') return 'pack-fx-uncommon'
+  return 'pack-fx-common'
+}
+
+/** Peak flash duration by tier (ms); fade-out is separate. */
+function rarityFxDurationMs(card: DrawnCard): number {
+  const fx = rarityFxClass(card)
+  if (fx === 'pack-fx-mythic') return 1400
+  if (fx === 'pack-fx-rare') return 1200
+  if (fx === 'pack-fx-uncommon') return 700
+  return 450
+}
+
+const FX_FADE_MS = 600
+
+/** Odd flipTurns show card art (`.card-face.back`). */
+function isShowingCardFront(turns: number): boolean {
+  return turns % 2 === 1
 }
 
 export function PackDrawButton() {
@@ -375,7 +392,8 @@ export function PackDrawButton() {
   const [flippingIdx, setFlippingIdx] = useState<number | null>(null)
   const [deckFlipping, setDeckFlipping] = useState(false)
   const [tearAngle, setTearAngle] = useState(0)
-  const [glowIds, setGlowIds] = useState<string[]>([])
+  const [fxIds, setFxIds] = useState<string[]>([])
+  const [fxFadeIds, setFxFadeIds] = useState<string[]>([])
   const [drawing, setDrawing] = useState(false)
   const [collected, setCollected] = useState(false)
   const [collection, setCollection] = useState<CollectedCard[]>([])
@@ -456,7 +474,8 @@ export function PackDrawButton() {
     setFlipTurns(Array.from({ length: PACK_SIZE }, () => 0))
     tearProgressRef.current = 0
     tearSpecRef.current = null
-    setGlowIds([])
+    setFxIds([])
+    setFxFadeIds([])
     setDrawing(false)
     setCollected(false)
     setInspect(null)
@@ -514,6 +533,21 @@ export function PackDrawButton() {
     clearTearRaf()
   }, [])
 
+  const triggerFrontFx = (card: DrawnCard | null | undefined) => {
+    if (!card || prefersReducedMotion()) return
+    const id = card.id
+    // Retrigger: cancel any in-progress fade and restart peak glow.
+    setFxFadeIds((prev) => prev.filter((x) => x !== id))
+    setFxIds((prev) => (prev.includes(id) ? prev : [...prev, id]))
+    schedule(() => {
+      setFxIds((prev) => prev.filter((x) => x !== id))
+      setFxFadeIds((prev) => (prev.includes(id) ? prev : [...prev, id]))
+      schedule(() => {
+        setFxFadeIds((prev) => prev.filter((x) => x !== id))
+      }, FX_FADE_MS)
+    }, rarityFxDurationMs(card))
+  }
+
   const finishReveal = (drawn: DrawnCard[]) => {
     setCards(drawn)
     setActiveIdx(0)
@@ -522,11 +556,8 @@ export function PackDrawButton() {
     setDeckFlipping(true)
     requestAnimationFrame(() => {
       setFlipTurns(drawn.map(() => 1))
-      const premium = drawn.filter((c) => isPremiumRarity(c.rarity)).map((c) => c.id)
-      if (premium.length) {
-        setGlowIds(premium)
-        schedule(() => setGlowIds([]), 1600)
-      }
+      // Auto-flip lands on card fronts — flash the active card.
+      triggerFrontFx(drawn[0])
     })
     schedule(() => {
       setDeckFlipping(false)
@@ -549,7 +580,8 @@ export function PackDrawButton() {
     setCards([])
     setActiveIdx(0)
     setFlipTurns(Array.from({ length: PACK_SIZE }, () => 0))
-    setGlowIds([])
+    setFxIds([])
+    setFxFadeIds([])
     const angle = randomTearAngle()
     const spec = createTearSpec(angle)
     tearAngleRef.current = angle
@@ -660,7 +692,8 @@ export function PackDrawButton() {
     setFlipTurns(Array.from({ length: PACK_SIZE }, () => 0))
     tearProgressRef.current = 0
     tearSpecRef.current = null
-    setGlowIds([])
+    setFxIds([])
+    setFxFadeIds([])
     setCollected(false)
     setFlippingIdx(null)
     setDeckFlipping(false)
@@ -693,6 +726,10 @@ export function PackDrawButton() {
     setActiveIdx(next)
     const card = cards[next]
     setCollected(card ? isCollected(card.id) : false)
+    // Flash when browsing onto a card already showing its front.
+    if (card && isShowingCardFront(flipTurns[next] ?? 0)) {
+      triggerFrontFx(card)
+    }
   }
 
   const stepCard = (delta: number) => {
@@ -703,9 +740,14 @@ export function PackDrawButton() {
   const flipOnce = (index: number) => {
     if (phase !== 'revealed' && phase !== 'flip') return
     setFlippingIdx(index)
+    const nextTurns = (flipTurns[index] ?? 0) + 1
     requestAnimationFrame(() =>
       setFlipTurns((prev) => prev.map((n, i) => (i === index ? n + 1 : n))),
     )
+    // Flash when the flip lands on the card front (art).
+    if (isShowingCardFront(nextTurns)) {
+      schedule(() => triggerFrontFx(cards[index]), Math.round(FLIP_MS * 0.45))
+    }
     schedule(() => {
       setFlippingIdx((cur) => (cur === index ? null : cur))
     }, FLIP_MS)
@@ -810,7 +852,10 @@ export function PackDrawButton() {
                             className="pack-collection-tile"
                             onClick={() => {
                               setInspectFlipTurns(0)
+                              setInspectFlipping(false)
                               setInspect(item)
+                              // Art is on the front face at turns=0.
+                              triggerFrontFx(item)
                             }}
                           >
                             <img src={item.frontImageUrl} alt={item.name} />
@@ -826,35 +871,77 @@ export function PackDrawButton() {
                   )}
                   {inspect ? (
                     <div className="pack-inspect" role="dialog" aria-label={inspect.name}>
+                      {(() => {
+                        const inspectFx = rarityFxClass(inspect)
+                        const inspectGlowing = fxIds.includes(inspect.id)
+                        const inspectFading = fxFadeIds.includes(inspect.id)
+                        const showInspectFxLayer =
+                          (inspectGlowing || inspectFading) &&
+                          (inspectFx === 'pack-fx-rare' ||
+                            inspectFx === 'pack-fx-mythic')
+                        const flipInspect = () => {
+                          const nextTurns = inspectFlipTurns + 1
+                          setInspectFlipping(true)
+                          requestAnimationFrame(() =>
+                            setInspectFlipTurns((n) => n + 1),
+                          )
+                          // Inspect art is on `.card-face.front` (even turns).
+                          if (nextTurns % 2 === 0) {
+                            schedule(
+                              () => triggerFrontFx(inspect),
+                              Math.round(FLIP_MS * 0.45),
+                            )
+                          }
+                          schedule(() => setInspectFlipping(false), FLIP_MS)
+                        }
+                        return (
+                      <div
+                        className={[
+                          'pack-card-wrap',
+                          'pack-inspect-wrap',
+                          'is-expanded',
+                          'is-active',
+                          inspectFx,
+                          inspectFlipping ? 'is-flipping' : '',
+                          inspectGlowing ? 'is-glowing' : '',
+                          inspectFading ? 'is-fading' : '',
+                        ]
+                          .filter(Boolean)
+                          .join(' ')}
+                      >
+                        {showInspectFxLayer ? (
+                          <span
+                            className={[
+                              'pack-fx-layer',
+                              'is-sparkles',
+                              inspectFx === 'pack-fx-mythic' ? 'is-mythic' : '',
+                            ]
+                              .filter(Boolean)
+                              .join(' ')}
+                            aria-hidden
+                          />
+                        ) : null}
+                        {(inspectGlowing || inspectFading) &&
+                        inspectFx === 'pack-fx-mythic' ? (
+                          <span
+                            className="pack-fx-layer is-radial"
+                            aria-hidden
+                          />
+                        ) : null}
                       <div className="card-flip pack-inspect-flip">
                         <div
-                          className={[
-                            'card-flip-inner',
-                            inspectFlipping ? 'is-flipping' : '',
-                          ]
-                            .filter(Boolean)
-                            .join(' ')}
+                          className="card-flip-inner"
                           role="button"
                           tabIndex={0}
                           aria-label={t('deck.flip')}
                           style={{
                             transform: `translate3d(0, 0, 0) rotateY(${inspectFlipTurns * 180}deg)`,
                           }}
-                          onClick={() => {
-                            setInspectFlipping(true)
-                            requestAnimationFrame(() =>
-                              setInspectFlipTurns((n) => n + 1),
-                            )
-                            schedule(() => setInspectFlipping(false), FLIP_MS)
-                          }}
+                          onClick={flipInspect}
                           onKeyDown={(e) => {
                             if (e.key === 'Enter' || e.key === ' ') {
                               e.preventDefault()
-                              setInspectFlipping(true)
-                              requestAnimationFrame(() =>
-                                setInspectFlipTurns((n) => n + 1),
-                              )
-                              schedule(() => setInspectFlipping(false), FLIP_MS)
+                              flipInspect()
                             }
                           }}
                         >
@@ -874,6 +961,9 @@ export function PackDrawButton() {
                           </span>
                         </div>
                       </div>
+                      </div>
+                        )
+                      })()}
                       <div className="pack-inspect-copy">
                         <p className="eyebrow">
                           {t('deck.collector', {
@@ -975,11 +1065,10 @@ export function PackDrawButton() {
                           {slots.map((slot, index) => {
                             const backSrc = slot?.backImageUrl || packBackSrc
                             const frontSrc = slot?.frontImageUrl || packBackSrc
-                            const glowing = slot ? glowIds.includes(slot.id) : false
-                            const glowClass = rarityGlowClass(slot)
-                            const uncommon =
-                              slot?.rarity === 'uncommon' ? 'pack-glow-uncommon' : ''
+                            const fxClass = rarityFxClass(slot)
                             const isActive = activeIdx === index
+                            const glowing = slot ? fxIds.includes(slot.id) : false
+                            const fading = slot ? fxFadeIds.includes(slot.id) : false
                             const deckSettled =
                               phase === 'flip' || phase === 'revealed'
                             // Stable under-stack ranks so both peeks stay visible (1 = deepest).
@@ -994,6 +1083,11 @@ export function PackDrawButton() {
                               : deckSettled
                                 ? behindRank
                                 : PACK_SIZE - index
+                            const showFxLayer =
+                              (glowing || fading) &&
+                              isActive &&
+                              (fxClass === 'pack-fx-rare' ||
+                                fxClass === 'pack-fx-mythic')
                             return (
                               <div
                                 key={slot?.id ?? `slot-${index}`}
@@ -1009,8 +1103,9 @@ export function PackDrawButton() {
                                   flippingIdx === index || deckFlipping
                                     ? 'is-flipping'
                                     : '',
-                                  glowClass || uncommon,
+                                  deckSettled ? fxClass : '',
                                   glowing ? 'is-glowing' : '',
+                                  fading ? 'is-fading' : '',
                                 ]
                                   .filter(Boolean)
                                   .join(' ')}
@@ -1029,8 +1124,27 @@ export function PackDrawButton() {
                                 }
                                 aria-hidden={!isActive && deckSettled}
                               >
-                                {glowing && isActive ? (
-                                  <span className="pack-sparkles" aria-hidden />
+                                {showFxLayer ? (
+                                  <span
+                                    className={[
+                                      'pack-fx-layer',
+                                      'is-sparkles',
+                                      fxClass === 'pack-fx-mythic'
+                                        ? 'is-mythic'
+                                        : '',
+                                    ]
+                                      .filter(Boolean)
+                                      .join(' ')}
+                                    aria-hidden
+                                  />
+                                ) : null}
+                                {(glowing || fading) &&
+                                isActive &&
+                                fxClass === 'pack-fx-mythic' ? (
+                                  <span
+                                    className="pack-fx-layer is-radial"
+                                    aria-hidden
+                                  />
                                 ) : null}
                                 <div className="card-flip pack-card-flip">
                                   <div
