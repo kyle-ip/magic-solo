@@ -852,6 +852,561 @@ h2 {
   letter-spacing: 0.02em;
 }
 
+/* —— Pack draw (booster tear → pull → flip) —— */
+.pack-draw-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  background: rgba(8, 6, 4, 0.78);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.pack-draw-modal {
+  width: min(56rem, 100%);
+  max-height: min(90dvh, 92vh, 920px);
+  overflow: auto;
+  padding: 1.25rem 1.4rem 1.45rem;
+  border-radius: var(--btn-radius, 12px);
+  border: 1px solid rgba(184, 137, 58, 0.28);
+  background: #000;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+}
+
+.pack-draw-modal.is-collection {
+  display: flex;
+  flex-direction: column;
+  width: min(1180px, 100%);
+  height: min(92dvh, 92vh, 960px);
+  max-height: min(92dvh, 92vh, 960px);
+  overflow: hidden;
+  /* Modal chrome: padding + header + inspect padding */
+  --pack-inspect-card-max-h: calc(min(92dvh, 92vh, 960px) - 8.75rem);
+}
+
+.pack-draw-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.pack-draw-head h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 2.4vw, 1.55rem);
+  letter-spacing: 0.02em;
+}
+
+.pack-draw-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-shrink: 0;
+}
+
+.pack-draw-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.pack-draw-stage.pack-only {
+  grid-template-columns: 1fr;
+  justify-items: center;
+}
+
+.pack-stage-visual {
+  position: relative;
+  min-height: min(52vh, 420px);
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+}
+
+.pack-draw-stage.pack-only .pack-stage-visual {
+  min-height: min(62vh, 520px);
+}
+
+.pack-draw-copy {
+  min-width: 0;
+}
+
+.pack-draw-copy h3 {
+  margin: 0.15rem 0 0.35rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.35rem, 2.2vw, 1.75rem);
+}
+
+.pack-draw-copy h4 {
+  margin: 0.85rem 0 0.35rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(231, 215, 184, 0.62);
+}
+
+.pack-draw-copy .eyebrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.65rem;
+}
+
+.pack-draw-lead,
+.pack-draw-hint {
+  margin: 0;
+  color: rgba(231, 215, 184, 0.72);
+  line-height: 1.5;
+}
+
+.pack-draw-hint {
+  margin-top: 0.65rem;
+  font-size: 0.85rem;
+}
+
+.pack-draw-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 0.85rem;
+  margin-top: 1.1rem;
+}
+
+.pack-draw-actions a {
+  color: #f0d48a;
+}
+
+.pack-rarity-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.12rem 0.45rem;
+  border-radius: 4px;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid rgba(184, 137, 58, 0.35);
+  color: rgba(231, 215, 184, 0.88);
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.pack-rarity-chip.rarity-uncommon {
+  border-color: rgba(180, 196, 210, 0.55);
+  color: #d5e0ea;
+}
+
+.pack-rarity-chip.rarity-rare {
+  border-color: rgba(230, 190, 70, 0.7);
+  color: #f3d978;
+}
+
+.pack-rarity-chip.rarity-mythic,
+.pack-rarity-chip.rarity-special {
+  border-color: rgba(240, 140, 50, 0.75);
+  color: #ffb86a;
+}
+
+/* Sealed / tearing pack — clip-path + 3D flap set inline from JS */
+.pack-shell {
+  appearance: none;
+  position: relative;
+  --pack-shell-max-h: min(56vh, 460px);
+  width: min(340px, 78vw, calc(var(--pack-shell-max-h) * 755 / 1424));
+  max-height: var(--pack-shell-max-h);
+  aspect-ratio: 755 / 1424;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  background: transparent;
+  transform-origin: center;
+}
+
+.pack-shell.is-sealed {
+  filter: drop-shadow(0 22px 32px rgba(0, 0, 0, 0.55));
+  cursor: pointer;
+}
+
+.pack-shell.is-tearing {
+  cursor: default;
+  pointer-events: none;
+  filter: drop-shadow(0 18px 26px rgba(0, 0, 0, 0.5));
+}
+
+.pack-shell:disabled {
+  cursor: progress;
+}
+
+.pack-shell-full {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 4px;
+  pointer-events: none;
+  user-select: none;
+  display: block;
+}
+
+.pack-shell-peel,
+.pack-shell-remain {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  will-change: clip-path, transform, opacity;
+}
+
+.pack-shell-peel {
+  z-index: 3;
+}
+
+.pack-shell-remain {
+  z-index: 2;
+}
+
+.pack-shell-peel img,
+.pack-shell-remain img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  display: block;
+}
+
+/* Stack: same card sits under pack halves, then scales up in place */
+.pack-reveal-stack {
+  position: relative;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+  --pack-shell-max-h: min(56vh, 460px);
+  width: min(340px, 78vw, calc(var(--pack-shell-max-h) * 744 / 1040));
+  min-height: min(52vh, 420px);
+}
+
+.pack-reveal-stack .pack-shell.is-tearing {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  width: min(340px, 78vw, calc(var(--pack-shell-max-h) * 755 / 1424));
+  max-height: var(--pack-shell-max-h);
+  aspect-ratio: 755 / 1424;
+  z-index: 2;
+}
+
+.pack-card-wrap {
+  position: relative;
+  width: 100%;
+  display: grid;
+  place-items: center;
+  z-index: 1;
+  transform-origin: center center;
+}
+
+.pack-card-wrap.is-in-pack {
+  transform: scale(0.7);
+  pointer-events: none;
+}
+
+.pack-card-wrap.is-expanding {
+  animation: pack-expand-in-place 0.28s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  pointer-events: none;
+}
+
+.pack-card-wrap.is-expanded {
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+.pack-card-flip {
+  width: 100%;
+  max-height: none;
+}
+
+@keyframes pack-expand-in-place {
+  0% {
+    transform: scale(0.7);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+/* Rarity glow */
+.pack-card-wrap.pack-glow-uncommon .card-face {
+  box-shadow:
+    0 0 0 1px rgba(190, 210, 225, 0.55),
+    0 0 18px rgba(170, 195, 215, 0.28),
+    0 18px 28px rgba(0, 0, 0, 0.45);
+}
+
+.pack-card-wrap.pack-glow-rare .card-face {
+  box-shadow:
+    0 0 0 1px rgba(240, 200, 80, 0.55),
+    0 0 16px rgba(230, 180, 50, 0.28),
+    0 18px 28px rgba(0, 0, 0, 0.45);
+}
+
+.pack-card-wrap.pack-glow-mythic .card-face {
+  box-shadow:
+    0 0 0 1px rgba(255, 160, 70, 0.6),
+    0 0 18px rgba(255, 120, 40, 0.32),
+    0 18px 28px rgba(0, 0, 0, 0.45);
+}
+
+.pack-card-wrap.pack-glow-rare.is-glowing .card-face {
+  box-shadow:
+    0 0 0 2px rgba(240, 200, 80, 0.75),
+    0 0 28px rgba(230, 180, 50, 0.55),
+    0 18px 28px rgba(0, 0, 0, 0.45);
+  animation: pack-rare-pulse 1.2s ease-out both;
+}
+
+.pack-card-wrap.pack-glow-mythic.is-glowing .card-face {
+  box-shadow:
+    0 0 0 2px rgba(255, 160, 70, 0.85),
+    0 0 36px rgba(255, 120, 40, 0.65),
+    0 0 60px rgba(255, 90, 20, 0.28),
+    0 18px 28px rgba(0, 0, 0, 0.45);
+  animation: pack-mythic-pulse 1.35s ease-out both;
+}
+
+.pack-sparkles {
+  pointer-events: none;
+  position: absolute;
+  inset: -12% -8%;
+  z-index: 3;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(255, 230, 150, 0.85) 0 2px, transparent 3px),
+    radial-gradient(circle at 78% 22%, rgba(255, 200, 100, 0.8) 0 2px, transparent 3px),
+    radial-gradient(circle at 62% 70%, rgba(255, 240, 180, 0.75) 0 1.5px, transparent 3px),
+    radial-gradient(circle at 30% 78%, rgba(255, 170, 80, 0.7) 0 2px, transparent 3px),
+    radial-gradient(circle at 50% 12%, rgba(255, 255, 220, 0.9) 0 1.5px, transparent 3px);
+  animation: pack-sparkle 1.35s ease-out both;
+  mix-blend-mode: screen;
+}
+
+@keyframes pack-rare-pulse {
+  0% {
+    filter: brightness(1.35);
+  }
+  100% {
+    filter: brightness(1);
+  }
+}
+
+@keyframes pack-mythic-pulse {
+  0% {
+    filter: brightness(1.55) saturate(1.2);
+  }
+  100% {
+    filter: brightness(1) saturate(1);
+  }
+}
+
+@keyframes pack-sparkle {
+  0% {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  35% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.08);
+  }
+}
+
+.pack-draw-modal.is-collection .pack-draw-head {
+  flex-shrink: 0;
+}
+
+/* Collection cabinet — fill modal; inspect card scales to fit fully */
+.pack-collection {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+.pack-collection-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 0.85rem;
+}
+
+.pack-collection-tile {
+  appearance: none;
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 1px solid rgba(184, 137, 58, 0.28);
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  aspect-ratio: 744 / 1040;
+}
+
+.pack-collection-tile img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pack-collection-tile .pack-rarity-chip {
+  position: absolute;
+  left: 0.35rem;
+  bottom: 0.35rem;
+  max-width: calc(100% - 0.7rem);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pack-inspect {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 1.75rem;
+  padding: 1.1rem 1.35rem 1.15rem;
+  border-radius: 10px;
+  border: 1px solid rgba(184, 137, 58, 0.4);
+  background:
+    linear-gradient(180deg, #2a221a, #17120e);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.pack-inspect-flip.card-flip {
+  /* Width derived from available height so aspect-ratio never clips the card */
+  width: min(480px, calc(var(--pack-inspect-card-max-h) * 744 / 1040));
+  max-height: var(--pack-inspect-card-max-h);
+  height: auto;
+  overflow: visible;
+}
+
+.pack-inspect-flip .card-flip-inner {
+  max-height: var(--pack-inspect-card-max-h);
+}
+
+.pack-inspect-copy {
+  min-width: 0;
+  max-height: var(--pack-inspect-card-max-h);
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-right: 0.35rem;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.pack-inspect-copy .eyebrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.65rem;
+  margin: 0 0 0.35rem;
+}
+
+.pack-inspect-copy h3 {
+  margin: 0 0 0.35rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.45rem, 2.4vw, 1.9rem);
+}
+
+.pack-inspect-copy h4 {
+  margin: 0.85rem 0 0.35rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(231, 215, 184, 0.62);
+}
+
+.pack-inspect-copy .type-line {
+  color: var(--bronze-bright);
+  margin: 0 0 0.5rem;
+}
+
+.pack-inspect-copy .pt-line {
+  font-family: var(--font-display);
+  margin: 0 0 1rem;
+}
+
+@media (max-width: 820px) {
+  .pack-draw-stage {
+    grid-template-columns: 1fr;
+  }
+
+  .pack-stage-visual {
+    min-height: min(46vh, 360px);
+  }
+
+  .pack-inspect {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    align-content: start;
+    gap: 1rem;
+    overflow: auto;
+  }
+
+  .pack-inspect-flip.card-flip {
+    width: min(300px, 70vw, calc(var(--pack-inspect-card-max-h, 48vh) * 744 / 1040));
+    max-height: min(48vh, var(--pack-inspect-card-max-h, 48vh));
+  }
+
+  .pack-inspect-copy {
+    max-height: none;
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .pack-draw-modal.is-collection {
+    height: min(90dvh, 92vh);
+    max-height: min(90dvh, 92vh);
+    --pack-inspect-card-max-h: calc(min(90dvh, 92vh) - 9.5rem);
+  }
+}
+
+@media (max-width: 640px) {
+  .pack-draw-backdrop {
+    align-items: end;
+    padding: max(0.75rem, var(--safe-top)) max(0.75rem, var(--safe-right))
+      max(0.75rem, var(--safe-bottom)) max(0.75rem, var(--safe-left));
+  }
+
+  .pack-draw-modal {
+    width: 100%;
+    max-height: min(88dvh, 920px);
+    border-radius: 16px 16px 10px 10px;
+  }
+
+  .pack-draw-modal.is-collection {
+    height: min(88dvh, 920px);
+    max-height: min(88dvh, 920px);
+    --pack-inspect-card-max-h: calc(min(88dvh, 920px) - 10rem);
+  }
+}
+
 /* Deck page — hero art atmosphere spans the full page, soft edges */
 .deck-page {
   position: relative;
@@ -1265,11 +1820,14 @@ h2 {
   transform-style: preserve-3d;
   transform: translate3d(0, 0, 0);
   will-change: transform;
-  transition: transform 450ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  transition: transform 400ms cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
-.card-flip.is-flipped .card-flip-inner {
-  transform: translate3d(0, 0, 0) rotateY(180deg);
+/* Pack draw reuses .card-flip but lives outside .modal-backdrop — set own size */
+.pack-card-wrap .card-flip.pack-card-flip {
+  --pack-card-max-h: min(56vh, 460px);
+  width: min(340px, 78vw, calc(var(--pack-card-max-h) * 744 / 1040));
+  max-height: var(--pack-card-max-h);
 }
 
 .card-face {

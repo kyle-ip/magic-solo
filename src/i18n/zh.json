@@ -24,6 +24,30 @@
     "cardsLabel": "{{count}} 种卡牌 · 套牌共 {{total}} 张",
     "pathMeta": "{{expansion}}"
   },
+  "packDraw": {
+    "open": "拆卡包",
+    "title": "拆包时刻",
+    "lead": "撕开卡包，抽出卡牌，从背面翻到正面。",
+    "openPack": "撕开",
+    "packLabel": "万智牌补充包",
+    "drawAgain": "再拆一包",
+    "loading": "开启中…",
+    "collect": "收藏",
+    "collected": "已收藏",
+    "removeCollect": "取消收藏",
+    "collection": "收藏柜",
+    "emptyCollection": "还没有收藏的卡牌。",
+    "backToPack": "返回拆包",
+    "fallbackHint": "离线模式 — 已从本地挑战套牌抽取。",
+    "rarity": {
+      "common": "普通",
+      "uncommon": "非普通",
+      "rare": "稀有",
+      "mythic": "秘稀",
+      "special": "特别",
+      "bonus": "额外"
+    }
+  },
   "deck": {
     "challenge": "挑战套牌 #{{n}}",
     "setLine": "{{expansion}} · {{code}}",

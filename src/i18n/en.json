@@ -24,6 +24,30 @@
     "cardsLabel": "{{count}} unique cards · {{total}} in deck",
     "pathMeta": "{{expansion}}"
   },
+  "packDraw": {
+    "open": "Open a pack",
+    "title": "Booster thrill",
+    "lead": "Tear the pack, pull a card, flip it face-up.",
+    "openPack": "Tear open",
+    "packLabel": "Magic: The Gathering booster pack",
+    "drawAgain": "Open another",
+    "loading": "Opening…",
+    "collect": "Collect",
+    "collected": "Collected",
+    "removeCollect": "Remove",
+    "collection": "Collection",
+    "emptyCollection": "No cards collected yet.",
+    "backToPack": "Back to pack",
+    "fallbackHint": "Offline — drew from local challenge cards.",
+    "rarity": {
+      "common": "Common",
+      "uncommon": "Uncommon",
+      "rare": "Rare",
+      "mythic": "Mythic",
+      "special": "Special",
+      "bonus": "Bonus"
+    }
+  },
   "deck": {
     "challenge": "Challenge Deck #{{n}}",
     "setLine": "{{expansion}} · {{code}}",

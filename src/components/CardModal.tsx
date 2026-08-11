@@ -26,11 +26,11 @@ function CardModalBody({
 }) {
   const { t } = useTranslation()
   const titleId = useId()
-  const [flipped, setFlipped] = useState(false)
+  const [flipTurns, setFlipTurns] = useState(0)
   const localized = useLocalizedCard(setCode.toLowerCase(), card)
 
   useEffect(() => {
-    setFlipped(false)
+    setFlipTurns(0)
   }, [card.id])
 
   useEffect(() => {
@@ -58,8 +58,8 @@ function CardModalBody({
 
   const frontSrc = assetUrl(card.images.display || card.images.front)
 
-  const toggleFlip = () => {
-    requestAnimationFrame(() => setFlipped((v) => !v))
+  const flipOnce = () => {
+    requestAnimationFrame(() => setFlipTurns((n) => n + 1))
   }
 
   return (
@@ -75,17 +75,18 @@ function CardModalBody({
           {t('deck.close')}
         </button>
 
-        <div className={`card-flip ${flipped ? 'is-flipped' : ''}`}>
+        <div className="card-flip">
           <div
             className="card-flip-inner"
             role="button"
             tabIndex={0}
             aria-label={t('deck.flip')}
-            onClick={toggleFlip}
+            style={{ transform: `translate3d(0, 0, 0) rotateY(${flipTurns * 180}deg)` }}
+            onClick={flipOnce}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault()
-                toggleFlip()
+                flipOnce()
               }
             }}
           >

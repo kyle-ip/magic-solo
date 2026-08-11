@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { LanguageSwitch } from './LanguageSwitch'
+import { PackDrawButton } from './PackDrawButton'
 import { ReferencesButton } from './ReferencesButton'
 import { assetUrl } from '../utils/assetUrl'
 
@@ -24,6 +25,7 @@ export function SiteHeader() {
           </span>
         </Link>
         <div className="site-header-actions">
+          <PackDrawButton />
           <ReferencesButton />
           <LanguageSwitch />
         </div>
