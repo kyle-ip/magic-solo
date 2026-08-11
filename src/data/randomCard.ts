@@ -221,20 +221,14 @@ async function waitForDrawGap(): Promise<void> {
   }
 }
 
-/**
- * Weighted random draw: Scryfall first, local challenge decks on failure.
- */
-export async function drawWeightedCard(): Promise<DrawnCard> {
-  await waitForDrawGap()
-  lastDrawAt = Date.now()
-
+async function drawOneUnchecked(): Promise<DrawnCard> {
   const rarity = rollRarity()
   try {
     const card = await fetchScryfallRandom(rarity)
     try {
       await preloadImage(card.frontImageUrl)
     } catch {
-      /* still usable if CDN is flaky; UI may show broken img briefly */
+      /* still usable if CDN is flaky */
     }
     return card
   } catch {
@@ -246,4 +240,45 @@ export async function drawWeightedCard(): Promise<DrawnCard> {
     }
     return local
   }
+}
+
+/**
+ * Weighted random draw: Scryfall first, local challenge decks on failure.
+ */
+export async function drawWeightedCard(): Promise<DrawnCard> {
+  await waitForDrawGap()
+  lastDrawAt = Date.now()
+  return drawOneUnchecked()
+}
+
+/**
+ * Open a pack of `count` cards. Requests run concurrently (one rate-limit gap for the pack).
+ */
+export async function drawWeightedPack(count = 3): Promise<DrawnCard[]> {
+  const n = Math.max(1, Math.floor(count))
+  await waitForDrawGap()
+  lastDrawAt = Date.now()
+
+  let cards = await Promise.all(Array.from({ length: n }, () => drawOneUnchecked()))
+
+  // Concurrent random can collide — replace duplicate ids when possible.
+  const seen = new Set<string>()
+  cards = await Promise.all(
+    cards.map(async (card) => {
+      if (!seen.has(card.id)) {
+        seen.add(card.id)
+        return card
+      }
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const next = await drawOneUnchecked()
+        if (!seen.has(next.id)) {
+          seen.add(next.id)
+          return next
+        }
+      }
+      return card
+    }),
+  )
+
+  return cards
 }

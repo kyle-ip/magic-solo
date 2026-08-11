@@ -27,10 +27,12 @@ function CardModalBody({
   const { t } = useTranslation()
   const titleId = useId()
   const [flipTurns, setFlipTurns] = useState(0)
+  const [flipping, setFlipping] = useState(false)
   const localized = useLocalizedCard(setCode.toLowerCase(), card)
 
   useEffect(() => {
     setFlipTurns(0)
+    setFlipping(false)
   }, [card.id])
 
   useEffect(() => {
@@ -59,7 +61,9 @@ function CardModalBody({
   const frontSrc = assetUrl(card.images.display || card.images.front)
 
   const flipOnce = () => {
+    setFlipping(true)
     requestAnimationFrame(() => setFlipTurns((n) => n + 1))
+    window.setTimeout(() => setFlipping(false), 400)
   }
 
   return (
@@ -77,7 +81,9 @@ function CardModalBody({
 
         <div className="card-flip">
           <div
-            className="card-flip-inner"
+            className={['card-flip-inner', flipping ? 'is-flipping' : '']
+              .filter(Boolean)
+              .join(' ')}
             role="button"
             tabIndex={0}
             aria-label={t('deck.flip')}
