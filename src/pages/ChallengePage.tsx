@@ -44,6 +44,7 @@ import type {
   LogEntry,
 } from '../game/types'
 import { assetUrl } from '../utils/assetUrl'
+import { setHideSiteChrome } from '../utils/siteChrome'
 
 const CODES: ChallengeCode[] = ['tfth', 'tbth', 'tdag']
 const COACH_KEY = 'magic-solo-coach'
@@ -120,6 +121,12 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
     origLeft: number
     origTop: number
   } | null>(null)
+
+  useEffect(() => {
+    // Keep SiteHeader on setup; hide chrome only while the board is active.
+    setHideSiteChrome(state.status !== 'setup')
+    return () => setHideSiteChrome(false)
+  }, [state.status])
 
   const act = useCallback((action: GameAction) => dispatch(action), [])
 

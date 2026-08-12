@@ -452,7 +452,9 @@ async function fetchZhsOverlay(oracleId: string): Promise<ZhOverlay | null> {
   return enqueueScryfall(async () => {
     try {
       const q = `oracleid:${oracleId} lang:zhs`
-      const url = `${SCRYFALL_SEARCH}?q=${encodeURIComponent(q)}&unique=prints`
+      // API defaults to English-only; multilingual prints need this flag
+      // or `lang:zhs` always 404s even when Simplified Chinese exists.
+      const url = `${SCRYFALL_SEARCH}?q=${encodeURIComponent(q)}&unique=prints&include_multilingual=true`
       const res = await fetchWithTimeout(url, ZHS_TIMEOUT_MS)
       if (!res.ok) return null
       const data = (await res.json()) as ScryfallSearchResponse

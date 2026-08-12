@@ -11,16 +11,15 @@ describe('manaSymbols', () => {
   beforeEach(() => {
     resetManaSymbolCacheForTests()
     vi.stubGlobal(
-      'fetch',
-      vi.fn(async () => {
-        const body = '<svg xmlns="http://www.w3.org/2000/svg"/>'
-        return new Response(body, {
-          status: 200,
-          headers: { 'Content-Type': 'image/svg+xml' },
-        })
-      }),
+      'Image',
+      class {
+        onload: (() => void) | null = null
+        onerror: (() => void) | null = null
+        set src(_url: string) {
+          queueMicrotask(() => this.onload?.())
+        }
+      },
     )
-    vi.stubGlobal('caches', undefined)
   })
 
   afterEach(() => {
@@ -42,7 +41,7 @@ describe('manaSymbols', () => {
     ])
   })
 
-  it('fetches a symbol only once for concurrent callers', async () => {
+  it('loads a symbol only once for concurrent callers', async () => {
     const [a, b, c] = await Promise.all([
       loadManaSymbol('R'),
       loadManaSymbol('R'),
@@ -51,13 +50,12 @@ describe('manaSymbols', () => {
     expect(a).toBe(b)
     expect(b).toBe(c)
     expect(getCachedManaSymbolUrl('R')).toBe(a)
-    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(a).toContain('/R.svg')
   })
 
-  it('reuses memory on a later call without refetching', async () => {
-    await loadManaSymbol('G')
-    expect(fetch).toHaveBeenCalledTimes(1)
-    await loadManaSymbol('G')
-    expect(fetch).toHaveBeenCalledTimes(1)
+  it('reuses memory on a later call without creating a new URL', async () => {
+    const first = await loadManaSymbol('G')
+    const second = await loadManaSymbol('G')
+    expect(second).toBe(first)
   })
 })

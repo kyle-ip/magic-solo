@@ -1,4 +1,4 @@
-import { useLayoutEffect } from 'react'
+import { useLayoutEffect, useSyncExternalStore } from 'react'
 import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
 import { FloatingNav } from './components/FloatingNav'
 import { SiteFooter } from './components/SiteFooter'
@@ -7,6 +7,10 @@ import { AssistantPage } from './pages/AssistantPage'
 import { ChallengePage } from './pages/ChallengePage'
 import { DeckPage } from './pages/DeckPage'
 import { HomePage } from './pages/HomePage'
+import {
+  getHideSiteChrome,
+  subscribeHideSiteChrome,
+} from './utils/siteChrome'
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -29,14 +33,23 @@ function LegacyModeDeckRedirect() {
 
 export default function App() {
   const { pathname } = useLocation()
-  const isArena =
-    pathname.startsWith('/challenge/') ||
-    (pathname.startsWith('/assistant/') && !pathname.startsWith('/assistant/decks/'))
+  const hideChromePlaying = useSyncExternalStore(
+    subscribeHideSiteChrome,
+    getHideSiteChrome,
+    () => false,
+  )
+  // Assistant board stays chrome-free; challenge setup keeps SiteHeader,
+  // and ChallengePage toggles hide while actively playing.
+  const hideChromeRoute =
+    pathname.startsWith('/assistant/') &&
+    !pathname.startsWith('/assistant/decks/')
+  const hideChrome = hideChromeRoute || hideChromePlaying
+  const isArena = hideChrome
 
   return (
     <div className={`app-shell ${isArena ? 'is-arena' : ''}`}>
       <ScrollToTop />
-      {!isArena ? <SiteHeader /> : null}
+      {!hideChrome ? <SiteHeader /> : null}
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/decks/:setCode" element={<DeckPage />} />
@@ -46,8 +59,8 @@ export default function App() {
         <Route path="/assistant/:setCode" element={<AssistantPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      {!isArena ? <SiteFooter /> : null}
-      {!isArena ? <FloatingNav /> : null}
+      {!hideChrome ? <SiteFooter /> : null}
+      {!hideChrome ? <FloatingNav /> : null}
     </div>
   )
 }

@@ -15,7 +15,7 @@
   "home": {
     "eyebrow": "挑战套牌",
     "title": "Magic Solo",
-    "lead": "三套自运行挑战套牌：勇战多头龙、勇战蛮群、勇战天神。可选完整挑战体验，或用游戏助手配合线下牌组。",
+    "lead": "三套自运行挑战套牌：勇战多头龙、勇战蛮群、勇战天神。可选完整挑战体验，或用游戏助手配合线下牌组试玩。",
     "cta": "进入挑战",
     "sharedTitle": "什么是挑战套牌？",
     "references": "参考资料",
@@ -43,7 +43,7 @@
     "fallbackHint": "离线模式 — 已从本地挑战套牌抽取。",
     "details": "详情",
     "keywords": "关键词",
-    "scryfall": "在 Scryfall 查看",
+    "scryfall": "Scryfall",
     "englishName": "英文名",
     "otherFace": "另一面",
     "otherFaceN": "第 {{n}} 面",

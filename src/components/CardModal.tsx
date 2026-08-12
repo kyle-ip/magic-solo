@@ -1,8 +1,9 @@
-import { useEffect, useId, useMemo, useState } from 'react'
+import { useCallback, useEffect, useId, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { deckMetaEn, deckMetaZh } from '../data/locale/deckMeta'
 import { deckCardToDrawn, wantsZh } from '../data/randomCard'
+import { useSwipeNavigate } from '../hooks/useSwipeNavigate'
 import type { DeckCard } from '../types'
 import { assetUrl } from '../utils/assetUrl'
 import { preloadImage } from '../utils/imageCache'
@@ -10,6 +11,9 @@ import { CardDetailsBody } from './CardDetailsBody'
 
 interface CardModalProps {
   card: DeckCard | null
+  /** Full deck list for swipe / keyboard browse. */
+  cards?: DeckCard[]
+  onSelect?: (card: DeckCard) => void
   /** Challenge deck code (`tfth` / `tbth` / `tdag`) for bilingual lookup. */
   deckCode: string
   /** Printed set code for collector line (e.g. TFTH). */
@@ -17,11 +21,20 @@ interface CardModalProps {
   onClose: () => void
 }
 
-export function CardModal({ card, deckCode, setCode, onClose }: CardModalProps) {
+export function CardModal({
+  card,
+  cards,
+  onSelect,
+  deckCode,
+  setCode,
+  onClose,
+}: CardModalProps) {
   if (!card) return null
   return (
     <CardModalBody
       card={card}
+      cards={cards}
+      onSelect={onSelect}
       deckCode={deckCode}
       setCode={setCode}
       onClose={onClose}
@@ -31,11 +44,15 @@ export function CardModal({ card, deckCode, setCode, onClose }: CardModalProps) 
 
 function CardModalBody({
   card,
+  cards,
+  onSelect,
   deckCode,
   setCode,
   onClose,
 }: {
   card: DeckCard
+  cards?: DeckCard[]
+  onSelect?: (card: DeckCard) => void
   deckCode: string
   setCode: string
   onClose: () => void
@@ -44,6 +61,10 @@ function CardModalBody({
   const titleId = useId()
   const [flipTurns, setFlipTurns] = useState(0)
   const [flipping, setFlipping] = useState(false)
+
+  const browseList = cards && cards.length > 0 ? cards : [card]
+  const canBrowse = browseList.length > 1 && !!onSelect
+  const cardIndex = browseList.findIndex((c) => c.id === card.id)
 
   const drawn = useMemo(() => {
     const meta = wantsZh(i18n.language)
@@ -67,13 +88,39 @@ function CardModalBody({
     void preloadImage(back).catch(() => undefined)
   }, [card])
 
+  const stepCard = useCallback(
+    (delta: number) => {
+      if (!canBrowse || !onSelect || cardIndex < 0) return
+      const next =
+        browseList[
+          ((cardIndex + delta) % browseList.length + browseList.length) %
+            browseList.length
+        ]
+      if (next) onSelect(next)
+    },
+    [browseList, canBrowse, cardIndex, onSelect],
+  )
+
+  const swipe = useSwipeNavigate((delta) => stepCard(delta), canBrowse)
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
+      if (e.key === 'Escape') {
+        onClose()
+        return
+      }
+      if (!canBrowse) return
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        stepCard(-1)
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault()
+        stepCard(1)
+      }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
+  }, [canBrowse, onClose, stepCard])
 
   const frontSrc = assetUrl(card.images.display || card.images.front)
   const displayTitle = wantsZh(i18n.language)
@@ -111,7 +158,7 @@ function CardModalBody({
 
         <div className="pack-collection">
           <div className="pack-inspect" aria-label={displayTitle}>
-            <div className="pack-inspect-stage">
+            <div className="pack-inspect-stage" {...swipe}>
               <div
                 className={[
                   'pack-card-wrap',
@@ -165,7 +212,12 @@ function CardModalBody({
                 </div>
                 <div className="pack-draw-actions">
                   {card.scryfallUri ? (
-                    <a href={card.scryfallUri} target="_blank" rel="noreferrer">
+                    <a
+                      href={card.scryfallUri}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="pack-scryfall-link"
+                    >
                       {t('packDraw.scryfall')}
                     </a>
                   ) : null}

@@ -102,6 +102,8 @@ export function DeckPage() {
 
       <CardModal
         card={selected}
+        cards={deck.cards}
+        onSelect={setSelected}
         deckCode={deck.code}
         setCode={deck.setCode}
         onClose={() => setSelected(null)}

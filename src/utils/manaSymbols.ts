@@ -1,11 +1,10 @@
 /** Scryfall card-symbol SVGs: https://svgs.scryfall.io/card-symbols/{CODE}.svg */
 
 const SYMBOL_BASE = 'https://svgs.scryfall.io/card-symbols'
-const CACHE_NAME = 'scryfall-mana-symbols-v1'
 
-/** In-memory: normalized code → local blob:/data: URL (or CDN fallback). */
+/** In-memory: normalized code → CDN URL once primed (browser HTTP cache holds bytes). */
 const memory = new Map<string, string>()
-/** Deduplicate concurrent fetches for the same code. */
+/** Deduplicate concurrent loads for the same code. */
 const inflight = new Map<string, Promise<string>>()
 
 /** Subscribers notified when a symbol resolves (for mounted <ManaSymbol>s). */
@@ -38,47 +37,15 @@ export function manaSymbolUrl(braceContent: string): string {
   return memory.get(code) ?? manaSymbolCdnUrl(code)
 }
 
-/** Sync peek — blob URL if already loaded this session. */
+/** Sync peek — URL if already primed this session. */
 export function getCachedManaSymbolUrl(braceContent: string): string | null {
   return memory.get(normalizeManaCode(braceContent)) ?? null
 }
 
-async function readFromCacheApi(cdnUrl: string): Promise<Response | null> {
-  if (typeof caches === 'undefined') return null
-  try {
-    const cache = await caches.open(CACHE_NAME)
-    return (await cache.match(cdnUrl)) ?? null
-  } catch {
-    return null
-  }
-}
-
-async function writeToCacheApi(cdnUrl: string, response: Response): Promise<void> {
-  if (typeof caches === 'undefined') return
-  try {
-    const cache = await caches.open(CACHE_NAME)
-    await cache.put(cdnUrl, response)
-  } catch {
-    // Quota / private mode — memory cache still works.
-  }
-}
-
-async function blobUrlFromResponse(response: Response): Promise<string> {
-  const blob = await response.blob()
-  if (typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function') {
-    return URL.createObjectURL(blob)
-  }
-  // Extremely old environments: data URL fallback
-  const buffer = await blob.arrayBuffer()
-  const bytes = new Uint8Array(buffer)
-  let binary = ''
-  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]!)
-  return `data:${blob.type || 'image/svg+xml'};base64,${btoa(binary)}`
-}
-
 /**
- * Fetch a symbol at most once (memory + Cache Storage). Concurrent callers share
- * one network request. Returns a same-origin blob: URL safe to reuse on many <img>s.
+ * Prime a symbol at most once. Uses Image() (not fetch) so there is no CORS
+ * requirement — <img> display never needs ACAO, and the browser HTTP cache
+ * reuses the same CDN URL across many ManaSymbol mounts.
  */
 export function loadManaSymbol(braceContent: string): Promise<string> {
   const code = normalizeManaCode(braceContent)
@@ -89,29 +56,24 @@ export function loadManaSymbol(braceContent: string): Promise<string> {
   if (pending) return pending
 
   const cdnUrl = manaSymbolCdnUrl(code)
-  const task = (async () => {
-    try {
-      let response = await readFromCacheApi(cdnUrl)
-      if (!response || !response.ok) {
-        response = await fetch(cdnUrl, { mode: 'cors', credentials: 'omit' })
-        if (!response.ok) {
-          throw new Error(`Mana symbol HTTP ${response.status}: ${code}`)
-        }
-        await writeToCacheApi(cdnUrl, response.clone())
-      }
-      const objectUrl = await blobUrlFromResponse(response)
-      memory.set(code, objectUrl)
-      notify()
-      return objectUrl
-    } catch {
-      // Network / CORS failure — fall back to CDN so <img> can still try.
-      memory.set(code, cdnUrl)
-      notify()
-      return cdnUrl
-    } finally {
+  const task = new Promise<string>((resolve) => {
+    const finish = (url: string) => {
+      memory.set(code, url)
       inflight.delete(code)
+      notify()
+      resolve(url)
     }
-  })()
+
+    if (typeof Image === 'undefined') {
+      finish(cdnUrl)
+      return
+    }
+
+    const img = new Image()
+    img.onload = () => finish(cdnUrl)
+    img.onerror = () => finish(cdnUrl)
+    img.src = cdnUrl
+  })
 
   inflight.set(code, task)
   return task
@@ -168,17 +130,8 @@ export function preloadCommonManaSymbols(
   }
 }
 
-/** @internal Vitest only — clears memory/inflight so fetch mocks stay honest. */
+/** @internal Vitest only — clears memory/inflight so mocks stay honest. */
 export function resetManaSymbolCacheForTests(): void {
-  for (const url of memory.values()) {
-    if (url.startsWith('blob:')) {
-      try {
-        URL.revokeObjectURL(url)
-      } catch {
-        /* ignore */
-      }
-    }
-  }
   memory.clear()
   inflight.clear()
 }

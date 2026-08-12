@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useId, useRef, useState, type CSSProperties } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
+import { useSwipeNavigate } from '../hooks/useSwipeNavigate'
 import { assetUrl } from '../utils/assetUrl'
 import {
   addCollected,
@@ -922,6 +923,15 @@ export function PackDrawButton() {
     selectCard(activeIdx + delta)
   }
 
+  const packSwipe = useSwipeNavigate(
+    (delta) => stepCard(delta),
+    open && view === 'pack' && (phase === 'revealed' || phase === 'flip') && cards.length > 1,
+  )
+  const inspectSwipe = useSwipeNavigate(
+    (delta) => stepInspect(delta),
+    open && view === 'collection' && !!inspect,
+  )
+
   const flipOnce = (index: number) => {
     if (phase !== 'revealed' && phase !== 'flip') return
     setFlippingIdx(index)
@@ -1180,7 +1190,7 @@ export function PackDrawButton() {
                         </label>
                         <div className="pack-collection-filter pack-collection-actions">
                           <span>{t('packDraw.manage')}</span>
-                          <div className="pack-collection-manage">
+                          <div className="pack-collection-manage" role="group" aria-label={t('packDraw.manage')}>
                             <button
                               type="button"
                               className="btn ghost"
@@ -1251,14 +1261,6 @@ export function PackDrawButton() {
                           (inspectGlowing || inspectFading) &&
                           (inspectFx === 'pack-fx-rare' ||
                             inspectFx === 'pack-fx-mythic')
-                        const browseList =
-                          filteredCollection.length > 0
-                            ? filteredCollection
-                            : collection
-                        const inspectIdx = browseList.findIndex(
-                          (c) => c.id === inspect.id,
-                        )
-                        const canBrowseInspect = browseList.length > 1
                         const flipInspect = () => {
                           const nextTurns = inspectFlipTurns + 1
                           setInspectFlipping(true)
@@ -1274,7 +1276,7 @@ export function PackDrawButton() {
                           }, FLIP_MS)
                         }
                         return (
-                      <div className="pack-inspect-stage">
+                      <div className="pack-inspect-stage" {...inspectSwipe}>
                       <div
                         key={inspect.id}
                         className={[
@@ -1337,29 +1339,6 @@ export function PackDrawButton() {
                         </div>
                       </div>
                       </div>
-                      {canBrowseInspect ? (
-                        <>
-                          <button
-                            type="button"
-                            className="pack-nav pack-nav-prev"
-                            aria-label={t('packDraw.prevCard')}
-                            onClick={() => stepInspect(-1)}
-                          >
-                            <span aria-hidden>‹</span>
-                          </button>
-                          <button
-                            type="button"
-                            className="pack-nav pack-nav-next"
-                            aria-label={t('packDraw.nextCard')}
-                            onClick={() => stepInspect(1)}
-                          >
-                            <span aria-hidden>›</span>
-                          </button>
-                          <p className="pack-deck-index" aria-live="polite">
-                            {inspectIdx + 1} / {browseList.length}
-                          </p>
-                        </>
-                      ) : null}
                       </div>
                         )
                       })()}
@@ -1369,15 +1348,6 @@ export function PackDrawButton() {
                             <CardDetailsBody card={inspect} />
                           </div>
                           <div className="pack-draw-actions">
-                            {inspect.scryfallUri ? (
-                              <a
-                                href={inspect.scryfallUri}
-                                target="_blank"
-                                rel="noreferrer"
-                              >
-                                {t('packDraw.scryfall')}
-                              </a>
-                            ) : null}
                             <button
                               type="button"
                               className="btn ghost"
@@ -1385,6 +1355,16 @@ export function PackDrawButton() {
                             >
                               {t('packDraw.removeCollect')}
                             </button>
+                            {inspect.scryfallUri ? (
+                              <a
+                                href={inspect.scryfallUri}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="pack-scryfall-link"
+                              >
+                                {t('packDraw.scryfall')}
+                              </a>
+                            ) : null}
                           </div>
                         </div>
                       </div>
@@ -1427,6 +1407,9 @@ export function PackDrawButton() {
                           'is-deck',
                           cardInPack ? 'is-in-tear' : 'is-browsable',
                         ].join(' ')}
+                        {...(phase === 'revealed' || phase === 'flip'
+                          ? packSwipe
+                          : {})}
                       >
                         <div className="pack-card-deck" role="list">
                           {slots.map((slot, index) => {
@@ -1567,28 +1550,6 @@ export function PackDrawButton() {
                           })}
                         </div>
 
-                        {(phase === 'revealed' || phase === 'flip') &&
-                        cards.length > 1 ? (
-                          <>
-                            <button
-                              type="button"
-                              className="pack-nav pack-nav-prev"
-                              aria-label={t('packDraw.prevCard')}
-                              onClick={() => stepCard(-1)}
-                            >
-                              <span aria-hidden>‹</span>
-                            </button>
-                            <button
-                              type="button"
-                              className="pack-nav pack-nav-next"
-                              aria-label={t('packDraw.nextCard')}
-                              onClick={() => stepCard(1)}
-                            >
-                              <span aria-hidden>›</span>
-                            </button>
-                          </>
-                        ) : null}
-
                         {cardInPack ? (
                           <div
                             ref={packShellRef}
@@ -1658,6 +1619,7 @@ export function PackDrawButton() {
                               href={card.scryfallUri}
                               target="_blank"
                               rel="noreferrer"
+                              className="pack-scryfall-link"
                             >
                               {t('packDraw.scryfall')}
                             </a>
