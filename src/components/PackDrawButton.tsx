@@ -1248,9 +1248,6 @@ export function PackDrawButton() {
                             >
                               <span aria-hidden>›</span>
                             </button>
-                            <p className="pack-deck-index" aria-live="polite">
-                              {activeIdx + 1} / {cards.length}
-                            </p>
                           </>
                         ) : null}
 
