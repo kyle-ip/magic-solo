@@ -8,6 +8,10 @@ import { installScrollRevealScrollbars } from './utils/scrollReveal'
 
 installScrollRevealScrollbars()
 
+if ('scrollRestoration' in history) {
+  history.scrollRestoration = 'manual'
+}
+
 const redirect = sessionStorage.getItem('spa-redirect')
 if (redirect) {
   sessionStorage.removeItem('spa-redirect')

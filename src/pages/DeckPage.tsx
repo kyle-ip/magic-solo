@@ -49,16 +49,16 @@ export function DeckPage() {
             <Link to="/" className="back-link">
               ← {t('app.backHome')}
             </Link>
-            <p className="eyebrow reveal">
+            <p className="eyebrow">
               {t('deck.challenge', { n: deck.challengeNumber })} ·{' '}
               {t('deck.setLine', {
                 expansion: meta?.expansion ?? deck.setCode,
                 code: deck.setCode,
               })}
             </p>
-            <h1 className="reveal delay-1">{meta?.name ?? deck.name}</h1>
-            <p className="lede reveal delay-2">{meta?.overview}</p>
-            <div className="cta-row reveal delay-3">
+            <h1>{meta?.name ?? deck.name}</h1>
+            <p className="lede">{meta?.overview}</p>
+            <div className="cta-row">
               <Link className="btn primary" to={`/challenge/${deck.code}`}>
                 {t('deck.startExperience')}
               </Link>
@@ -67,7 +67,7 @@ export function DeckPage() {
               </Link>
             </div>
           </div>
-          <div className="deck-hero-card reveal delay-2">
+          <div className="deck-hero-card">
             <img src={assetUrl(heroFront)} alt={meta?.name ?? deck.name} />
           </div>
         </div>

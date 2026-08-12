@@ -93,6 +93,7 @@
     "useDeck": "使用此牌组",
     "deckRoster": "{{name}} · {{count}} 张",
     "begin": "开始挑战体验",
+    "rotateLandscape": "请将设备横屏以继续挑战体验",
     "settlementWin": "挑战结算 · 胜利",
     "settlementLoss": "挑战结算 · 败北",
     "statTurns": "回合数",

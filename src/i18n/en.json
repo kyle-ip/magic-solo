@@ -93,6 +93,7 @@
     "useDeck": "Use this deck",
     "deckRoster": "{{name}} · {{count}} cards",
     "begin": "Begin Challenge Experience",
+    "rotateLandscape": "Rotate your device to landscape to continue",
     "settlementWin": "Settlement · Victory",
     "settlementLoss": "Settlement · Defeat",
     "statTurns": "Turns",

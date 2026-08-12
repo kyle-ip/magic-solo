@@ -365,13 +365,13 @@ function rarityFxClass(card: DrawnCard | null | undefined): string {
 /** Peak flash duration by tier (ms); fade-out is separate. */
 function rarityFxDurationMs(card: DrawnCard): number {
   const fx = rarityFxClass(card)
-  if (fx === 'pack-fx-mythic') return 1400
-  if (fx === 'pack-fx-rare') return 1200
-  if (fx === 'pack-fx-uncommon') return 700
+  if (fx === 'pack-fx-mythic') return 2800
+  if (fx === 'pack-fx-rare') return 2400
+  if (fx === 'pack-fx-uncommon') return 1400
   return 450
 }
 
-const FX_FADE_MS = 600
+const FX_FADE_MS = 900
 
 /** Odd flipTurns show card art (`.card-face.back`). */
 function isShowingCardFront(turns: number): boolean {
@@ -499,6 +499,16 @@ export function PackDrawButton() {
           return
         }
         setOpen(false)
+        return
+      }
+      if (inspect) {
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault()
+          stepInspect(-1)
+        } else if (e.key === 'ArrowRight') {
+          e.preventDefault()
+          stepInspect(1)
+        }
         return
       }
       if (view !== 'pack') return
@@ -720,6 +730,23 @@ export function PackDrawButton() {
     if (cards[activeIdx]?.id === item.id) setCollected(false)
   }
 
+  const openInspect = (item: CollectedCard) => {
+    setInspectFlipTurns(0)
+    setInspectFlipping(false)
+    setInspect(item)
+    triggerFrontFx(item)
+  }
+
+  const stepInspect = (delta: number) => {
+    if (!inspect || collection.length === 0) return
+    const idx = collection.findIndex((c) => c.id === inspect.id)
+    if (idx < 0) return
+    const next =
+      collection[((idx + delta) % collection.length + collection.length) % collection.length]
+    if (!next || next.id === inspect.id) return
+    openInspect(next)
+  }
+
   const selectCard = (index: number) => {
     if (cards.length === 0) return
     const next = ((index % cards.length) + cards.length) % cards.length
@@ -850,13 +877,7 @@ export function PackDrawButton() {
                           <button
                             type="button"
                             className="pack-collection-tile"
-                            onClick={() => {
-                              setInspectFlipTurns(0)
-                              setInspectFlipping(false)
-                              setInspect(item)
-                              // Art is on the front face at turns=0.
-                              triggerFrontFx(item)
-                            }}
+                            onClick={() => openInspect(item)}
                           >
                             <img src={item.frontImageUrl} alt={item.name} />
                             <span className={`pack-rarity-chip rarity-${item.rarity}`}>
@@ -879,6 +900,10 @@ export function PackDrawButton() {
                           (inspectGlowing || inspectFading) &&
                           (inspectFx === 'pack-fx-rare' ||
                             inspectFx === 'pack-fx-mythic')
+                        const inspectIdx = collection.findIndex(
+                          (c) => c.id === inspect.id,
+                        )
+                        const canBrowseInspect = collection.length > 1
                         const flipInspect = () => {
                           const nextTurns = inspectFlipTurns + 1
                           setInspectFlipping(true)
@@ -895,6 +920,7 @@ export function PackDrawButton() {
                           schedule(() => setInspectFlipping(false), FLIP_MS)
                         }
                         return (
+                      <div className="pack-inspect-stage">
                       <div
                         className={[
                           'pack-card-wrap',
@@ -924,7 +950,7 @@ export function PackDrawButton() {
                         {(inspectGlowing || inspectFading) &&
                         inspectFx === 'pack-fx-mythic' ? (
                           <span
-                            className="pack-fx-layer is-radial"
+                            className="pack-fx-layer is-corona"
                             aria-hidden
                           />
                         ) : null}
@@ -961,6 +987,30 @@ export function PackDrawButton() {
                           </span>
                         </div>
                       </div>
+                      </div>
+                      {canBrowseInspect ? (
+                        <>
+                          <button
+                            type="button"
+                            className="pack-nav pack-nav-prev"
+                            aria-label={t('packDraw.prevCard')}
+                            onClick={() => stepInspect(-1)}
+                          >
+                            <span aria-hidden>‹</span>
+                          </button>
+                          <button
+                            type="button"
+                            className="pack-nav pack-nav-next"
+                            aria-label={t('packDraw.nextCard')}
+                            onClick={() => stepInspect(1)}
+                          >
+                            <span aria-hidden>›</span>
+                          </button>
+                          <p className="pack-deck-index" aria-live="polite">
+                            {inspectIdx + 1} / {collection.length}
+                          </p>
+                        </>
+                      ) : null}
                       </div>
                         )
                       })()}
@@ -1142,7 +1192,7 @@ export function PackDrawButton() {
                                 isActive &&
                                 fxClass === 'pack-fx-mythic' ? (
                                   <span
-                                    className="pack-fx-layer is-radial"
+                                    className="pack-fx-layer is-corona"
                                     aria-hidden
                                   />
                                 ) : null}
@@ -1274,34 +1324,36 @@ export function PackDrawButton() {
 
                   {phase === 'revealed' && card ? (
                     <div className="pack-draw-copy">
-                      <p className="eyebrow">
-                        {t('deck.collector', {
-                          set: card.setCode,
-                          number: card.collectorNumber,
-                        })}
-                        <span
-                          className={`pack-rarity-chip rarity-${card.rarity}`}
-                        >
-                          {t(`packDraw.rarity.${card.rarity}`, {
-                            defaultValue: card.rarity,
+                      <div className="pack-draw-copy-body">
+                        <p className="eyebrow">
+                          {t('deck.collector', {
+                            set: card.setCode,
+                            number: card.collectorNumber,
                           })}
-                        </span>
-                      </p>
-                      <h3>{card.name}</h3>
-                      <p className="type-line">{card.typeLine}</p>
-                      {pt ? <p className="pt-line">{pt}</p> : null}
-                      <h4>{t('deck.oracle')}</h4>
-                      <p className="oracle-text">{card.oracleText || '—'}</p>
-                      {card.artist ? (
-                        <p className="artist">
-                          {t('deck.artist', { name: card.artist })}
+                          <span
+                            className={`pack-rarity-chip rarity-${card.rarity}`}
+                          >
+                            {t(`packDraw.rarity.${card.rarity}`, {
+                              defaultValue: card.rarity,
+                            })}
+                          </span>
                         </p>
-                      ) : null}
-                      {card.source === 'local' ? (
-                        <p className="pack-draw-hint">
-                          {t('packDraw.fallbackHint')}
-                        </p>
-                      ) : null}
+                        <h3>{card.name}</h3>
+                        <p className="type-line">{card.typeLine}</p>
+                        {pt ? <p className="pt-line">{pt}</p> : null}
+                        <h4>{t('deck.oracle')}</h4>
+                        <p className="oracle-text">{card.oracleText || '—'}</p>
+                        {card.artist ? (
+                          <p className="artist">
+                            {t('deck.artist', { name: card.artist })}
+                          </p>
+                        ) : null}
+                        {card.source === 'local' ? (
+                          <p className="pack-draw-hint">
+                            {t('packDraw.fallbackHint')}
+                          </p>
+                        ) : null}
+                      </div>
                       <div className="pack-draw-actions">
                         <button
                           type="button"

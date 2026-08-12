@@ -299,6 +299,24 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
     return () => window.clearTimeout(t)
   }, [state.fx?.id, act])
 
+  useEffect(() => {
+    if (state.status === 'setup') return
+    const orientation = screen.orientation as ScreenOrientation & {
+      lock?: (type: string) => Promise<void>
+      unlock?: () => void
+    }
+    void orientation.lock?.('landscape').catch(() => {
+      /* Browser may require fullscreen; CSS gate still covers portrait. */
+    })
+    return () => {
+      try {
+        orientation.unlock?.()
+      } catch {
+        /* ignore */
+      }
+    }
+  }, [state.status])
+
   const fxFor = useCallback(
     (targetId: string): FxPop | undefined =>
       state.fx?.pops?.find((p) => p.targetId === targetId),
@@ -531,6 +549,14 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
 
   return (
     <main ref={arenaRef} className={`arena-root is-playing theme-${deck.theme}`}>
+      <div
+        className="arena-rotate-gate"
+        role="dialog"
+        aria-modal="true"
+        aria-label={t('challenge.rotateLandscape')}
+      >
+        <p>{t('challenge.rotateLandscape')}</p>
+      </div>
       <div
         className="arena-bg"
         style={

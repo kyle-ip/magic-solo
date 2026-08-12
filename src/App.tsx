@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useLayoutEffect } from 'react'
 import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
 import { FloatingNav } from './components/FloatingNav'
 import { SiteFooter } from './components/SiteFooter'
@@ -10,8 +10,14 @@ import { HomePage } from './pages/HomePage'
 
 function ScrollToTop() {
   const { pathname } = useLocation()
-  useEffect(() => {
+  useLayoutEffect(() => {
+    const html = document.documentElement
+    const previous = html.style.scrollBehavior
+    html.style.scrollBehavior = 'auto'
     window.scrollTo(0, 0)
+    html.scrollTop = 0
+    document.body.scrollTop = 0
+    html.style.scrollBehavior = previous
   }, [pathname])
   return null
 }

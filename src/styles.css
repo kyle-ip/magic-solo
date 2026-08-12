@@ -45,7 +45,7 @@
 }
 
 html {
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
   height: 100%;
 }
 
@@ -862,9 +862,18 @@ h2 {
   position: fixed;
   inset: 0;
   z-index: 80;
-  display: grid;
-  place-items: center;
-  padding: 1.25rem;
+  /* Flex + margin:auto — avoid place-items:center (clips tall overflow tops) */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding:
+    max(1rem, var(--safe-top, 0px))
+    max(1rem, var(--safe-right, 0px))
+    max(1rem, var(--safe-bottom, 0px))
+    max(1rem, var(--safe-left, 0px));
   background: rgba(8, 6, 4, 0.78);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
@@ -872,41 +881,66 @@ h2 {
 
 .pack-draw-modal {
   width: min(1180px, 100%);
-  max-height: min(94dvh, 94vh, 980px);
+  max-height: min(90dvh, 90vh);
   overflow: auto;
-  padding: 1.5rem 1.65rem 1.55rem;
+  margin-block: auto;
+  box-sizing: border-box;
+  padding: 1.35rem 1.5rem 1.35rem;
   border-radius: var(--btn-radius, 12px);
   border: 1px solid rgba(184, 137, 58, 0.28);
   background: #000;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
 }
 
-/* Let tear fly-apart / glow paint outside the card box (collection keeps overflow hidden) */
+/* Pack open: fixed frame so sealed / tear / reveal share one modal size */
 .pack-draw-modal:not(.is-collection) {
-  overflow: visible;
-  height: min(92dvh, 92vh, 960px);
-  max-height: min(92dvh, 92vh, 960px);
   display: flex;
   flex-direction: column;
-  /* Match collection inspect preview card size */
-  --pack-reveal-card-max-h: calc(min(92dvh, 92vh, 960px) - 8.75rem);
-  --pack-shell-max-h: min(72vh, 640px);
+  width: min(1180px, 100%);
+  height: min(90dvh, 90vh);
+  max-height: min(90dvh, 90vh);
+  overflow: hidden;
+  /* Shared budgets — shell & reveal cards fit the same stage */
+  --pack-stage-pad-y: clamp(0.35rem, 1.5vh, 1rem);
+  --pack-reveal-card-max-h: min(68vh, calc(90dvh - 8.5rem), 640px);
+  --pack-shell-max-h: min(68vh, calc(90dvh - 8.5rem), 640px);
+}
+
+/* Tear / glow may extend past the pack box — don't hard-clip auras */
+.pack-draw-modal:not(.is-collection):has(
+  .pack-stage-visual.is-tearing,
+  .pack-stage-visual.is-parting,
+  .pack-card-wrap.is-glowing
+) {
+  overflow: visible;
+}
+
+.pack-draw-modal:not(.is-collection):has(
+  .pack-stage-visual.is-tearing,
+  .pack-stage-visual.is-parting,
+  .pack-card-wrap.is-glowing
+)
+  > .pack-draw-stage {
+  overflow: visible;
 }
 
 .pack-draw-modal.is-collection {
   display: flex;
   flex-direction: column;
   width: min(1180px, 100%);
-  height: min(92dvh, 92vh, 960px);
-  max-height: min(92dvh, 92vh, 960px);
-  overflow: hidden;
-  /* Modal chrome: padding + header + inspect padding */
-  --pack-inspect-card-max-h: calc(min(92dvh, 92vh, 960px) - 8.75rem);
+  height: auto;
+  max-height: min(90dvh, 90vh);
+  overflow-x: clip;
+  overflow-y: auto;
+  --pack-inspect-card-max-h: min(56vh, calc(90dvh - 12.5rem), 560px);
 }
 
 .pack-draw-modal:not(.is-collection) > .pack-draw-stage {
   flex: 1 1 auto;
   min-height: 0;
+  height: 100%;
+  /* Visible so rarity bloom isn't cut into a hard rectangle */
+  overflow: visible;
 }
 
 .pack-draw-head {
@@ -914,7 +948,7 @@ h2 {
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 1.15rem;
+  margin-bottom: 0.85rem;
   flex-shrink: 0;
 }
 
@@ -934,40 +968,56 @@ h2 {
 
 .pack-draw-stage {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: auto minmax(22rem, 1.2fr);
   gap: 1.75rem;
-  align-items: center;
+  align-items: stretch;
+  align-content: stretch;
 }
 
 .pack-draw-stage.pack-only {
   grid-template-columns: 1fr;
   justify-items: center;
   align-content: center;
+  justify-content: center;
+  align-items: center;
 }
 
 .pack-stage-visual {
   position: relative;
-  min-height: min(68vh, 640px);
+  min-height: 0;
+  height: 100%;
   display: grid;
   place-items: center;
   isolation: isolate;
   overflow: visible;
+  /* Reserve travel room so tear halves stay inside the fixed frame */
+  padding-block: var(--pack-stage-pad-y, 0.75rem);
+  box-sizing: border-box;
 }
 
 .pack-draw-stage.pack-only .pack-stage-visual {
-  min-height: min(74vh, 720px);
+  width: 100%;
+  min-height: 0;
 }
 
 .pack-draw-copy {
   min-width: 0;
-  max-height: var(--pack-reveal-card-max-h, 70vh);
-  overflow-x: hidden;
-  overflow-y: auto;
-  padding-right: 0.35rem;
+  height: 100%;
+  max-height: none;
+  overflow: hidden;
+  padding-right: 0;
   align-self: stretch;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
+}
+
+.pack-draw-copy-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-right: 0.35rem;
 }
 
 .pack-draw-copy h3 {
@@ -1013,7 +1063,9 @@ h2 {
   flex-wrap: wrap;
   align-items: center;
   gap: 0.75rem 1rem;
-  margin-top: 1.25rem;
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  flex-shrink: 0;
 }
 
 .pack-draw-actions .btn {
@@ -1055,13 +1107,12 @@ h2 {
   color: #ffb86a;
 }
 
-/* Sealed / tearing pack — clip-path + 3D flap set inline from JS */
+/* Sealed / tearing pack — size inherited from modal (--pack-shell-max-h) */
 .pack-shell {
   appearance: none;
   position: relative;
-  --pack-shell-max-h: min(72vh, 640px);
-  width: min(420px, 78vw, calc(var(--pack-shell-max-h) * 755 / 1424));
-  max-height: var(--pack-shell-max-h);
+  width: min(500px, 78vw, calc(var(--pack-shell-max-h, 52vh) * 755 / 1424));
+  max-height: var(--pack-shell-max-h, 52vh);
   aspect-ratio: 755 / 1424;
   border: 0;
   padding: 0;
@@ -1156,16 +1207,16 @@ h2 {
   display: grid;
   place-items: center;
   isolation: isolate;
-  --pack-shell-max-h: min(72vh, 640px);
-  width: min(420px, 78vw, calc(var(--pack-shell-max-h) * 744 / 1040));
-  min-height: min(68vh, 640px);
+  width: min(500px, 78vw, calc(var(--pack-shell-max-h, 52vh) * 744 / 1040));
+  min-height: 0;
   overflow: visible;
 }
 
 .pack-reveal-stack.is-deck {
-  width: min(620px, 94vw);
-  min-height: min(72vh, 780px);
-  padding: 0 3rem 1.75rem;
+  width: min(640px, 94vw);
+  min-height: 0;
+  /* Extra pad so outer bloom isn't clipped by nearby ancestors */
+  padding: 2.25rem 2.75rem 2.5rem;
 }
 
 .pack-card-deck {
@@ -1173,9 +1224,9 @@ h2 {
   z-index: 1;
   display: grid;
   place-items: center;
-  width: min(480px, 78vw, calc(var(--pack-reveal-card-max-h, 70vh) * 744 / 1040));
+  width: min(500px, 78vw, calc(var(--pack-reveal-card-max-h, 56vh) * 744 / 1040));
   /* Room for under-card peeks bottom-right */
-  padding: 0 1.5rem 1.7rem 0;
+  padding: 0 1.35rem 1.5rem 0;
 }
 
 .pack-reveal-stack .pack-shell.is-tearing {
@@ -1183,7 +1234,7 @@ h2 {
   left: 50%;
   top: 50%;
   translate: -50% -50%;
-  width: min(420px, 78vw, calc(var(--pack-shell-max-h) * 755 / 1424));
+  width: min(500px, 78vw, calc(var(--pack-shell-max-h) * 755 / 1424));
   max-height: var(--pack-shell-max-h);
   aspect-ratio: 755 / 1424;
   z-index: 2;
@@ -1196,10 +1247,16 @@ h2 {
   place-items: center;
   z-index: 1;
   transform-origin: center center;
+  overflow: visible;
   transition:
     transform 0.42s cubic-bezier(0.22, 0.61, 0.36, 1),
     opacity 0.28s ease,
     filter 0.28s ease;
+}
+
+.pack-card-wrap .card-flip {
+  position: relative;
+  z-index: 1;
 }
 
 .pack-card-deck .pack-card-wrap {
@@ -1272,6 +1329,11 @@ h2 {
   opacity: 0 !important;
 }
 
+.pack-card-wrap.is-flipping::before {
+  opacity: 0 !important;
+  animation: none !important;
+}
+
 .pack-card-flip {
   width: 100%;
   max-height: none;
@@ -1279,8 +1341,8 @@ h2 {
 
 .pack-card-wrap .card-flip.pack-card-flip {
   /* Same formula as .pack-inspect-flip in collection cabinet */
-  --pack-card-max-h: var(--pack-reveal-card-max-h, calc(min(92dvh, 92vh, 960px) - 8.75rem));
-  width: min(480px, calc(var(--pack-card-max-h) * 744 / 1040));
+  --pack-card-max-h: var(--pack-reveal-card-max-h, min(68vh, calc(90dvh - 8.5rem), 640px));
+  width: min(500px, calc(var(--pack-card-max-h) * 744 / 1040));
   max-height: var(--pack-card-max-h);
 }
 
@@ -1307,10 +1369,10 @@ h2 {
   display: grid;
   place-items: center;
   cursor: pointer;
-  color: rgba(255, 244, 220, 0.92);
-  background: rgba(12, 9, 6, 0.28);
-  opacity: 0;
-  transition: opacity 0.2s ease, background 0.2s ease, transform 0.2s ease;
+  color: rgba(255, 244, 220, 0.55);
+  background: transparent;
+  opacity: 0.1;
+  transition: opacity 0.2s ease, color 0.2s ease, transform 0.2s ease;
   font-size: 1.85rem;
   line-height: 1;
   font-family: var(--font-display);
@@ -1331,13 +1393,14 @@ h2 {
 
 .pack-reveal-stack.is-browsable:hover .pack-nav,
 .pack-reveal-stack.is-browsable:focus-within .pack-nav {
-  opacity: 0.55;
+  opacity: 0.28;
 }
 
 .pack-nav:hover,
 .pack-nav:focus-visible {
-  opacity: 0.95 !important;
-  background: rgba(12, 9, 6, 0.5);
+  opacity: 0.55 !important;
+  color: rgba(255, 244, 220, 0.85);
+  background: transparent;
   outline: none;
 }
 
@@ -1363,7 +1426,7 @@ h2 {
 
 @media (hover: none), (pointer: coarse) {
   .pack-reveal-stack.is-browsable .pack-nav {
-    opacity: 0.4;
+    opacity: 0.18;
   }
 
   .pack-reveal-stack.is-browsable .pack-deck-index {
@@ -1371,99 +1434,209 @@ h2 {
   }
 }
 
-/* One-shot rarity FX — peak via is-glowing, soft exit via is-fading */
+/* One-shot rarity FX — distinct prestige languages per tier */
 .pack-card-wrap[class*='pack-fx-'] .card-face {
   transition:
-    box-shadow 0.6s ease,
-    filter 0.55s ease;
+    box-shadow 0.85s ease,
+    filter 0.75s ease;
 }
 
 .pack-card-wrap[class*='pack-fx-'] .card-face::after {
-  transition: box-shadow 0.55s ease;
+  transition: box-shadow 0.75s ease;
 }
 
 .pack-card-wrap.is-glowing .card-face,
 .pack-card-wrap.is-glowing .card-face::after {
-  transition-duration: 0.16s;
+  transition-duration: 0.18s;
 }
 
+/* Common — faint settle only */
 .pack-card-wrap.pack-fx-common.is-glowing .card-face {
   animation: pack-common-flash 0.45s ease-out both;
 }
 
 .pack-card-wrap.pack-fx-common.is-glowing .card-face::after {
-  box-shadow: inset 0 0 0 1px rgba(210, 200, 185, 0.45);
+  box-shadow: inset 0 0 0 1px rgba(210, 200, 185, 0.4);
+}
+
+/* Uncommon — cold steel ONLY (blue-silver sweep, no gold/warm) */
+.pack-card-wrap.pack-fx-uncommon.is-glowing {
+  filter: none;
+}
+
+.pack-card-wrap.pack-fx-uncommon.is-glowing::before {
+  content: '';
+  position: absolute;
+  inset: -18%;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse 48% 54% at 50% 50%,
+    rgba(160, 200, 255, 0.42) 0%,
+    rgba(110, 160, 230, 0.2) 40%,
+    transparent 70%
+  );
+  animation: pack-aura-bloom 1.4s ease-out both;
+  mix-blend-mode: screen;
 }
 
 .pack-card-wrap.pack-fx-uncommon.is-glowing .card-face {
   box-shadow:
-    0 0 24px rgba(150, 185, 220, 0.5),
-    0 18px 28px rgba(0, 0, 0, 0.45);
-  animation: pack-uncommon-flash 0.7s ease-out both;
+    0 0 0 2px rgba(190, 220, 255, 0.85),
+    0 0 28px rgba(120, 180, 255, 0.65),
+    0 0 48px rgba(90, 150, 230, 0.3),
+    0 18px 28px rgba(0, 0, 0, 0.5);
+  animation: pack-uncommon-flash 1.4s ease-out both;
 }
 
 .pack-card-wrap.pack-fx-uncommon.is-glowing .card-face::after {
-  box-shadow: inset 0 0 0 1.5px rgba(190, 215, 240, 0.85);
+  box-shadow:
+    inset 0 0 0 2.5px rgba(220, 240, 255, 1),
+    inset 0 0 24px rgba(140, 190, 255, 0.35);
 }
 
-/* One-pass silver shimmer on the face during uncommon flash */
 .pack-card-wrap.pack-fx-uncommon.is-glowing .card-face::before,
 .pack-card-wrap.pack-fx-uncommon.is-fading .card-face::before {
   content: '';
   position: absolute;
-  inset: -8%;
+  inset: -12%;
   z-index: 2;
   pointer-events: none;
   border-radius: inherit;
   background: linear-gradient(
-    125deg,
+    118deg,
     transparent 0%,
-    transparent 36%,
-    rgba(220, 235, 255, 0.05) 44%,
-    rgba(210, 230, 255, 0.55) 50%,
-    rgba(220, 235, 255, 0.05) 56%,
-    transparent 64%,
+    transparent 28%,
+    rgba(180, 220, 255, 0.15) 40%,
+    rgba(255, 255, 255, 0.95) 50%,
+    rgba(140, 200, 255, 0.35) 58%,
+    transparent 72%,
     transparent 100%
   );
-  background-size: 220% 220%;
+  background-size: 260% 260%;
   mix-blend-mode: screen;
 }
 
 .pack-card-wrap.pack-fx-uncommon.is-glowing .card-face::before {
-  animation: pack-uncommon-shimmer 0.7s ease-out both;
+  animation: pack-uncommon-shimmer 1.4s ease-out both;
 }
 
 .pack-card-wrap.pack-fx-uncommon.is-fading .card-face::before {
   animation: none;
   opacity: 0;
-  transition: opacity 0.55s ease;
+  transition: opacity 0.8s ease;
+}
+
+.pack-card-wrap.pack-fx-uncommon.is-fading {
+  filter: none;
+  transition: filter 0.8s ease;
+}
+
+.pack-card-wrap.pack-fx-uncommon.is-fading::before {
+  animation: none;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+/* Rare — hot treasure gold (dense motes + soft gold bloom; no blue/violet) */
+.pack-card-wrap.pack-fx-rare.is-glowing {
+  filter: none;
+}
+
+.pack-card-wrap.pack-fx-rare.is-glowing::before {
+  content: '';
+  position: absolute;
+  inset: -22%;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse 46% 52% at 50% 50%,
+    rgba(255, 210, 80, 0.55) 0%,
+    rgba(240, 160, 20, 0.28) 38%,
+    rgba(200, 120, 0, 0.1) 58%,
+    transparent 72%
+  );
+  animation: pack-aura-bloom 2.4s ease-out both;
+  mix-blend-mode: screen;
 }
 
 .pack-card-wrap.pack-fx-rare.is-glowing .card-face {
   box-shadow:
-    0 0 28px rgba(230, 180, 50, 0.6),
-    0 0 48px rgba(230, 180, 50, 0.28),
-    0 18px 28px rgba(0, 0, 0, 0.45);
-  animation: pack-rare-flash 1.2s ease-out both;
+    0 0 0 2px rgba(255, 220, 100, 0.9),
+    0 0 24px rgba(255, 200, 60, 0.75),
+    0 0 48px rgba(240, 160, 20, 0.4),
+    0 18px 28px rgba(0, 0, 0, 0.5);
+  animation: pack-rare-flash 2.4s ease-out both;
 }
 
 .pack-card-wrap.pack-fx-rare.is-glowing .card-face::after {
-  box-shadow: inset 0 0 0 2px rgba(255, 220, 120, 0.9);
+  box-shadow:
+    inset 0 0 0 3px rgba(255, 235, 140, 1),
+    inset 0 0 28px rgba(255, 190, 50, 0.45);
+}
+
+.pack-card-wrap.pack-fx-rare.is-fading {
+  filter: none;
+  transition: filter 0.85s ease;
+}
+
+.pack-card-wrap.pack-fx-rare.is-fading::before {
+  animation: none;
+  opacity: 0;
+  transition: opacity 0.85s ease;
+}
+
+/* Mythic — regal violet / white diamond (no gold motes, no orange) */
+.pack-card-wrap.pack-fx-mythic.is-glowing {
+  filter: none;
+}
+
+.pack-card-wrap.pack-fx-mythic.is-glowing::before {
+  content: '';
+  position: absolute;
+  inset: -24%;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse 48% 54% at 50% 50%,
+    rgba(210, 170, 255, 0.5) 0%,
+    rgba(140, 70, 230, 0.26) 40%,
+    rgba(90, 40, 180, 0.1) 58%,
+    transparent 74%
+  );
+  animation: pack-aura-bloom 2.8s ease-out both;
+  mix-blend-mode: screen;
 }
 
 .pack-card-wrap.pack-fx-mythic.is-glowing .card-face {
   box-shadow:
-    0 0 32px rgba(255, 120, 40, 0.7),
-    0 0 56px rgba(255, 80, 20, 0.35),
-    0 18px 28px rgba(0, 0, 0, 0.45);
-  animation: pack-mythic-flash 1.35s ease-out both;
+    0 0 0 2px rgba(230, 200, 255, 0.9),
+    0 0 26px rgba(180, 120, 255, 0.7),
+    0 0 52px rgba(120, 60, 220, 0.4),
+    0 18px 28px rgba(0, 0, 0, 0.55);
+  animation: pack-mythic-flash 2.8s ease-out both;
 }
 
 .pack-card-wrap.pack-fx-mythic.is-glowing .card-face::after {
-  box-shadow: inset 0 0 0 2px rgba(255, 180, 100, 0.95);
+  box-shadow:
+    inset 0 0 0 3px rgba(245, 230, 255, 1),
+    inset 0 0 30px rgba(160, 90, 255, 0.42);
 }
 
-/* Soften inset rim while fading back to default */
+.pack-card-wrap.pack-fx-mythic.is-fading {
+  filter: none;
+  transition: filter 0.9s ease;
+}
+
+.pack-card-wrap.pack-fx-mythic.is-fading::before {
+  animation: none;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+
 .pack-card-wrap.is-fading .card-face {
   animation: none;
   filter: brightness(1);
@@ -1473,65 +1646,73 @@ h2 {
   box-shadow: inset 0 0 0 1px rgba(224, 180, 90, 0.4);
 }
 
-/* Particle / radial — mounted for glowing + fading so opacity can ease out */
 .pack-fx-layer {
   pointer-events: none;
   position: absolute;
   z-index: 3;
-  transition: opacity 0.6s ease;
+  transition: opacity 0.85s ease;
 }
 
+/* Rare — dense warm gold motes + brief light shafts */
 .pack-fx-layer.is-sparkles {
-  inset: -14% -10%;
+  inset: -20% -16%;
   background:
-    radial-gradient(circle at 18% 28%, rgba(255, 230, 150, 0.9) 0 2px, transparent 3px),
-    radial-gradient(circle at 78% 20%, rgba(255, 210, 110, 0.8) 0 2px, transparent 3px),
-    radial-gradient(circle at 62% 72%, rgba(255, 240, 180, 0.75) 0 1.5px, transparent 3px),
-    radial-gradient(circle at 30% 78%, rgba(240, 190, 80, 0.7) 0 2px, transparent 3px),
-    radial-gradient(circle at 50% 12%, rgba(255, 255, 220, 0.85) 0 1.5px, transparent 3px),
-    radial-gradient(circle at 42% 48%, rgba(255, 220, 140, 0.55) 0 1.5px, transparent 3px);
-  animation: pack-sparkle-burst 1.2s ease-out both;
+    radial-gradient(circle at 12% 22%, rgba(255, 245, 180, 1) 0 3px, transparent 5px),
+    radial-gradient(circle at 84% 14%, rgba(255, 210, 70, 1) 0 3px, transparent 5px),
+    radial-gradient(circle at 70% 78%, rgba(255, 240, 160, 0.95) 0 2.5px, transparent 4.5px),
+    radial-gradient(circle at 22% 84%, rgba(255, 180, 40, 0.95) 0 3px, transparent 5px),
+    radial-gradient(circle at 48% 6%, rgba(255, 255, 220, 1) 0 2.5px, transparent 4px),
+    radial-gradient(circle at 38% 48%, rgba(255, 200, 80, 0.85) 0 2.5px, transparent 4px),
+    radial-gradient(circle at 62% 36%, rgba(255, 220, 100, 0.8) 0 2px, transparent 3.5px),
+    radial-gradient(circle at 30% 60%, rgba(255, 170, 30, 0.75) 0 2px, transparent 3.5px),
+    radial-gradient(circle at 76% 52%, rgba(255, 230, 120, 0.7) 0 2px, transparent 3.5px),
+    linear-gradient(
+      105deg,
+      transparent 42%,
+      rgba(255, 220, 120, 0.35) 49%,
+      rgba(255, 240, 180, 0.55) 50%,
+      rgba(255, 200, 80, 0.3) 51%,
+      transparent 58%
+    );
+  animation: pack-sparkle-burst 2.4s ease-out both;
   mix-blend-mode: screen;
 }
 
+/* Mythic — sparse white/violet diamond points only */
 .pack-fx-layer.is-sparkles.is-mythic {
-  inset: -18% -14%;
+  inset: -24% -18%;
   background:
-    radial-gradient(circle at 16% 24%, rgba(255, 200, 120, 0.95) 0 2.5px, transparent 4px),
-    radial-gradient(circle at 82% 18%, rgba(255, 140, 60, 0.9) 0 2.5px, transparent 4px),
-    radial-gradient(circle at 68% 70%, rgba(255, 220, 150, 0.85) 0 2px, transparent 3.5px),
-    radial-gradient(circle at 28% 80%, rgba(255, 100, 40, 0.85) 0 2.5px, transparent 4px),
-    radial-gradient(circle at 48% 10%, rgba(255, 240, 200, 1) 0 2px, transparent 3.5px),
-    radial-gradient(circle at 40% 46%, rgba(255, 160, 70, 0.75) 0 2px, transparent 3.5px),
-    radial-gradient(circle at 58% 38%, rgba(255, 90, 30, 0.7) 0 1.5px, transparent 3px),
-    radial-gradient(circle at 72% 55%, rgba(255, 200, 100, 0.65) 0 1.5px, transparent 3px);
-  animation: pack-sparkle-burst 1.35s ease-out both;
+    radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 1) 0 2.5px, transparent 5px),
+    radial-gradient(circle at 82% 12%, rgba(230, 200, 255, 1) 0 3px, transparent 5.5px),
+    radial-gradient(circle at 72% 76%, rgba(255, 255, 255, 0.95) 0 2.5px, transparent 5px),
+    radial-gradient(circle at 24% 82%, rgba(190, 140, 255, 0.95) 0 3px, transparent 5.5px),
+    radial-gradient(circle at 50% 4%, rgba(255, 255, 255, 1) 0 2px, transparent 4px),
+    radial-gradient(circle at 46% 44%, rgba(210, 170, 255, 0.8) 0 2px, transparent 4px);
+  animation: pack-mythic-glints 2.8s ease-out both;
+  mix-blend-mode: screen;
 }
 
-.pack-fx-layer.is-radial {
-  inset: -22% -18%;
+/* Mythic corona — slow violet aureole (signature vs rare gold motes) */
+.pack-fx-layer.is-corona {
+  inset: -34% -28%;
   z-index: 2;
   background:
-    conic-gradient(
-      from 20deg,
-      transparent 0deg,
-      rgba(255, 120, 40, 0.28) 50deg,
-      transparent 100deg,
-      rgba(255, 180, 80, 0.22) 160deg,
-      transparent 210deg,
-      rgba(255, 90, 30, 0.24) 270deg,
-      transparent 320deg,
-      rgba(255, 160, 60, 0.18) 350deg,
-      transparent 360deg
+    radial-gradient(
+      ellipse 48% 54% at 50% 50%,
+      transparent 38%,
+      rgba(200, 150, 255, 0.4) 48%,
+      rgba(140, 70, 230, 0.28) 56%,
+      transparent 68%
+    ),
+    radial-gradient(
+      ellipse 68% 76% at 50% 50%,
+      transparent 50%,
+      rgba(170, 110, 255, 0.2) 58%,
+      rgba(90, 40, 180, 0.12) 66%,
+      transparent 76%
     );
-  animation: pack-mythic-radial-burst 1.35s ease-out both;
+  animation: pack-mythic-corona 2.8s ease-out both;
   mix-blend-mode: screen;
-  mask-image: radial-gradient(ellipse 55% 60% at 50% 50%, transparent 42%, #000 78%);
-  -webkit-mask-image: radial-gradient(
-    ellipse 55% 60% at 50% 50%,
-    transparent 42%,
-    #000 78%
-  );
 }
 
 .pack-card-wrap.is-fading .pack-fx-layer {
@@ -1552,82 +1733,117 @@ h2 {
 
   .pack-card-wrap[class*='pack-fx-'] .card-face,
   .pack-card-wrap[class*='pack-fx-'] .card-face::after,
-  .pack-fx-layer {
+  .pack-fx-layer,
+  .pack-card-wrap.pack-fx-uncommon.is-glowing,
+  .pack-card-wrap.pack-fx-rare.is-glowing,
+  .pack-card-wrap.pack-fx-mythic.is-glowing {
     transition: none !important;
+    filter: none !important;
   }
 
   .pack-fx-layer.is-sparkles,
-  .pack-fx-layer.is-radial,
+  .pack-fx-layer.is-corona,
   .pack-card-wrap.pack-fx-uncommon.is-glowing .card-face::before,
-  .pack-card-wrap.pack-fx-uncommon.is-fading .card-face::before {
+  .pack-card-wrap.pack-fx-uncommon.is-fading .card-face::before,
+  .pack-card-wrap.pack-fx-uncommon.is-glowing::before,
+  .pack-card-wrap.pack-fx-rare.is-glowing::before,
+  .pack-card-wrap.pack-fx-mythic.is-glowing::before {
     display: none;
+  }
+}
+
+@media (max-height: 780px) {
+  .pack-draw-modal:not(.is-collection) {
+    --pack-stage-pad-y: clamp(0.4rem, 1.5vh, 0.85rem);
+    --pack-reveal-card-max-h: min(58vh, calc(90dvh - 9rem), 520px);
+    --pack-shell-max-h: min(58vh, calc(90dvh - 9rem), 520px);
+  }
+
+  .pack-draw-modal.is-collection {
+    --pack-inspect-card-max-h: min(48vh, calc(90dvh - 11.5rem), 460px);
   }
 }
 
 /* Phone layout + slightly stronger flashes */
 @media (max-width: 640px) {
   .pack-draw-modal:not(.is-collection) {
-    height: min(90dvh, 92vh);
-    max-height: min(90dvh, 92vh);
-    --pack-reveal-card-max-h: calc(min(90dvh, 92vh) - 9.5rem);
-    --pack-shell-max-h: min(58vh, 480px);
-  }
-
-  .pack-shell,
-  .pack-reveal-stack {
-    --pack-shell-max-h: min(58vh, 480px);
+    height: min(88dvh, 90vh);
+    max-height: min(88dvh, 90vh);
+    --pack-stage-pad-y: clamp(0.35rem, 1.5vh, 0.75rem);
+    --pack-reveal-card-max-h: min(46vh, calc(88dvh - 12rem), 420px);
+    --pack-shell-max-h: min(46vh, calc(88dvh - 12rem), 420px);
   }
 
   .pack-reveal-stack.is-deck {
     width: min(100%, 96vw);
-    padding: 0 2.4rem 1.2rem;
-    min-height: min(56vh, 520px);
+    padding: 0 2.2rem 1rem;
+    min-height: 0;
   }
 
   .pack-card-deck {
-    width: min(300px, 72vw, calc(var(--pack-reveal-card-max-h, 48vh) * 744 / 1040));
+    width: min(280px, 70vw, calc(var(--pack-reveal-card-max-h, 42vh) * 744 / 1040));
   }
 
   .pack-card-wrap .card-flip.pack-card-flip {
-    --pack-card-max-h: min(48vh, var(--pack-reveal-card-max-h, 48vh));
-    width: min(300px, 72vw, calc(var(--pack-card-max-h) * 744 / 1040));
+    --pack-card-max-h: var(--pack-reveal-card-max-h, 42vh);
+    width: min(280px, 70vw, calc(var(--pack-card-max-h) * 744 / 1040));
     max-height: var(--pack-card-max-h);
   }
 
   .pack-draw-stage.pack-only .pack-stage-visual {
-    min-height: min(60vh, 520px);
+    min-height: 0;
   }
 
   .pack-draw-copy {
+    height: auto;
     max-height: none;
+    overflow: visible;
+  }
+
+  .pack-draw-copy-body {
+    overflow: visible;
+    max-height: none;
+  }
+
+  .pack-draw-stage.has-copy {
+    grid-template-columns: 1fr;
+    align-items: start;
   }
 
   .pack-card-wrap.pack-fx-uncommon.is-glowing .card-face {
     box-shadow:
-      0 0 32px rgba(150, 185, 220, 0.6),
+      0 0 0 2px rgba(190, 220, 255, 0.9),
+      0 0 40px rgba(120, 180, 255, 0.85),
+      0 0 72px rgba(90, 150, 230, 0.5),
       0 16px 26px rgba(0, 0, 0, 0.5);
   }
 
   .pack-card-wrap.pack-fx-rare.is-glowing .card-face {
     box-shadow:
-      0 0 36px rgba(230, 180, 50, 0.7),
-      0 0 60px rgba(230, 180, 50, 0.35),
+      0 0 0 2px rgba(255, 220, 100, 1),
+      0 0 28px rgba(255, 200, 60, 0.8),
+      0 0 48px rgba(240, 160, 20, 0.4),
       0 16px 26px rgba(0, 0, 0, 0.5);
   }
 
   .pack-card-wrap.pack-fx-mythic.is-glowing .card-face {
     box-shadow:
-      0 0 40px rgba(255, 120, 40, 0.78),
-      0 0 72px rgba(255, 80, 20, 0.4),
-      0 16px 26px rgba(0, 0, 0, 0.5);
+      0 0 0 2px rgba(230, 200, 255, 1),
+      0 0 28px rgba(180, 120, 255, 0.75),
+      0 0 50px rgba(120, 60, 220, 0.4),
+      0 16px 26px rgba(0, 0, 0, 0.55);
   }
 
   .pack-fx-layer.is-sparkles {
-    inset: -20% -14%;
+    inset: -22% -16%;
   }
 
   .pack-fx-layer.is-sparkles.is-mythic {
-    inset: -24% -18%;
+    inset: -26% -20%;
+  }
+
+  .pack-fx-layer.is-corona {
+    inset: -32% -28%;
   }
 
   /* Prefer compositing-friendly shadow over filter+clip-path combos on Safari */
@@ -1650,29 +1866,44 @@ h2 {
   }
 }
 
-@keyframes pack-uncommon-shimmer {
+@keyframes pack-aura-bloom {
   0% {
-    background-position: 130% 130%;
     opacity: 0;
+    transform: scale(0.86);
   }
-  18% {
+  28% {
     opacity: 1;
-  }
-  70% {
-    opacity: 0.55;
+    transform: scale(1.02);
   }
   100% {
-    background-position: -30% -30%;
+    opacity: 0.72;
+    transform: scale(1);
+  }
+}
+
+@keyframes pack-uncommon-shimmer {
+  0% {
+    background-position: 140% 140%;
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  55% {
+    opacity: 0.75;
+  }
+  100% {
+    background-position: -40% -40%;
     opacity: 0;
   }
 }
 
 @keyframes pack-uncommon-flash {
   0% {
-    filter: brightness(1.3) saturate(1.12);
+    filter: brightness(1.38) saturate(1.18);
   }
-  55% {
-    filter: brightness(1.1) saturate(1.04);
+  40% {
+    filter: brightness(1.18) saturate(1.08);
   }
   100% {
     filter: brightness(1) saturate(1);
@@ -1681,42 +1912,65 @@ h2 {
 
 @keyframes pack-rare-flash {
   0% {
-    filter: brightness(1.42);
+    filter: brightness(1.55) saturate(1.15);
   }
-  50% {
-    filter: brightness(1.16);
-  }
-  100% {
-    filter: brightness(1);
-  }
-}
-
-@keyframes pack-mythic-flash {
-  0% {
-    filter: brightness(1.55) saturate(1.25);
-  }
-  50% {
-    filter: brightness(1.2) saturate(1.1);
+  35% {
+    filter: brightness(1.28) saturate(1.08);
   }
   100% {
     filter: brightness(1) saturate(1);
   }
 }
 
-@keyframes pack-mythic-radial-burst {
+@keyframes pack-mythic-flash {
   0% {
-    opacity: 0;
-    transform: rotate(0deg) scale(0.92);
+    filter: brightness(1.48) saturate(1.28);
   }
-  25% {
-    opacity: 0.85;
+  30% {
+    filter: brightness(1.22) saturate(1.16);
   }
   70% {
-    opacity: 0.35;
+    filter: brightness(1.1) saturate(1.08);
+  }
+  100% {
+    filter: brightness(1) saturate(1);
+  }
+}
+
+@keyframes pack-mythic-corona {
+  0% {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+  22% {
+    opacity: 0.95;
+    transform: scale(0.96);
+  }
+  55% {
+    opacity: 0.7;
+    transform: scale(1.04);
   }
   100% {
     opacity: 0;
-    transform: rotate(55deg) scale(1.08);
+    transform: scale(1.14);
+  }
+}
+
+@keyframes pack-mythic-glints {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  18% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  55% {
+    opacity: 0.75;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.06);
   }
 }
 
@@ -1725,15 +1979,15 @@ h2 {
     opacity: 0;
     transform: scale(0.85);
   }
-  30% {
+  18% {
     opacity: 1;
   }
-  65% {
-    opacity: 0.55;
+  55% {
+    opacity: 0.7;
   }
   100% {
     opacity: 0;
-    transform: scale(1.08);
+    transform: scale(1.1);
   }
 }
 
@@ -1802,8 +2056,36 @@ h2 {
   border: 1px solid rgba(184, 137, 58, 0.4);
   background:
     linear-gradient(180deg, #2a221a, #17120e);
-  overflow: hidden;
+  overflow: auto;
   box-shadow: var(--shadow);
+}
+
+.pack-inspect-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  justify-self: center;
+  overflow: visible;
+  padding: 1.5rem 2.6rem 1.6rem;
+}
+
+.pack-inspect-stage .pack-deck-index {
+  opacity: 0.55;
+}
+
+.pack-inspect-stage:hover .pack-nav,
+.pack-inspect-stage:focus-within .pack-nav {
+  opacity: 0.28;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .pack-inspect-stage .pack-nav {
+    opacity: 0.18;
+  }
+
+  .pack-inspect-stage .pack-deck-index {
+    opacity: 0.7;
+  }
 }
 
 .pack-inspect-flip.card-flip {
@@ -1837,7 +2119,7 @@ h2 {
   align-self: stretch;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .pack-inspect-copy .eyebrow {
@@ -1878,12 +2160,32 @@ h2 {
   }
 
   .pack-stage-visual {
-    min-height: min(52vh, 480px);
+    min-height: 0;
   }
 
   .pack-draw-copy {
+    height: auto;
     max-height: none;
+    min-height: 0;
+    overflow: hidden;
     justify-content: flex-start;
+  }
+
+  .pack-draw-copy-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .pack-draw-stage.has-copy {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .pack-draw-modal:not(.is-collection) {
+    --pack-reveal-card-max-h: min(48vh, calc(88dvh - 12rem), 460px);
+    --pack-shell-max-h: min(48vh, calc(88dvh - 12rem), 460px);
   }
 
   .pack-inspect {
@@ -1895,12 +2197,12 @@ h2 {
   }
 
   .pack-inspect-flip.card-flip {
-    width: min(300px, 70vw, calc(var(--pack-inspect-card-max-h, 48vh) * 744 / 1040));
-    max-height: min(48vh, var(--pack-inspect-card-max-h, 48vh));
+    width: min(280px, 70vw, calc(var(--pack-inspect-card-max-h, 42vh) * 744 / 1040));
+    max-height: min(42vh, var(--pack-inspect-card-max-h, 42vh));
   }
 
   .pack-inspect-wrap.pack-card-wrap {
-    width: min(300px, 70vw, calc(var(--pack-inspect-card-max-h, 48vh) * 744 / 1040));
+    width: min(280px, 70vw, calc(var(--pack-inspect-card-max-h, 42vh) * 744 / 1040));
   }
 
   .pack-inspect-copy {
@@ -1910,35 +2212,39 @@ h2 {
   }
 
   .pack-draw-modal.is-collection {
-    height: min(90dvh, 92vh);
-    max-height: min(90dvh, 92vh);
-    --pack-inspect-card-max-h: calc(min(90dvh, 92vh) - 9.5rem);
+    height: auto;
+    max-height: min(88dvh, 90vh);
+    --pack-inspect-card-max-h: min(42vh, calc(88dvh - 14rem), 400px);
   }
 }
 
 @media (max-width: 640px) {
   .pack-draw-backdrop {
-    align-items: end;
-    padding: max(0.75rem, var(--safe-top)) max(0.75rem, var(--safe-right))
-      max(0.75rem, var(--safe-bottom)) max(0.75rem, var(--safe-left));
+    align-items: center;
+    justify-content: center;
+    padding: max(0.65rem, var(--safe-top)) max(0.65rem, var(--safe-right))
+      max(0.65rem, var(--safe-bottom)) max(0.65rem, var(--safe-left));
   }
 
   .pack-draw-modal {
     width: 100%;
-    max-height: min(90dvh, 920px);
-    border-radius: 16px 16px 10px 10px;
+    max-height: min(88dvh, 90vh);
+    margin-block: auto;
+    border-radius: 16px;
+    padding: 1.1rem 1rem calc(1.15rem + env(safe-area-inset-bottom, 0px));
   }
 
   .pack-draw-modal:not(.is-collection) {
-    height: min(90dvh, 920px);
-    max-height: min(90dvh, 920px);
-    --pack-reveal-card-max-h: calc(min(90dvh, 920px) - 9.75rem);
+    height: min(88dvh, 90vh);
+    max-height: min(88dvh, 90vh);
+    --pack-reveal-card-max-h: min(42vh, calc(88dvh - 13rem), 380px);
+    --pack-shell-max-h: min(42vh, calc(88dvh - 13rem), 380px);
   }
 
   .pack-draw-modal.is-collection {
-    height: min(88dvh, 920px);
-    max-height: min(88dvh, 920px);
-    --pack-inspect-card-max-h: calc(min(88dvh, 920px) - 10rem);
+    height: min(88dvh, 90vh);
+    max-height: min(88dvh, 90vh);
+    --pack-inspect-card-max-h: min(40vh, calc(88dvh - 15rem), 360px);
   }
 }
 
@@ -2055,7 +2361,6 @@ h2 {
   line-height: 0;
   /* box-shadow follows the clip box; drop-shadow was revealing JPG corner fringing */
   box-shadow: var(--card-shadow);
-  animation: rise 800ms ease both;
   isolation: isolate;
 }
 
@@ -2203,7 +2508,10 @@ h2 {
   align-items: stretch;
   text-align: left;
   cursor: pointer;
-  animation: card-in 480ms ease both;
+}
+
+.deck-page .card-tile {
+  animation: none;
 }
 
 @keyframes card-in {
@@ -2361,8 +2669,8 @@ h2 {
 
 /* Pack draw reuses .card-flip but lives outside .modal-backdrop — set own size */
 .pack-card-wrap .card-flip.pack-card-flip {
-  --pack-card-max-h: var(--pack-reveal-card-max-h, calc(min(92dvh, 92vh, 960px) - 8.75rem));
-  width: min(480px, calc(var(--pack-card-max-h) * 744 / 1040));
+  --pack-card-max-h: var(--pack-reveal-card-max-h, min(68vh, calc(90dvh - 8.5rem), 640px));
+  width: min(500px, calc(var(--pack-card-max-h) * 744 / 1040));
   max-height: var(--pack-card-max-h);
 }
 
@@ -2586,24 +2894,24 @@ h2 {
     right: auto;
     top: auto;
     bottom: auto;
-    width: min(40%, 9.9rem);
-    margin-inline: -0.85rem;
+    width: min(34%, 8.2rem);
+    margin-inline: -1.55rem;
     animation: floaty-mobile 7.5s ease-in-out infinite;
   }
 
   .orbit-0 {
-    transform: rotate(-9deg) translateY(0.35rem);
+    transform: rotate(-7deg) translateY(0.3rem);
     z-index: 1;
   }
 
   .orbit-1 {
-    transform: rotate(8deg) translateY(0.35rem);
+    transform: rotate(6deg) translateY(0.3rem);
     z-index: 3;
     animation-delay: -2.2s;
   }
 
   .orbit-2 {
-    transform: rotate(1deg) translateY(-0.15rem);
+    transform: rotate(1deg) translateY(-0.1rem);
     z-index: 2;
     animation-delay: -4.4s;
   }
@@ -3263,6 +3571,274 @@ h2 {
   padding-bottom: calc(clamp(1.35rem, 3vw, 2.25rem) + var(--safe-bottom));
   padding-left: calc(clamp(0.9rem, 2.2vw, 1.75rem) + var(--safe-left));
   gap: 0.35rem;
+}
+
+.arena-rotate-gate {
+  display: none;
+}
+
+@media (max-width: 960px) and (orientation: portrait) {
+  .arena-root.is-playing > :not(.arena-rotate-gate):not(.arena-bg):not(.arena-bg-veil) {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .arena-root.is-playing .arena-rotate-gate {
+    display: grid;
+    place-items: center;
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    padding: 1.5rem;
+    background: rgba(8, 6, 4, 0.92);
+    color: var(--parchment, #f3e6cf);
+    text-align: center;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .arena-root.is-playing .arena-rotate-gate p {
+    margin: 0;
+    max-width: 16rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.15rem, 4.5vw, 1.45rem);
+    letter-spacing: 0.02em;
+    line-height: 1.45;
+  }
+}
+
+/* Phone / short landscape challenge board */
+@media (orientation: landscape) and (max-height: 700px) {
+  .arena-root.is-playing {
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow: hidden;
+    /* Reserve a real hand row so cards aren't clipped under the fold */
+    grid-template-rows: auto auto minmax(0, 1fr) auto minmax(5.25rem, 30dvh);
+    padding: 0.2rem 0.4rem;
+    padding-top: calc(0.2rem + var(--safe-top, 0px));
+    padding-right: calc(0.4rem + var(--safe-right, 0px));
+    padding-bottom: calc(0.15rem + var(--safe-bottom, 0px));
+    padding-left: calc(0.4rem + var(--safe-left, 0px));
+    gap: 0.1rem;
+  }
+
+  .arena-topbar {
+    padding: 0.15rem 0.4rem;
+    gap: 0.3rem;
+    min-height: 0;
+  }
+
+  .arena-topbar > .arena-link {
+    font-size: 0.7rem;
+  }
+
+  .arena-topbar > .arena-title {
+    display: none;
+  }
+
+  .arena-topbar-actions .btn,
+  .arena-topbar-actions .coach-toggle {
+    min-height: 1.55rem;
+    padding: 0.15rem 0.4rem;
+    font-size: 0.65rem;
+  }
+
+  .arena-opponent-rail {
+    padding: 0 0.1rem;
+    gap: 0.15rem;
+  }
+
+  .arena-player-chrome {
+    gap: 0.3rem;
+    padding: 0.1rem 0.2rem;
+    flex-wrap: nowrap;
+    min-width: 0;
+    align-items: center;
+  }
+
+  .arena-player-chrome.is-you {
+    padding: 0.1rem 0.2rem;
+  }
+
+  .challenge-zone-piles {
+    gap: 0.25rem;
+  }
+
+  .challenge-zone-piles .zone-pile {
+    width: 38px;
+    height: 50px;
+  }
+
+  .challenge-zone-piles .zone-pile-stack {
+    left: 4px;
+    right: 5px;
+    top: 4px;
+    bottom: 14px;
+  }
+
+  .challenge-zone-piles .zone-pile-count {
+    font-size: 0.78rem;
+    margin-top: 0.35rem;
+  }
+
+  .challenge-zone-piles .zone-pile-label {
+    bottom: 0.08rem;
+    font-size: 0.42rem;
+    letter-spacing: 0.03em;
+  }
+
+  .life-orb {
+    min-width: 40px;
+    height: 40px;
+    border-width: 1.5px;
+  }
+
+  .life-orb strong {
+    font-size: 0.88rem;
+  }
+
+  .life-orb-label,
+  .life-orb-sub {
+    font-size: 0.4rem;
+    letter-spacing: 0.03em;
+  }
+
+  .arena-battlefield {
+    padding: 0.05rem 0.15rem;
+    gap: 0.15rem;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .arena-battlefield.is-combat {
+    gap: 0.25rem;
+    padding-block: 0.1rem;
+  }
+
+  .arena-battlefield.is-combat .player-row,
+  .arena-battlefield.is-combat .opponent-row {
+    padding-block: 0.1rem;
+  }
+
+  .bf-row {
+    gap: 0.25rem;
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  .bf-creatures {
+    gap: 0.25rem;
+    padding-block: 0;
+    overflow: hidden;
+  }
+
+  .player-row .bf-creatures {
+    padding-inline: min(88px, 14%);
+  }
+
+  .player-row .hero-strip {
+    max-width: min(88px, 14%);
+  }
+
+  .arena-card,
+  .opponent-row .arena-card {
+    width: min(70px, 11vw, calc(36cqb * 744 / 1040));
+  }
+
+  .arena-midline {
+    min-height: 0;
+    padding: 0.1rem 0.3rem;
+    gap: 0.05rem;
+  }
+
+  .phase-strip {
+    gap: 0.2rem;
+    font-size: 0.62rem;
+  }
+
+  .arena-actions {
+    gap: 0.25rem;
+    margin-left: auto;
+  }
+
+  .arena-actions .btn,
+  .btn.end-turn {
+    min-height: 1.7rem;
+    padding: 0.25rem 0.55rem;
+    font-size: 0.68rem;
+  }
+
+  .hand-dock {
+    min-height: 0;
+    max-height: 30dvh;
+    padding: 0 0.25rem 0.05rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    overflow: visible;
+    z-index: 6;
+  }
+
+  .hand-label {
+    display: none;
+  }
+
+  .hand-fan {
+    gap: 0.15rem;
+    padding-bottom: 0;
+    align-items: flex-end;
+    min-height: 0;
+    height: 100%;
+  }
+
+  .hand-card {
+    width: auto;
+    height: min(26dvh, 7.25rem);
+    max-height: min(26dvh, 7.25rem);
+    aspect-ratio: 744 / 1040;
+    transform: none;
+  }
+
+  .hand-card img {
+    width: auto;
+    height: 100%;
+    max-height: 100%;
+    aspect-ratio: 744 / 1040;
+  }
+
+  .hand-card:hover,
+  .hand-card:focus-visible,
+  .hand-card.is-pending {
+    transform: translateY(-4px) scale(1.04);
+  }
+
+  .card-preview-pane {
+    display: none;
+  }
+
+  /* Keep battle log away from the hand */
+  .arena-log {
+    width: min(210px, 40vw);
+    max-height: min(34vh, 180px);
+    top: max(2.6rem, calc(var(--safe-top, 0px) + 2.4rem));
+    right: max(0.35rem, var(--safe-right, 0px));
+    bottom: auto;
+    font-size: 0.66rem;
+  }
+
+  .arena-log-reopen {
+    top: max(0.3rem, calc(var(--safe-top, 0px) + 0.25rem));
+    right: max(0.35rem, var(--safe-right, 0px));
+    bottom: auto;
+    padding: 0.28rem 0.5rem;
+    font-size: 0.66rem;
+    z-index: 40;
+  }
+
+  .arena-topbar-actions {
+    padding-right: 3.6rem;
+  }
 }
 
 .arena-bg {
@@ -6471,8 +7047,7 @@ button.arena-card {
     padding-bottom: calc(0.55rem + var(--safe-bottom));
     padding-left: calc(0.45rem + var(--safe-left));
     gap: 0.3rem;
-    overflow-x: hidden;
-    overflow-y: auto;
+    overflow: hidden;
   }
 
   .arena-topbar {
@@ -6672,8 +7247,8 @@ button.arena-card {
   }
 
   .orbit-card {
-    width: min(39%, 10.1rem);
-    margin-inline: -0.8rem;
+    width: min(33%, 8.4rem);
+    margin-inline: -1.45rem;
   }
 
   .deck-hero-card {
