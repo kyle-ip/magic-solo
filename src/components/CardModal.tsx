@@ -1,34 +1,59 @@
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useId, useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
-import { useLocalizedCard } from '../hooks/useLocalizedCard'
+import { deckMetaEn, deckMetaZh } from '../data/locale/deckMeta'
+import { deckCardToDrawn, wantsZh } from '../data/randomCard'
 import type { DeckCard } from '../types'
 import { assetUrl } from '../utils/assetUrl'
+import { preloadImage } from '../utils/imageCache'
+import { CardDetailsBody } from './CardDetailsBody'
 
 interface CardModalProps {
   card: DeckCard | null
+  /** Challenge deck code (`tfth` / `tbth` / `tdag`) for bilingual lookup. */
+  deckCode: string
+  /** Printed set code for collector line (e.g. TFTH). */
   setCode: string
   onClose: () => void
 }
 
-export function CardModal({ card, setCode, onClose }: CardModalProps) {
+export function CardModal({ card, deckCode, setCode, onClose }: CardModalProps) {
   if (!card) return null
-  return <CardModalBody card={card} setCode={setCode} onClose={onClose} />
+  return (
+    <CardModalBody
+      card={card}
+      deckCode={deckCode}
+      setCode={setCode}
+      onClose={onClose}
+    />
+  )
 }
 
 function CardModalBody({
   card,
+  deckCode,
   setCode,
   onClose,
 }: {
   card: DeckCard
+  deckCode: string
   setCode: string
   onClose: () => void
 }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const titleId = useId()
   const [flipTurns, setFlipTurns] = useState(0)
   const [flipping, setFlipping] = useState(false)
-  const localized = useLocalizedCard(setCode.toLowerCase(), card)
+
+  const drawn = useMemo(() => {
+    const meta = wantsZh(i18n.language)
+      ? deckMetaZh[deckCode]
+      : deckMetaEn[deckCode]
+    return deckCardToDrawn(card, setCode, {
+      setName: meta?.expansion ?? meta?.name ?? '',
+      useDeckBack: true,
+    })
+  }, [card, deckCode, setCode, i18n.language])
 
   useEffect(() => {
     setFlipTurns(0)
@@ -38,11 +63,8 @@ function CardModalBody({
   useEffect(() => {
     const front = assetUrl(card.images.display || card.images.front)
     const back = assetUrl(card.images.back)
-    ;[front, back].forEach((src) => {
-      const img = new Image()
-      img.decoding = 'async'
-      img.src = src
-    })
+    void preloadImage(front).catch(() => undefined)
+    void preloadImage(back).catch(() => undefined)
   }, [card])
 
   useEffect(() => {
@@ -53,12 +75,10 @@ function CardModalBody({
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
 
-  const pt =
-    card.power != null && card.toughness != null
-      ? `${card.power}/${card.toughness}`
-      : null
-
   const frontSrc = assetUrl(card.images.display || card.images.front)
+  const displayTitle = wantsZh(i18n.language)
+    ? drawn.nameZh || drawn.name
+    : drawn.name
 
   const flipOnce = () => {
     setFlipping(true)
@@ -66,70 +86,96 @@ function CardModalBody({
     window.setTimeout(() => setFlipping(false), 400)
   }
 
-  return (
-    <div className="modal-backdrop" role="presentation" onClick={onClose}>
+  return createPortal(
+    <div className="pack-draw-backdrop" role="presentation" onClick={onClose}>
+      {/* Same shell + inspect panel as collection cabinet card details */}
       <div
-        className="modal-shell"
+        className="pack-draw-modal is-collection"
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
         onClick={(e) => e.stopPropagation()}
       >
-        <button type="button" className="modal-close" onClick={onClose}>
-          {t('deck.close')}
-        </button>
+        <header className="pack-draw-head">
+          <h2 id={titleId}>{t('deck.cards')}</h2>
+          <div className="pack-draw-head-actions">
+            <button
+              type="button"
+              className="references-text-btn"
+              onClick={onClose}
+            >
+              {t('deck.close')}
+            </button>
+          </div>
+        </header>
 
-        <div className="card-flip">
-          <div
-            className={['card-flip-inner', flipping ? 'is-flipping' : '']
-              .filter(Boolean)
-              .join(' ')}
-            role="button"
-            tabIndex={0}
-            aria-label={t('deck.flip')}
-            style={{ transform: `translate3d(0, 0, 0) rotateY(${flipTurns * 180}deg)` }}
-            onClick={flipOnce}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault()
-                flipOnce()
-              }
-            }}
-          >
-            <span className="card-face front">
-              <img src={frontSrc} alt={localized.name} draggable={false} />
-            </span>
-            <span className="card-face back">
-              <img
-                src={assetUrl(card.images.back)}
-                alt={t('deck.backHint')}
-                draggable={false}
-              />
-            </span>
+        <div className="pack-collection">
+          <div className="pack-inspect" aria-label={displayTitle}>
+            <div className="pack-inspect-stage">
+              <div
+                className={[
+                  'pack-card-wrap',
+                  'pack-inspect-wrap',
+                  'is-expanded',
+                  'is-active',
+                ].join(' ')}
+              >
+                <div className="card-flip pack-inspect-flip">
+                  <div
+                    className={[
+                      'card-flip-inner',
+                      flipping ? 'is-flipping' : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={t('deck.flip')}
+                    style={{
+                      transform: `translate3d(0, 0, 0) rotateY(${flipTurns * 180}deg)`,
+                    }}
+                    onClick={flipOnce}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        flipOnce()
+                      }
+                    }}
+                  >
+                    <span className="card-face front">
+                      <img src={frontSrc} alt={displayTitle} draggable={false} />
+                    </span>
+                    <span className="card-face back">
+                      <img
+                        src={assetUrl(card.images.back)}
+                        alt={t('deck.backHint')}
+                        draggable={false}
+                      />
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="pack-card-copy pack-inspect-copy">
+              <div className="pack-card-copy-cluster">
+                <div className="pack-card-copy-body">
+                  <CardDetailsBody card={drawn} showOfflineHint={false} />
+                  <p className="qty">{t('deck.quantity', { n: card.quantity })}</p>
+                </div>
+                <div className="pack-draw-actions">
+                  {card.scryfallUri ? (
+                    <a href={card.scryfallUri} target="_blank" rel="noreferrer">
+                      {t('packDraw.scryfall')}
+                    </a>
+                  ) : null}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-
-        <div className="modal-copy">
-          <p className="eyebrow">
-            {t('deck.collector', {
-              set: setCode.toUpperCase(),
-              number: card.collectorNumber,
-            })}
-          </p>
-          <h2 id={titleId}>{localized.name}</h2>
-          <p className="type-line">{localized.typeLine}</p>
-          {pt ? <p className="pt-line">{pt}</p> : null}
-          <h3>{t('deck.oracle')}</h3>
-          <p className="oracle-text">{localized.oracleText || '—'}</p>
-          {card.artist ? (
-            <p className="artist">{t('deck.artist', { name: card.artist })}</p>
-          ) : null}
-          <p className="qty">{t('deck.quantity', { n: card.quantity })}</p>
-          <a href={card.scryfallUri} target="_blank" rel="noreferrer">
-            Scryfall
-          </a>
-        </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

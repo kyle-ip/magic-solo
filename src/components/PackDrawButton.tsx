@@ -14,6 +14,7 @@ import {
   drawWeightedPack,
   type DrawnCard,
 } from '../data/randomCard'
+import { CardDetailsBody } from './CardDetailsBody'
 
 const PACK_ART = assetUrl('assets/pack/booster-pack.png')
 const TEAR_EDGE = assetUrl('assets/pack/tear-edge.png')
@@ -362,13 +363,9 @@ function rarityFxClass(card: DrawnCard | null | undefined): string {
   return 'pack-fx-common'
 }
 
-/** Peak flash duration by tier (ms); fade-out is separate. */
-function rarityFxDurationMs(card: DrawnCard): number {
-  const fx = rarityFxClass(card)
-  if (fx === 'pack-fx-mythic') return 2800
-  if (fx === 'pack-fx-rare') return 2400
-  if (fx === 'pack-fx-uncommon') return 1400
-  return 450
+/** Peak flash duration — shared across all rarity tiers (ms). */
+function rarityFxDurationMs(_card: DrawnCard): number {
+  return 2500
 }
 
 const FX_FADE_MS = 900
@@ -402,6 +399,7 @@ export function PackDrawButton() {
   const [inspectFlipping, setInspectFlipping] = useState(false)
   const drawPromise = useRef<Promise<DrawnCard[]> | null>(null)
   const timers = useRef<number[]>([])
+  const fxTimers = useRef<number[]>([])
   const tearRaf = useRef(0)
   const tearProgressRef = useRef(0)
   const tearAngleRef = useRef(0)
@@ -411,10 +409,22 @@ export function PackDrawButton() {
   const packShellRef = useRef<HTMLDivElement | null>(null)
   const peelEdgeRef = useRef<HTMLSpanElement | null>(null)
   const remainEdgeRef = useRef<HTMLSpanElement | null>(null)
+  /** Bumps on each FX trigger so CSS one-shots remount and restart. */
+  const [fxEpoch, setFxEpoch] = useState(0)
 
   const clearTimers = () => {
     for (const id of timers.current) window.clearTimeout(id)
     timers.current = []
+  }
+
+  const clearFxTimers = () => {
+    for (const id of fxTimers.current) window.clearTimeout(id)
+    fxTimers.current = []
+  }
+
+  const scheduleFx = (fn: () => void, ms: number) => {
+    const id = window.setTimeout(fn, ms)
+    fxTimers.current.push(id)
   }
 
   const clearTearRaf = () => {
@@ -466,6 +476,7 @@ export function PackDrawButton() {
 
   const resetPack = useCallback(() => {
     clearTimers()
+    clearFxTimers()
     clearTearRaf()
     drawPromise.current = null
     setPhase('sealed')
@@ -476,6 +487,7 @@ export function PackDrawButton() {
     tearSpecRef.current = null
     setFxIds([])
     setFxFadeIds([])
+    setFxEpoch(0)
     setDrawing(false)
     setCollected(false)
     setInspect(null)
@@ -540,22 +552,29 @@ export function PackDrawButton() {
 
   useEffect(() => () => {
     clearTimers()
+    clearFxTimers()
     clearTearRaf()
   }, [])
 
   const triggerFrontFx = (card: DrawnCard | null | undefined) => {
     if (!card || prefersReducedMotion()) return
     const id = card.id
-    // Retrigger: cancel any in-progress fade and restart peak glow.
-    setFxFadeIds((prev) => prev.filter((x) => x !== id))
-    setFxIds((prev) => (prev.includes(id) ? prev : [...prev, id]))
-    schedule(() => {
-      setFxIds((prev) => prev.filter((x) => x !== id))
-      setFxFadeIds((prev) => (prev.includes(id) ? prev : [...prev, id]))
-      schedule(() => {
-        setFxFadeIds((prev) => prev.filter((x) => x !== id))
-      }, FX_FADE_MS)
-    }, rarityFxDurationMs(card))
+    // Always restart from a clean slate so switching cards remounts animations.
+    clearFxTimers()
+    setFxFadeIds([])
+    setFxIds([])
+    setFxEpoch((n) => n + 1)
+    // Next frame: apply peak glow after classes clear so CSS one-shots replay.
+    requestAnimationFrame(() => {
+      setFxIds([id])
+      scheduleFx(() => {
+        setFxIds((prev) => prev.filter((x) => x !== id))
+        setFxFadeIds([id])
+        scheduleFx(() => {
+          setFxFadeIds((prev) => prev.filter((x) => x !== id))
+        }, FX_FADE_MS)
+      }, rarityFxDurationMs(card))
+    })
   }
 
   const finishReveal = (drawn: DrawnCard[]) => {
@@ -695,6 +714,7 @@ export function PackDrawButton() {
   const onDrawAgain = () => {
     if (drawing) return
     clearTimers()
+    clearFxTimers()
     clearTearRaf()
     setPhase('sealed')
     setCards([])
@@ -798,10 +818,6 @@ export function PackDrawButton() {
 
   const packBackSrc = defaultCardBackUrl()
   const card = cards[activeIdx] ?? null
-  const pt =
-    card?.power != null && card?.toughness != null
-      ? `${card.power}/${card.toughness}`
-      : null
 
   const dialog =
     open && typeof document !== 'undefined'
@@ -922,6 +938,7 @@ export function PackDrawButton() {
                         return (
                       <div className="pack-inspect-stage">
                       <div
+                        key={inspect.id}
                         className={[
                           'pack-card-wrap',
                           'pack-inspect-wrap',
@@ -937,6 +954,7 @@ export function PackDrawButton() {
                       >
                         {showInspectFxLayer ? (
                           <span
+                            key={`inspect-sparkles-${fxEpoch}`}
                             className={[
                               'pack-fx-layer',
                               'is-sparkles',
@@ -944,13 +962,6 @@ export function PackDrawButton() {
                             ]
                               .filter(Boolean)
                               .join(' ')}
-                            aria-hidden
-                          />
-                        ) : null}
-                        {(inspectGlowing || inspectFading) &&
-                        inspectFx === 'pack-fx-mythic' ? (
-                          <span
-                            className="pack-fx-layer is-corona"
                             aria-hidden
                           />
                         ) : null}
@@ -1014,61 +1025,29 @@ export function PackDrawButton() {
                       </div>
                         )
                       })()}
-                      <div className="pack-inspect-copy">
-                        <p className="eyebrow">
-                          {t('deck.collector', {
-                            set: inspect.setCode,
-                            number: inspect.collectorNumber,
-                          })}
-                          <span
-                            className={`pack-rarity-chip rarity-${inspect.rarity}`}
-                          >
-                            {t(`packDraw.rarity.${inspect.rarity}`, {
-                              defaultValue: inspect.rarity,
-                            })}
-                          </span>
-                        </p>
-                        <h3>{inspect.name}</h3>
-                        <p className="type-line">{inspect.typeLine}</p>
-                        {inspect.power != null && inspect.toughness != null ? (
-                          <p className="pt-line">
-                            {inspect.power}/{inspect.toughness}
-                          </p>
-                        ) : null}
-                        <h4>{t('deck.oracle')}</h4>
-                        <p className="oracle-text">{inspect.oracleText || '—'}</p>
-                        {inspect.artist ? (
-                          <p className="artist">
-                            {t('deck.artist', { name: inspect.artist })}
-                          </p>
-                        ) : null}
-                        <div className="pack-draw-actions">
-                          {inspect.scryfallUri ? (
-                            <a
-                              href={inspect.scryfallUri}
-                              target="_blank"
-                              rel="noreferrer"
+                      <div className="pack-card-copy pack-inspect-copy">
+                        <div className="pack-card-copy-cluster">
+                          <div className="pack-card-copy-body">
+                            <CardDetailsBody card={inspect} />
+                          </div>
+                          <div className="pack-draw-actions">
+                            {inspect.scryfallUri ? (
+                              <a
+                                href={inspect.scryfallUri}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                {t('packDraw.scryfall')}
+                              </a>
+                            ) : null}
+                            <button
+                              type="button"
+                              className="btn ghost"
+                              onClick={() => onToggleCollectInspect(inspect)}
                             >
-                              Scryfall
-                            </a>
-                          ) : null}
-                          <button
-                            type="button"
-                            className="btn ghost"
-                            onClick={() => onToggleCollectInspect(inspect)}
-                          >
-                            {t('packDraw.removeCollect')}
-                          </button>
-                          <button
-                            type="button"
-                            className="btn ghost"
-                            onClick={() => {
-                              setInspect(null)
-                              setInspectFlipTurns(0)
-                            }}
-                          >
-                            {t('deck.close')}
-                          </button>
+                              {t('packDraw.removeCollect')}
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1176,6 +1155,7 @@ export function PackDrawButton() {
                               >
                                 {showFxLayer ? (
                                   <span
+                                    key={`sparkles-${fxEpoch}`}
                                     className={[
                                       'pack-fx-layer',
                                       'is-sparkles',
@@ -1185,14 +1165,6 @@ export function PackDrawButton() {
                                     ]
                                       .filter(Boolean)
                                       .join(' ')}
-                                    aria-hidden
-                                  />
-                                ) : null}
-                                {(glowing || fading) &&
-                                isActive &&
-                                fxClass === 'pack-fx-mythic' ? (
-                                  <span
-                                    className="pack-fx-layer is-corona"
                                     aria-hidden
                                   />
                                 ) : null}
@@ -1323,64 +1295,39 @@ export function PackDrawButton() {
                   </div>
 
                   {phase === 'revealed' && card ? (
-                    <div className="pack-draw-copy">
-                      <div className="pack-draw-copy-body">
-                        <p className="eyebrow">
-                          {t('deck.collector', {
-                            set: card.setCode,
-                            number: card.collectorNumber,
-                          })}
-                          <span
-                            className={`pack-rarity-chip rarity-${card.rarity}`}
+                    <div className="pack-card-copy">
+                      <div className="pack-card-copy-cluster">
+                        <div className="pack-card-copy-body">
+                          <CardDetailsBody card={card} />
+                        </div>
+                        <div className="pack-draw-actions">
+                          <button
+                            type="button"
+                            className="btn primary"
+                            onClick={onDrawAgain}
+                            disabled={drawing}
                           >
-                            {t(`packDraw.rarity.${card.rarity}`, {
-                              defaultValue: card.rarity,
-                            })}
-                          </span>
-                        </p>
-                        <h3>{card.name}</h3>
-                        <p className="type-line">{card.typeLine}</p>
-                        {pt ? <p className="pt-line">{pt}</p> : null}
-                        <h4>{t('deck.oracle')}</h4>
-                        <p className="oracle-text">{card.oracleText || '—'}</p>
-                        {card.artist ? (
-                          <p className="artist">
-                            {t('deck.artist', { name: card.artist })}
-                          </p>
-                        ) : null}
-                        {card.source === 'local' ? (
-                          <p className="pack-draw-hint">
-                            {t('packDraw.fallbackHint')}
-                          </p>
-                        ) : null}
-                      </div>
-                      <div className="pack-draw-actions">
-                        <button
-                          type="button"
-                          className="btn primary"
-                          onClick={onDrawAgain}
-                          disabled={drawing}
-                        >
-                          {t('packDraw.drawAgain')}
-                        </button>
-                        <button
-                          type="button"
-                          className="btn ghost"
-                          onClick={onToggleCollect}
-                        >
-                          {collected
-                            ? t('packDraw.collected')
-                            : t('packDraw.collect')}
-                        </button>
-                        {card.scryfallUri ? (
-                          <a
-                            href={card.scryfallUri}
-                            target="_blank"
-                            rel="noreferrer"
+                            {t('packDraw.drawAgain')}
+                          </button>
+                          <button
+                            type="button"
+                            className="btn ghost"
+                            onClick={onToggleCollect}
                           >
-                            Scryfall
-                          </a>
-                        ) : null}
+                            {collected
+                              ? t('packDraw.collected')
+                              : t('packDraw.collect')}
+                          </button>
+                          {card.scryfallUri ? (
+                            <a
+                              href={card.scryfallUri}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              {t('packDraw.scryfall')}
+                            </a>
+                          ) : null}
+                        </div>
                       </div>
                     </div>
                   ) : null}

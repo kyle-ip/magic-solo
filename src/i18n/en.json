@@ -41,6 +41,10 @@
     "emptyCollection": "No cards collected yet.",
     "backToPack": "Back to pack",
     "fallbackHint": "Offline — drew from local challenge cards.",
+    "details": "Details",
+    "keywords": "Keywords",
+    "scryfall": "View on Scryfall",
+    "englishName": "English name",
     "rarity": {
       "common": "Common",
       "uncommon": "Uncommon",

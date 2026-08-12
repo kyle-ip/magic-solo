@@ -43,5 +43,5 @@ export const cardsZh: Record<string, Record<string, CardZh>> = {
 }
 
 export function getCardZh(setCode: string, englishName: string): CardZh | undefined {
-  return cardsZh[setCode]?.[englishName]
+  return cardsZh[setCode.toLowerCase()]?.[englishName]
 }

@@ -902,7 +902,7 @@ h2 {
   overflow: hidden;
   /* Shared budgets — shell & reveal cards fit the same stage */
   --pack-stage-pad-y: clamp(0.35rem, 1.5vh, 1rem);
-  --pack-reveal-card-max-h: min(68vh, calc(90dvh - 8.5rem), 640px);
+  --pack-reveal-card-max-h: calc(min(68vh, calc(90dvh - 8.5rem), 640px) * 0.9);
   --pack-shell-max-h: min(68vh, calc(90dvh - 8.5rem), 640px);
 }
 
@@ -932,7 +932,12 @@ h2 {
   max-height: min(90dvh, 90vh);
   overflow-x: clip;
   overflow-y: auto;
-  --pack-inspect-card-max-h: min(56vh, calc(90dvh - 12.5rem), 560px);
+  --pack-inspect-card-max-h: calc(min(68vh, calc(90dvh - 8.5rem), 640px) * 0.9);
+}
+
+.pack-draw-modal.is-collection:has(.pack-inspect) {
+  height: min(90dvh, 90vh);
+  overflow: hidden;
 }
 
 .pack-draw-modal:not(.is-collection) > .pack-draw-stage {
@@ -1000,7 +1005,8 @@ h2 {
   min-height: 0;
 }
 
-.pack-draw-copy {
+/* Shared card details column — pack open + collection inspect */
+.pack-card-copy {
   min-width: 0;
   height: 100%;
   max-height: none;
@@ -1009,24 +1015,38 @@ h2 {
   align-self: stretch;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  /* Short copy sits mid-card; overflows fall back to start */
+  justify-content: center;
+  justify-content: safe center;
 }
 
-.pack-draw-copy-body {
+.pack-card-copy-cluster {
+  display: flex;
+  flex-direction: column;
+  flex: 0 1 auto;
+  min-width: 0;
+  min-height: 0;
+  max-height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.pack-card-copy-body {
   flex: 1 1 auto;
   min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
   padding-right: 0.35rem;
+  overscroll-behavior: contain;
 }
 
-.pack-draw-copy h3 {
+.pack-card-copy h3 {
   margin: 0.15rem 0 0.35rem;
   font-family: var(--font-display);
-  font-size: clamp(1.55rem, 2.6vw, 2rem);
+  font-size: clamp(1.5rem, 2.5vw, 1.95rem);
 }
 
-.pack-draw-copy h4 {
+.pack-card-copy h4 {
   margin: 0.85rem 0 0.35rem;
   font-size: 0.78rem;
   letter-spacing: 0.1em;
@@ -1034,11 +1054,12 @@ h2 {
   color: rgba(231, 215, 184, 0.62);
 }
 
-.pack-draw-copy .eyebrow {
+.pack-card-copy .eyebrow {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.45rem 0.65rem;
+  margin: 0 0 0.35rem;
 }
 
 .pack-draw-lead,
@@ -1051,6 +1072,69 @@ h2 {
 .pack-draw-hint {
   margin-top: 0.65rem;
   font-size: 0.85rem;
+}
+
+.pack-en-name {
+  margin: -0.15rem 0 0.45rem;
+  font-size: 0.92rem;
+  color: rgba(231, 215, 184, 0.58);
+  font-style: italic;
+}
+
+.pack-mana-cost {
+  margin: 0 0 0.35rem;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  color: var(--bronze-bright, rgba(212, 175, 110, 0.92));
+}
+
+.pack-details-block {
+  margin: 0.5rem 0 1rem;
+  background: rgba(0, 0, 0, 0.25);
+  border-left: 2px solid rgba(184, 137, 58, 0.55);
+  padding: 0.85rem 1rem;
+}
+
+.pack-details-block .oracle-text {
+  margin: 0;
+  padding: 0;
+  background: none;
+  border-left: none;
+}
+
+.pack-flavor-text {
+  margin: 0.75rem 0 0;
+  font-style: italic;
+  line-height: 1.55;
+  color: rgba(231, 215, 184, 0.78);
+  white-space: pre-wrap;
+}
+
+.pack-keywords {
+  margin: 0.35rem 0 0.65rem;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: rgba(231, 215, 184, 0.78);
+}
+
+.pack-keywords-label {
+  display: inline-block;
+  margin-right: 0.45rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(231, 215, 184, 0.55);
+}
+
+.pack-card-copy .type-line {
+  color: var(--bronze-bright);
+  margin: 0 0 0.35rem;
+}
+
+.pack-card-copy .pt-line {
+  font-family: var(--font-display);
+  margin: 0 0 0.35rem;
 }
 
 .pack-pick-hint {
@@ -1097,14 +1181,16 @@ h2 {
 }
 
 .pack-rarity-chip.rarity-rare {
-  border-color: rgba(230, 190, 70, 0.7);
+  border-color: rgba(230, 190, 70, 0.75);
   color: #f3d978;
+  background: rgba(90, 60, 10, 0.45);
 }
 
 .pack-rarity-chip.rarity-mythic,
 .pack-rarity-chip.rarity-special {
-  border-color: rgba(240, 140, 50, 0.75);
-  color: #ffb86a;
+  border-color: rgba(180, 140, 55, 0.8);
+  color: #d4b056;
+  background: rgba(48, 34, 12, 0.55);
 }
 
 /* Sealed / tearing pack — size inherited from modal (--pack-shell-max-h) */
@@ -1224,7 +1310,7 @@ h2 {
   z-index: 1;
   display: grid;
   place-items: center;
-  width: min(500px, 78vw, calc(var(--pack-reveal-card-max-h, 56vh) * 744 / 1040));
+  width: min(450px, 78vw, calc(var(--pack-reveal-card-max-h, 56vh) * 744 / 1040));
   /* Room for under-card peeks bottom-right */
   padding: 0 1.35rem 1.5rem 0;
 }
@@ -1341,8 +1427,8 @@ h2 {
 
 .pack-card-wrap .card-flip.pack-card-flip {
   /* Same formula as .pack-inspect-flip in collection cabinet */
-  --pack-card-max-h: var(--pack-reveal-card-max-h, min(68vh, calc(90dvh - 8.5rem), 640px));
-  width: min(500px, calc(var(--pack-card-max-h) * 744 / 1040));
+  --pack-card-max-h: var(--pack-reveal-card-max-h, calc(min(68vh, calc(90dvh - 8.5rem), 640px) * 0.9));
+  width: min(450px, calc(var(--pack-card-max-h) * 744 / 1040));
   max-height: var(--pack-card-max-h);
 }
 
@@ -1434,7 +1520,8 @@ h2 {
   }
 }
 
-/* One-shot rarity FX — distinct prestige languages per tier */
+/* One-shot rarity FX — hierarchy: mythic (ornate) → rare → uncommon → common (plain)
+   Soft glow language (no hard rims). Peak duration unified at 2.5s. */
 .pack-card-wrap[class*='pack-fx-'] .card-face {
   transition:
     box-shadow 0.85s ease,
@@ -1447,99 +1534,73 @@ h2 {
 
 .pack-card-wrap.is-glowing .card-face,
 .pack-card-wrap.is-glowing .card-face::after {
-  transition-duration: 0.18s;
+  transition-duration: 0.22s;
 }
 
-/* Common — faint settle only */
+/* ── Common — soft brightness settle ── */
 .pack-card-wrap.pack-fx-common.is-glowing .card-face {
-  animation: pack-common-flash 0.45s ease-out both;
+  animation: pack-common-flash 2.5s ease-out both;
 }
 
 .pack-card-wrap.pack-fx-common.is-glowing .card-face::after {
-  box-shadow: inset 0 0 0 1px rgba(210, 200, 185, 0.4);
+  box-shadow: inset 0 0 12px rgba(210, 200, 185, 0.18);
 }
 
-/* Uncommon — cold steel ONLY (blue-silver sweep, no gold/warm) */
+/* ── Uncommon — soft steel bloom + cool sweep ── */
 .pack-card-wrap.pack-fx-uncommon.is-glowing {
   filter: none;
 }
 
-.pack-card-wrap.pack-fx-uncommon.is-glowing::before {
-  content: '';
-  position: absolute;
-  inset: -18%;
-  z-index: 0;
-  pointer-events: none;
-  border-radius: 50%;
-  background: radial-gradient(
-    ellipse 48% 54% at 50% 50%,
-    rgba(160, 200, 255, 0.42) 0%,
-    rgba(110, 160, 230, 0.2) 40%,
-    transparent 70%
-  );
-  animation: pack-aura-bloom 1.4s ease-out both;
-  mix-blend-mode: screen;
-}
-
 .pack-card-wrap.pack-fx-uncommon.is-glowing .card-face {
   box-shadow:
-    0 0 0 2px rgba(190, 220, 255, 0.85),
-    0 0 28px rgba(120, 180, 255, 0.65),
-    0 0 48px rgba(90, 150, 230, 0.3),
-    0 18px 28px rgba(0, 0, 0, 0.5);
-  animation: pack-uncommon-flash 1.4s ease-out both;
+    0 0 14px rgba(170, 200, 240, 0.4),
+    0 0 32px rgba(120, 165, 220, 0.22),
+    0 18px 28px rgba(0, 0, 0, 0.48);
+  animation: pack-uncommon-flash 2.5s ease-out both;
 }
 
 .pack-card-wrap.pack-fx-uncommon.is-glowing .card-face::after {
-  box-shadow:
-    inset 0 0 0 2.5px rgba(220, 240, 255, 1),
-    inset 0 0 24px rgba(140, 190, 255, 0.35);
+  box-shadow: inset 0 0 18px rgba(180, 210, 245, 0.28);
 }
 
 .pack-card-wrap.pack-fx-uncommon.is-glowing .card-face::before,
 .pack-card-wrap.pack-fx-uncommon.is-fading .card-face::before {
   content: '';
   position: absolute;
-  inset: -12%;
+  inset: -8%;
   z-index: 2;
   pointer-events: none;
   border-radius: inherit;
   background: linear-gradient(
     118deg,
     transparent 0%,
-    transparent 28%,
-    rgba(180, 220, 255, 0.15) 40%,
-    rgba(255, 255, 255, 0.95) 50%,
-    rgba(140, 200, 255, 0.35) 58%,
-    transparent 72%,
+    transparent 32%,
+    rgba(180, 210, 245, 0.1) 42%,
+    rgba(255, 255, 255, 0.45) 50%,
+    rgba(150, 190, 240, 0.14) 58%,
+    transparent 70%,
     transparent 100%
   );
-  background-size: 260% 260%;
+  background-size: 240% 240%;
   mix-blend-mode: screen;
 }
 
 .pack-card-wrap.pack-fx-uncommon.is-glowing .card-face::before {
-  animation: pack-uncommon-shimmer 1.4s ease-out both;
+  animation: pack-uncommon-shimmer 2.5s ease-out both;
 }
 
 .pack-card-wrap.pack-fx-uncommon.is-fading .card-face::before {
   animation: none;
   opacity: 0;
-  transition: opacity 0.8s ease;
+  transition: opacity 0.85s ease;
 }
 
 .pack-card-wrap.pack-fx-uncommon.is-fading {
   filter: none;
-  transition: filter 0.8s ease;
+  transition: filter 0.85s ease;
 }
 
-.pack-card-wrap.pack-fx-uncommon.is-fading::before {
-  animation: none;
-  opacity: 0;
-  transition: opacity 0.8s ease;
-}
-
-/* Rare — hot treasure gold (dense motes + soft gold bloom; no blue/violet) */
+/* ── Rare — soft bright-gold aureole + foil + corner stars ── */
 .pack-card-wrap.pack-fx-rare.is-glowing {
   filter: none;
 }
@@ -1552,29 +1613,58 @@ h2 {
   pointer-events: none;
   border-radius: 50%;
   background: radial-gradient(
-    ellipse 46% 52% at 50% 50%,
-    rgba(255, 210, 80, 0.55) 0%,
-    rgba(240, 160, 20, 0.28) 38%,
-    rgba(200, 120, 0, 0.1) 58%,
-    transparent 72%
+    ellipse 48% 52% at 50% 50%,
+    rgba(255, 220, 130, 0.28) 0%,
+    rgba(240, 180, 50, 0.12) 42%,
+    transparent 70%
   );
-  animation: pack-aura-bloom 2.4s ease-out both;
+  animation: pack-rare-aureole 2.5s ease-out both;
   mix-blend-mode: screen;
 }
 
 .pack-card-wrap.pack-fx-rare.is-glowing .card-face {
   box-shadow:
-    0 0 0 2px rgba(255, 220, 100, 0.9),
-    0 0 24px rgba(255, 200, 60, 0.75),
-    0 0 48px rgba(240, 160, 20, 0.4),
-    0 18px 28px rgba(0, 0, 0, 0.5);
-  animation: pack-rare-flash 2.4s ease-out both;
+    0 0 16px rgba(255, 215, 100, 0.45),
+    0 0 36px rgba(230, 170, 45, 0.28),
+    0 0 56px rgba(190, 130, 20, 0.14),
+    0 18px 28px rgba(0, 0, 0, 0.48);
+  animation: pack-rare-flash 2.5s ease-out both;
 }
 
 .pack-card-wrap.pack-fx-rare.is-glowing .card-face::after {
-  box-shadow:
-    inset 0 0 0 3px rgba(255, 235, 140, 1),
-    inset 0 0 28px rgba(255, 190, 50, 0.45);
+  box-shadow: inset 0 0 22px rgba(255, 210, 90, 0.28);
+}
+
+.pack-card-wrap.pack-fx-rare.is-glowing .card-face::before,
+.pack-card-wrap.pack-fx-rare.is-fading .card-face::before {
+  content: '';
+  position: absolute;
+  inset: -10%;
+  z-index: 2;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(
+    122deg,
+    transparent 0%,
+    transparent 30%,
+    rgba(255, 220, 120, 0.08) 40%,
+    rgba(255, 245, 200, 0.48) 50%,
+    rgba(255, 200, 70, 0.2) 58%,
+    transparent 70%,
+    transparent 100%
+  );
+  background-size: 240% 240%;
+  mix-blend-mode: screen;
+}
+
+.pack-card-wrap.pack-fx-rare.is-glowing .card-face::before {
+  animation: pack-rare-foil 2.5s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.pack-card-wrap.pack-fx-rare.is-fading .card-face::before {
+  animation: none;
+  opacity: 0;
+  transition: opacity 0.85s ease;
 }
 
 .pack-card-wrap.pack-fx-rare.is-fading {
@@ -1588,7 +1678,7 @@ h2 {
   transition: opacity 0.85s ease;
 }
 
-/* Mythic — regal violet / white diamond (no gold motes, no orange) */
+/* ── Mythic — soft dark-gold nested bloom + foil + rich glints ── */
 .pack-card-wrap.pack-fx-mythic.is-glowing {
   filter: none;
 }
@@ -1596,34 +1686,74 @@ h2 {
 .pack-card-wrap.pack-fx-mythic.is-glowing::before {
   content: '';
   position: absolute;
-  inset: -24%;
+  inset: -28%;
   z-index: 0;
   pointer-events: none;
   border-radius: 50%;
-  background: radial-gradient(
-    ellipse 48% 54% at 50% 50%,
-    rgba(210, 170, 255, 0.5) 0%,
-    rgba(140, 70, 230, 0.26) 40%,
-    rgba(90, 40, 180, 0.1) 58%,
-    transparent 74%
-  );
-  animation: pack-aura-bloom 2.8s ease-out both;
+  background:
+    radial-gradient(
+      ellipse 46% 50% at 50% 50%,
+      rgba(190, 140, 45, 0.34) 0%,
+      rgba(110, 72, 18, 0.16) 40%,
+      transparent 68%
+    ),
+    radial-gradient(
+      ellipse 68% 74% at 50% 50%,
+      transparent 42%,
+      rgba(140, 95, 25, 0.14) 55%,
+      transparent 76%
+    );
+  animation: pack-mythic-aureole 2.5s ease-out both;
   mix-blend-mode: screen;
 }
 
 .pack-card-wrap.pack-fx-mythic.is-glowing .card-face {
   box-shadow:
-    0 0 0 2px rgba(230, 200, 255, 0.9),
-    0 0 26px rgba(180, 120, 255, 0.7),
-    0 0 52px rgba(120, 60, 220, 0.4),
-    0 18px 28px rgba(0, 0, 0, 0.55);
-  animation: pack-mythic-flash 2.8s ease-out both;
+    0 0 18px rgba(200, 150, 55, 0.48),
+    0 0 40px rgba(140, 95, 25, 0.38),
+    0 0 64px rgba(80, 50, 10, 0.28),
+    0 18px 28px rgba(0, 0, 0, 0.52);
+  animation: pack-mythic-flash 2.5s ease-out both;
 }
 
 .pack-card-wrap.pack-fx-mythic.is-glowing .card-face::after {
   box-shadow:
-    inset 0 0 0 3px rgba(245, 230, 255, 1),
-    inset 0 0 30px rgba(160, 90, 255, 0.42);
+    inset 0 0 20px rgba(200, 150, 55, 0.28),
+    inset 0 0 36px rgba(100, 65, 16, 0.22);
+}
+
+.pack-card-wrap.pack-fx-mythic.is-glowing .card-face::before,
+.pack-card-wrap.pack-fx-mythic.is-fading .card-face::before {
+  content: '';
+  position: absolute;
+  inset: -12%;
+  z-index: 2;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(
+    128deg,
+    transparent 0%,
+    transparent 24%,
+    rgba(180, 130, 40, 0.1) 36%,
+    rgba(255, 220, 140, 0.4) 47%,
+    rgba(255, 235, 180, 0.58) 50%,
+    rgba(160, 110, 30, 0.28) 55%,
+    rgba(90, 55, 12, 0.1) 64%,
+    transparent 76%,
+    transparent 100%
+  );
+  background-size: 260% 260%;
+  mix-blend-mode: screen;
+}
+
+.pack-card-wrap.pack-fx-mythic.is-glowing .card-face::before {
+  animation: pack-mythic-foil 2.5s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.pack-card-wrap.pack-fx-mythic.is-fading .card-face::before {
+  animation: none;
+  opacity: 0;
+  transition: opacity 0.9s ease;
 }
 
 .pack-card-wrap.pack-fx-mythic.is-fading {
@@ -1643,7 +1773,7 @@ h2 {
 }
 
 .pack-card-wrap.is-fading .card-face::after {
-  box-shadow: inset 0 0 0 1px rgba(224, 180, 90, 0.4);
+  box-shadow: inset 0 0 10px rgba(224, 180, 90, 0.12);
 }
 
 .pack-fx-layer {
@@ -1653,65 +1783,31 @@ h2 {
   transition: opacity 0.85s ease;
 }
 
-/* Rare — dense warm gold motes + brief light shafts */
+/* Rare particles — soft floating glints (not frame-aligned) */
 .pack-fx-layer.is-sparkles {
-  inset: -20% -16%;
+  inset: -16% -12%;
   background:
-    radial-gradient(circle at 12% 22%, rgba(255, 245, 180, 1) 0 3px, transparent 5px),
-    radial-gradient(circle at 84% 14%, rgba(255, 210, 70, 1) 0 3px, transparent 5px),
-    radial-gradient(circle at 70% 78%, rgba(255, 240, 160, 0.95) 0 2.5px, transparent 4.5px),
-    radial-gradient(circle at 22% 84%, rgba(255, 180, 40, 0.95) 0 3px, transparent 5px),
-    radial-gradient(circle at 48% 6%, rgba(255, 255, 220, 1) 0 2.5px, transparent 4px),
-    radial-gradient(circle at 38% 48%, rgba(255, 200, 80, 0.85) 0 2.5px, transparent 4px),
-    radial-gradient(circle at 62% 36%, rgba(255, 220, 100, 0.8) 0 2px, transparent 3.5px),
-    radial-gradient(circle at 30% 60%, rgba(255, 170, 30, 0.75) 0 2px, transparent 3.5px),
-    radial-gradient(circle at 76% 52%, rgba(255, 230, 120, 0.7) 0 2px, transparent 3.5px),
-    linear-gradient(
-      105deg,
-      transparent 42%,
-      rgba(255, 220, 120, 0.35) 49%,
-      rgba(255, 240, 180, 0.55) 50%,
-      rgba(255, 200, 80, 0.3) 51%,
-      transparent 58%
-    );
-  animation: pack-sparkle-burst 2.4s ease-out both;
+    radial-gradient(circle at 18% 22%, rgba(255, 245, 200, 0.8) 0 2px, transparent 7px),
+    radial-gradient(circle at 78% 18%, rgba(255, 225, 140, 0.75) 0 2px, transparent 7px),
+    radial-gradient(circle at 28% 72%, rgba(240, 185, 70, 0.7) 0 2px, transparent 7px),
+    radial-gradient(circle at 70% 78%, rgba(255, 215, 120, 0.75) 0 2px, transparent 7px);
+  animation: pack-rare-filigree 2.5s ease-out both;
   mix-blend-mode: screen;
 }
 
-/* Mythic — sparse white/violet diamond points only */
+/* Mythic particles — denser soft antique-gold dust */
 .pack-fx-layer.is-sparkles.is-mythic {
-  inset: -24% -18%;
+  inset: -22% -16%;
   background:
-    radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 1) 0 2.5px, transparent 5px),
-    radial-gradient(circle at 82% 12%, rgba(230, 200, 255, 1) 0 3px, transparent 5.5px),
-    radial-gradient(circle at 72% 76%, rgba(255, 255, 255, 0.95) 0 2.5px, transparent 5px),
-    radial-gradient(circle at 24% 82%, rgba(190, 140, 255, 0.95) 0 3px, transparent 5.5px),
-    radial-gradient(circle at 50% 4%, rgba(255, 255, 255, 1) 0 2px, transparent 4px),
-    radial-gradient(circle at 46% 44%, rgba(210, 170, 255, 0.8) 0 2px, transparent 4px);
-  animation: pack-mythic-glints 2.8s ease-out both;
-  mix-blend-mode: screen;
-}
-
-/* Mythic corona — slow violet aureole (signature vs rare gold motes) */
-.pack-fx-layer.is-corona {
-  inset: -34% -28%;
-  z-index: 2;
-  background:
-    radial-gradient(
-      ellipse 48% 54% at 50% 50%,
-      transparent 38%,
-      rgba(200, 150, 255, 0.4) 48%,
-      rgba(140, 70, 230, 0.28) 56%,
-      transparent 68%
-    ),
-    radial-gradient(
-      ellipse 68% 76% at 50% 50%,
-      transparent 50%,
-      rgba(170, 110, 255, 0.2) 58%,
-      rgba(90, 40, 180, 0.12) 66%,
-      transparent 76%
-    );
-  animation: pack-mythic-corona 2.8s ease-out both;
+    radial-gradient(circle at 16% 18%, rgba(255, 230, 160, 0.85) 0 2.5px, transparent 8px),
+    radial-gradient(circle at 82% 14%, rgba(200, 150, 55, 0.8) 0 3px, transparent 9px),
+    radial-gradient(circle at 72% 74%, rgba(235, 190, 95, 0.75) 0 2.5px, transparent 8px),
+    radial-gradient(circle at 22% 80%, rgba(140, 95, 25, 0.75) 0 3px, transparent 9px),
+    radial-gradient(circle at 48% 28%, rgba(255, 240, 180, 0.7) 0 2px, transparent 7px),
+    radial-gradient(circle at 58% 62%, rgba(170, 120, 35, 0.65) 0 2px, transparent 7px),
+    radial-gradient(circle at 36% 48%, rgba(220, 175, 80, 0.55) 0 1.5px, transparent 6px),
+    radial-gradient(circle at 64% 38%, rgba(200, 150, 55, 0.55) 0 1.5px, transparent 6px);
+  animation: pack-mythic-glints 2.5s ease-out both;
   mix-blend-mode: screen;
 }
 
@@ -1742,10 +1838,12 @@ h2 {
   }
 
   .pack-fx-layer.is-sparkles,
-  .pack-fx-layer.is-corona,
   .pack-card-wrap.pack-fx-uncommon.is-glowing .card-face::before,
   .pack-card-wrap.pack-fx-uncommon.is-fading .card-face::before,
-  .pack-card-wrap.pack-fx-uncommon.is-glowing::before,
+  .pack-card-wrap.pack-fx-rare.is-glowing .card-face::before,
+  .pack-card-wrap.pack-fx-rare.is-fading .card-face::before,
+  .pack-card-wrap.pack-fx-mythic.is-glowing .card-face::before,
+  .pack-card-wrap.pack-fx-mythic.is-fading .card-face::before,
   .pack-card-wrap.pack-fx-rare.is-glowing::before,
   .pack-card-wrap.pack-fx-mythic.is-glowing::before {
     display: none;
@@ -1755,12 +1853,12 @@ h2 {
 @media (max-height: 780px) {
   .pack-draw-modal:not(.is-collection) {
     --pack-stage-pad-y: clamp(0.4rem, 1.5vh, 0.85rem);
-    --pack-reveal-card-max-h: min(58vh, calc(90dvh - 9rem), 520px);
+    --pack-reveal-card-max-h: calc(min(58vh, calc(90dvh - 9rem), 520px) * 0.9);
     --pack-shell-max-h: min(58vh, calc(90dvh - 9rem), 520px);
   }
 
   .pack-draw-modal.is-collection {
-    --pack-inspect-card-max-h: min(48vh, calc(90dvh - 11.5rem), 460px);
+    --pack-inspect-card-max-h: calc(min(58vh, calc(90dvh - 9rem), 520px) * 0.9);
   }
 }
 
@@ -1770,7 +1868,7 @@ h2 {
     height: min(88dvh, 90vh);
     max-height: min(88dvh, 90vh);
     --pack-stage-pad-y: clamp(0.35rem, 1.5vh, 0.75rem);
-    --pack-reveal-card-max-h: min(46vh, calc(88dvh - 12rem), 420px);
+    --pack-reveal-card-max-h: calc(min(46vh, calc(88dvh - 12rem), 420px) * 0.9);
     --pack-shell-max-h: min(46vh, calc(88dvh - 12rem), 420px);
   }
 
@@ -1781,12 +1879,12 @@ h2 {
   }
 
   .pack-card-deck {
-    width: min(280px, 70vw, calc(var(--pack-reveal-card-max-h, 42vh) * 744 / 1040));
+    width: min(252px, 70vw, calc(var(--pack-reveal-card-max-h, 42vh) * 744 / 1040));
   }
 
   .pack-card-wrap .card-flip.pack-card-flip {
     --pack-card-max-h: var(--pack-reveal-card-max-h, 42vh);
-    width: min(280px, 70vw, calc(var(--pack-card-max-h) * 744 / 1040));
+    width: min(252px, 70vw, calc(var(--pack-card-max-h) * 744 / 1040));
     max-height: var(--pack-card-max-h);
   }
 
@@ -1794,13 +1892,14 @@ h2 {
     min-height: 0;
   }
 
-  .pack-draw-copy {
+  .pack-card-copy {
     height: auto;
     max-height: none;
     overflow: visible;
+    justify-content: flex-start;
   }
 
-  .pack-draw-copy-body {
+  .pack-card-copy-body {
     overflow: visible;
     max-height: none;
   }
@@ -1812,38 +1911,33 @@ h2 {
 
   .pack-card-wrap.pack-fx-uncommon.is-glowing .card-face {
     box-shadow:
-      0 0 0 2px rgba(190, 220, 255, 0.9),
-      0 0 40px rgba(120, 180, 255, 0.85),
-      0 0 72px rgba(90, 150, 230, 0.5),
-      0 16px 26px rgba(0, 0, 0, 0.5);
+      0 0 18px rgba(170, 200, 240, 0.5),
+      0 0 36px rgba(120, 165, 220, 0.28),
+      0 16px 26px rgba(0, 0, 0, 0.48);
   }
 
   .pack-card-wrap.pack-fx-rare.is-glowing .card-face {
     box-shadow:
-      0 0 0 2px rgba(255, 220, 100, 1),
-      0 0 28px rgba(255, 200, 60, 0.8),
-      0 0 48px rgba(240, 160, 20, 0.4),
-      0 16px 26px rgba(0, 0, 0, 0.5);
+      0 0 20px rgba(255, 215, 100, 0.55),
+      0 0 42px rgba(230, 170, 45, 0.32),
+      0 0 60px rgba(190, 130, 20, 0.16),
+      0 16px 26px rgba(0, 0, 0, 0.48);
   }
 
   .pack-card-wrap.pack-fx-mythic.is-glowing .card-face {
     box-shadow:
-      0 0 0 2px rgba(230, 200, 255, 1),
-      0 0 28px rgba(180, 120, 255, 0.75),
-      0 0 50px rgba(120, 60, 220, 0.4),
-      0 16px 26px rgba(0, 0, 0, 0.55);
+      0 0 22px rgba(200, 150, 55, 0.55),
+      0 0 46px rgba(140, 95, 25, 0.42),
+      0 0 68px rgba(80, 50, 10, 0.32),
+      0 16px 26px rgba(0, 0, 0, 0.52);
   }
 
   .pack-fx-layer.is-sparkles {
-    inset: -22% -16%;
+    inset: -18% -14%;
   }
 
   .pack-fx-layer.is-sparkles.is-mythic {
-    inset: -26% -20%;
-  }
-
-  .pack-fx-layer.is-corona {
-    inset: -32% -28%;
+    inset: -24% -18%;
   }
 
   /* Prefer compositing-friendly shadow over filter+clip-path combos on Safari */
@@ -1858,7 +1952,7 @@ h2 {
   0% {
     filter: brightness(1.12);
   }
-  55% {
+  35% {
     filter: brightness(1.06);
   }
   100% {
@@ -1866,44 +1960,26 @@ h2 {
   }
 }
 
-@keyframes pack-aura-bloom {
-  0% {
-    opacity: 0;
-    transform: scale(0.86);
-  }
-  28% {
-    opacity: 1;
-    transform: scale(1.02);
-  }
-  100% {
-    opacity: 0.72;
-    transform: scale(1);
-  }
-}
-
 @keyframes pack-uncommon-shimmer {
   0% {
-    background-position: 140% 140%;
+    background-position: 130% 130%;
     opacity: 0;
   }
-  12% {
+  14% {
     opacity: 1;
   }
-  55% {
-    opacity: 0.75;
-  }
   100% {
-    background-position: -40% -40%;
+    background-position: -30% -30%;
     opacity: 0;
   }
 }
 
 @keyframes pack-uncommon-flash {
   0% {
-    filter: brightness(1.38) saturate(1.18);
+    filter: brightness(1.2) saturate(1.06);
   }
   40% {
-    filter: brightness(1.18) saturate(1.08);
+    filter: brightness(1.1) saturate(1.03);
   }
   100% {
     filter: brightness(1) saturate(1);
@@ -1912,56 +1988,113 @@ h2 {
 
 @keyframes pack-rare-flash {
   0% {
-    filter: brightness(1.55) saturate(1.15);
+    filter: brightness(1.32) saturate(1.08);
   }
   35% {
-    filter: brightness(1.28) saturate(1.08);
+    filter: brightness(1.16) saturate(1.04);
   }
   100% {
     filter: brightness(1) saturate(1);
+  }
+}
+
+@keyframes pack-rare-aureole {
+  0% {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  22% {
+    opacity: 1;
+    transform: scale(1.01);
+  }
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+}
+
+@keyframes pack-rare-foil {
+  0% {
+    background-position: 130% 130%;
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  100% {
+    background-position: -30% -30%;
+    opacity: 0;
+  }
+}
+
+@keyframes pack-rare-filigree {
+  0% {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  18% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.02);
   }
 }
 
 @keyframes pack-mythic-flash {
   0% {
-    filter: brightness(1.48) saturate(1.28);
+    filter: brightness(1.4) saturate(1.14);
   }
-  30% {
-    filter: brightness(1.22) saturate(1.16);
+  28% {
+    filter: brightness(1.22) saturate(1.08);
   }
-  70% {
-    filter: brightness(1.1) saturate(1.08);
+  65% {
+    filter: brightness(1.1) saturate(1.04);
   }
   100% {
     filter: brightness(1) saturate(1);
   }
 }
 
-@keyframes pack-mythic-corona {
+@keyframes pack-mythic-aureole {
   0% {
     opacity: 0;
-    transform: scale(0.82);
+    transform: scale(0.9);
   }
-  22% {
-    opacity: 0.95;
-    transform: scale(0.96);
-  }
-  55% {
-    opacity: 0.7;
-    transform: scale(1.04);
+  20% {
+    opacity: 1;
+    transform: scale(1.02);
   }
   100% {
+    opacity: 0.68;
+    transform: scale(1);
+  }
+}
+
+@keyframes pack-mythic-foil {
+  0% {
+    background-position: 140% 140%;
     opacity: 0;
-    transform: scale(1.14);
+  }
+  10% {
+    opacity: 1;
+  }
+  55% {
+    opacity: 0.85;
+  }
+  100% {
+    background-position: -40% -40%;
+    opacity: 0;
   }
 }
 
 @keyframes pack-mythic-glints {
   0% {
     opacity: 0;
-    transform: scale(0.9);
+    transform: scale(0.92);
   }
-  18% {
+  16% {
     opacity: 1;
     transform: scale(1);
   }
@@ -1970,24 +2103,7 @@ h2 {
   }
   100% {
     opacity: 0;
-    transform: scale(1.06);
-  }
-}
-
-@keyframes pack-sparkle-burst {
-  0% {
-    opacity: 0;
-    transform: scale(0.85);
-  }
-  18% {
-    opacity: 1;
-  }
-  55% {
-    opacity: 0.7;
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1.1);
+    transform: scale(1.05);
   }
 }
 
@@ -2001,6 +2117,10 @@ h2 {
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
+}
+
+.pack-collection:has(.pack-inspect) {
+  overflow: hidden;
 }
 
 .pack-collection-grid {
@@ -2048,25 +2168,34 @@ h2 {
   inset: 0;
   z-index: 2;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
+  grid-template-columns: minmax(0, 1fr) minmax(16rem, 1.05fr);
+  align-items: stretch;
   gap: 1.75rem;
   padding: 1.1rem 1.35rem 1.15rem;
   border-radius: 10px;
   border: 1px solid rgba(184, 137, 58, 0.4);
   background:
     linear-gradient(180deg, #2a221a, #17120e);
-  overflow: auto;
+  overflow: hidden;
+  min-height: 0;
   box-shadow: var(--shadow);
 }
 
 .pack-inspect-stage {
   position: relative;
-  display: grid;
-  place-items: center;
-  justify-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  justify-self: stretch;
+  align-self: stretch;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
   overflow: visible;
-  padding: 1.5rem 2.6rem 1.6rem;
+  padding: 1.25rem 2.4rem 1.4rem;
+  box-sizing: border-box;
 }
 
 .pack-inspect-stage .pack-deck-index {
@@ -2088,70 +2217,35 @@ h2 {
   }
 }
 
-.pack-inspect-flip.card-flip {
-  /* Width derived from available height so aspect-ratio never clips the card */
-  width: min(480px, calc(var(--pack-inspect-card-max-h) * 744 / 1040));
-  max-height: var(--pack-inspect-card-max-h);
+.pack-inspect-wrap.pack-card-wrap {
+  /* Height budget from modal; width follows card aspect so nothing clips */
+  width: min(450px, 100%, calc(var(--pack-inspect-card-max-h) * 744 / 1040));
+  max-width: 100%;
   height: auto;
-  overflow: visible;
+  max-height: var(--pack-inspect-card-max-h);
+  aspect-ratio: 744 / 1040;
+  margin-inline: auto;
 }
 
-.pack-inspect-wrap.pack-card-wrap {
-  width: min(480px, calc(var(--pack-inspect-card-max-h) * 744 / 1040));
-  max-width: 100%;
-  justify-self: center;
+.pack-inspect-flip.card-flip {
+  width: 100%;
+  height: auto;
+  max-height: var(--pack-inspect-card-max-h);
+  overflow: visible;
 }
 
 .pack-inspect-wrap .pack-inspect-flip.card-flip {
   width: 100%;
+  max-height: inherit;
 }
 
 .pack-inspect-flip .card-flip-inner {
+  width: 100%;
   max-height: var(--pack-inspect-card-max-h);
 }
 
 .pack-inspect-copy {
-  min-width: 0;
-  max-height: var(--pack-inspect-card-max-h);
-  overflow-x: hidden;
-  overflow-y: auto;
-  padding-right: 0.35rem;
-  align-self: stretch;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-}
-
-.pack-inspect-copy .eyebrow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.45rem 0.65rem;
-  margin: 0 0 0.35rem;
-}
-
-.pack-inspect-copy h3 {
-  margin: 0 0 0.35rem;
-  font-family: var(--font-display);
-  font-size: clamp(1.45rem, 2.4vw, 1.9rem);
-}
-
-.pack-inspect-copy h4 {
-  margin: 0.85rem 0 0.35rem;
-  font-size: 0.78rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: rgba(231, 215, 184, 0.62);
-}
-
-.pack-inspect-copy .type-line {
-  color: var(--bronze-bright);
-  margin: 0 0 0.5rem;
-}
-
-.pack-inspect-copy .pt-line {
-  font-family: var(--font-display);
-  margin: 0 0 1rem;
+  min-height: 0;
 }
 
 @media (max-width: 820px) {
@@ -2163,7 +2257,7 @@ h2 {
     min-height: 0;
   }
 
-  .pack-draw-copy {
+  .pack-card-copy {
     height: auto;
     max-height: none;
     min-height: 0;
@@ -2171,7 +2265,7 @@ h2 {
     justify-content: flex-start;
   }
 
-  .pack-draw-copy-body {
+  .pack-card-copy-body {
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
@@ -2184,37 +2278,58 @@ h2 {
   }
 
   .pack-draw-modal:not(.is-collection) {
-    --pack-reveal-card-max-h: min(48vh, calc(88dvh - 12rem), 460px);
+    --pack-reveal-card-max-h: calc(min(48vh, calc(88dvh - 12rem), 460px) * 0.9);
     --pack-shell-max-h: min(48vh, calc(88dvh - 12rem), 460px);
   }
 
   .pack-inspect {
     grid-template-columns: 1fr;
-    justify-items: center;
-    align-content: start;
-    gap: 1rem;
-    overflow: auto;
+    grid-template-rows: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    justify-items: stretch;
+    align-content: stretch;
+    gap: 0.75rem;
+    overflow: hidden;
   }
 
-  .pack-inspect-flip.card-flip {
-    width: min(280px, 70vw, calc(var(--pack-inspect-card-max-h, 42vh) * 744 / 1040));
-    max-height: min(42vh, var(--pack-inspect-card-max-h, 42vh));
+  .pack-inspect-stage {
+    width: 100%;
+    max-width: none;
+    justify-self: stretch;
+    padding: 0.85rem 2.4rem 1.1rem;
   }
 
   .pack-inspect-wrap.pack-card-wrap {
-    width: min(280px, 70vw, calc(var(--pack-inspect-card-max-h, 42vh) * 744 / 1040));
+    width: min(
+      252px,
+      72vw,
+      calc(var(--pack-inspect-card-max-h, 36vh) * 744 / 1040)
+    );
+    max-height: var(--pack-inspect-card-max-h, 36vh);
+    margin-inline: auto;
+  }
+
+  .pack-inspect-flip.card-flip {
+    width: 100%;
+    height: auto;
+    max-height: var(--pack-inspect-card-max-h, 36vh);
   }
 
   .pack-inspect-copy {
-    max-height: none;
     width: 100%;
-    justify-content: flex-start;
+    height: auto;
+    max-height: none;
+    min-height: 0;
   }
 
   .pack-draw-modal.is-collection {
     height: auto;
     max-height: min(88dvh, 90vh);
-    --pack-inspect-card-max-h: min(42vh, calc(88dvh - 14rem), 400px);
+    --pack-inspect-card-max-h: calc(min(48vh, calc(88dvh - 12rem), 460px) * 0.9);
+  }
+
+  .pack-draw-modal.is-collection:has(.pack-inspect) {
+    height: min(88dvh, 90vh);
+    overflow: hidden;
   }
 }
 
@@ -2237,14 +2352,27 @@ h2 {
   .pack-draw-modal:not(.is-collection) {
     height: min(88dvh, 90vh);
     max-height: min(88dvh, 90vh);
-    --pack-reveal-card-max-h: min(42vh, calc(88dvh - 13rem), 380px);
+    --pack-reveal-card-max-h: calc(min(42vh, calc(88dvh - 13rem), 380px) * 0.9);
     --pack-shell-max-h: min(42vh, calc(88dvh - 13rem), 380px);
   }
 
   .pack-draw-modal.is-collection {
-    height: min(88dvh, 90vh);
+    height: auto;
     max-height: min(88dvh, 90vh);
-    --pack-inspect-card-max-h: min(40vh, calc(88dvh - 15rem), 360px);
+    --pack-inspect-card-max-h: calc(min(42vh, calc(88dvh - 13rem), 380px) * 0.9);
+  }
+
+  .pack-draw-modal.is-collection:has(.pack-inspect) {
+    height: min(88dvh, 90vh);
+    overflow: hidden;
+  }
+
+  .pack-inspect {
+    padding: 0.85rem 0.75rem 0.9rem;
+  }
+
+  .pack-inspect-stage {
+    padding: 0.65rem 2.2rem 1rem;
   }
 }
 
@@ -2592,7 +2720,9 @@ h2 {
 .modal-backdrop {
   /* Space left for the card after shell padding (shell itself is capped at 94vh) */
   --modal-shell-pad-y: 2.9rem;
-  --modal-card-max-h: calc(min(94dvh, 94vh, 980px) - var(--modal-shell-pad-y));
+  --modal-card-max-h: calc(
+    (min(94dvh, 94vh, 980px) - var(--modal-shell-pad-y)) * 0.9
+  );
   position: fixed;
   inset: 0;
   z-index: 40;
@@ -2610,7 +2740,7 @@ h2 {
   display: grid;
   /* auto column follows the height-capped card width (avoid % → circular 0-size) */
   grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
+  align-items: stretch;
   gap: 1.75rem;
   background:
     linear-gradient(180deg, #2a221a, #17120e);
@@ -2643,7 +2773,7 @@ h2 {
   justify-self: center;
   /* Cap width by available height so aspect-ratio never overflows the viewport.
      Do not use % widths here — they collapse inside an auto grid track. */
-  width: min(480px, calc(var(--modal-card-max-h) * 744 / 1040));
+  width: min(432px, calc(var(--modal-card-max-h) * 744 / 1040));
   max-height: var(--modal-card-max-h);
   /* Keep visible so 3D tilt isn't clipped by a rectangular paint box */
   overflow: visible;
@@ -2669,8 +2799,8 @@ h2 {
 
 /* Pack draw reuses .card-flip but lives outside .modal-backdrop — set own size */
 .pack-card-wrap .card-flip.pack-card-flip {
-  --pack-card-max-h: var(--pack-reveal-card-max-h, min(68vh, calc(90dvh - 8.5rem), 640px));
-  width: min(500px, calc(var(--pack-card-max-h) * 744 / 1040));
+  --pack-card-max-h: var(--pack-reveal-card-max-h, calc(min(68vh, calc(90dvh - 8.5rem), 640px) * 0.9));
+  width: min(450px, calc(var(--pack-card-max-h) * 744 / 1040));
   max-height: var(--pack-card-max-h);
 }
 
@@ -2723,6 +2853,15 @@ h2 {
   overflow-y: auto;
   padding-right: 0.35rem;
   padding-top: 0.25rem;
+}
+
+.modal-card-copy {
+  min-height: 0;
+  max-height: var(--modal-card-max-h);
+}
+
+.modal-card-copy .qty {
+  margin-top: 0.65rem;
 }
 
 .modal-copy h2 {
@@ -2955,11 +3094,14 @@ h2 {
     justify-self: center;
   }
 
-  .modal-copy {
+  .modal-copy,
+  .modal-card-copy {
     max-height: none;
     overflow: visible;
     width: 100%;
     padding-top: 0;
+    height: auto;
+    justify-content: flex-start;
   }
 
   .modal-copy h2 {

@@ -41,6 +41,10 @@
     "emptyCollection": "还没有收藏的卡牌。",
     "backToPack": "返回拆包",
     "fallbackHint": "离线模式 — 已从本地挑战套牌抽取。",
+    "details": "详情",
+    "keywords": "关键词",
+    "scryfall": "在 Scryfall 查看",
+    "englishName": "英文名",
     "rarity": {
       "common": "普通",
       "uncommon": "非普通",
