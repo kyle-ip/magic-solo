@@ -14,6 +14,20 @@ export type CardRarity =
   | 'bonus'
   | string
 
+export interface DrawnCardFace {
+  name: string
+  typeLine: string
+  oracleText: string
+  flavorText: string
+  manaCost: string
+  power: string | null
+  toughness: string | null
+  nameZh?: string
+  typeLineZh?: string
+  oracleTextZh?: string
+  flavorTextZh?: string
+}
+
 export interface DrawnCard {
   id: string
   name: string
@@ -34,6 +48,10 @@ export interface DrawnCard {
   oracleId: string
   keywords: string[]
   flavorText: string
+  /** WUBRG color letters from the English print (`colors`, else `color_identity`). */
+  colors: string[]
+  /** Extra faces (transform / MDFC / adventure back, etc.). */
+  otherFaces: DrawnCardFace[]
   nameZh?: string
   typeLineZh?: string
   oracleTextZh?: string
@@ -105,6 +123,26 @@ export function displayFlavor(card: DrawnCard, lang?: string): string {
   return (card.flavorText || '').trim()
 }
 
+export function displayFaceName(face: DrawnCardFace, lang?: string): string {
+  if (wantsZh(lang) && face.nameZh) return face.nameZh
+  return face.name
+}
+
+export function displayFaceTypeLine(face: DrawnCardFace, lang?: string): string {
+  if (wantsZh(lang) && face.typeLineZh) return face.typeLineZh
+  return face.typeLine
+}
+
+export function displayFaceOracle(face: DrawnCardFace, lang?: string): string {
+  if (wantsZh(lang) && face.oracleTextZh) return face.oracleTextZh
+  return face.oracleText
+}
+
+export function displayFaceFlavor(face: DrawnCardFace, lang?: string): string {
+  if (wantsZh(lang) && face.flavorTextZh?.trim()) return face.flavorTextZh.trim()
+  return (face.flavorText || '').trim()
+}
+
 export function hasZhPrint(card: DrawnCard): boolean {
   return Boolean(card.nameZh || card.typeLineZh || card.oracleTextZh || card.flavorTextZh)
 }
@@ -155,6 +193,8 @@ interface ScryfallCard {
   artist?: string
   scryfall_uri?: string
   keywords?: string[]
+  colors?: string[]
+  color_identity?: string[]
   lang?: string
   printed_name?: string
   printed_type_line?: string
@@ -171,20 +211,57 @@ function pickImage(uris?: ScryfallImageUris): string {
   return uris?.normal || uris?.large || uris?.png || uris?.small || ''
 }
 
-function collectFlavorText(card: ScryfallCard): string {
-  if (card.card_faces?.length) {
-    const parts = card.card_faces
-      .map((f) => (f.flavor_text || '').trim())
-      .filter(Boolean)
-    if (parts.length > 0) return parts.join('\n\n')
+function mapScryfallFace(face: ScryfallCardFace): DrawnCardFace {
+  return {
+    name: face.name || '',
+    typeLine: face.type_line || '',
+    oracleText: face.oracle_text || '',
+    flavorText: (face.flavor_text || '').trim(),
+    manaCost: face.mana_cost || '',
+    power: face.power ?? null,
+    toughness: face.toughness ?? null,
   }
+}
+
+function otherFacesFrom(card: ScryfallCard): DrawnCardFace[] {
+  const faces = card.card_faces
+  if (!faces || faces.length < 2) return []
+  return faces.slice(1).map(mapScryfallFace)
+}
+
+function frontFlavor(card: ScryfallCard): string {
+  const face = card.card_faces?.[0]
+  if (face) return (face.flavor_text || '').trim()
   return (card.flavor_text || '').trim()
+}
+
+function pickColors(card: ScryfallCard): string[] {
+  if (Array.isArray(card.colors) && card.colors.length > 0) {
+    return [...card.colors]
+  }
+  if (Array.isArray(card.color_identity)) {
+    return [...card.color_identity]
+  }
+  return []
+}
+
+function colorsFromManaCost(manaCost: string): string[] {
+  const found = new Set<string>()
+  for (const m of manaCost.matchAll(/\{([^}]+)\}/g)) {
+    const raw = m[1].toUpperCase()
+    for (const letter of raw) {
+      if ('WUBRG'.includes(letter)) found.add(letter)
+    }
+  }
+  return [...found]
 }
 
 function fromScryfall(card: ScryfallCard): DrawnCard | null {
   const face = card.card_faces?.[0]
   const frontImageUrl = pickImage(card.image_uris) || pickImage(face?.image_uris)
   if (!frontImageUrl) return null
+  const manaCost = face?.mana_cost || card.mana_cost || ''
+  const colors = pickColors(card)
 
   return {
     id: card.id,
@@ -193,7 +270,7 @@ function fromScryfall(card: ScryfallCard): DrawnCard | null {
     oracleText: face?.oracle_text || card.oracle_text || '',
     power: face?.power ?? card.power ?? null,
     toughness: face?.toughness ?? card.toughness ?? null,
-    manaCost: face?.mana_cost || card.mana_cost || '',
+    manaCost,
     rarity: normalizeRarity(card.rarity),
     setCode: (card.set || '').toUpperCase(),
     setName: card.set_name || '',
@@ -205,7 +282,9 @@ function fromScryfall(card: ScryfallCard): DrawnCard | null {
     source: 'scryfall',
     oracleId: card.oracle_id || '',
     keywords: Array.isArray(card.keywords) ? [...card.keywords] : [],
-    flavorText: collectFlavorText(card),
+    flavorText: frontFlavor(card),
+    colors,
+    otherFaces: otherFacesFrom(card),
   }
 }
 
@@ -248,6 +327,8 @@ export function deckCardToDrawn(
     oracleId: '',
     keywords: Array.isArray(card.keywords) ? [...card.keywords] : [],
     flavorText: '',
+    colors: colorsFromManaCost(card.manaCost),
+    otherFaces: [],
   }
   return applyLocalZh(base, setCode)
 }
@@ -315,21 +396,58 @@ async function fetchWithTimeout(
   }
 }
 
-function overlayFromZhs(print: ScryfallCard): Partial<DrawnCard> {
+interface ZhFaceOverlay {
+  nameZh?: string
+  typeLineZh?: string
+  oracleTextZh?: string
+  flavorTextZh?: string
+}
+
+interface ZhOverlay {
+  nameZh?: string
+  typeLineZh?: string
+  oracleTextZh?: string
+  flavorTextZh?: string
+  otherFaceZh?: ZhFaceOverlay[]
+}
+
+/** Session cache: oracle_id → overlay (null = known miss). */
+const zhsOverlayCache = new Map<string, ZhOverlay | null>()
+const zhsOverlayInflight = new Map<string, Promise<ZhOverlay | null>>()
+
+function overlayFromZhs(print: ScryfallCard): ZhOverlay | null {
   const face = print.card_faces?.[0]
   const nameZh = print.printed_name || face?.printed_name || ''
   const typeLineZh = print.printed_type_line || face?.printed_type_line || ''
   const oracleTextZh = print.printed_text || face?.printed_text || ''
-  const flavorTextZh = collectFlavorText(print)
-  const out: Partial<DrawnCard> = {}
+  const flavorTextZh = face
+    ? (face.flavor_text || '').trim()
+    : (print.flavor_text || '').trim()
+  const out: ZhOverlay = {}
   if (nameZh) out.nameZh = nameZh
   if (typeLineZh) out.typeLineZh = typeLineZh
   if (oracleTextZh) out.oracleTextZh = oracleTextZh
   if (flavorTextZh) out.flavorTextZh = flavorTextZh
-  return out
+
+  if (print.card_faces && print.card_faces.length > 1) {
+    const otherFaceZh = print.card_faces.slice(1).map((f) => {
+      const row: ZhFaceOverlay = {}
+      if (f.printed_name) row.nameZh = f.printed_name
+      if (f.printed_type_line) row.typeLineZh = f.printed_type_line
+      if (f.printed_text) row.oracleTextZh = f.printed_text
+      const fl = (f.flavor_text || '').trim()
+      if (fl) row.flavorTextZh = fl
+      return row
+    })
+    if (otherFaceZh.some((r) => Object.keys(r).length > 0)) {
+      out.otherFaceZh = otherFaceZh
+    }
+  }
+
+  return Object.keys(out).length > 0 ? out : null
 }
 
-async function fetchZhsOverlay(oracleId: string): Promise<Partial<DrawnCard> | null> {
+async function fetchZhsOverlay(oracleId: string): Promise<ZhOverlay | null> {
   if (!oracleId) return null
   return enqueueScryfall(async () => {
     try {
@@ -342,21 +460,87 @@ async function fetchZhsOverlay(oracleId: string): Promise<Partial<DrawnCard> | n
         data.data?.find((c) => c.printed_name || c.card_faces?.[0]?.printed_name) ??
         data.data?.[0]
       if (!print) return null
-      const overlay = overlayFromZhs(print)
-      return Object.keys(overlay).length > 0 ? overlay : null
+      return overlayFromZhs(print)
     } catch {
       return null
     }
   })
 }
 
-async function maybeEnrichZh(card: DrawnCard): Promise<DrawnCard> {
-  if (!wantsZh()) return card
+async function fetchZhsOverlayCached(oracleId: string): Promise<ZhOverlay | null> {
+  if (!oracleId) return null
+  if (zhsOverlayCache.has(oracleId)) {
+    return zhsOverlayCache.get(oracleId) ?? null
+  }
+  const pending = zhsOverlayInflight.get(oracleId)
+  if (pending) return pending
+
+  const task = fetchZhsOverlay(oracleId).then((overlay) => {
+    zhsOverlayCache.set(oracleId, overlay)
+    zhsOverlayInflight.delete(oracleId)
+    return overlay
+  })
+  zhsOverlayInflight.set(oracleId, task)
+  return task
+}
+
+function applyZhOverlay(card: DrawnCard, overlay: ZhOverlay): DrawnCard {
+  const next: DrawnCard = {
+    ...card,
+    ...(overlay.nameZh ? { nameZh: overlay.nameZh } : {}),
+    ...(overlay.typeLineZh ? { typeLineZh: overlay.typeLineZh } : {}),
+    ...(overlay.oracleTextZh ? { oracleTextZh: overlay.oracleTextZh } : {}),
+    ...(overlay.flavorTextZh ? { flavorTextZh: overlay.flavorTextZh } : {}),
+  }
+  if (card.otherFaces.length > 0 && overlay.otherFaceZh?.length) {
+    next.otherFaces = card.otherFaces.map((face, i) => {
+      const zh = overlay.otherFaceZh?.[i]
+      if (!zh) return face
+      return {
+        ...face,
+        ...(zh.nameZh ? { nameZh: zh.nameZh } : {}),
+        ...(zh.typeLineZh ? { typeLineZh: zh.typeLineZh } : {}),
+        ...(zh.oracleTextZh ? { oracleTextZh: zh.oracleTextZh } : {}),
+        ...(zh.flavorTextZh ? { flavorTextZh: zh.flavorTextZh } : {}),
+      }
+    })
+  }
+  return next
+}
+
+/**
+ * Attach Simplified Chinese printed fields when available.
+ * Safe to call after reveal (progressive) or when inspecting a collected card.
+ * Results are cached per oracle_id for the session.
+ */
+export async function enrichDrawnCardZh(card: DrawnCard): Promise<DrawnCard> {
   if (card.source === 'local') return card
   if (!card.oracleId) return card
-  const overlay = await fetchZhsOverlay(card.oracleId)
+  if (hasZhPrint(card)) {
+    // Warm cache from an already-localized card for later draws.
+    if (!zhsOverlayCache.has(card.oracleId)) {
+      zhsOverlayCache.set(card.oracleId, {
+        ...(card.nameZh ? { nameZh: card.nameZh } : {}),
+        ...(card.typeLineZh ? { typeLineZh: card.typeLineZh } : {}),
+        ...(card.oracleTextZh ? { oracleTextZh: card.oracleTextZh } : {}),
+        ...(card.flavorTextZh ? { flavorTextZh: card.flavorTextZh } : {}),
+        ...(card.otherFaces.some((f) => f.nameZh || f.oracleTextZh)
+          ? {
+              otherFaceZh: card.otherFaces.map((f) => ({
+                ...(f.nameZh ? { nameZh: f.nameZh } : {}),
+                ...(f.typeLineZh ? { typeLineZh: f.typeLineZh } : {}),
+                ...(f.oracleTextZh ? { oracleTextZh: f.oracleTextZh } : {}),
+                ...(f.flavorTextZh ? { flavorTextZh: f.flavorTextZh } : {}),
+              })),
+            }
+          : {}),
+      })
+    }
+    return card
+  }
+  const overlay = await fetchZhsOverlayCached(card.oracleId)
   if (!overlay) return card
-  return { ...card, ...overlay }
+  return applyZhOverlay(card, overlay)
 }
 
 async function fetchScryfallRandom(rarity: CardRarity): Promise<DrawnCard> {
@@ -383,8 +567,7 @@ async function waitForDrawGap(): Promise<void> {
 async function drawOneUnchecked(): Promise<DrawnCard> {
   const rarity = rollRarity()
   try {
-    let card = await fetchScryfallRandom(rarity)
-    card = await maybeEnrichZh(card)
+    const card = await fetchScryfallRandom(rarity)
     try {
       await preloadImage(card.frontImageUrl)
     } catch {

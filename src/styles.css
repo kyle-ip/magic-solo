@@ -880,6 +880,7 @@ h2 {
 }
 
 .pack-draw-modal {
+  position: relative;
   width: min(1180px, 100%);
   max-height: min(90dvh, 90vh);
   overflow: auto;
@@ -1083,10 +1084,239 @@ h2 {
 
 .pack-mana-cost {
   margin: 0 0 0.35rem;
-  font-family: var(--font-mono, ui-monospace, monospace);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.12rem;
+  line-height: 1;
+}
+
+.mana-symbol {
+  width: 1.05em;
+  height: 1.05em;
+  vertical-align: -0.15em;
+  display: inline-block;
+}
+
+.oracle-text .mana-symbol,
+.pack-details-block .mana-symbol {
+  width: 1em;
+  height: 1em;
+  margin: 0 0.05em;
+}
+
+.pack-collection-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 0.85rem;
+  margin: 0 0 0.85rem;
+  align-items: flex-end;
+}
+
+.pack-collection-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.85rem;
+  margin: 0 0 0.75rem;
+  font-size: 0.88rem;
+  color: rgba(231, 215, 184, 0.78);
+}
+
+.pack-collection-stats .rarity-mythic {
+  color: rgba(240, 170, 80, 0.95);
+}
+
+.pack-collection-stats .rarity-rare {
+  color: rgba(220, 190, 110, 0.92);
+}
+
+.pack-collection-stats .rarity-uncommon {
+  color: rgba(180, 200, 220, 0.9);
+}
+
+.pack-collection-stats .rarity-common {
+  color: rgba(231, 215, 184, 0.65);
+}
+
+.pack-collection-manage {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.55rem;
+  margin: 0;
+}
+
+.pack-collection-manage .btn {
+  box-sizing: border-box;
+  height: 2.15rem;
+  min-height: 2.15rem;
+  padding: 0 0.75rem;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  letter-spacing: 0;
+  box-shadow: inset 0 1px 0 rgba(255, 236, 196, 0.06);
+  background: linear-gradient(180deg, rgba(42, 34, 26, 0.98), rgba(18, 14, 10, 0.98));
+}
+
+.pack-collection-manage .btn:hover {
+  transform: none;
+  filter: none;
+  border-color: rgba(240, 212, 138, 0.48);
+  box-shadow: inset 0 1px 0 rgba(255, 236, 196, 0.06);
+}
+
+.pack-collection-actions {
+  margin-left: auto;
+}
+
+.pack-collection-empty .pack-collection-manage {
+  margin-top: 0.75rem;
+}
+
+.pack-confirm-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: rgba(8, 6, 4, 0.72);
+  backdrop-filter: blur(2px);
+}
+
+.pack-confirm-dialog {
+  width: min(100%, 22rem);
+  padding: 1.25rem 1.35rem 1.2rem;
+  border-radius: var(--btn-radius, 12px);
+  border: 1px solid rgba(184, 137, 58, 0.4);
+  background:
+    linear-gradient(165deg, rgba(42, 32, 22, 0.98), rgba(22, 16, 12, 0.99));
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.55);
+}
+
+.pack-confirm-dialog h3 {
+  margin: 0 0 0.55rem;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  letter-spacing: 0.02em;
+}
+
+.pack-confirm-dialog p {
+  margin: 0;
+  color: rgba(231, 215, 184, 0.78);
+  line-height: 1.5;
   font-size: 0.95rem;
-  letter-spacing: 0.04em;
-  color: var(--bronze-bright, rgba(212, 175, 110, 0.92));
+}
+
+.pack-confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.55rem 0.75rem;
+  margin-top: 1.15rem;
+}
+
+.pack-confirm-actions .btn {
+  min-height: 2.35rem;
+  padding-inline: 1.05rem;
+}
+
+.pack-collection-search {
+  flex: 1 1 12rem;
+  min-width: 10rem;
+}
+
+.pack-collection-search input {
+  width: 100%;
+  box-sizing: border-box;
+  height: 2.15rem;
+  padding: 0 0.55rem;
+  border-radius: 6px;
+  border: 1px solid rgba(184, 137, 58, 0.35);
+  background: rgba(0, 0, 0, 0.35);
+  color: rgba(231, 215, 184, 0.92);
+  font-size: 0.88rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.pack-collection-search input:focus {
+  outline: none;
+  border-color: rgba(240, 212, 138, 0.58);
+}
+
+.pack-other-face {
+  margin-top: 0.85rem;
+}
+
+.pack-other-face-name {
+  margin: 0.15rem 0 0.35rem;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+}
+
+.pack-collection-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(231, 215, 184, 0.55);
+}
+
+.pack-collection-filter select {
+  appearance: none;
+  -webkit-appearance: none;
+  color-scheme: dark;
+  box-sizing: border-box;
+  height: 2.15rem;
+  min-width: 7.5rem;
+  max-width: 11rem;
+  padding: 0 1.85rem 0 0.55rem;
+  border-radius: 6px;
+  border: 1px solid rgba(184, 137, 58, 0.35);
+  color: rgba(231, 215, 184, 0.92);
+  font-size: 0.88rem;
+  letter-spacing: 0;
+  text-transform: none;
+  cursor: pointer;
+  background-color: #17120e;
+  background-image:
+    linear-gradient(180deg, rgba(42, 34, 26, 0.98), rgba(18, 14, 10, 0.98)),
+    linear-gradient(45deg, transparent 50%, var(--bronze-bright) 50%),
+    linear-gradient(135deg, var(--bronze-bright) 50%, transparent 50%);
+  background-position:
+    0 0,
+    calc(100% - 12px) calc(50% - 2px),
+    calc(100% - 7px) calc(50% - 2px);
+  background-size:
+    auto,
+    5px 5px,
+    5px 5px;
+  background-repeat: no-repeat;
+  box-shadow: inset 0 1px 0 rgba(255, 236, 196, 0.06);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.pack-collection-filter select:hover {
+  border-color: rgba(240, 212, 138, 0.48);
+}
+
+.pack-collection-filter select:focus {
+  outline: none;
+  border-color: rgba(240, 212, 138, 0.58);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 236, 196, 0.06),
+    0 0 0 1px rgba(184, 137, 58, 0.28);
+}
+
+.pack-collection-filter select option,
+.pack-collection-filter select optgroup {
+  background-color: #17120e;
+  color: #e7d7b8;
 }
 
 .pack-details-block {

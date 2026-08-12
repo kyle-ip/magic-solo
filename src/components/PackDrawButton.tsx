@@ -4,14 +4,29 @@ import { useTranslation } from 'react-i18next'
 import { assetUrl } from '../utils/assetUrl'
 import {
   addCollected,
+  clearCollected,
+  collectionRarityStats,
+  exportCollectionJson,
+  importCollectionJson,
   isCollected,
   listCollected,
   removeCollected,
+  updateCollected,
   type CollectedCard,
 } from '../data/packCollection'
 import {
+  filterAndSortCollection,
+  uniqueSetCodes,
+  type CollectionColorFilter,
+  type CollectionRarityFilter,
+  type CollectionSort,
+} from '../data/packCollectionQuery'
+import {
   defaultCardBackUrl,
   drawWeightedPack,
+  enrichDrawnCardZh,
+  hasZhPrint,
+  wantsZh,
   type DrawnCard,
 } from '../data/randomCard'
 import { CardDetailsBody } from './CardDetailsBody'
@@ -376,7 +391,7 @@ function isShowingCardFront(turns: number): boolean {
 }
 
 export function PackDrawButton() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const titleId = useId()
   const [open, setOpen] = useState(false)
   const [view, setView] = useState<ModalView>('pack')
@@ -397,6 +412,17 @@ export function PackDrawButton() {
   const [inspect, setInspect] = useState<CollectedCard | null>(null)
   const [inspectFlipTurns, setInspectFlipTurns] = useState(0)
   const [inspectFlipping, setInspectFlipping] = useState(false)
+  const [filterRarity, setFilterRarity] =
+    useState<CollectionRarityFilter>('all')
+  const [filterColor, setFilterColor] =
+    useState<CollectionColorFilter>('all')
+  const [filterSet, setFilterSet] = useState('')
+  const [sortBy, setSortBy] = useState<CollectionSort>('newest')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [importMessage, setImportMessage] = useState<string | null>(null)
+  const [clearConfirmOpen, setClearConfirmOpen] = useState(false)
+  const enrichGen = useRef(0)
+  const importInputRef = useRef<HTMLInputElement | null>(null)
   const drawPromise = useRef<Promise<DrawnCard[]> | null>(null)
   const timers = useRef<number[]>([])
   const fxTimers = useRef<number[]>([])
@@ -479,6 +505,7 @@ export function PackDrawButton() {
     clearFxTimers()
     clearTearRaf()
     drawPromise.current = null
+    enrichGen.current += 1
     setPhase('sealed')
     setCards([])
     setActiveIdx(0)
@@ -502,6 +529,10 @@ export function PackDrawButton() {
     if (!open) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
+        if (clearConfirmOpen) {
+          setClearConfirmOpen(false)
+          return
+        }
         if (inspect) {
           setInspect(null)
           return
@@ -540,7 +571,7 @@ export function PackDrawButton() {
       document.body.style.overflow = prevOverflow
       window.removeEventListener('keydown', onKey)
     }
-  }, [open, view, inspect, phase, activeIdx, cards.length])
+  }, [open, view, inspect, phase, activeIdx, cards.length, clearConfirmOpen])
 
   useEffect(() => {
     if (!open) {
@@ -592,6 +623,28 @@ export function PackDrawButton() {
       setDeckFlipping(false)
       setPhase('revealed')
     }, prefersReducedMotion() ? 0 : FLIP_MS)
+    hydratePackZh(drawn)
+  }
+
+  const hydratePackZh = (drawn: DrawnCard[]) => {
+    if (!wantsZh()) return
+    const gen = ++enrichGen.current
+    drawn.forEach((card, index) => {
+      if (hasZhPrint(card) || !card.oracleId || card.source === 'local') return
+      void enrichDrawnCardZh(card).then((enriched) => {
+        if (gen !== enrichGen.current) return
+        if (!hasZhPrint(enriched)) return
+        setCards((prev) => {
+          if (prev[index]?.id !== card.id) return prev
+          const next = prev.slice()
+          next[index] = enriched
+          return next
+        })
+        if (isCollected(card.id)) {
+          setCollection(updateCollected(enriched))
+        }
+      })
+    })
   }
 
   const showRevealCard =
@@ -606,6 +659,7 @@ export function PackDrawButton() {
   const runOpenSequence = async () => {
     if (drawing || phase !== 'sealed') return
     setDrawing(true)
+    enrichGen.current += 1
     setCards([])
     setActiveIdx(0)
     setFlipTurns(Array.from({ length: PACK_SIZE }, () => 0))
@@ -755,14 +809,92 @@ export function PackDrawButton() {
     setInspectFlipping(false)
     setInspect(item)
     triggerFrontFx(item)
+    if (
+      wantsZh() &&
+      !hasZhPrint(item) &&
+      item.oracleId &&
+      item.source === 'scryfall'
+    ) {
+      void enrichDrawnCardZh(item).then((enriched) => {
+        if (!hasZhPrint(enriched)) return
+        const updated: CollectedCard = {
+          ...enriched,
+          collectedAt: item.collectedAt,
+        }
+        setInspect((cur) => (cur?.id === item.id ? updated : cur))
+        setCollection(updateCollected(enriched))
+      })
+    }
+  }
+
+  const filteredCollection = filterAndSortCollection(collection, {
+    rarity: filterRarity,
+    color: filterColor,
+    setCode: filterSet,
+    sort: sortBy,
+    lang: i18n.language,
+    query: searchQuery,
+  })
+  const setOptions = uniqueSetCodes(collection)
+  const rarityStats = collectionRarityStats(collection)
+
+  const downloadCollection = () => {
+    const json = exportCollectionJson()
+    const blob = new Blob([json], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    const stamp = new Date().toISOString().slice(0, 10)
+    a.href = url
+    a.download = `magic-solo-collection-${stamp}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const onImportFile = async (file: File | null) => {
+    if (!file) return
+    try {
+      const text = await file.text()
+      const result = importCollectionJson(text)
+      if (!result.ok) {
+        setImportMessage(
+          result.error === 'empty'
+            ? t('packDraw.importEmpty')
+            : t('packDraw.importInvalid'),
+        )
+        return
+      }
+      setCollection(result.items)
+      setImportMessage(
+        t('packDraw.importOk', {
+          added: result.added,
+          updated: result.updated,
+        }),
+      )
+    } catch {
+      setImportMessage(t('packDraw.importInvalid'))
+    }
+  }
+
+  const onClearCollection = () => {
+    if (collection.length === 0) return
+    setClearConfirmOpen(true)
+  }
+
+  const confirmClearCollection = () => {
+    setCollection(clearCollected())
+    setInspect(null)
+    setImportMessage(null)
+    setCollected(false)
+    setClearConfirmOpen(false)
   }
 
   const stepInspect = (delta: number) => {
-    if (!inspect || collection.length === 0) return
-    const idx = collection.findIndex((c) => c.id === inspect.id)
+    const list = filteredCollection.length > 0 ? filteredCollection : collection
+    if (!inspect || list.length === 0) return
+    const idx = list.findIndex((c) => c.id === inspect.id)
     if (idx < 0) return
     const next =
-      collection[((idx + delta) % collection.length + collection.length) % collection.length]
+      list[((idx + delta) % list.length + list.length) % list.length]
     if (!next || next.id === inspect.id) return
     openInspect(next)
   }
@@ -884,27 +1016,215 @@ export function PackDrawButton() {
 
               {view === 'collection' ? (
                 <div className="pack-collection">
+                  <input
+                    ref={importInputRef}
+                    type="file"
+                    accept="application/json,.json"
+                    hidden
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] ?? null
+                      void onImportFile(file)
+                      e.target.value = ''
+                    }}
+                  />
                   {collection.length === 0 ? (
-                    <p className="pack-draw-hint">{t('packDraw.emptyCollection')}</p>
+                    <div className="pack-collection-empty">
+                      <p className="pack-draw-hint">{t('packDraw.emptyCollection')}</p>
+                      <div className="pack-collection-manage">
+                        <button
+                          type="button"
+                          className="btn ghost"
+                          onClick={() => importInputRef.current?.click()}
+                        >
+                          {t('packDraw.import')}
+                        </button>
+                      </div>
+                      {importMessage ? (
+                        <p className="pack-draw-hint" role="status">
+                          {importMessage}
+                        </p>
+                      ) : null}
+                    </div>
                   ) : (
-                    <ul className="pack-collection-grid">
-                      {collection.map((item) => (
-                        <li key={item.id}>
-                          <button
-                            type="button"
-                            className="pack-collection-tile"
-                            onClick={() => openInspect(item)}
+                    <>
+                      <div className="pack-collection-stats" aria-label={t('packDraw.statsLabel')}>
+                        <span>
+                          {t('packDraw.statsTotal', { n: rarityStats.total })}
+                        </span>
+                        <span className="rarity-mythic">
+                          {t('packDraw.rarity.mythic')} {rarityStats.mythic}
+                        </span>
+                        <span className="rarity-rare">
+                          {t('packDraw.rarity.rare')} {rarityStats.rare}
+                        </span>
+                        <span className="rarity-uncommon">
+                          {t('packDraw.rarity.uncommon')} {rarityStats.uncommon}
+                        </span>
+                        <span className="rarity-common">
+                          {t('packDraw.rarity.common')} {rarityStats.common}
+                        </span>
+                        {rarityStats.other > 0 ? (
+                          <span>
+                            {t('packDraw.statsOther', { n: rarityStats.other })}
+                          </span>
+                        ) : null}
+                      </div>
+                      <div className="pack-collection-toolbar">
+                        <label className="pack-collection-filter pack-collection-search">
+                          <span>{t('packDraw.search')}</span>
+                          <input
+                            type="search"
+                            value={searchQuery}
+                            placeholder={t('packDraw.searchPlaceholder')}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                          />
+                        </label>
+                        <label className="pack-collection-filter">
+                          <span>{t('packDraw.filterRarity')}</span>
+                          <select
+                            value={filterRarity}
+                            onChange={(e) =>
+                              setFilterRarity(
+                                e.target.value as CollectionRarityFilter,
+                              )
+                            }
                           >
-                            <img src={item.frontImageUrl} alt={item.name} />
-                            <span className={`pack-rarity-chip rarity-${item.rarity}`}>
-                              {t(`packDraw.rarity.${item.rarity}`, {
-                                defaultValue: item.rarity,
-                              })}
-                            </span>
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
+                            <option value="all">{t('packDraw.filterAll')}</option>
+                            <option value="mythic">
+                              {t('packDraw.rarity.mythic')}
+                            </option>
+                            <option value="rare">
+                              {t('packDraw.rarity.rare')}
+                            </option>
+                            <option value="uncommon">
+                              {t('packDraw.rarity.uncommon')}
+                            </option>
+                            <option value="common">
+                              {t('packDraw.rarity.common')}
+                            </option>
+                          </select>
+                        </label>
+                        <label className="pack-collection-filter">
+                          <span>{t('packDraw.filterColor')}</span>
+                          <select
+                            value={filterColor}
+                            onChange={(e) =>
+                              setFilterColor(
+                                e.target.value as CollectionColorFilter,
+                              )
+                            }
+                          >
+                            <option value="all">{t('packDraw.filterAll')}</option>
+                            <option value="W">{t('packDraw.color.W')}</option>
+                            <option value="U">{t('packDraw.color.U')}</option>
+                            <option value="B">{t('packDraw.color.B')}</option>
+                            <option value="R">{t('packDraw.color.R')}</option>
+                            <option value="G">{t('packDraw.color.G')}</option>
+                            <option value="C">{t('packDraw.color.C')}</option>
+                            <option value="M">{t('packDraw.color.M')}</option>
+                          </select>
+                        </label>
+                        <label className="pack-collection-filter">
+                          <span>{t('packDraw.filterSet')}</span>
+                          <select
+                            value={filterSet}
+                            onChange={(e) => setFilterSet(e.target.value)}
+                          >
+                            <option value="">{t('packDraw.filterAll')}</option>
+                            {setOptions.map((code) => (
+                              <option key={code} value={code}>
+                                {code}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <label className="pack-collection-filter">
+                          <span>{t('packDraw.sortBy')}</span>
+                          <select
+                            value={sortBy}
+                            onChange={(e) =>
+                              setSortBy(e.target.value as CollectionSort)
+                            }
+                          >
+                            <option value="newest">
+                              {t('packDraw.sort.newest')}
+                            </option>
+                            <option value="oldest">
+                              {t('packDraw.sort.oldest')}
+                            </option>
+                            <option value="rarity">
+                              {t('packDraw.sort.rarity')}
+                            </option>
+                            <option value="name">
+                              {t('packDraw.sort.name')}
+                            </option>
+                            <option value="set">
+                              {t('packDraw.sort.set')}
+                            </option>
+                          </select>
+                        </label>
+                        <div className="pack-collection-filter pack-collection-actions">
+                          <span>{t('packDraw.manage')}</span>
+                          <div className="pack-collection-manage">
+                            <button
+                              type="button"
+                              className="btn ghost"
+                              onClick={downloadCollection}
+                            >
+                              {t('packDraw.export')}
+                            </button>
+                            <button
+                              type="button"
+                              className="btn ghost"
+                              onClick={() => importInputRef.current?.click()}
+                            >
+                              {t('packDraw.import')}
+                            </button>
+                            <button
+                              type="button"
+                              className="btn ghost"
+                              onClick={onClearCollection}
+                            >
+                              {t('packDraw.clearAll')}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      {importMessage ? (
+                        <p className="pack-draw-hint" role="status">
+                          {importMessage}
+                        </p>
+                      ) : null}
+                      {filteredCollection.length === 0 ? (
+                        <p className="pack-draw-hint">
+                          {t('packDraw.filterEmpty')}
+                        </p>
+                      ) : (
+                        <ul className="pack-collection-grid">
+                          {filteredCollection.map((item) => (
+                            <li key={item.id}>
+                              <button
+                                type="button"
+                                className="pack-collection-tile"
+                                onClick={() => openInspect(item)}
+                              >
+                                <img
+                                  src={item.frontImageUrl}
+                                  alt={item.name}
+                                />
+                                <span
+                                  className={`pack-rarity-chip rarity-${item.rarity}`}
+                                >
+                                  {t(`packDraw.rarity.${item.rarity}`, {
+                                    defaultValue: item.rarity,
+                                  })}
+                                </span>
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </>
                   )}
                   {inspect ? (
                     <div className="pack-inspect" role="dialog" aria-label={inspect.name}>
@@ -916,10 +1236,14 @@ export function PackDrawButton() {
                           (inspectGlowing || inspectFading) &&
                           (inspectFx === 'pack-fx-rare' ||
                             inspectFx === 'pack-fx-mythic')
-                        const inspectIdx = collection.findIndex(
+                        const browseList =
+                          filteredCollection.length > 0
+                            ? filteredCollection
+                            : collection
+                        const inspectIdx = browseList.findIndex(
                           (c) => c.id === inspect.id,
                         )
-                        const canBrowseInspect = collection.length > 1
+                        const canBrowseInspect = browseList.length > 1
                         const flipInspect = () => {
                           const nextTurns = inspectFlipTurns + 1
                           setInspectFlipping(true)
@@ -1018,7 +1342,7 @@ export function PackDrawButton() {
                             <span aria-hidden>›</span>
                           </button>
                           <p className="pack-deck-index" aria-live="polite">
-                            {inspectIdx + 1} / {collection.length}
+                            {inspectIdx + 1} / {browseList.length}
                           </p>
                         </>
                       ) : null}
@@ -1330,6 +1654,45 @@ export function PackDrawButton() {
                   ) : null}
                 </div>
               )}
+              {clearConfirmOpen ? (
+                <div
+                  className="pack-confirm-backdrop"
+                  role="presentation"
+                  onMouseDown={(e) => {
+                    if (e.target === e.currentTarget) setClearConfirmOpen(false)
+                  }}
+                >
+                  <div
+                    className="pack-confirm-dialog"
+                    role="alertdialog"
+                    aria-modal="true"
+                    aria-labelledby="pack-clear-title"
+                    aria-describedby="pack-clear-desc"
+                    onMouseDown={(e) => e.stopPropagation()}
+                  >
+                    <h3 id="pack-clear-title">{t('packDraw.clearTitle')}</h3>
+                    <p id="pack-clear-desc">
+                      {t('packDraw.clearConfirm', { n: collection.length })}
+                    </p>
+                    <div className="pack-confirm-actions">
+                      <button
+                        type="button"
+                        className="btn ghost"
+                        onClick={() => setClearConfirmOpen(false)}
+                      >
+                        {t('packDraw.cancel')}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn primary"
+                        onClick={confirmClearCollection}
+                      >
+                        {t('packDraw.clearAll')}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
             </div>
           </div>,
           document.body,

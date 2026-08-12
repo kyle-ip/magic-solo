@@ -1,17 +1,61 @@
 import { useTranslation } from 'react-i18next'
+import { localizeKeywords } from '../data/locale/keywordsZh'
 import {
+  displayFaceFlavor,
+  displayFaceName,
+  displayFaceOracle,
+  displayFaceTypeLine,
   displayFlavor,
   displayName,
   displayOracle,
   displayTypeLine,
   wantsZh,
   type DrawnCard,
+  type DrawnCardFace,
 } from '../data/randomCard'
+import { ManaCost, ManaRichText } from './ManaCost'
 
 interface CardDetailsBodyProps {
   card: DrawnCard
   /** Pack offline fallback note — hide on deck gallery. */
   showOfflineHint?: boolean
+}
+
+function FaceBlock({
+  face,
+  lang,
+  heading,
+}: {
+  face: DrawnCardFace
+  lang: string
+  heading: string
+}) {
+  const zhUi = wantsZh(lang)
+  const name = displayFaceName(face, lang)
+  const typeLine = displayFaceTypeLine(face, lang)
+  const oracle = displayFaceOracle(face, lang)
+  const flavor = displayFaceFlavor(face, lang)
+  const pt =
+    face.power != null && face.toughness != null
+      ? `${face.power}/${face.toughness}`
+      : null
+
+  return (
+    <section className="pack-other-face">
+      <h4>{heading}</h4>
+      <p className="pack-other-face-name">{name}</p>
+      {zhUi && face.nameZh && face.nameZh !== face.name ? (
+        <p className="pack-en-name">{face.name}</p>
+      ) : null}
+      {typeLine ? <p className="type-line">{typeLine}</p> : null}
+      {face.manaCost ? <ManaCost cost={face.manaCost} /> : null}
+      {pt ? <p className="pt-line">{pt}</p> : null}
+      <div className="pack-details-block">
+        <ManaRichText text={oracle || '—'} className="oracle-text" />
+        {flavor ? <p className="pack-flavor-text">{flavor}</p> : null}
+      </div>
+    </section>
+  )
 }
 
 /** Shared card details copy used by pack open, collection, and deck modal. */
@@ -26,6 +70,8 @@ export function CardDetailsBody({
   const typeLine = displayTypeLine(card, lang)
   const oracle = displayOracle(card, lang)
   const flavor = displayFlavor(card, lang)
+  const keywords = localizeKeywords(card.keywords ?? [], lang)
+  const otherFaces = card.otherFaces ?? []
   const pt =
     card.power != null && card.toughness != null
       ? `${card.power}/${card.toughness}`
@@ -54,17 +100,29 @@ export function CardDetailsBody({
         </p>
       ) : null}
       <p className="type-line">{typeLine}</p>
-      {card.manaCost ? <p className="pack-mana-cost">{card.manaCost}</p> : null}
+      {card.manaCost ? <ManaCost cost={card.manaCost} /> : null}
       {pt ? <p className="pt-line">{pt}</p> : null}
       <h4>{t('packDraw.details')}</h4>
       <div className="pack-details-block">
-        <p className="oracle-text">{oracle || '—'}</p>
+        <ManaRichText text={oracle || '—'} className="oracle-text" />
         {flavor ? <p className="pack-flavor-text">{flavor}</p> : null}
       </div>
-      {card.keywords?.length > 0 ? (
+      {otherFaces.map((face, i) => (
+        <FaceBlock
+          key={`${face.name}-${i}`}
+          face={face}
+          lang={lang}
+          heading={
+            otherFaces.length > 1
+              ? t('packDraw.otherFaceN', { n: i + 2 })
+              : t('packDraw.otherFace')
+          }
+        />
+      ))}
+      {keywords.length > 0 ? (
         <p className="pack-keywords">
           <span className="pack-keywords-label">{t('packDraw.keywords')}</span>
-          {card.keywords.join(' · ')}
+          {keywords.join(' · ')}
         </p>
       ) : null}
       {card.artist ? (
