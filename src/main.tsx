@@ -4,9 +4,12 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import './i18n'
 import './styles.css'
+import { preloadCommonManaSymbols } from './utils/manaSymbols'
 import { installScrollRevealScrollbars } from './utils/scrollReveal'
 
 installScrollRevealScrollbars()
+// Scryfall SVGs lack Cache-Control — fetch each code once and reuse blob URLs.
+preloadCommonManaSymbols()
 
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual'

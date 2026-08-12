@@ -467,18 +467,24 @@ export function PackDrawButton() {
     return along > 0 ? along : 280
   }
 
+  const applyClipPath = (el: HTMLElement, value: string) => {
+    el.style.clipPath = value
+    // iOS Safari still needs the prefixed property for JS-driven polygons.
+    el.style.setProperty('-webkit-clip-path', value)
+  }
+
   const applyTearVisual = (progress: number) => {
     const spec = tearSpecRef.current
     if (!spec) return
     tearProgressRef.current = progress
     const flaps = tear2dStyles(spec, progress, measurePackAlong())
     if (peelRef.current) {
-      peelRef.current.style.clipPath = String(flaps.peel.clipPath ?? '')
+      applyClipPath(peelRef.current, String(flaps.peel.clipPath ?? ''))
       peelRef.current.style.transform = String(flaps.peel.transform ?? 'none')
       peelRef.current.style.opacity = String(flaps.peel.opacity ?? 1)
     }
     if (remainRef.current) {
-      remainRef.current.style.clipPath = String(flaps.remain.clipPath ?? '')
+      applyClipPath(remainRef.current, String(flaps.remain.clipPath ?? ''))
       remainRef.current.style.transform = String(flaps.remain.transform ?? 'none')
       remainRef.current.style.opacity = String(flaps.remain.opacity ?? 1)
     }
@@ -588,23 +594,28 @@ export function PackDrawButton() {
   }, [])
 
   const triggerFrontFx = (card: DrawnCard | null | undefined) => {
-    if (!card || prefersReducedMotion()) return
+    // Still apply glow classes when reduced-motion is on — CSS keeps a static
+    // peak (box-shadow) so phones with "Reduce Motion" aren't FX-blank.
+    if (!card) return
     const id = card.id
     // Always restart from a clean slate so switching cards remounts animations.
     clearFxTimers()
     setFxFadeIds([])
     setFxIds([])
     setFxEpoch((n) => n + 1)
-    // Next frame: apply peak glow after classes clear so CSS one-shots replay.
+    // Double-rAF: wait until is-flipping has painted clear. WebKit will not
+    // restart animations that began under `.is-flipping { animation: none }`.
     requestAnimationFrame(() => {
-      setFxIds([id])
-      scheduleFx(() => {
-        setFxIds((prev) => prev.filter((x) => x !== id))
-        setFxFadeIds([id])
+      requestAnimationFrame(() => {
+        setFxIds([id])
         scheduleFx(() => {
-          setFxFadeIds((prev) => prev.filter((x) => x !== id))
-        }, FX_FADE_MS)
-      }, rarityFxDurationMs(card))
+          setFxIds((prev) => prev.filter((x) => x !== id))
+          setFxFadeIds([id])
+          scheduleFx(() => {
+            setFxFadeIds((prev) => prev.filter((x) => x !== id))
+          }, FX_FADE_MS)
+        }, rarityFxDurationMs(card))
+      })
     })
   }
 
@@ -616,13 +627,14 @@ export function PackDrawButton() {
     setDeckFlipping(true)
     requestAnimationFrame(() => {
       setFlipTurns(drawn.map(() => 1))
-      // Auto-flip lands on card fronts — flash the active card.
-      triggerFrontFx(drawn[0])
     })
+    const flipMs = prefersReducedMotion() ? 0 : FLIP_MS
     schedule(() => {
       setDeckFlipping(false)
       setPhase('revealed')
-    }, prefersReducedMotion() ? 0 : FLIP_MS)
+      // Glow must start after is-flipping clears (Safari animation restart).
+      triggerFrontFx(drawn[0])
+    }, flipMs)
     hydratePackZh(drawn)
   }
 
@@ -676,24 +688,18 @@ export function PackDrawButton() {
     // Concurrent pack draw starts immediately on click.
     drawPromise.current = drawWeightedPack(PACK_SIZE)
 
-    if (reduced) {
-      setPhase('tearing')
-      applyTearVisual(1)
-      try {
-        const drawn = await drawPromise.current
-        finishReveal(drawn)
-      } catch {
-        setPhase('sealed')
-      } finally {
-        setDrawing(false)
-      }
-      return
-    }
-
+    // Always run the tear sequence. Reduced-motion only shortens floors —
+    // jumping straight to reveal made real phones look "FX-less" when OS
+    // Reduce Motion is on (DevTools mobile emulation usually is not).
     setPhase('tearing')
     await waitAnimationFrame()
     await waitAnimationFrame()
     applyTearVisual(0)
+
+    const tearPace = reduced ? Math.round(TEAR_PACE_MS * 0.45) : TEAR_PACE_MS
+    const tearFloor = reduced ? Math.round(TEAR_FLOOR_MS * 0.5) : TEAR_FLOOR_MS
+    const exitMs = reduced ? Math.round(EXIT_MS * 0.55) : EXIT_MS
+    const expandMs = reduced ? Math.round(EXPAND_MS * 0.55) : EXPAND_MS
 
     const t0 = performance.now()
     let fetchSettled = false
@@ -702,9 +708,9 @@ export function PackDrawButton() {
       if (fetchSettled) return
       const elapsed = now - t0
       const p =
-        elapsed <= TEAR_PACE_MS
-          ? 0.88 * easeOutCubic(elapsed / TEAR_PACE_MS)
-          : 0.88 + 0.1 * (1 - Math.exp(-(elapsed - TEAR_PACE_MS) / 650))
+        elapsed <= tearPace
+          ? 0.88 * easeOutCubic(elapsed / tearPace)
+          : 0.88 + 0.1 * (1 - Math.exp(-(elapsed - tearPace) / 650))
       applyTearVisual(Math.min(0.97, p))
       tearRaf.current = requestAnimationFrame(pumpTear)
     }
@@ -720,12 +726,12 @@ export function PackDrawButton() {
       setCollected(isCollected(drawn[0]?.id ?? ''))
 
       const elapsed = performance.now() - t0
-      if (elapsed < TEAR_FLOOR_MS) {
+      if (elapsed < tearFloor) {
         await new Promise<void>((resolve) => {
           const waitFloor = (now: number) => {
             const e = now - t0
-            applyTearVisual(0.88 * easeOutCubic(Math.min(1, e / TEAR_PACE_MS)))
-            if (e < TEAR_FLOOR_MS) {
+            applyTearVisual(0.88 * easeOutCubic(Math.min(1, e / tearPace)))
+            if (e < tearFloor) {
               tearRaf.current = requestAnimationFrame(waitFloor)
             } else {
               resolve()
@@ -741,7 +747,7 @@ export function PackDrawButton() {
       const exitStart = performance.now()
       await new Promise<void>((resolve) => {
         const exitAway = (now: number) => {
-          const u = Math.min(1, (now - exitStart) / EXIT_MS)
+          const u = Math.min(1, (now - exitStart) / exitMs)
           applyTearVisual(from + (2.35 - from) * easeOutCubic(u))
           if (u < 1) {
             tearRaf.current = requestAnimationFrame(exitAway)
@@ -753,7 +759,7 @@ export function PackDrawButton() {
       })
 
       setPhase('pull')
-      await new Promise<void>((resolve) => schedule(resolve, EXPAND_MS))
+      await new Promise<void>((resolve) => schedule(resolve, expandMs))
       finishReveal(drawn)
     } catch {
       fetchSettled = true
@@ -923,12 +929,12 @@ export function PackDrawButton() {
     requestAnimationFrame(() =>
       setFlipTurns((prev) => prev.map((n, i) => (i === index ? n + 1 : n))),
     )
-    // Flash when the flip lands on the card front (art).
-    if (isShowingCardFront(nextTurns)) {
-      schedule(() => triggerFrontFx(cards[index]), Math.round(FLIP_MS * 0.45))
-    }
     schedule(() => {
       setFlippingIdx((cur) => (cur === index ? null : cur))
+      // Flash only after is-flipping clears — mid-flip triggers die on WebKit.
+      if (isShowingCardFront(nextTurns)) {
+        triggerFrontFx(cards[index])
+      }
     }, FLIP_MS)
   }
 
@@ -965,6 +971,15 @@ export function PackDrawButton() {
               className={[
                 'pack-draw-modal',
                 view === 'collection' ? 'is-collection' : '',
+                view !== 'collection' &&
+                (phase === 'tearing' ||
+                  phase === 'parting' ||
+                  phase === 'pull' ||
+                  phase === 'flip' ||
+                  fxIds.length > 0 ||
+                  fxFadeIds.length > 0)
+                  ? 'is-fx-open'
+                  : '',
               ]
                 .filter(Boolean)
                 .join(' ')}
@@ -1250,14 +1265,13 @@ export function PackDrawButton() {
                           requestAnimationFrame(() =>
                             setInspectFlipTurns((n) => n + 1),
                           )
-                          // Inspect art is on `.card-face.front` (even turns).
-                          if (nextTurns % 2 === 0) {
-                            schedule(
-                              () => triggerFrontFx(inspect),
-                              Math.round(FLIP_MS * 0.45),
-                            )
-                          }
-                          schedule(() => setInspectFlipping(false), FLIP_MS)
+                          schedule(() => {
+                            setInspectFlipping(false)
+                            // Inspect art is on `.card-face.front` (even turns).
+                            if (nextTurns % 2 === 0) {
+                              triggerFrontFx(inspect)
+                            }
+                          }, FLIP_MS)
                         }
                         return (
                       <div className="pack-inspect-stage">

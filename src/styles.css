@@ -907,7 +907,9 @@ h2 {
   --pack-shell-max-h: min(68vh, calc(90dvh - 8.5rem), 640px);
 }
 
-/* Tear / glow may extend past the pack box — don't hard-clip auras */
+/* Tear / glow may extend past the pack box — don't hard-clip auras.
+   Prefer `.is-fx-open` (JS) over :has alone — older WebKit :has was flaky. */
+.pack-draw-modal:not(.is-collection).is-fx-open,
 .pack-draw-modal:not(.is-collection):has(
   .pack-stage-visual.is-tearing,
   .pack-stage-visual.is-parting,
@@ -916,6 +918,7 @@ h2 {
   overflow: visible;
 }
 
+.pack-draw-modal:not(.is-collection).is-fx-open > .pack-draw-stage,
 .pack-draw-modal:not(.is-collection):has(
   .pack-stage-visual.is-tearing,
   .pack-stage-visual.is-parting,
@@ -1096,6 +1099,11 @@ h2 {
   height: 1.05em;
   vertical-align: -0.15em;
   display: inline-block;
+}
+
+.mana-symbol.is-loading {
+  border-radius: 50%;
+  background: rgba(224, 180, 90, 0.22);
 }
 
 .oracle-text .mana-symbol,
@@ -1471,6 +1479,9 @@ h2 {
   overflow: hidden;
   pointer-events: none;
   will-change: transform, opacity;
+  /* JS also sets -webkit-clip-path; keep both for Safari compositing */
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .pack-shell-peel {
@@ -1844,12 +1855,12 @@ h2 {
   border-radius: 50%;
   background: radial-gradient(
     ellipse 48% 52% at 50% 50%,
-    rgba(255, 220, 130, 0.28) 0%,
-    rgba(240, 180, 50, 0.12) 42%,
+    rgba(255, 220, 130, 0.42) 0%,
+    rgba(240, 180, 50, 0.2) 42%,
     transparent 70%
   );
   animation: pack-rare-aureole 2.5s ease-out both;
-  mix-blend-mode: screen;
+  /* Avoid mix-blend-mode: screen — often invisible on real mobile GPUs */
 }
 
 .pack-card-wrap.pack-fx-rare.is-glowing .card-face {
@@ -1923,18 +1934,17 @@ h2 {
   background:
     radial-gradient(
       ellipse 46% 50% at 50% 50%,
-      rgba(190, 140, 45, 0.34) 0%,
-      rgba(110, 72, 18, 0.16) 40%,
+      rgba(190, 140, 45, 0.48) 0%,
+      rgba(110, 72, 18, 0.24) 40%,
       transparent 68%
     ),
     radial-gradient(
       ellipse 68% 74% at 50% 50%,
       transparent 42%,
-      rgba(140, 95, 25, 0.14) 55%,
+      rgba(140, 95, 25, 0.22) 55%,
       transparent 76%
     );
   animation: pack-mythic-aureole 2.5s ease-out both;
-  mix-blend-mode: screen;
 }
 
 .pack-card-wrap.pack-fx-mythic.is-glowing .card-face {
@@ -2017,28 +2027,26 @@ h2 {
 .pack-fx-layer.is-sparkles {
   inset: -16% -12%;
   background:
-    radial-gradient(circle at 18% 22%, rgba(255, 245, 200, 0.8) 0 2px, transparent 7px),
-    radial-gradient(circle at 78% 18%, rgba(255, 225, 140, 0.75) 0 2px, transparent 7px),
-    radial-gradient(circle at 28% 72%, rgba(240, 185, 70, 0.7) 0 2px, transparent 7px),
-    radial-gradient(circle at 70% 78%, rgba(255, 215, 120, 0.75) 0 2px, transparent 7px);
+    radial-gradient(circle at 18% 22%, rgba(255, 245, 200, 0.95) 0 2px, transparent 7px),
+    radial-gradient(circle at 78% 18%, rgba(255, 225, 140, 0.9) 0 2px, transparent 7px),
+    radial-gradient(circle at 28% 72%, rgba(240, 185, 70, 0.85) 0 2px, transparent 7px),
+    radial-gradient(circle at 70% 78%, rgba(255, 215, 120, 0.9) 0 2px, transparent 7px);
   animation: pack-rare-filigree 2.5s ease-out both;
-  mix-blend-mode: screen;
 }
 
 /* Mythic particles — denser soft antique-gold dust */
 .pack-fx-layer.is-sparkles.is-mythic {
   inset: -22% -16%;
   background:
-    radial-gradient(circle at 16% 18%, rgba(255, 230, 160, 0.85) 0 2.5px, transparent 8px),
-    radial-gradient(circle at 82% 14%, rgba(200, 150, 55, 0.8) 0 3px, transparent 9px),
-    radial-gradient(circle at 72% 74%, rgba(235, 190, 95, 0.75) 0 2.5px, transparent 8px),
-    radial-gradient(circle at 22% 80%, rgba(140, 95, 25, 0.75) 0 3px, transparent 9px),
-    radial-gradient(circle at 48% 28%, rgba(255, 240, 180, 0.7) 0 2px, transparent 7px),
-    radial-gradient(circle at 58% 62%, rgba(170, 120, 35, 0.65) 0 2px, transparent 7px),
-    radial-gradient(circle at 36% 48%, rgba(220, 175, 80, 0.55) 0 1.5px, transparent 6px),
-    radial-gradient(circle at 64% 38%, rgba(200, 150, 55, 0.55) 0 1.5px, transparent 6px);
+    radial-gradient(circle at 16% 18%, rgba(255, 230, 160, 0.95) 0 2.5px, transparent 8px),
+    radial-gradient(circle at 82% 14%, rgba(200, 150, 55, 0.9) 0 3px, transparent 9px),
+    radial-gradient(circle at 72% 74%, rgba(235, 190, 95, 0.88) 0 2.5px, transparent 8px),
+    radial-gradient(circle at 22% 80%, rgba(140, 95, 25, 0.85) 0 3px, transparent 9px),
+    radial-gradient(circle at 48% 28%, rgba(255, 240, 180, 0.85) 0 2px, transparent 7px),
+    radial-gradient(circle at 58% 62%, rgba(170, 120, 35, 0.8) 0 2px, transparent 7px),
+    radial-gradient(circle at 36% 48%, rgba(220, 175, 80, 0.7) 0 1.5px, transparent 6px),
+    radial-gradient(circle at 64% 38%, rgba(200, 150, 55, 0.7) 0 1.5px, transparent 6px);
   animation: pack-mythic-glints 2.5s ease-out both;
-  mix-blend-mode: screen;
 }
 
 .pack-card-wrap.is-fading .pack-fx-layer {
@@ -2052,19 +2060,16 @@ h2 {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  /* Keep static peak glow (box-shadow / aureole); only drop motion layers */
   .pack-card-wrap.is-glowing .card-face,
   .pack-fx-layer {
     animation: none !important;
   }
 
-  .pack-card-wrap[class*='pack-fx-'] .card-face,
-  .pack-card-wrap[class*='pack-fx-'] .card-face::after,
-  .pack-fx-layer,
-  .pack-card-wrap.pack-fx-uncommon.is-glowing,
-  .pack-card-wrap.pack-fx-rare.is-glowing,
-  .pack-card-wrap.pack-fx-mythic.is-glowing {
-    transition: none !important;
-    filter: none !important;
+  .pack-card-wrap.pack-fx-rare.is-glowing::before,
+  .pack-card-wrap.pack-fx-mythic.is-glowing::before {
+    animation: none !important;
+    opacity: 0.85;
   }
 
   .pack-fx-layer.is-sparkles,
@@ -2073,9 +2078,7 @@ h2 {
   .pack-card-wrap.pack-fx-rare.is-glowing .card-face::before,
   .pack-card-wrap.pack-fx-rare.is-fading .card-face::before,
   .pack-card-wrap.pack-fx-mythic.is-glowing .card-face::before,
-  .pack-card-wrap.pack-fx-mythic.is-fading .card-face::before,
-  .pack-card-wrap.pack-fx-rare.is-glowing::before,
-  .pack-card-wrap.pack-fx-mythic.is-glowing::before {
+  .pack-card-wrap.pack-fx-mythic.is-fading .card-face::before {
     display: none;
   }
 }
@@ -6258,12 +6261,15 @@ button.arena-card {
   }
 }
 
+/* Decorative loops / entrances only — do NOT nuke pack/challenge one-shot FX.
+   Real phones often have OS "Reduce Motion" on; DevTools mobile usually does not. */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  .orbit-card,
+  .reveal,
+  .path-band,
+  .arena-card.is-attack-ready,
+  .arena-card.is-targetable {
     animation: none !important;
-    transition: none !important;
   }
 }
 

@@ -1,4 +1,25 @@
-import { manaSymbolUrl, splitManaTokens } from '../utils/manaSymbols'
+import { useEffect, useSyncExternalStore } from 'react'
+import {
+  getCachedManaSymbolUrl,
+  loadManaSymbol,
+  subscribeManaSymbols,
+  splitManaTokens,
+} from '../utils/manaSymbols'
+
+function useManaSymbolSrc(code: string): string | null {
+  const src = useSyncExternalStore(
+    subscribeManaSymbols,
+    () => getCachedManaSymbolUrl(code),
+    () => null,
+  )
+
+  useEffect(() => {
+    if (src) return
+    void loadManaSymbol(code)
+  }, [code, src])
+
+  return src
+}
 
 export function ManaSymbol({
   code,
@@ -8,13 +29,24 @@ export function ManaSymbol({
   className?: string
 }) {
   const label = `{${code}}`
+  const src = useManaSymbolSrc(code)
+
+  if (!src) {
+    return (
+      <span
+        className={`${className} is-loading`}
+        aria-label={label}
+        title={label}
+      />
+    )
+  }
+
   return (
     <img
       className={className}
-      src={manaSymbolUrl(code)}
+      src={src}
       alt={label}
       title={label}
-      loading="lazy"
       decoding="async"
       draggable={false}
     />
