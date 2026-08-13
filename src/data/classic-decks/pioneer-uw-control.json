@@ -1,0 +1,190 @@
+{
+  "id": "pioneer-uw-control",
+  "format": "pioneer",
+  "name": {
+    "en": "UW Control",
+    "zh": "蓝白控制（先驱）"
+  },
+  "colors": [
+    "W",
+    "U"
+  ],
+  "playstyle": "control",
+  "era": "2019–",
+  "coverCard": "Teferi, Hero of Dominaria",
+  "summary": {
+    "en": "Permission, sweepers, and planeswalkers. UW Control is Pioneer's fair endgame specialist.",
+    "zh": "反制、清场与鹏洛客。蓝白控制是先驱公平终局专家。"
+  },
+  "howItWins": {
+    "en": "Answer threats, resolve Teferi or Shark Typhoon, and win the long game with card advantage.",
+    "zh": "回答威胁，结算泰菲力或鲨鱼台风，用牌差打赢长期战。"
+  },
+  "keyCards": [
+    "Teferi, Hero of Dominaria",
+    "Supreme Verdict",
+    "The Wandering Emperor",
+    "Shark Typhoon"
+  ],
+  "sampleList": [
+    {
+      "name": "Teferi, Hero of Dominaria",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "The Wandering Emperor",
+      "qty": 3,
+      "board": "main"
+    },
+    {
+      "name": "Narset, Parter of Veils",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Absorb",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Dovin's Veto",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Memory Deluge",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Supreme Verdict",
+      "qty": 3,
+      "board": "main"
+    },
+    {
+      "name": "Shark Typhoon",
+      "qty": 3,
+      "board": "main"
+    },
+    {
+      "name": "The Birth of Meletis",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Farewell",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Hallowed Fountain",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Hengegate Pathway",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Irrigated Farmland",
+      "qty": 3,
+      "board": "main"
+    },
+    {
+      "name": "Island",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Plains",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Otawara, Soaring City",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Eiganjo, Seat of the Empire",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Hall of Storm Giants",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Castle Ardenvale",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Field of Ruin",
+      "qty": 3,
+      "board": "main"
+    },
+    {
+      "name": "Deserted Beach",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Glacial Fortress",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Rest in Peace",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Dovin's Veto",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Aether Gust",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Narset's Reversal",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Mystical Dispute",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Summary Dismissal",
+      "qty": 1,
+      "board": "side"
+    },
+    {
+      "name": "Dream Trawler",
+      "qty": 1,
+      "board": "side"
+    },
+    {
+      "name": "Chrome Host Seedshark",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Temporary Lockdown",
+      "qty": 1,
+      "board": "side"
+    }
+  ],
+  "links": {
+    "wiki": "https://mtg.wiki/page/Control",
+    "scryfallQuery": "f:pioneer teferi"
+  }
+}

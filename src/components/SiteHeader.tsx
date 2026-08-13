@@ -25,6 +25,9 @@ export function SiteHeader() {
           </span>
         </Link>
         <div className="site-header-actions">
+          <Link to="/classic-decks" className="references-text-btn">
+            {t('classicDecks.open')}
+          </Link>
           <PackDrawButton />
           <ReferencesButton />
           <LanguageSwitch />

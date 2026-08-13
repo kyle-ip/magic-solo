@@ -1,4 +1,4 @@
-import { useEffect, useSyncExternalStore } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 import {
   getCachedManaSymbolUrl,
   loadManaSymbol,
@@ -30,14 +30,21 @@ export function ManaSymbol({
 }) {
   const label = `{${code}}`
   const src = useManaSymbolSrc(code)
+  const [failed, setFailed] = useState(false)
 
-  if (!src) {
+  useEffect(() => {
+    setFailed(false)
+  }, [src, code])
+
+  if (!src || failed) {
     return (
       <span
-        className={`${className} is-loading`}
+        className={`${className}${src ? '' : ' is-loading'}${failed ? ' is-fallback' : ''}`}
         aria-label={label}
         title={label}
-      />
+      >
+        {failed ? label : null}
+      </span>
     )
   }
 
@@ -48,7 +55,9 @@ export function ManaSymbol({
       alt={label}
       title={label}
       decoding="async"
+      loading="eager"
       draggable={false}
+      onError={() => setFailed(true)}
     />
   )
 }

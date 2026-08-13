@@ -1,0 +1,50 @@
+{
+  "id": "pauper-affinity",
+  "format": "pauper",
+  "name": { "en": "Affinity", "zh": "神器亲和（特选）" },
+  "colors": ["U"],
+  "playstyle": "aggro",
+  "era": "2010s–",
+  "summary": {
+    "en": "Pauper's artifact swarm: free and cheap constructs, Thoughtcast for gas, and Cranial Plating for lethal. Proof that broken artifact math still thrives on commons.",
+    "zh": "特选环境的神器海：免费与廉价组构体，思绪投射过牌，颅骨护甲斩杀。证明神器算术在普通牌里依然凶猛。"
+  },
+  "howItWins": {
+    "en": "Flood with Myr Enforcer, Frogmite, and Sojourner's Companion, draw with Thoughtcast, and equip Cranial Plating. Metallic Rebuke and Counterspell keep the board safe while damage adds up.",
+    "zh": "用麦尔执行者、蛙螨与旅伴铺场，思绪投射过牌，装上颅骨护甲。金属叱责与反击咒语护航，伤害自然累积。"
+  },
+  "keyCards": ["Thoughtcast", "Cranial Plating", "Myr Enforcer", "Sojourner's Companion"],
+  "coverCard": "Sojourner's Companion",
+  "sampleList": [
+    { "name": "Sojourner's Companion", "qty": 4, "board": "main" },
+    { "name": "Frogmite", "qty": 4, "board": "main" },
+    { "name": "Myr Enforcer", "qty": 4, "board": "main" },
+    { "name": "Ornithopter", "qty": 4, "board": "main" },
+    { "name": "Krark-Clan Shaman", "qty": 2, "board": "main" },
+    { "name": "Kenku Artificer", "qty": 2, "board": "main" },
+    { "name": "Thoughtcast", "qty": 4, "board": "main" },
+    { "name": "Metallic Rebuke", "qty": 4, "board": "main" },
+    { "name": "Counterspell", "qty": 2, "board": "main" },
+    { "name": "Cranial Plating", "qty": 4, "board": "main" },
+    { "name": "Springleaf Drum", "qty": 4, "board": "main" },
+    { "name": "Blood Fountain", "qty": 3, "board": "main" },
+    { "name": "Makeshift Munitions", "qty": 1, "board": "main" },
+    { "name": "Seat of the Synod", "qty": 4, "board": "main" },
+    { "name": "Darksteel Citadel", "qty": 4, "board": "main" },
+    { "name": "Island", "qty": 2, "board": "main" },
+    { "name": "Silverblight Bridge", "qty": 4, "board": "main" },
+    { "name": "Drossforge Bridge", "qty": 2, "board": "main" },
+    { "name": "Mistvault Bridge", "qty": 2, "board": "main" },
+    { "name": "Hydroblast", "qty": 3, "board": "side" },
+    { "name": "Pyroblast", "qty": 2, "board": "side" },
+    { "name": "Blue Elemental Blast", "qty": 2, "board": "side" },
+    { "name": "Gorilla Shaman", "qty": 2, "board": "side" },
+    { "name": "Duress", "qty": 2, "board": "side" },
+    { "name": "Red Elemental Blast", "qty": 2, "board": "side" },
+    { "name": "Nihil Spellbomb", "qty": 2, "board": "side" }
+  ],
+  "links": {
+    "wiki": "https://mtg.wiki/page/Affinity_(archetype)",
+    "scryfallQuery": "f:pauper o:affinity"
+  }
+}

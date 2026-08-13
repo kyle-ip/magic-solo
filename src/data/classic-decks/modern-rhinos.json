@@ -1,0 +1,203 @@
+{
+  "id": "modern-rhinos",
+  "format": "modern",
+  "name": {
+    "en": "Rhinos / Cascade",
+    "zh": "犀牛 / 连瀑"
+  },
+  "colors": [
+    "W",
+    "U",
+    "B",
+    "R",
+    "G"
+  ],
+  "playstyle": "combo",
+  "era": "2021–",
+  "coverCard": "Crashing Footfalls",
+  "summary": {
+    "en": "Cascade into Crashing Footfalls for free 4/4 rhinos. The defining free-spell midrange of early 2020s Modern.",
+    "zh": "连瀑进崩踏蹄音，免费得到 4/4 犀牛。2020 年代初近代免费咒语中速的代表。"
+  },
+  "howItWins": {
+    "en": "Cast Violent Outburst or Shardless Agent, cascade to Footfalls, then overwhelm with rhinos and interaction.",
+    "zh": "施放猛烈爆发或无支助密探，连瀑进蹄音，再用犀牛与互动淹没对手。"
+  },
+  "keyCards": [
+    "Crashing Footfalls",
+    "Violent Outburst",
+    "Shardless Agent",
+    "Force of Negation"
+  ],
+  "sampleList": [
+    {
+      "name": "Shardless Agent",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Brazen Borrower",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Subtlety",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Crashing Footfalls",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Violent Outburst",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Fire // Ice",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Force of Negation",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Dead // Gone",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Flooded Strand",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Misty Rainforest",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Scalding Tarn",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Wooded Foothills",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Breeding Pool",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Steam Vents",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Stomping Ground",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Otawara, Soaring City",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Forest",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Island",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Mountain",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Boseiju, Who Endures",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Hallowed Fountain",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Ketria Triome",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Raugrin Triome",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Gemstone Caverns",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Fury",
+      "qty": 3,
+      "board": "main"
+    },
+    {
+      "name": "Endurance",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Force of Vigor",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Mystical Dispute",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Dress Down",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Flusterstorm",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Leyline of the Void",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Teferi, Time Raveler",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Subtlety",
+      "qty": 1,
+      "board": "side"
+    }
+  ],
+  "links": {
+    "wiki": "https://mtg.wiki/page/Cascade",
+    "scryfallQuery": "f:modern crashing footfalls"
+  }
+}

@@ -1,0 +1,175 @@
+{
+  "id": "pioneer-greasefang",
+  "format": "pioneer",
+  "name": {
+    "en": "Greasefang",
+    "zh": "油齿"
+  },
+  "colors": [
+    "W",
+    "B"
+  ],
+  "playstyle": "combo",
+  "era": "2022–",
+  "coverCard": "Greasefang, Okiba Boss",
+  "summary": {
+    "en": "Fill the yard with vehicles, then Greasefang reanimates a Parhelion II for an instant lethal board.",
+    "zh": "坟墓塞满载具，油齿再动双阳轮二号，瞬间铺出致命场面。"
+  },
+  "howItWins": {
+    "en": "Loot and surveil vehicles into the graveyard, return Parhelion II attacking, make angels, and win on the crack-back if needed.",
+    "zh": "淘牌/探查把载具送坟，攻击中召回双阳轮，造天使，必要时反击再杀。"
+  },
+  "keyCards": [
+    "Greasefang, Okiba Boss",
+    "Parhelion II",
+    "Can't Stay Away",
+    "Raffine's Informant"
+  ],
+  "sampleList": [
+    {
+      "name": "Greasefang, Okiba Boss",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Raffine's Informant",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Can't Stay Away",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Thoughtseize",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Fatal Push",
+      "qty": 3,
+      "board": "main"
+    },
+    {
+      "name": "Parhelion II",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Esika's Chariot",
+      "qty": 3,
+      "board": "main"
+    },
+    {
+      "name": "Skysovereign, Consul Flagship",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Reckoner Bankbuster",
+      "qty": 3,
+      "board": "main"
+    },
+    {
+      "name": "Vessel of Nascency",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Godless Shrine",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Concealed Courtyard",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Caves of Koilos",
+      "qty": 3,
+      "board": "main"
+    },
+    {
+      "name": "Blooming Marsh",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Takenuma, Abandoned Mire",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Eiganjo, Seat of the Empire",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Swamp",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Plains",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Hive of the Eye Tyrant",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Brightclimb Pathway",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Silent Clearing",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Duress",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Go Blank",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Liliana of the Veil",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Ray of Enfeeblement",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Rest in Peace",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Unlicensed Hearse",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Vanishing Verse",
+      "qty": 3,
+      "board": "side"
+    }
+  ],
+  "links": {
+    "wiki": "https://mtg.wiki/page/Greasefang,_Okiba_Boss",
+    "scryfallQuery": "f:pioneer greasefang"
+  }
+}

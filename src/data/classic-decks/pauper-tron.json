@@ -1,0 +1,154 @@
+{
+  "id": "pauper-tron",
+  "format": "pauper",
+  "name": {
+    "en": "Tron",
+    "zh": "泰坦（凡骨）"
+  },
+  "colors": [
+    "C"
+  ],
+  "playstyle": "control",
+  "era": "2010s–",
+  "coverCard": "Urza's Tower",
+  "summary": {
+    "en": "Assemble UrzaTron on commons, then cast huge colorless bombs. Pauper Tron is unfair mana for everyone.",
+    "zh": "用普通牌凑齐克撒泰坦，再丢巨型无色炸弹。凡骨泰坦让人人都能玩不公平法力。"
+  },
+  "howItWins": {
+    "en": "Tutor Tron lands, cast Fangren Marauder or Ulamog's Crusher, and lock the game with Expedition Map value.",
+    "zh": "搜寻泰坦地，施放牙兽掠食者或乌拉莫摧残者，用远征地图锁定优势。"
+  },
+  "keyCards": [
+    "Urza's Tower",
+    "Expedition Map",
+    "Fangren Marauder",
+    "Crop Rotation"
+  ],
+  "sampleList": [
+    {
+      "name": "Fangren Marauder",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Ulamog's Crusher",
+      "qty": 3,
+      "board": "main"
+    },
+    {
+      "name": "Mulldrifter",
+      "qty": 3,
+      "board": "main"
+    },
+    {
+      "name": "Expedition Map",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Crop Rotation",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Prophetic Prism",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Impulse",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Prohibit",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Urza's Tower",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Urza's Mine",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Urza's Power Plant",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Cave of Temptation",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Bojuka Bog",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Snow-Covered Island",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Network Terminal",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Ancient Den",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Tree of Tales",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Seat of the Synod",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Hydroblast",
+      "qty": 3,
+      "board": "side"
+    },
+    {
+      "name": "Blue Elemental Blast",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Pyroblast",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Relic of Progenitus",
+      "qty": 3,
+      "board": "side"
+    },
+    {
+      "name": "Weather the Storm",
+      "qty": 3,
+      "board": "side"
+    },
+    {
+      "name": "Fiery Cannonade",
+      "qty": 2,
+      "board": "side"
+    }
+  ],
+  "links": {
+    "wiki": "https://mtg.wiki/page/Tron",
+    "scryfallQuery": "f:pauper urza's tower"
+  }
+}

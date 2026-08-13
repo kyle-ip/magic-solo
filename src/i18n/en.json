@@ -24,6 +24,44 @@
     "cardsLabel": "{{count}} unique cards · {{total}} in deck",
     "pathMeta": "{{expansion}}"
   },
+  "classicDecks": {
+    "open": "Classic decks",
+    "eyebrow": "Archetypes",
+    "title": "Classic decks",
+    "lead": "Explore famous constructed archetypes — how they win and the cards that define them.",
+    "filterLabel": "Filter by format",
+    "viewDeck": "View deck",
+    "empty": "No decks in this format yet.",
+    "backToList": "All classic decks",
+    "howItWins": "How it wins",
+    "keyCards": "Key cards",
+    "keyBadge": "Key",
+    "fullList": "Decklist",
+    "mainboard": "Main deck",
+    "sideboard": "Sideboard",
+    "links": "Further reading",
+    "wiki": "MTG Wiki",
+    "scryfallSearch": "Search on Scryfall",
+    "loadingCards": "Loading card images…",
+    "unresolved": "Could not load this card from Scryfall",
+    "cardDetails": "Card details",
+    "format": {
+      "all": "All",
+      "modern": "Modern",
+      "legacy": "Legacy",
+      "pioneer": "Pioneer",
+      "pauper": "Pauper",
+      "vintage": "Vintage",
+      "standard-classic": "Classic Standard"
+    },
+    "playstyle": {
+      "aggro": "Aggro",
+      "midrange": "Midrange",
+      "control": "Control",
+      "combo": "Combo",
+      "tempo": "Tempo"
+    }
+  },
   "packDraw": {
     "open": "Open a pack",
     "title": "Booster thrill",
@@ -107,6 +145,7 @@
     "cards": "Card Gallery",
     "quantity": "×{{n}}",
     "flip": "Flip card",
+    "zoomPreview": "Card zoom preview",
     "oracle": "Oracle Text",
     "artist": "Illustrated by {{name}}",
     "collector": "{{set}} #{{number}}",

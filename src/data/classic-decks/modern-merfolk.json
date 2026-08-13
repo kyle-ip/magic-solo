@@ -1,0 +1,164 @@
+{
+  "id": "modern-merfolk",
+  "format": "modern",
+  "name": {
+    "en": "Merfolk",
+    "zh": "人鱼"
+  },
+  "colors": [
+    "U"
+  ],
+  "playstyle": "tempo",
+  "era": "2011–",
+  "coverCard": "Lord of Atlantis",
+  "summary": {
+    "en": "Tribal tempo: lords, islands matter, and Aether Vial. Merfolk is Modern's classic blue aggro-control tribe.",
+    "zh": "部族节奏：领主、海岛相关与乙太瓶。人鱼是近代经典蓝快攻控制部族。"
+  },
+  "howItWins": {
+    "en": "Curve lords with Vial, steal tempo with Force of Negation and Dismember, and ride islandwalk or a wide lord-pumped board.",
+    "zh": "乙太瓶曲线出领主，用否定之力与肢解抢节奏，海岛行或领主加成的海面冲锋。"
+  },
+  "keyCards": [
+    "Lord of Atlantis",
+    "Aether Vial",
+    "Master of the Pearl Trident",
+    "Force of Negation"
+  ],
+  "sampleList": [
+    {
+      "name": "Lord of Atlantis",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Master of the Pearl Trident",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Merfolk Trickster",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Tide Shaper",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Svyelun of Sea and Sky",
+      "qty": 3,
+      "board": "main"
+    },
+    {
+      "name": "Harbinger of the Tides",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Aether Vial",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Force of Negation",
+      "qty": 3,
+      "board": "main"
+    },
+    {
+      "name": "Dismember",
+      "qty": 3,
+      "board": "main"
+    },
+    {
+      "name": "Subtlety",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Island",
+      "qty": 10,
+      "board": "main"
+    },
+    {
+      "name": "Mutavault",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Otawara, Soaring City",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Waterlogged Grove",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Cavern of Souls",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Oboro, Palace in the Clouds",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Spreading Seas",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Chalice of the Void",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Dismember",
+      "qty": 1,
+      "board": "side"
+    },
+    {
+      "name": "Engineered Explosives",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Relic of Progenitus",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Spell Pierce",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Subtlety",
+      "qty": 1,
+      "board": "side"
+    },
+    {
+      "name": "Void Mirror",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Hurkyl's Recall",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Cursed Totem",
+      "qty": 1,
+      "board": "side"
+    }
+  ],
+  "links": {
+    "wiki": "https://mtg.wiki/page/Merfolk",
+    "scryfallQuery": "f:modern merfolk"
+  }
+}

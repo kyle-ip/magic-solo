@@ -1,0 +1,170 @@
+{
+  "id": "modern-bogles",
+  "format": "modern",
+  "name": {
+    "en": "Bogles",
+    "zh": "辟邪灵气"
+  },
+  "colors": [
+    "W",
+    "G"
+  ],
+  "playstyle": "aggro",
+  "era": "2011–",
+  "coverCard": "Gladecover Scout",
+  "summary": {
+    "en": "Stack auras on a hexproof one-drop and race. Bogles is Modern's purest \"one creature, many pumps\" deck.",
+    "zh": "给辟邪一费生物叠灵气抢血。幽魂是近代最纯粹的「一只生物，一堆泵」套。"
+  },
+  "howItWins": {
+    "en": "Curve Gladecover Scout or Slippery Bogle into Daybreak Coronet and Ethereal Armor, then crash in with trample and lifelink.",
+    "zh": "用林荫斥候或湿滑波戈接破晓冠冕与空灵铠甲，践踏与系命冲锋。"
+  },
+  "keyCards": [
+    "Gladecover Scout",
+    "Daybreak Coronet",
+    "Ethereal Armor",
+    "Rancor"
+  ],
+  "sampleList": [
+    {
+      "name": "Gladecover Scout",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Slippery Bogle",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Silhana Ledgewalker",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Daybreak Coronet",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Ethereal Armor",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Rancor",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Spider Umbra",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Hyena Umbra",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Spirit Mantle",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "All That Glitters",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Leyline of Sanctity",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Horizon Canopy",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Forest",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Plains",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Temple Garden",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Razorverge Thicket",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Windswept Heath",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Branchloft Pathway",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Dryad Arbor",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Boseiju, Who Endures",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Force of Vigor",
+      "qty": 3,
+      "board": "side"
+    },
+    {
+      "name": "Collector Ouphe",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Rest in Peace",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Soul-Guide Lantern",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Gaddock Teeg",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Leyline of the Void",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Prismatic Ending",
+      "qty": 2,
+      "board": "side"
+    }
+  ],
+  "links": {
+    "wiki": "https://mtg.wiki/page/Bogles",
+    "scryfallQuery": "f:modern bogle"
+  }
+}

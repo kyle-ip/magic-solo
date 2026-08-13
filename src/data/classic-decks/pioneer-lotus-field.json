@@ -1,0 +1,58 @@
+{
+  "id": "pioneer-lotus-field",
+  "format": "pioneer",
+  "name": { "en": "Lotus Field Combo", "zh": "莲花原野组合" },
+  "colors": ["U", "G"],
+  "playstyle": "combo",
+  "era": "2020–",
+  "summary": {
+    "en": "Untap Lotus Field, make absurd mana, and loop Hidden Strings or Pore Over the Pages into a lethal Dig Through Time or Approach of the Second Sun line. A pure combo puzzle in Pioneer.",
+    "zh": "重置莲花原野爆发法力，用暗线或翻阅书页成环，再以掘通时间或第二太阳将至收割。先驱里纯粹的组合谜题。"
+  },
+  "howItWins": {
+    "en": "Enchant Lotus Field with Sylvan Caryatid or Thespian's Stage copies, untap repeatedly, draw the deck, and finish with a huge Dig Through Time or a resolved Approach. Interaction is light—speed and protection matter.",
+    "zh": "用森林女像柱或戏剧舞台复制莲花原野，反复重置抽光牌库，再以巨型掘通时间或第二太阳将至取胜。互动偏少，速度与保护更关键。"
+  },
+  "keyCards": ["Lotus Field", "Hidden Strings", "Sylvan Caryatid", "Dig Through Time"],
+  "coverCard": "Lotus Field",
+  "sampleList": [
+    { "name": "Sylvan Caryatid", "qty": 4, "board": "main" },
+    { "name": "Vizier of Tumbling Sands", "qty": 4, "board": "main" },
+    { "name": "Hidden Strings", "qty": 4, "board": "main" },
+    { "name": "Pore Over the Pages", "qty": 4, "board": "main" },
+    { "name": "Strict Proctor", "qty": 3, "board": "main" },
+    { "name": "Temporary Lockdown", "qty": 3, "board": "main" },
+    { "name": "Dig Through Time", "qty": 2, "board": "main" },
+    { "name": "Mastermind's Acquisition", "qty": 1, "board": "main" },
+    { "name": "Approach of the Second Sun", "qty": 1, "board": "main" },
+    { "name": "Dark Petition", "qty": 1, "board": "main" },
+    { "name": "Emergent Ultimatum", "qty": 1, "board": "main" },
+    { "name": "Botanical Sanctum", "qty": 4, "board": "main" },
+    { "name": "Breeding Pool", "qty": 2, "board": "main" },
+    { "name": "Lotus Field", "qty": 4, "board": "main" },
+    { "name": "Thespian's Stage", "qty": 4, "board": "main" },
+    { "name": "Otawara, Soaring City", "qty": 1, "board": "main" },
+    { "name": "Boseiju, Who Endures", "qty": 1, "board": "main" },
+    { "name": "Island", "qty": 2, "board": "main" },
+    { "name": "Forest", "qty": 1, "board": "main" },
+    { "name": "Lair of the Hydra", "qty": 1, "board": "main" },
+    { "name": "Barkchannel Pathway", "qty": 3, "board": "main" },
+    { "name": "Yavimaya Coast", "qty": 2, "board": "main" },
+    { "name": "Mana Confluence", "qty": 2, "board": "main" },
+    { "name": "Invisible Stalker", "qty": 1, "board": "main" },
+    { "name": "Voyaging Satyr", "qty": 1, "board": "main" },
+    { "name": "Pact of Negation", "qty": 2, "board": "side" },
+    { "name": "Mystical Dispute", "qty": 2, "board": "side" },
+    { "name": "Silence", "qty": 2, "board": "side" },
+    { "name": "Voyaging Satyr", "qty": 2, "board": "side" },
+    { "name": "Aether Gust", "qty": 2, "board": "side" },
+    { "name": "Narset's Reversal", "qty": 2, "board": "side" },
+    { "name": "Thought Distortion", "qty": 1, "board": "side" },
+    { "name": "Approach of the Second Sun", "qty": 1, "board": "side" },
+    { "name": "Dig Through Time", "qty": 1, "board": "side" }
+  ],
+  "links": {
+    "wiki": "https://mtg.wiki/page/Lotus_Field",
+    "scryfallQuery": "f:pioneer \"lotus field\""
+  }
+}

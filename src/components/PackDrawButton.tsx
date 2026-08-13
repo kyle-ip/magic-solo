@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { useSwipeNavigate } from '../hooks/useSwipeNavigate'
 import { assetUrl } from '../utils/assetUrl'
+import { CardFaceButton } from './CardFaceButton'
 import {
   addCollected,
   clearCollected,
@@ -413,6 +414,8 @@ export function PackDrawButton() {
   const [inspect, setInspect] = useState<CollectedCard | null>(null)
   const [inspectFlipTurns, setInspectFlipTurns] = useState(0)
   const [inspectFlipping, setInspectFlipping] = useState(false)
+  /** Double-click toggles large art preview inside the detail layout. */
+  const [artZoomed, setArtZoomed] = useState(false)
   const [filterRarity, setFilterRarity] =
     useState<CollectionRarityFilter>('all')
   const [filterColor, setFilterColor] =
@@ -527,6 +530,7 @@ export function PackDrawButton() {
     setInspect(null)
     setInspectFlipTurns(0)
     setInspectFlipping(false)
+    setArtZoomed(false)
     setFlippingIdx(null)
     setDeckFlipping(false)
     setView('pack')
@@ -536,12 +540,17 @@ export function PackDrawButton() {
     if (!open) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
+        if (artZoomed) {
+          setArtZoomed(false)
+          return
+        }
         if (clearConfirmOpen) {
           setClearConfirmOpen(false)
           return
         }
         if (inspect) {
           setInspect(null)
+          setArtZoomed(false)
           return
         }
         if (view === 'collection') {
@@ -578,7 +587,7 @@ export function PackDrawButton() {
       document.body.style.overflow = prevOverflow
       window.removeEventListener('keydown', onKey)
     }
-  }, [open, view, inspect, phase, activeIdx, cards.length, clearConfirmOpen])
+  }, [open, view, inspect, phase, activeIdx, cards.length, clearConfirmOpen, artZoomed])
 
   useEffect(() => {
     if (!open) {
@@ -814,6 +823,7 @@ export function PackDrawButton() {
   const openInspect = (item: CollectedCard) => {
     setInspectFlipTurns(0)
     setInspectFlipping(false)
+    setArtZoomed(false)
     setInspect(item)
     triggerFrontFx(item)
     if (
@@ -910,6 +920,7 @@ export function PackDrawButton() {
     if (cards.length === 0) return
     const next = ((index % cards.length) + cards.length) % cards.length
     setActiveIdx(next)
+    setArtZoomed(false)
     const card = cards[next]
     setCollected(card ? isCollected(card.id) : false)
     // Flash when browsing onto a card already showing its front.
@@ -1252,7 +1263,16 @@ export function PackDrawButton() {
                     </>
                   )}
                   {inspect ? (
-                    <div className="pack-inspect" role="dialog" aria-label={inspect.name}>
+                    <div
+                      className={[
+                        'pack-inspect',
+                        artZoomed ? 'is-art-zoomed' : '',
+                      ]
+                        .filter(Boolean)
+                        .join(' ')}
+                      role="dialog"
+                      aria-label={inspect.name}
+                    >
                       {(() => {
                         const inspectFx = rarityFxClass(inspect)
                         const inspectGlowing = fxIds.includes(inspect.id)
@@ -1306,21 +1326,14 @@ export function PackDrawButton() {
                           />
                         ) : null}
                       <div className="card-flip pack-inspect-flip">
-                        <div
+                        <CardFaceButton
                           className="card-flip-inner"
-                          role="button"
-                          tabIndex={0}
-                          aria-label={t('deck.flip')}
+                          ariaLabel={t('deck.flip')}
                           style={{
                             transform: `translate3d(0, 0, 0) rotateY(${inspectFlipTurns * 180}deg)`,
                           }}
-                          onClick={flipInspect}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              e.preventDefault()
-                              flipInspect()
-                            }
-                          }}
+                          onFlip={flipInspect}
+                          onToggleZoom={() => setArtZoomed((z) => !z)}
                         >
                           <span className="card-face front">
                             <img
@@ -1336,7 +1349,7 @@ export function PackDrawButton() {
                               draggable={false}
                             />
                           </span>
-                        </div>
+                        </CardFaceButton>
                       </div>
                       </div>
                       </div>
@@ -1376,7 +1389,10 @@ export function PackDrawButton() {
                   className={[
                     'pack-draw-stage',
                     phase === 'revealed' ? 'has-copy' : 'pack-only',
-                  ].join(' ')}
+                    artZoomed ? 'is-art-zoomed' : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
                 >
                   <div
                     className={['pack-stage-visual', `is-${phase}`]
@@ -1490,16 +1506,14 @@ export function PackDrawButton() {
                                   />
                                 ) : null}
                                 <div className="card-flip pack-card-flip">
-                                  <div
+                                  <CardFaceButton
                                     className="card-flip-inner"
-                                    role="button"
-                                    tabIndex={
-                                      (phase === 'revealed' || phase === 'flip') &&
+                                    enabled={
+                                      (phase === 'revealed' ||
+                                        phase === 'flip') &&
                                       isActive
-                                        ? 0
-                                        : -1
                                     }
-                                    aria-label={
+                                    ariaLabel={
                                       slot
                                         ? `${slot.name}. ${t('deck.flip')}`
                                         : t('deck.flip')
@@ -1507,7 +1521,7 @@ export function PackDrawButton() {
                                     style={{
                                       transform: `translate3d(0, 0, 0) rotateY(${(flipTurns[index] ?? 0) * 180}deg)`,
                                     }}
-                                    onClick={() => {
+                                    onFlip={() => {
                                       if (
                                         (phase === 'revealed' ||
                                           phase === 'flip') &&
@@ -1516,17 +1530,16 @@ export function PackDrawButton() {
                                         flipOnce(index)
                                       }
                                     }}
-                                    onKeyDown={(e) => {
-                                      if (e.key === 'Enter' || e.key === ' ') {
-                                        e.preventDefault()
-                                        if (
-                                          (phase === 'revealed' ||
-                                            phase === 'flip') &&
-                                          isActive
-                                        ) {
-                                          flipOnce(index)
-                                        }
+                                    onToggleZoom={() => {
+                                      if (
+                                        !slot ||
+                                        !isActive ||
+                                        (phase !== 'revealed' &&
+                                          phase !== 'flip')
+                                      ) {
+                                        return
                                       }
+                                      setArtZoomed((z) => !z)
                                     }}
                                   >
                                     <span className="card-face front">
@@ -1543,7 +1556,7 @@ export function PackDrawButton() {
                                         draggable={false}
                                       />
                                     </span>
-                                  </div>
+                                  </CardFaceButton>
                                 </div>
                               </div>
                             )

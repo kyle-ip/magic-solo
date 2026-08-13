@@ -1,0 +1,621 @@
+{
+  "decks": [
+    {
+      "id": "modern-affinity",
+      "format": "modern",
+      "name": {
+        "en": "Affinity",
+        "zh": "神器亲和"
+      },
+      "colors": [
+        "U",
+        "R"
+      ],
+      "playstyle": "aggro",
+      "era": "2004–",
+      "coverCard": "Thoughtcast"
+    },
+    {
+      "id": "modern-amulet-titan",
+      "format": "modern",
+      "name": {
+        "en": "Amulet Titan",
+        "zh": "护身符泰坦"
+      },
+      "colors": [
+        "G"
+      ],
+      "playstyle": "combo",
+      "era": "2013–",
+      "coverCard": "Primeval Titan"
+    },
+    {
+      "id": "modern-bogles",
+      "format": "modern",
+      "name": {
+        "en": "Bogles",
+        "zh": "辟邪灵气"
+      },
+      "colors": [
+        "W",
+        "G"
+      ],
+      "playstyle": "aggro",
+      "era": "2011–",
+      "coverCard": "Gladecover Scout"
+    },
+    {
+      "id": "modern-burn",
+      "format": "modern",
+      "name": {
+        "en": "Burn",
+        "zh": "燃烧"
+      },
+      "colors": [
+        "R"
+      ],
+      "playstyle": "aggro",
+      "era": "2011–",
+      "coverCard": "Goblin Guide"
+    },
+    {
+      "id": "modern-deaths-shadow",
+      "format": "modern",
+      "name": {
+        "en": "Death's Shadow",
+        "zh": "死亡阴影"
+      },
+      "colors": [
+        "U",
+        "B"
+      ],
+      "playstyle": "aggro",
+      "era": "2017–",
+      "coverCard": "Death's Shadow"
+    },
+    {
+      "id": "modern-hammer-time",
+      "format": "modern",
+      "name": {
+        "en": "Hammer Time",
+        "zh": "巨锤时刻"
+      },
+      "colors": [
+        "W"
+      ],
+      "playstyle": "aggro",
+      "era": "2021–",
+      "coverCard": "Colossus Hammer"
+    },
+    {
+      "id": "modern-humans",
+      "format": "modern",
+      "name": {
+        "en": "Humans",
+        "zh": "人类"
+      },
+      "colors": [
+        "W"
+      ],
+      "playstyle": "aggro",
+      "era": "2016–",
+      "coverCard": "Champion of the Parish"
+    },
+    {
+      "id": "modern-infect",
+      "format": "modern",
+      "name": {
+        "en": "Infect",
+        "zh": "感染"
+      },
+      "colors": [
+        "G"
+      ],
+      "playstyle": "aggro",
+      "era": "2011–",
+      "coverCard": "Glistener Elf"
+    },
+    {
+      "id": "modern-jund",
+      "format": "modern",
+      "name": {
+        "en": "Jund",
+        "zh": "朱特"
+      },
+      "colors": [
+        "B",
+        "R",
+        "G"
+      ],
+      "playstyle": "midrange",
+      "era": "2011–",
+      "coverCard": "Tarmogoyf"
+    },
+    {
+      "id": "modern-living-end",
+      "format": "modern",
+      "name": {
+        "en": "Living End",
+        "zh": "末日生息"
+      },
+      "colors": [
+        "B",
+        "G"
+      ],
+      "playstyle": "combo",
+      "era": "2011–",
+      "coverCard": "Living End"
+    },
+    {
+      "id": "modern-merfolk",
+      "format": "modern",
+      "name": {
+        "en": "Merfolk",
+        "zh": "人鱼"
+      },
+      "colors": [
+        "U"
+      ],
+      "playstyle": "tempo",
+      "era": "2011–",
+      "coverCard": "Lord of Atlantis"
+    },
+    {
+      "id": "modern-tron",
+      "format": "modern",
+      "name": {
+        "en": "Mono-Green Tron",
+        "zh": "单绿泰坦"
+      },
+      "colors": [
+        "G"
+      ],
+      "playstyle": "combo",
+      "era": "2011–",
+      "coverCard": "Karn Liberated"
+    },
+    {
+      "id": "modern-rhinos",
+      "format": "modern",
+      "name": {
+        "en": "Rhinos / Cascade",
+        "zh": "犀牛 / 连瀑"
+      },
+      "colors": [
+        "W",
+        "U",
+        "B",
+        "R",
+        "G"
+      ],
+      "playstyle": "combo",
+      "era": "2021–",
+      "coverCard": "Crashing Footfalls"
+    },
+    {
+      "id": "modern-twin",
+      "format": "modern",
+      "name": {
+        "en": "Splinter Twin",
+        "zh": "裂片双子"
+      },
+      "colors": [
+        "U",
+        "R"
+      ],
+      "playstyle": "combo",
+      "era": "2011–2015",
+      "coverCard": "Splinter Twin"
+    },
+    {
+      "id": "modern-uw-control",
+      "format": "modern",
+      "name": {
+        "en": "UW Control",
+        "zh": "蓝白控制"
+      },
+      "colors": [
+        "W",
+        "U"
+      ],
+      "playstyle": "control",
+      "era": "2010s–",
+      "coverCard": "Teferi, Hero of Dominaria"
+    },
+    {
+      "id": "modern-yawgmoth",
+      "format": "modern",
+      "name": {
+        "en": "Yawgmoth",
+        "zh": "约格莫夫"
+      },
+      "colors": [
+        "B",
+        "G"
+      ],
+      "playstyle": "combo",
+      "era": "2020–",
+      "coverCard": "Yawgmoth, Thran Physician"
+    },
+    {
+      "id": "legacy-dark-depths",
+      "format": "legacy",
+      "name": {
+        "en": "Dark Depths",
+        "zh": "黑暗深渊"
+      },
+      "colors": [
+        "B",
+        "G"
+      ],
+      "playstyle": "combo",
+      "era": "2010s–",
+      "coverCard": "Dark Depths"
+    },
+    {
+      "id": "legacy-death-and-taxes",
+      "format": "legacy",
+      "name": {
+        "en": "Death and Taxes",
+        "zh": "死亡与税赋"
+      },
+      "colors": [
+        "W"
+      ],
+      "playstyle": "midrange",
+      "era": "2000s–",
+      "coverCard": "Thalia, Guardian of Thraben"
+    },
+    {
+      "id": "legacy-delver",
+      "format": "legacy",
+      "name": {
+        "en": "Delver",
+        "zh": "探秘法师"
+      },
+      "colors": [
+        "U",
+        "R"
+      ],
+      "playstyle": "tempo",
+      "era": "2011–",
+      "coverCard": "Delver of Secrets"
+    },
+    {
+      "id": "legacy-lands",
+      "format": "legacy",
+      "name": {
+        "en": "Lands",
+        "zh": "地套"
+      },
+      "colors": [
+        "G"
+      ],
+      "playstyle": "control",
+      "era": "2000s–",
+      "coverCard": "The Tabernacle at Pendrell Vale"
+    },
+    {
+      "id": "legacy-miracles",
+      "format": "legacy",
+      "name": {
+        "en": "Miracles",
+        "zh": "奇迹"
+      },
+      "colors": [
+        "W",
+        "U"
+      ],
+      "playstyle": "control",
+      "era": "2012–2018",
+      "coverCard": "Terminus"
+    },
+    {
+      "id": "legacy-painter",
+      "format": "legacy",
+      "name": {
+        "en": "Painter",
+        "zh": "画师"
+      },
+      "colors": [
+        "R"
+      ],
+      "playstyle": "combo",
+      "era": "2000s–",
+      "coverCard": "Painter's Servant"
+    },
+    {
+      "id": "legacy-reanimator",
+      "format": "legacy",
+      "name": {
+        "en": "Reanimator",
+        "zh": "再动"
+      },
+      "colors": [
+        "B"
+      ],
+      "playstyle": "combo",
+      "era": "1990s–",
+      "coverCard": "Griselbrand"
+    },
+    {
+      "id": "legacy-storm",
+      "format": "legacy",
+      "name": {
+        "en": "Storm",
+        "zh": "风暴"
+      },
+      "colors": [
+        "U",
+        "B",
+        "R"
+      ],
+      "playstyle": "combo",
+      "era": "2000s–",
+      "coverCard": "Tendrils of Agony"
+    },
+    {
+      "id": "pioneer-greasefang",
+      "format": "pioneer",
+      "name": {
+        "en": "Greasefang",
+        "zh": "油齿"
+      },
+      "colors": [
+        "W",
+        "B"
+      ],
+      "playstyle": "combo",
+      "era": "2022–",
+      "coverCard": "Greasefang, Okiba Boss"
+    },
+    {
+      "id": "pioneer-phoenix",
+      "format": "pioneer",
+      "name": {
+        "en": "Izzet Phoenix",
+        "zh": "蓝红凤凰"
+      },
+      "colors": [
+        "U",
+        "R"
+      ],
+      "playstyle": "midrange",
+      "era": "2019–",
+      "coverCard": "Arclight Phoenix"
+    },
+    {
+      "id": "pioneer-lotus-field",
+      "format": "pioneer",
+      "name": {
+        "en": "Lotus Field Combo",
+        "zh": "莲花原野组合"
+      },
+      "colors": [
+        "U",
+        "G"
+      ],
+      "playstyle": "combo",
+      "era": "2020–",
+      "coverCard": "Lotus Field"
+    },
+    {
+      "id": "pioneer-mono-green-devotion",
+      "format": "pioneer",
+      "name": {
+        "en": "Mono-Green Devotion",
+        "zh": "单绿献力"
+      },
+      "colors": [
+        "G"
+      ],
+      "playstyle": "combo",
+      "era": "2019–",
+      "coverCard": "Kiora, Behemoth Beckoner"
+    },
+    {
+      "id": "pioneer-rakdos-midrange",
+      "format": "pioneer",
+      "name": {
+        "en": "Rakdos Midrange",
+        "zh": "拉铎司中速"
+      },
+      "colors": [
+        "B",
+        "R"
+      ],
+      "playstyle": "midrange",
+      "era": "2022–",
+      "coverCard": "Fable of the Mirror-Breaker"
+    },
+    {
+      "id": "pioneer-spirits",
+      "format": "pioneer",
+      "name": {
+        "en": "Spirits",
+        "zh": "精怪"
+      },
+      "colors": [
+        "W",
+        "U"
+      ],
+      "playstyle": "tempo",
+      "era": "2019–",
+      "coverCard": "Spell Queller"
+    },
+    {
+      "id": "pioneer-uw-control",
+      "format": "pioneer",
+      "name": {
+        "en": "UW Control",
+        "zh": "蓝白控制（先驱）"
+      },
+      "colors": [
+        "W",
+        "U"
+      ],
+      "playstyle": "control",
+      "era": "2019–",
+      "coverCard": "Teferi, Hero of Dominaria"
+    },
+    {
+      "id": "pauper-affinity",
+      "format": "pauper",
+      "name": {
+        "en": "Affinity",
+        "zh": "神器亲和（特选）"
+      },
+      "colors": [
+        "U"
+      ],
+      "playstyle": "aggro",
+      "era": "2010s–",
+      "coverCard": "Sojourner's Companion"
+    },
+    {
+      "id": "pauper-faeries",
+      "format": "pauper",
+      "name": {
+        "en": "Faeries",
+        "zh": "仙灵（凡骨）"
+      },
+      "colors": [
+        "U",
+        "B"
+      ],
+      "playstyle": "tempo",
+      "era": "2010s–",
+      "coverCard": "Ninja of the Deep Hours"
+    },
+    {
+      "id": "pauper-mono-red",
+      "format": "pauper",
+      "name": {
+        "en": "Mono-Red Aggro",
+        "zh": "单红快攻（凡骨）"
+      },
+      "colors": [
+        "R"
+      ],
+      "playstyle": "aggro",
+      "era": "2010s–",
+      "coverCard": "Goblin Bushwhacker"
+    },
+    {
+      "id": "pauper-tron",
+      "format": "pauper",
+      "name": {
+        "en": "Tron",
+        "zh": "泰坦（凡骨）"
+      },
+      "colors": [
+        "C"
+      ],
+      "playstyle": "control",
+      "era": "2010s–",
+      "coverCard": "Urza's Tower"
+    },
+    {
+      "id": "pauper-walls",
+      "format": "pauper",
+      "name": {
+        "en": "Walls Combo",
+        "zh": "墙组合（凡骨）"
+      },
+      "colors": [
+        "G"
+      ],
+      "playstyle": "combo",
+      "era": "2020–",
+      "coverCard": "Overgrown Battlement"
+    },
+    {
+      "id": "vintage-dredge",
+      "format": "vintage",
+      "name": {
+        "en": "Dredge",
+        "zh": "刨掘"
+      },
+      "colors": [
+        "B",
+        "G"
+      ],
+      "playstyle": "combo",
+      "era": "2000s–",
+      "coverCard": "Bazaar of Baghdad"
+    },
+    {
+      "id": "vintage-oath",
+      "format": "vintage",
+      "name": {
+        "en": "Oath of Druids",
+        "zh": "德鲁伊誓言"
+      },
+      "colors": [
+        "G"
+      ],
+      "playstyle": "combo",
+      "era": "1990s–",
+      "coverCard": "Oath of Druids"
+    },
+    {
+      "id": "vintage-paradoxical",
+      "format": "vintage",
+      "name": {
+        "en": "Paradoxical Outcome",
+        "zh": "矛盾结果"
+      },
+      "colors": [
+        "U"
+      ],
+      "playstyle": "combo",
+      "era": "2010s–",
+      "coverCard": "Paradoxical Outcome"
+    },
+    {
+      "id": "vintage-workshop",
+      "format": "vintage",
+      "name": {
+        "en": "Workshop",
+        "zh": "工坊"
+      },
+      "colors": [
+        "C"
+      ],
+      "playstyle": "midrange",
+      "era": "1990s–",
+      "coverCard": "Mishra's Workshop"
+    },
+    {
+      "id": "standard-classic-cawblade",
+      "format": "standard-classic",
+      "name": {
+        "en": "Caw-Blade",
+        "zh": "鸦刃"
+      },
+      "colors": [
+        "W",
+        "U"
+      ],
+      "playstyle": "midrange",
+      "era": "2011",
+      "coverCard": "Squadron Hawk"
+    },
+    {
+      "id": "standard-classic-splinter-twin",
+      "format": "standard-classic",
+      "name": {
+        "en": "Splinter Twin (Standard)",
+        "zh": "裂片双子（标准）"
+      },
+      "colors": [
+        "U",
+        "R"
+      ],
+      "playstyle": "combo",
+      "era": "2011–2012",
+      "coverCard": "Splinter Twin"
+    }
+  ],
+  "fetchedAt": "2026-08-13T12:56:46.824Z"
+}

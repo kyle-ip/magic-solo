@@ -1,0 +1,51 @@
+{
+  "id": "legacy-delver",
+  "format": "legacy",
+  "name": { "en": "Delver", "zh": "探秘法师" },
+  "colors": ["U", "R"],
+  "playstyle": "tempo",
+  "era": "2011–",
+  "summary": {
+    "en": "A 3/2 flier on turn two backed by the best cantrips and free counterspells in Magic. Delver defines Legacy tempo: cheap threats, perfect interaction, and never letting the opponent breathe.",
+    "zh": "第二回合翻成 3/2 飞行，身后是万智牌最强的过牌与免费反制。探秘法师定义了薪传节奏：廉价威胁、精准互动，不给对手喘息。"
+  },
+  "howItWins": {
+    "en": "Flip Delver of Secrets, apply pressure with Murktide Regent or Dragon's Rage Channeler, and protect the board with Force of Will and Daze. Brainstorm and Ponder sculpt every draw step.",
+    "zh": "翻开探秘法师，用黯潮摄政或巨龙怒火通灵者施压，再用意志之力与晕眩护航。头脑风暴与深思雕琢每一抽。"
+  },
+  "keyCards": ["Delver of Secrets", "Force of Will", "Brainstorm", "Murktide Regent"],
+  "coverCard": "Delver of Secrets",
+  "sampleList": [
+    { "name": "Delver of Secrets", "qty": 4, "board": "main" },
+    { "name": "Dragon's Rage Channeler", "qty": 4, "board": "main" },
+    { "name": "Murktide Regent", "qty": 3, "board": "main" },
+    { "name": "Brazen Borrower", "qty": 1, "board": "main" },
+    { "name": "Brainstorm", "qty": 4, "board": "main" },
+    { "name": "Ponder", "qty": 4, "board": "main" },
+    { "name": "Lightning Bolt", "qty": 4, "board": "main" },
+    { "name": "Force of Will", "qty": 4, "board": "main" },
+    { "name": "Daze", "qty": 4, "board": "main" },
+    { "name": "Spell Pierce", "qty": 1, "board": "main" },
+    { "name": "Unholy Heat", "qty": 2, "board": "main" },
+    { "name": "Expressive Iteration", "qty": 2, "board": "main" },
+    { "name": "Island", "qty": 2, "board": "main" },
+    { "name": "Volcanic Island", "qty": 3, "board": "main" },
+    { "name": "Flooded Strand", "qty": 4, "board": "main" },
+    { "name": "Polluted Delta", "qty": 4, "board": "main" },
+    { "name": "Scalding Tarn", "qty": 3, "board": "main" },
+    { "name": "Wasteland", "qty": 4, "board": "main" },
+    { "name": "Misty Rainforest", "qty": 1, "board": "main" },
+    { "name": "Mountain", "qty": 1, "board": "main" },
+    { "name": "Meltdown", "qty": 2, "board": "side" },
+    { "name": "Pyroblast", "qty": 3, "board": "side" },
+    { "name": "Surgical Extraction", "qty": 2, "board": "side" },
+    { "name": "Null Rod", "qty": 2, "board": "side" },
+    { "name": "Price of Progress", "qty": 2, "board": "side" },
+    { "name": "Grafdigger's Cage", "qty": 2, "board": "side" },
+    { "name": "Force of Negation", "qty": 2, "board": "side" }
+  ],
+  "links": {
+    "wiki": "https://mtg.wiki/page/Delver",
+    "scryfallQuery": "f:legacy delver"
+  }
+}

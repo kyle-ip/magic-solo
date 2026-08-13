@@ -1,0 +1,160 @@
+{
+  "id": "pioneer-spirits",
+  "format": "pioneer",
+  "name": {
+    "en": "Spirits",
+    "zh": "精怪"
+  },
+  "colors": [
+    "W",
+    "U"
+  ],
+  "playstyle": "tempo",
+  "era": "2019–",
+  "coverCard": "Spell Queller",
+  "summary": {
+    "en": "Flying lords and permission. Spirits is Pioneer's blue-white tempo tribe.",
+    "zh": "飞行领主与反制。精怪是先驱蓝白节奏部族。"
+  },
+  "howItWins": {
+    "en": "Curve Mausoleum Wanderer and Rattlechains into Spell Queller and Collected Company, racing in the air while interacting.",
+    "zh": "用陵墓流浪者与链铃曲线接咒语镇压者与聚群，空中抢血同时互动。"
+  },
+  "keyCards": [
+    "Spell Queller",
+    "Collected Company",
+    "Mausoleum Wanderer",
+    "Rattlechains"
+  ],
+  "sampleList": [
+    {
+      "name": "Mausoleum Wanderer",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Rattlechains",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Spell Queller",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Supreme Phantom",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Shacklegeist",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Skyclave Apparition",
+      "qty": 3,
+      "board": "main"
+    },
+    {
+      "name": "Collected Company",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Lofty Denial",
+      "qty": 3,
+      "board": "main"
+    },
+    {
+      "name": "Hallowed Fountain",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Hengegate Pathway",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Island",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Plains",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Otawara, Soaring City",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Eiganjo, Seat of the Empire",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Seachrome Coast",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Adarkar Wastes",
+      "qty": 3,
+      "board": "main"
+    },
+    {
+      "name": "Mutavault",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Glacial Fortress",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Rest in Peace",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Portable Hole",
+      "qty": 3,
+      "board": "side"
+    },
+    {
+      "name": "Mystical Dispute",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Declaration in Stone",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Katilda, Dawnhart Martyr",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Selfless Spirit",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Unlicensed Hearse",
+      "qty": 2,
+      "board": "side"
+    }
+  ],
+  "links": {
+    "wiki": "https://mtg.wiki/page/Spirit",
+    "scryfallQuery": "f:pioneer spell queller"
+  }
+}

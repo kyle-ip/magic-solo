@@ -176,7 +176,7 @@ interface ScryfallCardFace {
   image_uris?: ScryfallImageUris
 }
 
-interface ScryfallCard {
+export interface ScryfallCard {
   id: string
   oracle_id?: string
   name: string
@@ -256,7 +256,8 @@ function colorsFromManaCost(manaCost: string): string[] {
   return [...found]
 }
 
-function fromScryfall(card: ScryfallCard): DrawnCard | null {
+/** Map a Scryfall card JSON object into the shared DrawnCard shape. */
+export function drawnFromScryfall(card: ScryfallCard): DrawnCard | null {
   const face = card.card_faces?.[0]
   const frontImageUrl = pickImage(card.image_uris) || pickImage(face?.image_uris)
   if (!frontImageUrl) return null
@@ -367,8 +368,8 @@ async function waitScryfallGap(): Promise<void> {
   lastScryfallAt = Date.now()
 }
 
-/** Serialize Scryfall calls that need polite spacing (zhs overlay). */
-function enqueueScryfall<T>(fn: () => Promise<T>): Promise<T> {
+/** Serialize Scryfall calls that need polite spacing (zhs overlay / collection). */
+export function enqueueScryfall<T>(fn: () => Promise<T>): Promise<T> {
   const run = scryfallQueue.then(async () => {
     await waitScryfallGap()
     return fn()
@@ -380,16 +381,18 @@ function enqueueScryfall<T>(fn: () => Promise<T>): Promise<T> {
   return run
 }
 
-async function fetchWithTimeout(
+export async function fetchWithTimeout(
   url: string,
   timeoutMs: number,
+  init?: RequestInit,
 ): Promise<Response> {
   const controller = new AbortController()
   const timer = window.setTimeout(() => controller.abort(), timeoutMs)
   try {
     return await fetch(url, {
+      ...init,
       signal: controller.signal,
-      headers: { Accept: 'application/json' },
+      headers: { Accept: 'application/json', ...(init?.headers ?? {}) },
     })
   } finally {
     window.clearTimeout(timer)
@@ -554,7 +557,7 @@ async function fetchScryfallRandom(rarity: CardRarity): Promise<DrawnCard> {
     throw new Error(`Scryfall HTTP ${res.status}`)
   }
   const json = (await res.json()) as ScryfallCard
-  const drawn = fromScryfall(json)
+  const drawn = drawnFromScryfall(json)
   if (!drawn) throw new Error('Scryfall card missing images')
   return drawn
 }

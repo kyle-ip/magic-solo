@@ -1,0 +1,169 @@
+{
+  "id": "legacy-death-and-taxes",
+  "format": "legacy",
+  "name": {
+    "en": "Death and Taxes",
+    "zh": "死亡与税赋"
+  },
+  "colors": [
+    "W"
+  ],
+  "playstyle": "midrange",
+  "era": "2000s–",
+  "coverCard": "Thalia, Guardian of Thraben",
+  "summary": {
+    "en": "White hatebears with Wasteland and Mother of Runes. Death and Taxes taxes every spell and every land drop.",
+    "zh": "白仇恨熊加废土与符文之母。死亡与税赋对每个咒语、每块地都征税。"
+  },
+  "howItWins": {
+    "en": "Lock mana with Thalia and Revoker, protect attackers with Mom, and grind with Stoneforge packages or Skyclave Apparition.",
+    "zh": "用萨莉娅与废止者锁法力，符文之母护航，石锻秘教徒或天崖鬼影磨死对手。"
+  },
+  "keyCards": [
+    "Thalia, Guardian of Thraben",
+    "Mother of Runes",
+    "Wasteland",
+    "Stoneforge Mystic"
+  ],
+  "sampleList": [
+    {
+      "name": "Mother of Runes",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Thalia, Guardian of Thraben",
+      "qty": 3,
+      "board": "main"
+    },
+    {
+      "name": "Stoneforge Mystic",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Spirit of the Labyrinth",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Skyclave Apparition",
+      "qty": 3,
+      "board": "main"
+    },
+    {
+      "name": "Flickerwisp",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Recruiter of the Guard",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Solitude",
+      "qty": 3,
+      "board": "main"
+    },
+    {
+      "name": "Swords to Plowshares",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Aether Vial",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Batterskull",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Kaldra Compleat",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Plains",
+      "qty": 8,
+      "board": "main"
+    },
+    {
+      "name": "Wasteland",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Karakas",
+      "qty": 3,
+      "board": "main"
+    },
+    {
+      "name": "Rishadan Port",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Eiganjo Castle",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Flagstones of Trokair",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Cavern of Souls",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Deafening Silence",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Rest in Peace",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Surgical Extraction",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Cataclysm",
+      "qty": 1,
+      "board": "side"
+    },
+    {
+      "name": "Council's Judgment",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Faerie Macabre",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Path to Exile",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Containment Priest",
+      "qty": 2,
+      "board": "side"
+    }
+  ],
+  "links": {
+    "wiki": "https://mtg.wiki/page/Death_and_Taxes",
+    "scryfallQuery": "f:legacy thalia"
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "id": "modern-uw-control",
+  "format": "modern",
+  "name": { "en": "UW Control", "zh": "蓝白控制" },
+  "colors": ["W", "U"],
+  "playstyle": "control",
+  "era": "2010s–",
+  "summary": {
+    "en": "Answer everything, then win with a planeswalker or a late creature. UW Control is the Modern classroom for permission, sweepers, and patience.",
+    "zh": "回答一切威胁，再用鹏洛客或后期生物取胜。蓝白控制是近代环境里学习反制、清场与耐心的课堂。"
+  },
+  "howItWins": {
+    "en": "Counter key spells, wipe the board with Supreme Verdict or Solitude, then lock the game with Teferi, Hero of Dominaria or a solitary finisher. Card advantage from Snapcaster Mage and Archmage's Charm keeps the tank full.",
+    "zh": "反制关键咒语，用至高裁决或孤寂清场，再以多米纳里亚英雄泰菲力或单体终结者锁死局面。迅咒法师与大法师护符维持手牌优势。"
+  },
+  "keyCards": ["Teferi, Hero of Dominaria", "Counterspell", "Supreme Verdict", "Solitude"],
+  "coverCard": "Teferi, Hero of Dominaria",
+  "sampleList": [
+    { "name": "Solitude", "qty": 4, "board": "main" },
+    { "name": "Snapcaster Mage", "qty": 2, "board": "main" },
+    { "name": "Teferi, Hero of Dominaria", "qty": 2, "board": "main" },
+    { "name": "Teferi, Time Raveler", "qty": 2, "board": "main" },
+    { "name": "Counterspell", "qty": 4, "board": "main" },
+    { "name": "Archmage's Charm", "qty": 3, "board": "main" },
+    { "name": "Force of Negation", "qty": 2, "board": "main" },
+    { "name": "Spell Snare", "qty": 2, "board": "main" },
+    { "name": "Supreme Verdict", "qty": 3, "board": "main" },
+    { "name": "Prismatic Ending", "qty": 3, "board": "main" },
+    { "name": "Fire // Ice", "qty": 1, "board": "main" },
+    { "name": "The One Ring", "qty": 2, "board": "main" },
+    { "name": "Shark Typhoon", "qty": 2, "board": "main" },
+    { "name": "Flooded Strand", "qty": 4, "board": "main" },
+    { "name": "Hallowed Fountain", "qty": 2, "board": "main" },
+    { "name": "Island", "qty": 4, "board": "main" },
+    { "name": "Plains", "qty": 2, "board": "main" },
+    { "name": "Mystic Gate", "qty": 2, "board": "main" },
+    { "name": "Hall of Storm Giants", "qty": 1, "board": "main" },
+    { "name": "Otawara, Soaring City", "qty": 1, "board": "main" },
+    { "name": "Raugrin Triome", "qty": 1, "board": "main" },
+    { "name": "Field of Ruin", "qty": 2, "board": "main" },
+    { "name": "Castle Vantress", "qty": 1, "board": "main" },
+    { "name": "Cascade Bluffs", "qty": 1, "board": "main" },
+    { "name": "Steam Vents", "qty": 1, "board": "main" },
+    { "name": "Scalding Tarn", "qty": 2, "board": "main" },
+    { "name": "Hallowed Moonlight", "qty": 2, "board": "side" },
+    { "name": "Rest in Peace", "qty": 2, "board": "side" },
+    { "name": "Dovin's Veto", "qty": 2, "board": "side" },
+    { "name": "Celestial Purge", "qty": 2, "board": "side" },
+    { "name": "Flusterstorm", "qty": 2, "board": "side" },
+    { "name": "Kaheera, the Orphanguard", "qty": 1, "board": "side" },
+    { "name": "Chalice of the Void", "qty": 2, "board": "side" },
+    { "name": "Subtlety", "qty": 2, "board": "side" }
+  ],
+  "links": {
+    "wiki": "https://mtg.wiki/page/Control",
+    "scryfallQuery": "f:modern t:planeswalker c:uw"
+  }
+}

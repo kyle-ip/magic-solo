@@ -1,0 +1,190 @@
+{
+  "id": "legacy-miracles",
+  "format": "legacy",
+  "name": {
+    "en": "Miracles",
+    "zh": "奇迹"
+  },
+  "colors": [
+    "W",
+    "U"
+  ],
+  "playstyle": "control",
+  "era": "2012–2018",
+  "coverCard": "Terminus",
+  "summary": {
+    "en": "The classic Top + Terminus control deck. Miracles defined Legacy fair Magic for years.",
+    "zh": "经典的预知顶 + 终结控制套。奇迹定义了薪传公平套多年。"
+  },
+  "howItWins": {
+    "en": "Stack Terminus with Sensei's Divining Top, counter key spells, and close with Jace or Monastery Mentor.",
+    "zh": "用先生的预知顶堆终结，反制关键咒语，以杰斯或僧院导师收尾。"
+  },
+  "keyCards": [
+    "Terminus",
+    "Sensei's Divining Top",
+    "Counterbalance",
+    "Jace, the Mind Sculptor"
+  ],
+  "sampleList": [
+    {
+      "name": "Monastery Mentor",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Snapcaster Mage",
+      "qty": 3,
+      "board": "main"
+    },
+    {
+      "name": "Jace, the Mind Sculptor",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Brainstorm",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Ponder",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Portent",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Swords to Plowshares",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Force of Will",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Spell Pierce",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Counterspell",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Terminus",
+      "qty": 3,
+      "board": "main"
+    },
+    {
+      "name": "Entreat the Angels",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Sensei's Divining Top",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Counterbalance",
+      "qty": 3,
+      "board": "main"
+    },
+    {
+      "name": "Island",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Plains",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Tundra",
+      "qty": 3,
+      "board": "main"
+    },
+    {
+      "name": "Flooded Strand",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Polluted Delta",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Scalding Tarn",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Volcanic Island",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Mountain",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Arid Mesa",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Flusterstorm",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Surgical Extraction",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Rest in Peace",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Pyroblast",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Council's Judgment",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Vendilion Clique",
+      "qty": 1,
+      "board": "side"
+    },
+    {
+      "name": "Containment Priest",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Force of Negation",
+      "qty": 2,
+      "board": "side"
+    }
+  ],
+  "links": {
+    "wiki": "https://mtg.wiki/page/Miracles",
+    "scryfallQuery": "f:legacy terminus"
+  }
+}

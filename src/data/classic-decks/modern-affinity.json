@@ -1,0 +1,48 @@
+{
+  "id": "modern-affinity",
+  "format": "modern",
+  "name": { "en": "Affinity", "zh": "神器亲和" },
+  "colors": ["U", "R"],
+  "playstyle": "aggro",
+  "era": "2004–",
+  "summary": {
+    "en": "Born from Mirrodin's artifact engine, Affinity floods the board with cheap robots, then converts them into card draw and lethal damage. It is Modern's original \"broken toy\" archetype.",
+    "zh": "源自秘罗地神器引擎：用廉价机器人铺场，再转化为过牌与致命伤害。它是近代环境最早的「玩具爆表」原型之一。"
+  },
+  "howItWins": {
+    "en": "Assemble a critical mass of zero- and one-mana artifacts, cast Thoughtcast and Cranial Plating, then overwhelm with Ornithopter, Memnite, and Construct tokens. Interaction clears blockers while the machine keeps humming.",
+    "zh": "堆出大量零费/一费神器，施放思绪投射与颅骨护甲，再用扑翼机、微尘与组构体淹没对手。互动清阻挡，引擎继续运转。"
+  },
+  "keyCards": ["Thoughtcast", "Cranial Plating", "Ornithopter", "Memnite"],
+  "coverCard": "Thoughtcast",
+  "sampleList": [
+    { "name": "Ornithopter", "qty": 4, "board": "main" },
+    { "name": "Memnite", "qty": 4, "board": "main" },
+    { "name": "Gingerbrute", "qty": 4, "board": "main" },
+    { "name": "Sojourner's Companion", "qty": 4, "board": "main" },
+    { "name": "Frogmite", "qty": 4, "board": "main" },
+    { "name": "Thoughtcast", "qty": 4, "board": "main" },
+    { "name": "Cranial Plating", "qty": 4, "board": "main" },
+    { "name": "Springleaf Drum", "qty": 4, "board": "main" },
+    { "name": "Welding Jar", "qty": 2, "board": "main" },
+    { "name": "Shadowspear", "qty": 1, "board": "main" },
+    { "name": "Metallic Rebuke", "qty": 3, "board": "main" },
+    { "name": "Darksteel Citadel", "qty": 4, "board": "main" },
+    { "name": "Treasure Vault", "qty": 4, "board": "main" },
+    { "name": "Island", "qty": 2, "board": "main" },
+    { "name": "Spire of Industry", "qty": 4, "board": "main" },
+    { "name": "Urza's Saga", "qty": 4, "board": "main" },
+    { "name": "Dismember", "qty": 2, "board": "main" },
+    { "name": "Spell Pierce", "qty": 2, "board": "side" },
+    { "name": "Pithing Needle", "qty": 2, "board": "side" },
+    { "name": "Soul-Guide Lantern", "qty": 2, "board": "side" },
+    { "name": "Wear // Tear", "qty": 2, "board": "side" },
+    { "name": "Metallic Rebuke", "qty": 2, "board": "side" },
+    { "name": "Dismember", "qty": 2, "board": "side" },
+    { "name": "Haywire Mite", "qty": 3, "board": "side" }
+  ],
+  "links": {
+    "wiki": "https://mtg.wiki/page/Affinity_(archetype)",
+    "scryfallQuery": "f:modern o:affinity"
+  }
+}

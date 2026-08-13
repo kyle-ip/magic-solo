@@ -1,0 +1,134 @@
+{
+  "id": "pauper-walls",
+  "format": "pauper",
+  "name": {
+    "en": "Walls Combo",
+    "zh": "墙组合（凡骨）"
+  },
+  "colors": [
+    "G"
+  ],
+  "playstyle": "combo",
+  "era": "2020–",
+  "coverCard": "Overgrown Battlement",
+  "summary": {
+    "en": "Stack defenders, untap with Freed from the Real, and make infinite mana for a lethal Ballista or secret door line.",
+    "zh": "堆防御者，用摆脱现实重置，无限法力接自行球侍或秘门线斩杀。"
+  },
+  "howItWins": {
+    "en": "Assemble Battlement + Freed / Pemmin's Aura, generate absurd mana, and finish with Lead the Stampede value or a sink.",
+    "zh": "凑齐城垛 + 摆脱现实/佩明灵气，爆发法力，再以率领猛冲过牌或出口收尾。"
+  },
+  "keyCards": [
+    "Overgrown Battlement",
+    "Freed from the Real",
+    "Axebane Guardian",
+    "Lead the Stampede"
+  ],
+  "sampleList": [
+    {
+      "name": "Overgrown Battlement",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Axebane Guardian",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Saruli Caretaker",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Quirion Ranger",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Tinder Wall",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Freed from the Real",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Pemmin's Aura",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Lead the Stampede",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Winding Way",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Secret Door",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Valakut Invoker",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Forest",
+      "qty": 14,
+      "board": "main"
+    },
+    {
+      "name": "Ash Barrens",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Snow-Covered Forest",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Scattershot Archer",
+      "qty": 3,
+      "board": "side"
+    },
+    {
+      "name": "Deglamer",
+      "qty": 3,
+      "board": "side"
+    },
+    {
+      "name": "Weather the Storm",
+      "qty": 3,
+      "board": "side"
+    },
+    {
+      "name": "Pulse of Murasa",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Nihil Spellbomb",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Standard Bearer",
+      "qty": 2,
+      "board": "side"
+    }
+  ],
+  "links": {
+    "wiki": "https://mtg.wiki/page/Walls",
+    "scryfallQuery": "f:pauper battlement"
+  }
+}

@@ -6,7 +6,16 @@ export function FloatingNav() {
   const { t } = useTranslation()
   const { pathname } = useLocation()
   const [showTop, setShowTop] = useState(false)
-  const isDeckPage = pathname.startsWith('/decks/')
+  const isChallengeDeck = pathname.startsWith('/decks/')
+  const isClassicDeck =
+    pathname === '/classic-decks' || pathname.startsWith('/classic-decks/')
+  const isDeckPage = isChallengeDeck || isClassicDeck
+  const homeTo =
+    isClassicDeck && pathname !== '/classic-decks' ? '/classic-decks' : '/'
+  const homeLabel =
+    isClassicDeck && pathname !== '/classic-decks'
+      ? t('classicDecks.backToList')
+      : t('app.home')
 
   useEffect(() => {
     const onScroll = () => {
@@ -27,7 +36,12 @@ export function FloatingNav() {
   return (
     <div className="floating-nav" role="navigation" aria-label={t('app.floatingNav')}>
       {isDeckPage ? (
-        <Link to="/" className="floating-nav-btn" title={t('app.home')} aria-label={t('app.home')}>
+        <Link
+          to={homeTo}
+          className="floating-nav-btn"
+          title={homeLabel}
+          aria-label={homeLabel}
+        >
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path
               d="M4.5 11.2 12 4.8l7.5 6.4v8.5a.7.7 0 0 1-.7.7h-4.6v-5.2h-4.4v5.2H5.2a.7.7 0 0 1-.7-.7v-8.5Z"

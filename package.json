@@ -11,7 +11,10 @@
     "test:watch": "vitest",
     "fetch:cards": "node scripts/fetch-scryfall.mjs",
     "fetch:display": "node scripts/fetch-display-and-covers.mjs",
-    "fetch:local": "node scripts/fetch-local-assets.mjs"
+    "fetch:local": "node scripts/fetch-local-assets.mjs",
+    "fetch:classic-decks": "node scripts/fetch-classic-from-spicerack.mjs",
+    "generate:classic-decks": "node scripts/generate-classic-decks.mjs",
+    "fetch:mana-symbols": "node scripts/fetch-mana-symbols.mjs"
   },
   "dependencies": {
     "i18next": "^25.3.2",

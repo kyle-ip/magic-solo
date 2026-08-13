@@ -89,3 +89,59 @@ export interface SharedRules {
   points: string[]
   sources: RuleSource[]
 }
+
+export type ClassicFormat =
+  | 'modern'
+  | 'legacy'
+  | 'pioneer'
+  | 'pauper'
+  | 'vintage'
+  | 'standard-classic'
+
+export type ClassicPlaystyle =
+  | 'aggro'
+  | 'midrange'
+  | 'control'
+  | 'combo'
+  | 'tempo'
+
+export interface LocalizedText {
+  en: string
+  zh: string
+}
+
+export interface ClassicDeckListEntry {
+  name: string
+  qty: number
+  board: 'main' | 'side'
+}
+
+export interface ClassicDeckLinks {
+  wiki?: string
+  scryfallQuery?: string
+}
+
+export interface ClassicDeck {
+  id: string
+  format: ClassicFormat
+  name: LocalizedText
+  colors: string[]
+  playstyle: ClassicPlaystyle
+  era: string
+  summary: LocalizedText
+  howItWins: LocalizedText
+  keyCards: string[]
+  coverCard: string
+  sampleList: ClassicDeckListEntry[]
+  links?: ClassicDeckLinks
+}
+
+export interface ClassicDeckIndexEntry {
+  id: string
+  format: ClassicFormat
+  name: LocalizedText
+  colors: string[]
+  playstyle: ClassicPlaystyle
+  era: string
+  coverCard: string
+}

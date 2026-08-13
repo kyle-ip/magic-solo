@@ -1,0 +1,175 @@
+{
+  "id": "modern-twin",
+  "format": "modern",
+  "name": {
+    "en": "Splinter Twin",
+    "zh": "裂片双子"
+  },
+  "colors": [
+    "U",
+    "R"
+  ],
+  "playstyle": "combo",
+  "era": "2011–2015",
+  "coverCard": "Splinter Twin",
+  "summary": {
+    "en": "The banned legend: enchant Deceiver Exarch or Pestermite with Splinter Twin for infinite hasty tokens. Still the poster child of Modern combo history.",
+    "zh": "已被禁用的传说：裂片双子贴上欺瞒主教或扰害精，无限敏捷衍生物。近代组合史的标志。"
+  },
+  "howItWins": {
+    "en": "Protect the combo with Remand and Cryptic Command, or win \"fair\" with Snapcaster value while looking for the Twin kill.",
+    "zh": "用还击与玄秘指令护航组合，或以迅咒法师公平推进，同时寻找双子杀招。"
+  },
+  "keyCards": [
+    "Splinter Twin",
+    "Deceiver Exarch",
+    "Pestermite",
+    "Cryptic Command"
+  ],
+  "sampleList": [
+    {
+      "name": "Deceiver Exarch",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Pestermite",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Snapcaster Mage",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Splinter Twin",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Kiki-Jiki, Mirror Breaker",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Remand",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Cryptic Command",
+      "qty": 3,
+      "board": "main"
+    },
+    {
+      "name": "Lightning Bolt",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Serum Visions",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Spell Snare",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Dispel",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Island",
+      "qty": 5,
+      "board": "main"
+    },
+    {
+      "name": "Mountain",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Steam Vents",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Sulfur Falls",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Scalding Tarn",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Misty Rainforest",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Desolate Lighthouse",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Cascade Bluffs",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Flooded Strand",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Blood Moon",
+      "qty": 3,
+      "board": "side"
+    },
+    {
+      "name": "Anger of the Gods",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Dispel",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Engineered Explosives",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Izzet Charm",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Keranos, God of Storms",
+      "qty": 1,
+      "board": "side"
+    },
+    {
+      "name": "Spellskite",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Ancient Grudge",
+      "qty": 1,
+      "board": "side"
+    }
+  ],
+  "links": {
+    "wiki": "https://mtg.wiki/page/Splinter_Twin",
+    "scryfallQuery": "f:modern splinter twin"
+  }
+}

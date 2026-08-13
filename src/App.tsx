@@ -5,6 +5,8 @@ import { SiteFooter } from './components/SiteFooter'
 import { SiteHeader } from './components/SiteHeader'
 import { AssistantPage } from './pages/AssistantPage'
 import { ChallengePage } from './pages/ChallengePage'
+import { ClassicDeckDetailPage } from './pages/ClassicDeckDetailPage'
+import { ClassicDecksPage } from './pages/ClassicDecksPage'
 import { DeckPage } from './pages/DeckPage'
 import { HomePage } from './pages/HomePage'
 import {
@@ -53,6 +55,8 @@ export default function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/decks/:setCode" element={<DeckPage />} />
+        <Route path="/classic-decks" element={<ClassicDecksPage />} />
+        <Route path="/classic-decks/:id" element={<ClassicDeckDetailPage />} />
         <Route path="/experience/decks/:setCode" element={<LegacyModeDeckRedirect />} />
         <Route path="/assistant/decks/:setCode" element={<LegacyModeDeckRedirect />} />
         <Route path="/challenge/:setCode" element={<ChallengePage />} />

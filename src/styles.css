@@ -246,6 +246,7 @@ select {
   font-size: 0.88rem;
   letter-spacing: 0.02em;
   cursor: pointer;
+  text-decoration: none;
   border-bottom: 1px solid transparent;
   transition: color 140ms ease, border-color 140ms ease;
 }
@@ -253,6 +254,12 @@ select {
 .references-text-btn:hover {
   color: #f0d48a;
   border-bottom-color: rgba(240, 212, 138, 0.45);
+  text-decoration: none;
+}
+
+a.references-text-btn:visited {
+  color: rgba(231, 215, 184, 0.78);
+  text-decoration: none;
 }
 
 .brand-lockup {
@@ -267,6 +274,7 @@ select {
 .brand-logo {
   width: auto;
   height: 2.95rem;
+  max-width: none;
   display: block;
   flex-shrink: 0;
 }
@@ -1103,6 +1111,19 @@ h2 {
   background: rgba(224, 180, 90, 0.22);
 }
 
+.mana-symbol.is-fallback {
+  width: auto;
+  min-width: 1.05em;
+  height: 1.05em;
+  padding: 0 0.15em;
+  font-size: 0.72em;
+  line-height: 1.05em;
+  text-align: center;
+  border-radius: 0.2em;
+  background: rgba(224, 180, 90, 0.18);
+  color: rgba(231, 215, 184, 0.9);
+}
+
 .oracle-text .mana-symbol,
 .pack-details-block .mana-symbol {
   width: 1em;
@@ -1563,6 +1584,15 @@ h2 {
   /* Extra pad so outer bloom isn't clipped by nearby ancestors */
   padding: 2.25rem 2.75rem 2.5rem;
   touch-action: pan-y;
+}
+
+.pack-reveal-stack.is-browsable {
+  cursor: grab;
+  user-select: none;
+}
+
+.pack-reveal-stack.is-browsable:active {
+  cursor: grabbing;
 }
 
 .pack-card-deck {
@@ -2585,6 +2615,8 @@ h2 {
   justify-self: stretch;
   align-self: stretch;
   touch-action: pan-y;
+  cursor: grab;
+  user-select: none;
   width: 100%;
   min-width: 0;
   min-height: 0;
@@ -2592,6 +2624,159 @@ h2 {
   overflow: visible;
   padding: 1.25rem 2.4rem 1.4rem;
   box-sizing: border-box;
+}
+
+.pack-inspect-stage:active {
+  cursor: grabbing;
+}
+
+/* Double-click art zoom — pack / collection / deck: centered, fully visible */
+.pack-inspect.is-art-zoomed,
+.pack-draw-stage.is-art-zoomed {
+  /* Fallback budget when container queries aren't used (pack open stage) */
+  --pack-art-zoom-pad: 5.75rem;
+  --pack-art-zoom-max-h: min(
+    calc(100dvh - var(--pack-art-zoom-pad) - var(--safe-top, 0px) - var(--safe-bottom, 0px)),
+    calc(100svh - var(--pack-art-zoom-pad) - var(--safe-top, 0px) - var(--safe-bottom, 0px))
+  );
+  --pack-art-zoom-max-w: min(
+    calc(100vw - 1rem - var(--safe-left, 0px) - var(--safe-right, 0px)),
+    calc(var(--pack-art-zoom-max-h) * 744 / 1040)
+  );
+}
+
+.pack-inspect.is-art-zoomed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  grid-template-columns: unset;
+  grid-template-rows: unset;
+  gap: 0;
+  padding: 0.35rem;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.pack-inspect.is-art-zoomed .pack-inspect-copy {
+  display: none;
+}
+
+.pack-inspect.is-art-zoomed .pack-inspect-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 auto;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  /* Inspect panel has a definite box (absolute inset) — safe for size CQ */
+  container-type: size;
+}
+
+.pack-inspect.is-art-zoomed .pack-inspect-wrap.pack-card-wrap {
+  /* Shrink on BOTH axes so the full card always fits the stage */
+  box-sizing: border-box;
+  width: min(100cqw, calc(100cqh * 744 / 1040));
+  height: min(100cqh, calc(100cqw * 1040 / 744));
+  max-width: 100%;
+  max-height: 100%;
+  aspect-ratio: 744 / 1040;
+  margin: 0;
+}
+
+.pack-inspect.is-art-zoomed .pack-inspect-flip.card-flip,
+.pack-inspect.is-art-zoomed .pack-inspect-flip .card-flip-inner {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.pack-inspect.is-art-zoomed .pack-inspect-flip .card-face,
+.pack-inspect.is-art-zoomed .pack-inspect-flip .card-face img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.pack-draw-stage.is-art-zoomed.has-copy {
+  grid-template-columns: 1fr;
+  grid-template-rows: minmax(0, 1fr);
+  justify-items: center;
+  align-content: center;
+  min-height: 0;
+  height: 100%;
+}
+
+.pack-draw-stage.is-art-zoomed .pack-card-copy {
+  display: none;
+}
+
+.pack-draw-stage.is-art-zoomed .pack-stage-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: stretch;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0.35rem;
+  box-sizing: border-box;
+}
+
+.pack-draw-stage.is-art-zoomed .pack-reveal-stack.is-deck,
+.pack-draw-stage.is-art-zoomed .pack-reveal-stack.is-browsable {
+  /* Dual-axis clamp (viewport fallback — no CQ on this stage) */
+  width: min(
+    var(--pack-art-zoom-max-w),
+    calc(var(--pack-art-zoom-max-h) * 744 / 1040)
+  );
+  height: min(
+    var(--pack-art-zoom-max-h),
+    calc(var(--pack-art-zoom-max-w) * 1040 / 744)
+  );
+  max-width: 100%;
+  max-height: 100%;
+  aspect-ratio: 744 / 1040;
+  padding: 0;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  margin-inline: auto;
+}
+
+.pack-draw-stage.is-art-zoomed .pack-card-deck {
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  padding: 0;
+}
+
+.pack-draw-stage.is-art-zoomed .pack-card-wrap.is-behind {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.pack-draw-stage.is-art-zoomed .pack-card-wrap.is-active {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.pack-draw-stage.is-art-zoomed .pack-card-wrap.is-active .card-flip.pack-card-flip {
+  --pack-card-max-h: 100%;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
 }
 
 .pack-inspect-stage .pack-deck-index {
@@ -2732,6 +2917,43 @@ h2 {
     height: min(88dvh, 90vh);
     overflow: hidden;
   }
+
+  /* Art zoom: keep the same centered fit as desktop (override compact layout) */
+  .pack-draw-stage.is-art-zoomed .pack-stage-visual {
+    height: 100%;
+    align-content: center;
+    padding: 0.5rem;
+  }
+
+  .pack-inspect.is-art-zoomed {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    padding: 0.5rem;
+  }
+
+  .pack-inspect.is-art-zoomed .pack-inspect-stage {
+    height: 100%;
+    flex: 1 1 auto;
+    padding: 0;
+    container-type: size;
+  }
+
+  .pack-inspect.is-art-zoomed .pack-inspect-wrap.pack-card-wrap {
+    width: min(100cqw, calc(100cqh * 744 / 1040));
+    height: min(100cqh, calc(100cqw * 1040 / 744));
+    max-width: 100%;
+    max-height: 100%;
+  }
+
+  .pack-inspect.is-art-zoomed .pack-inspect-flip.card-flip {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+  }
 }
 
 @media (max-width: 640px) {
@@ -2798,6 +3020,42 @@ h2 {
   .pack-inspect-stage .pack-deck-index,
   .pack-reveal-stack.is-browsable .pack-deck-index {
     opacity: 0.7;
+  }
+
+  .pack-draw-stage.is-art-zoomed .pack-stage-visual {
+    height: 100%;
+    align-content: center;
+    padding: 0.5rem;
+  }
+
+  .pack-inspect.is-art-zoomed {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    padding: 0.5rem;
+  }
+
+  .pack-inspect.is-art-zoomed .pack-inspect-stage {
+    height: 100%;
+    flex: 1 1 auto;
+    padding: 0;
+    container-type: size;
+  }
+
+  .pack-inspect.is-art-zoomed .pack-inspect-wrap.pack-card-wrap {
+    width: min(100cqw, calc(100cqh * 744 / 1040));
+    height: min(100cqh, calc(100cqw * 1040 / 744));
+    max-width: 100%;
+    max-height: 100%;
+  }
+
+  .pack-inspect.is-art-zoomed .pack-inspect-flip.card-flip {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
   }
 }
 
@@ -3353,10 +3611,12 @@ h2 {
     width: 100%;
     max-width: none;
     margin: 0;
-    padding: 0.7rem calc(var(--page-gutter) + var(--safe-right)) 0.7rem
+    padding: 0.65rem calc(var(--page-gutter) + var(--safe-right)) 0.65rem
       calc(var(--page-gutter) + var(--safe-left));
-    gap: 0.5rem;
+    gap: 0.55rem;
     min-width: 0;
+    flex-wrap: nowrap;
+    align-items: center;
   }
 
   .site-footer,
@@ -3366,47 +3626,56 @@ h2 {
     padding-right: max(0px, var(--safe-right));
   }
 
+  /* Logo only on tablet/phone — keep one header row with actions */
   .brand-lockup {
+    flex: 0 0 auto;
     min-width: 0;
-    flex-shrink: 1;
-    gap: 0.45rem;
-  }
-
-  .brand-logo {
-    height: 2.2rem;
+    gap: 0;
   }
 
   .brand-solo {
-    min-width: 0;
-    padding-left: 0.5rem;
-  }
-
-  .brand-lockup strong {
-    font-size: 0.78rem;
-    letter-spacing: 0.04em;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .brand-lockup em {
     display: none;
   }
 
-  .site-header-actions {
-    gap: 0.55rem;
+  .brand-logo {
+    width: auto;
+    height: 2.05rem;
+    max-width: none;
     flex-shrink: 0;
   }
 
+  .site-header-actions {
+    display: flex;
+    flex: 1 1 auto;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.45rem;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .site-header-actions::-webkit-scrollbar {
+    display: none;
+  }
+
   .references-text-btn {
-    font-size: 0.78rem;
+    font-size: 0.76rem;
     white-space: nowrap;
+    flex: 0 0 auto;
+  }
+
+  .lang-switch {
+    flex: 0 0 auto;
   }
 
   .lang-switch select {
-    max-width: 5.5rem;
-    padding: 0.34rem 1.45rem 0.34rem 0.55rem;
-    font-size: 0.78rem;
+    max-width: 5rem;
+    padding: 0.32rem 1.35rem 0.32rem 0.45rem;
+    font-size: 0.76rem;
   }
 
   .home-hero,
@@ -7459,31 +7728,39 @@ button.arena-card {
 
   .site-header-inner {
     gap: 0.4rem;
-    padding: 0.65rem calc(0.75rem + var(--safe-right)) 0.65rem
-      calc(0.75rem + var(--safe-left));
+    padding: 0.6rem calc(0.7rem + var(--safe-right)) 0.6rem
+      calc(0.7rem + var(--safe-left));
+    flex-wrap: nowrap;
   }
 
   .brand-logo {
-    height: 2rem;
+    width: auto;
+    height: 1.9rem;
+    max-width: none;
+    flex-shrink: 0;
   }
 
-  /* Logo only — brand text was crowding the language control off-screen */
   .brand-solo {
     display: none;
   }
 
+  .brand-lockup {
+    flex: 0 0 auto;
+  }
+
   .site-header-actions {
-    gap: 0.45rem;
+    gap: 0.38rem;
+    flex-wrap: nowrap;
   }
 
   .references-text-btn {
-    font-size: 0.76rem;
+    font-size: 0.72rem;
   }
 
   .lang-switch select {
-    max-width: 4.75rem;
-    padding: 0.32rem 1.35rem 0.32rem 0.45rem;
-    font-size: 0.76rem;
+    max-width: 4.4rem;
+    padding: 0.3rem 1.25rem 0.3rem 0.4rem;
+    font-size: 0.72rem;
   }
 
   .site-footer,
@@ -7841,5 +8118,349 @@ button.arena-card {
 
   .deck-hero-card {
     width: min(260px, 58vw);
+  }
+}
+
+/* —— Classic decks —— */
+.classic-decks-page,
+.classic-deck-detail-page {
+  padding-block: 1.5rem 3rem;
+}
+
+.classic-decks-hero,
+.classic-detail-hero {
+  max-width: 42rem;
+  margin-bottom: 1.75rem;
+}
+
+.classic-decks-hero h1,
+.classic-detail-hero h1 {
+  margin: 0.2rem 0 0.65rem;
+  font-size: clamp(1.85rem, 3.2vw, 2.55rem);
+  letter-spacing: 0.01em;
+  color: #f3e6c8;
+}
+
+.classic-format-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 1.5rem;
+}
+
+.classic-format-chip {
+  appearance: none;
+  border: 1px solid rgba(184, 137, 58, 0.28);
+  background: rgba(28, 22, 16, 0.55);
+  color: rgba(231, 215, 184, 0.82);
+  font: inherit;
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: color 140ms ease, border-color 140ms ease, background 140ms ease;
+}
+
+.classic-format-chip:hover {
+  color: #f0d48a;
+  border-color: rgba(240, 212, 138, 0.4);
+}
+
+.classic-format-chip.is-active {
+  color: #1a140e;
+  background: linear-gradient(180deg, #e8c878, #c9a04a);
+  border-color: transparent;
+}
+
+.classic-deck-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 17.5rem), 1fr));
+  gap: 1rem;
+}
+
+.classic-deck-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-height: 100%;
+  padding: 1.1rem 1.15rem 1.2rem;
+  text-decoration: none;
+  color: inherit;
+  background:
+    linear-gradient(160deg, rgba(42, 32, 22, 0.72), rgba(18, 14, 10, 0.55));
+  border: 1px solid rgba(184, 137, 58, 0.22);
+  border-radius: 0.35rem;
+  transition:
+    border-color 160ms ease,
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.classic-deck-card:hover {
+  border-color: rgba(240, 212, 138, 0.45);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+}
+
+.classic-deck-card h2 {
+  margin: 0.15rem 0 0;
+  font-size: 1.28rem;
+  color: #f3e6c8;
+}
+
+.classic-deck-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.classic-deck-meta,
+.classic-deck-era {
+  margin: 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(231, 215, 184, 0.55);
+}
+
+.classic-deck-summary {
+  margin: 0.35rem 0 0.55rem;
+  flex: 1;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: rgba(231, 215, 184, 0.78);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.classic-deck-cta {
+  font-size: 0.86rem;
+  color: #f0d48a;
+  border-bottom: 1px solid rgba(240, 212, 138, 0.35);
+  align-self: flex-start;
+}
+
+.classic-color-dots {
+  display: inline-flex;
+  gap: 0.28rem;
+  align-items: center;
+}
+
+.classic-color-dot {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.classic-color-dot.is-W { background: #f0e6c8; }
+.classic-color-dot.is-U { background: #3d6db5; }
+.classic-color-dot.is-B { background: #2a2a2a; }
+.classic-color-dot.is-R { background: #c0402a; }
+.classic-color-dot.is-G { background: #2f7a3e; }
+.classic-color-dot.is-colorless,
+.classic-color-dot.is-C {
+  background: linear-gradient(135deg, #c8c4bc, #8a8680);
+}
+
+.classic-empty,
+.classic-loading {
+  color: rgba(231, 215, 184, 0.7);
+}
+
+.classic-detail-nav {
+  margin-bottom: 1rem;
+}
+
+.classic-detail-section {
+  margin-top: 1.75rem;
+  max-width: 48rem;
+}
+
+.classic-detail-section h2 {
+  margin: 0 0 0.55rem;
+  font-size: 1.15rem;
+  color: #f0d48a;
+}
+
+.classic-detail-section > p {
+  margin: 0;
+  line-height: 1.55;
+  color: rgba(231, 215, 184, 0.86);
+}
+
+.classic-key-cards {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 1rem 0.85rem;
+}
+
+.classic-key-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  align-items: stretch;
+}
+
+/* Reuse pack flip geometry: aspect-ratio on the transforming inner, faces absolute. */
+.classic-key-flip.card-flip {
+  width: 100%;
+  max-height: none;
+  align-self: stretch;
+  justify-self: stretch;
+}
+
+.classic-key-flip .card-flip-inner {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 5 / 7;
+  border-radius: 0.35rem;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.classic-key-flip .card-face {
+  border-radius: 0.35rem;
+  box-shadow: none;
+}
+
+.classic-key-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.45rem;
+  min-width: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.classic-key-card-name {
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  font-size: 0.92rem;
+  line-height: 1.25;
+  text-align: left;
+  color: rgba(231, 215, 184, 0.88);
+  cursor: pointer;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.classic-key-card-name:hover {
+  color: #f0d48a;
+}
+
+.classic-key-card-placeholder {
+  aspect-ratio: 5 / 7;
+  display: grid;
+  place-items: center;
+  padding: 0.5rem;
+  text-align: center;
+  font-size: 0.78rem;
+  color: rgba(231, 215, 184, 0.55);
+  background: rgba(28, 22, 16, 0.65);
+  border: 1px dashed rgba(184, 137, 58, 0.28);
+  border-radius: 0.35rem;
+}
+
+.classic-card-qty-badge {
+  flex: 0 0 auto;
+  min-width: 1.2rem;
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: rgba(240, 212, 138, 0.95);
+  line-height: 1.25;
+}
+
+.classic-key-badge {
+  flex: 0 0 auto;
+  padding: 0.08rem 0.38rem;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+  line-height: 1.3;
+  color: #1a140e;
+  background: rgba(231, 180, 110, 0.95);
+}
+
+.classic-key-card.is-key .classic-key-flip .card-flip-inner {
+  box-shadow: 0 0 0 1px rgba(240, 212, 138, 0.45);
+}
+
+.classic-detail-gallery-section {
+  max-width: none;
+}
+
+.classic-card-gallery {
+  margin-top: 1.35rem;
+}
+
+.classic-card-gallery h3 {
+  margin: 0 0 0.65rem;
+  font-size: 1rem;
+  color: rgba(240, 212, 138, 0.92);
+}
+
+.classic-full-cards {
+  grid-template-columns: repeat(auto-fill, minmax(13.2rem, 1fr));
+  gap: 1rem 0.85rem;
+}
+
+.classic-key-flip {
+  position: relative;
+}
+
+@media (max-width: 720px) {
+  .classic-full-cards,
+  .classic-key-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 420px) {
+  .classic-full-cards,
+  .classic-key-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.classic-detail-links ul {
+  list-style: none;
+  margin: 0.4rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+}
+
+.classic-detail-links a {
+  color: #f0d48a;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(240, 212, 138, 0.35);
+}
+
+.classic-detail-links a:hover {
+  border-bottom-color: rgba(240, 212, 138, 0.7);
+}
+
+@media (max-width: 720px) {
+  .site-header-actions {
+    gap: 0.55rem;
   }
 }

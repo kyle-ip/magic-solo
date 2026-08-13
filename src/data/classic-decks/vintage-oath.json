@@ -1,0 +1,254 @@
+{
+  "id": "vintage-oath",
+  "format": "vintage",
+  "name": {
+    "en": "Oath of Druids",
+    "zh": "德鲁伊誓言"
+  },
+  "colors": [
+    "G"
+  ],
+  "playstyle": "combo",
+  "era": "1990s–",
+  "coverCard": "Oath of Druids",
+  "summary": {
+    "en": "Oath of Druids cheats enormous creatures into play. A Vintage fair-unfair hybrid classic.",
+    "zh": "德鲁伊誓言把巨型生物作弊上场。特选「半公平」经典。"
+  },
+  "howItWins": {
+    "en": "Resolve Oath, flip into Griselbrand or Atraxa, draw a fistful of cards, and end the game.",
+    "zh": "结算誓言，翻出格利斯布兰德或阿特拉克萨，抽一大把牌结束游戏。"
+  },
+  "keyCards": [
+    "Oath of Druids",
+    "Griselbrand",
+    "Force of Will",
+    "Forbidden Orchard"
+  ],
+  "sampleList": [
+    {
+      "name": "Griselbrand",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Atraxa, Grand Unifier",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Emrakul, the Aeons Torn",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Oath of Druids",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Force of Will",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Mental Misstep",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Brainstorm",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Ancestral Recall",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Ponder",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Gitaxian Probe",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Flusterstorm",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Veil of Summer",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Nature's Claim",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Black Lotus",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Mox Emerald",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Mox Jet",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Mox Pearl",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Mox Ruby",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Mox Sapphire",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Sol Ring",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Mana Crypt",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Time Walk",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Tinker",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Demonic Tutor",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Vampiric Tutor",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Forbidden Orchard",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Misty Rainforest",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Tropical Island",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Underground Sea",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Island",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Library of Alexandria",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Strip Mine",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Wasteland",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Boseiju, Who Endures",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Force of Vigor",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "The Tabernacle at Pendrell Vale",
+      "qty": 1,
+      "board": "side"
+    },
+    {
+      "name": "Grafdigger's Cage",
+      "qty": 1,
+      "board": "side"
+    },
+    {
+      "name": "Pithing Needle",
+      "qty": 1,
+      "board": "side"
+    },
+    {
+      "name": "Swords to Plowshares",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Energy Flux",
+      "qty": 1,
+      "board": "side"
+    },
+    {
+      "name": "Mindbreak Trap",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Flusterstorm",
+      "qty": 1,
+      "board": "side"
+    },
+    {
+      "name": "Nature's Claim",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Collector Ouphe",
+      "qty": 2,
+      "board": "side"
+    }
+  ],
+  "links": {
+    "wiki": "https://mtg.wiki/page/Oath_of_Druids",
+    "scryfallQuery": "f:vintage oath"
+  }
+}

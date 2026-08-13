@@ -1,0 +1,155 @@
+{
+  "id": "standard-classic-cawblade",
+  "format": "standard-classic",
+  "name": {
+    "en": "Caw-Blade",
+    "zh": "鸦刃"
+  },
+  "colors": [
+    "W",
+    "U"
+  ],
+  "playstyle": "midrange",
+  "era": "2011",
+  "coverCard": "Squadron Hawk",
+  "summary": {
+    "en": "The Standard deck that broke a format: Squadron Hawk, Stoneforge Mystic, and Jace. Caw-Blade is legendary.",
+    "zh": "打崩标准环境的套牌：中队鹰、石锻秘教徒与杰斯。鸦刃已成为传说。"
+  },
+  "howItWins": {
+    "en": "Tutor Batterskull or Sword, grind with Jace, the Mind Sculptor, and overwhelm with recurring Hawks.",
+    "zh": "搜寻电池颅或剑，用心灵塑师杰斯磨值，用不断召回的鹰群淹没对手。"
+  },
+  "keyCards": [
+    "Squadron Hawk",
+    "Stoneforge Mystic",
+    "Jace, the Mind Sculptor",
+    "Batterskull"
+  ],
+  "sampleList": [
+    {
+      "name": "Squadron Hawk",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Stoneforge Mystic",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Spellskite",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Jace, the Mind Sculptor",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Preordain",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Mana Leak",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Spell Pierce",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Into the Roil",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Day of Judgment",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Batterskull",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Sword of Feast and Famine",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Celestial Colonnade",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Seachrome Coast",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Glacial Fortress",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Island",
+      "qty": 5,
+      "board": "main"
+    },
+    {
+      "name": "Plains",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Inkmoth Nexus",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Divine Offering",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Flashfreeze",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Kor Firewalker",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Leyline of Sanctity",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Negate",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Revoke Existence",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Timely Reinforcements",
+      "qty": 3,
+      "board": "side"
+    }
+  ],
+  "links": {
+    "wiki": "https://mtg.wiki/page/Caw-Blade",
+    "scryfallQuery": "squadron hawk stoneforge"
+  }
+}

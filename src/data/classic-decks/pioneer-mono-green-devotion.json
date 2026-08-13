@@ -1,0 +1,174 @@
+{
+  "id": "pioneer-mono-green-devotion",
+  "format": "pioneer",
+  "name": {
+    "en": "Mono-Green Devotion",
+    "zh": "单绿献力"
+  },
+  "colors": [
+    "G"
+  ],
+  "playstyle": "combo",
+  "era": "2019–",
+  "coverCard": "Kiora, Behemoth Beckoner",
+  "summary": {
+    "en": "Cavalier of Thorns and Nykthos turn devotion into absurd mana, then drop planeswalkers and haymakers.",
+    "zh": "荆棘骑兵与尼克斯把献力变成海量法力，再丢鹏洛客与重击。"
+  },
+  "howItWins": {
+    "en": "Untap Nykthos with Kiora, generate double-digit mana, and resolve Storm the Festival or a huge Karn package.",
+    "zh": "用奇奥拉重置尼克斯，产两位数法力，结算风暴庆典或巨型卡恩套件。"
+  },
+  "keyCards": [
+    "Nykthos, Shrine to Nyx",
+    "Kiora, Behemoth Beckoner",
+    "Cavalier of Thorns",
+    "Storm the Festival"
+  ],
+  "sampleList": [
+    {
+      "name": "Elvish Mystic",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Llanowar Elves",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Old-Growth Troll",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Cavalier of Thorns",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Voyaging Satyr",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Polukranos Reborn",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Kiora, Behemoth Beckoner",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Karn, the Great Creator",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Storm the Festival",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Forest",
+      "qty": 12,
+      "board": "main"
+    },
+    {
+      "name": "Nykthos, Shrine to Nyx",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Boseiju, Who Endures",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Lair of the Hydra",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Rockfall Vale",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Pithing Needle",
+      "qty": 1,
+      "board": "side"
+    },
+    {
+      "name": "Tormod's Crypt",
+      "qty": 1,
+      "board": "side"
+    },
+    {
+      "name": "Haywire Mite",
+      "qty": 1,
+      "board": "side"
+    },
+    {
+      "name": "Cityscape Leveler",
+      "qty": 1,
+      "board": "side"
+    },
+    {
+      "name": "Darksteel Citadel",
+      "qty": 1,
+      "board": "side"
+    },
+    {
+      "name": "The Stone Brain",
+      "qty": 1,
+      "board": "side"
+    },
+    {
+      "name": "Skysovereign, Consul Flagship",
+      "qty": 1,
+      "board": "side"
+    },
+    {
+      "name": "Wurmcoil Engine",
+      "qty": 1,
+      "board": "side"
+    },
+    {
+      "name": "Treasure Vault",
+      "qty": 1,
+      "board": "side"
+    },
+    {
+      "name": "Ratchet Bomb",
+      "qty": 1,
+      "board": "side"
+    },
+    {
+      "name": "Damping Sphere",
+      "qty": 1,
+      "board": "side"
+    },
+    {
+      "name": "Grafdigger's Cage",
+      "qty": 1,
+      "board": "side"
+    },
+    {
+      "name": "Shadowspear",
+      "qty": 1,
+      "board": "side"
+    },
+    {
+      "name": "Ensnaring Bridge",
+      "qty": 1,
+      "board": "side"
+    }
+  ],
+  "links": {
+    "wiki": "https://mtg.wiki/page/Devotion",
+    "scryfallQuery": "f:pioneer nykthos"
+  }
+}

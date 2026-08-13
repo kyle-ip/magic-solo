@@ -1,0 +1,204 @@
+{
+  "id": "legacy-lands",
+  "format": "legacy",
+  "name": {
+    "en": "Lands",
+    "zh": "地套"
+  },
+  "colors": [
+    "G"
+  ],
+  "playstyle": "control",
+  "era": "2000s–",
+  "coverCard": "The Tabernacle at Pendrell Vale",
+  "summary": {
+    "en": "A land-based prison and grind deck. Tabernacle, Dark Depths, and Loam loops turn the battlefield into a nightmare.",
+    "zh": "以地为核的监狱与磨局套。避难所、黑暗深渊与壤土循环让战场变成噩梦。"
+  },
+  "howItWins": {
+    "en": "Lock creatures with Tabernacle, make Marit Lage, or grind endless value with Life from the Loam and exploration engines.",
+    "zh": "用避难所锁生物，造玛利特·拉格，或以壤土新生与探索引擎无限磨值。"
+  },
+  "keyCards": [
+    "Life from the Loam",
+    "Dark Depths",
+    "The Tabernacle at Pendrell Vale",
+    "Exploration"
+  ],
+  "sampleList": [
+    {
+      "name": "Life from the Loam",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Exploration",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Crop Rotation",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Mox Diamond",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Sphere of Resistance",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Dark Depths",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Thespian's Stage",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Ancient Tomb",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Wasteland",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Rishadan Port",
+      "qty": 3,
+      "board": "main"
+    },
+    {
+      "name": "Bojuka Bog",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "The Tabernacle at Pendrell Vale",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Yavimaya, Cradle of Growth",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Taiga",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Bayou",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Tropical Island",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Savannah",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Forest",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Ghost Quarter",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Horizon Canopy",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Karakas",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Maze of Ith",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Field of the Dead",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Blast Zone",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Boseiju, Who Endures",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Echoing Deeps",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Endurance",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Force of Vigor",
+      "qty": 3,
+      "board": "side"
+    },
+    {
+      "name": "Surgical Extraction",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Sphere of Resistance",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Deafening Silence",
+      "qty": 1,
+      "board": "side"
+    },
+    {
+      "name": "Mindbreak Trap",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Pyroblast",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Red Elemental Blast",
+      "qty": 1,
+      "board": "side"
+    }
+  ],
+  "links": {
+    "wiki": "https://mtg.wiki/page/Lands_(Legacy)",
+    "scryfallQuery": "f:legacy loam"
+  }
+}

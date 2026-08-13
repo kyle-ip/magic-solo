@@ -1,0 +1,220 @@
+{
+  "id": "modern-living-end",
+  "format": "modern",
+  "name": {
+    "en": "Living End",
+    "zh": "末日生息"
+  },
+  "colors": [
+    "B",
+    "G"
+  ],
+  "playstyle": "combo",
+  "era": "2011–",
+  "coverCard": "Living End",
+  "summary": {
+    "en": "Cycle creatures into the graveyard, cascade into Living End, and swap boards in one unfair turn.",
+    "zh": "循环生物进坟墓，连瀑进末日生息，一回合交换双方场面。"
+  },
+  "howItWins": {
+    "en": "Fill the yard with Street Wraith and Architects of Will, cascade from Violent Outburst or Shardless Agent, and win on the spot with a piled Living End.",
+    "zh": "用街道幽灵与意志建筑师填坟，从猛烈爆发或无支助密探连瀑，末日生息一次定胜负。"
+  },
+  "keyCards": [
+    "Living End",
+    "Violent Outburst",
+    "Street Wraith",
+    "Force of Negation"
+  ],
+  "sampleList": [
+    {
+      "name": "Street Wraith",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Architects of Will",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Desert Cerodon",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Striped Riverwinder",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Waker of Waves",
+      "qty": 3,
+      "board": "main"
+    },
+    {
+      "name": "Subtlety",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Endurance",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Living End",
+      "qty": 3,
+      "board": "main"
+    },
+    {
+      "name": "Violent Outburst",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Shardless Agent",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Force of Negation",
+      "qty": 3,
+      "board": "main"
+    },
+    {
+      "name": "Brazen Borrower",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Breeding Pool",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Botanical Sanctum",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Misty Rainforest",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Otawara, Soaring City",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Breeding Pool",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Stomping Ground",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Forest",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Island",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Boseiju, Who Endures",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Hedge Maze",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Commercial District",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Underground Mortuary",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Waterlogged Grove",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Blooming Marsh",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Overgrown Tomb",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Verdant Catacombs",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Gemstone Caverns",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Foundation Breaker",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Force of Vigor",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Mystical Dispute",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Leyline of the Void",
+      "qty": 3,
+      "board": "side"
+    },
+    {
+      "name": "Subtlety",
+      "qty": 1,
+      "board": "side"
+    },
+    {
+      "name": "Endurance",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Dismember",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Teferi, Time Raveler",
+      "qty": 1,
+      "board": "side"
+    }
+  ],
+  "links": {
+    "wiki": "https://mtg.wiki/page/Living_End",
+    "scryfallQuery": "f:modern living end"
+  }
+}

@@ -8,6 +8,7 @@ import type { DeckCard } from '../types'
 import { assetUrl } from '../utils/assetUrl'
 import { preloadImage } from '../utils/imageCache'
 import { CardDetailsBody } from './CardDetailsBody'
+import { CardFaceButton } from './CardFaceButton'
 
 interface CardModalProps {
   card: DeckCard | null
@@ -61,6 +62,7 @@ function CardModalBody({
   const titleId = useId()
   const [flipTurns, setFlipTurns] = useState(0)
   const [flipping, setFlipping] = useState(false)
+  const [artZoomed, setArtZoomed] = useState(false)
 
   const browseList = cards && cards.length > 0 ? cards : [card]
   const canBrowse = browseList.length > 1 && !!onSelect
@@ -79,6 +81,7 @@ function CardModalBody({
   useEffect(() => {
     setFlipTurns(0)
     setFlipping(false)
+    setArtZoomed(false)
   }, [card.id])
 
   useEffect(() => {
@@ -106,6 +109,10 @@ function CardModalBody({
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
+        if (artZoomed) {
+          setArtZoomed(false)
+          return
+        }
         onClose()
         return
       }
@@ -120,9 +127,10 @@ function CardModalBody({
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [canBrowse, onClose, stepCard])
+  }, [artZoomed, canBrowse, onClose, stepCard])
 
   const frontSrc = assetUrl(card.images.display || card.images.front)
+  const backSrc = assetUrl(card.images.back)
   const displayTitle = wantsZh(i18n.language)
     ? drawn.nameZh || drawn.name
     : drawn.name
@@ -135,7 +143,6 @@ function CardModalBody({
 
   return createPortal(
     <div className="pack-draw-backdrop" role="presentation" onClick={onClose}>
-      {/* Same shell + inspect panel as collection cabinet card details */}
       <div
         className="pack-draw-modal is-collection"
         role="dialog"
@@ -157,7 +164,15 @@ function CardModalBody({
         </header>
 
         <div className="pack-collection">
-          <div className="pack-inspect" aria-label={displayTitle}>
+          <div
+            className={[
+              'pack-inspect',
+              artZoomed ? 'is-art-zoomed' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+            aria-label={displayTitle}
+          >
             <div className="pack-inspect-stage" {...swipe}>
               <div
                 className={[
@@ -168,38 +183,35 @@ function CardModalBody({
                 ].join(' ')}
               >
                 <div className="card-flip pack-inspect-flip">
-                  <div
+                  <CardFaceButton
                     className={[
                       'card-flip-inner',
                       flipping ? 'is-flipping' : '',
                     ]
                       .filter(Boolean)
                       .join(' ')}
-                    role="button"
-                    tabIndex={0}
-                    aria-label={t('deck.flip')}
+                    ariaLabel={t('deck.flip')}
                     style={{
                       transform: `translate3d(0, 0, 0) rotateY(${flipTurns * 180}deg)`,
                     }}
-                    onClick={flipOnce}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault()
-                        flipOnce()
-                      }
-                    }}
+                    onFlip={flipOnce}
+                    onToggleZoom={() => setArtZoomed((z) => !z)}
                   >
                     <span className="card-face front">
-                      <img src={frontSrc} alt={displayTitle} draggable={false} />
+                      <img
+                        src={frontSrc}
+                        alt={displayTitle}
+                        draggable={false}
+                      />
                     </span>
                     <span className="card-face back">
                       <img
-                        src={assetUrl(card.images.back)}
+                        src={backSrc}
                         alt={t('deck.backHint')}
                         draggable={false}
                       />
                     </span>
-                  </div>
+                  </CardFaceButton>
                 </div>
               </div>
             </div>
@@ -208,7 +220,9 @@ function CardModalBody({
               <div className="pack-card-copy-cluster">
                 <div className="pack-card-copy-body">
                   <CardDetailsBody card={drawn} showOfflineHint={false} />
-                  <p className="qty">{t('deck.quantity', { n: card.quantity })}</p>
+                  <p className="qty">
+                    {t('deck.quantity', { n: card.quantity })}
+                  </p>
                 </div>
                 <div className="pack-draw-actions">
                   {card.scryfallUri ? (

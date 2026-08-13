@@ -24,6 +24,44 @@
     "cardsLabel": "{{count}} 种卡牌 · 套牌共 {{total}} 张",
     "pathMeta": "{{expansion}}"
   },
+  "classicDecks": {
+    "open": "经典牌组",
+    "eyebrow": "构筑原型",
+    "title": "经典牌组",
+    "lead": "探索万智牌著名构筑原型：如何取胜，以及定义它们的核心卡牌。",
+    "filterLabel": "按赛制筛选",
+    "viewDeck": "查看牌组",
+    "empty": "该赛制暂无牌组。",
+    "backToList": "全部经典牌组",
+    "howItWins": "如何取胜",
+    "keyCards": "关键卡牌",
+    "keyBadge": "Key",
+    "fullList": "牌表",
+    "mainboard": "主牌",
+    "sideboard": "备牌",
+    "links": "延伸阅读",
+    "wiki": "MTG Wiki",
+    "scryfallSearch": "在 Scryfall 搜索",
+    "loadingCards": "正在加载卡图…",
+    "unresolved": "未能从 Scryfall 加载此卡",
+    "cardDetails": "卡牌详情",
+    "format": {
+      "all": "全部",
+      "modern": "近代",
+      "legacy": "薪传",
+      "pioneer": "先驱",
+      "pauper": "凡骨",
+      "vintage": "特选",
+      "standard-classic": "经典标准"
+    },
+    "playstyle": {
+      "aggro": "快攻",
+      "midrange": "中速",
+      "control": "控制",
+      "combo": "组合",
+      "tempo": "节奏"
+    }
+  },
   "packDraw": {
     "open": "拆卡包",
     "title": "拆包时刻",
@@ -107,6 +145,7 @@
     "cards": "卡牌图鉴",
     "quantity": "×{{n}}",
     "flip": "翻转卡牌",
+    "zoomPreview": "卡牌放大预览",
     "oracle": "规则叙述",
     "artist": "绘师 {{name}}",
     "collector": "{{set}} #{{number}}",

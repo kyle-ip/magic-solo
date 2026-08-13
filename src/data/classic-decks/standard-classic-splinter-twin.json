@@ -1,0 +1,165 @@
+{
+  "id": "standard-classic-splinter-twin",
+  "format": "standard-classic",
+  "name": {
+    "en": "Splinter Twin (Standard)",
+    "zh": "裂片双子（标准）"
+  },
+  "colors": [
+    "U",
+    "R"
+  ],
+  "playstyle": "combo",
+  "era": "2011–2012",
+  "coverCard": "Splinter Twin",
+  "summary": {
+    "en": "Before it terrorized Modern, Twin won Standard Pro Tours. Infinite hasty Exarchs defined an era.",
+    "zh": "在横扫近代之前，双子就赢过标准专业赛。无限敏捷主教定义了一个时代。"
+  },
+  "howItWins": {
+    "en": "Protect Deceiver Exarch, enchant with Splinter Twin, and make infinite attackers.",
+    "zh": "保护欺瞒主教，贴上裂片双子，造出无限攻击者。"
+  },
+  "keyCards": [
+    "Splinter Twin",
+    "Deceiver Exarch",
+    "Pestermite",
+    "Mana Leak"
+  ],
+  "sampleList": [
+    {
+      "name": "Deceiver Exarch",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Pestermite",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Snapcaster Mage",
+      "qty": 3,
+      "board": "main"
+    },
+    {
+      "name": "Splinter Twin",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Ponder",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Preordain",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Lightning Bolt",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Mana Leak",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Remand",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Into the Roil",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Galvanic Blast",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Island",
+      "qty": 8,
+      "board": "main"
+    },
+    {
+      "name": "Mountain",
+      "qty": 3,
+      "board": "main"
+    },
+    {
+      "name": "Sulfur Falls",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Scalding Tarn",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Halimar Depths",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Misty Rainforest",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Tectonic Edge",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Ancient Grudge",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Dispel",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Flashfreeze",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Negate",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Pyroclasm",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Smash to Smithereens",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Spellskite",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Batterskull",
+      "qty": 1,
+      "board": "side"
+    }
+  ],
+  "links": {
+    "wiki": "https://mtg.wiki/page/Splinter_Twin",
+    "scryfallQuery": "splinter twin deceiver"
+  }
+}

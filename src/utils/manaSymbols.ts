@@ -1,8 +1,10 @@
-/** Scryfall card-symbol SVGs: https://svgs.scryfall.io/card-symbols/{CODE}.svg */
+/** Mana / card symbols: same-origin public/mana-symbols, CDN <img> fallback (no CORS fetch). */
 
-const SYMBOL_BASE = 'https://svgs.scryfall.io/card-symbols'
+import { assetUrl } from './assetUrl'
 
-/** In-memory: normalized code → CDN URL once primed (browser HTTP cache holds bytes). */
+const SYMBOL_CDN = 'https://svgs.scryfall.io/card-symbols'
+
+/** In-memory: normalized code → display URL. */
 const memory = new Map<string, string>()
 /** Deduplicate concurrent loads for the same code. */
 const inflight = new Map<string, Promise<string>>()
@@ -25,16 +27,21 @@ export function normalizeManaCode(braceContent: string): string {
   return braceContent.replace(/\//g, '').toUpperCase()
 }
 
-/** Raw CDN URL — prefer `getCachedManaSymbolUrl` / `loadManaSymbol` for reuse. */
 export function manaSymbolCdnUrl(braceContent: string): string {
   const code = normalizeManaCode(braceContent)
-  return `${SYMBOL_BASE}/${encodeURIComponent(code)}.svg`
+  return `${SYMBOL_CDN}/${encodeURIComponent(code)}.svg`
 }
 
-/** @deprecated Use manaSymbolCdnUrl or the cache helpers. Kept for call sites expecting a sync URL. */
+/** Same-origin path (Vite `public/mana-symbols`). */
+export function manaSymbolLocalUrl(braceContent: string): string {
+  const code = normalizeManaCode(braceContent)
+  return assetUrl(`mana-symbols/${code}.svg`)
+}
+
+/** @deprecated Use cache helpers. */
 export function manaSymbolUrl(braceContent: string): string {
   const code = normalizeManaCode(braceContent)
-  return memory.get(code) ?? manaSymbolCdnUrl(code)
+  return memory.get(code) ?? manaSymbolLocalUrl(code)
 }
 
 /** Sync peek — URL if already primed this session. */
@@ -42,11 +49,36 @@ export function getCachedManaSymbolUrl(braceContent: string): string | null {
   return memory.get(normalizeManaCode(braceContent)) ?? null
 }
 
+/** Resolve only if the URL actually paints as an image. */
+function probeImage(url: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (typeof Image === 'undefined') {
+      resolve(true)
+      return
+    }
+    const img = new Image()
+    img.onload = () => resolve(true)
+    img.onerror = () => resolve(false)
+    img.src = url
+  })
+}
+
 /**
- * Prime a symbol at most once. Uses Image() (not fetch) so there is no CORS
- * requirement — <img> display never needs ACAO, and the browser HTTP cache
- * reuses the same CDN URL across many ManaSymbol mounts.
+ * Prefer local SVG (no CORS). Fall back to Scryfall CDN via <img> only —
+ * never fetch() the CDN (that triggers CORS errors in the browser).
  */
+async function resolveSymbolUrl(code: string): Promise<string> {
+  const localUrl = manaSymbolLocalUrl(code)
+  if (await probeImage(localUrl)) return localUrl
+
+  const cdnUrl = manaSymbolCdnUrl(code)
+  if (await probeImage(cdnUrl)) return cdnUrl
+
+  // Last resort: still return local path so UI can text-fallback on <img onError>.
+  return localUrl
+}
+
+/** Prime a symbol at most once per session; subsequent mounts reuse the URL. */
 export function loadManaSymbol(braceContent: string): Promise<string> {
   const code = normalizeManaCode(braceContent)
   const hit = memory.get(code)
@@ -55,24 +87,11 @@ export function loadManaSymbol(braceContent: string): Promise<string> {
   const pending = inflight.get(code)
   if (pending) return pending
 
-  const cdnUrl = manaSymbolCdnUrl(code)
-  const task = new Promise<string>((resolve) => {
-    const finish = (url: string) => {
-      memory.set(code, url)
-      inflight.delete(code)
-      notify()
-      resolve(url)
-    }
-
-    if (typeof Image === 'undefined') {
-      finish(cdnUrl)
-      return
-    }
-
-    const img = new Image()
-    img.onload = () => finish(cdnUrl)
-    img.onerror = () => finish(cdnUrl)
-    img.src = cdnUrl
+  const task = resolveSymbolUrl(code).then((url) => {
+    memory.set(code, url)
+    inflight.delete(code)
+    notify()
+    return url
   })
 
   inflight.set(code, task)
@@ -98,7 +117,6 @@ export const COMMON_MANA_SYMBOLS = [
   'PW',
   'CHAOS',
   ...Array.from({ length: 21 }, (_, i) => String(i)),
-  'WUBRG',
   'WU',
   'UB',
   'BR',

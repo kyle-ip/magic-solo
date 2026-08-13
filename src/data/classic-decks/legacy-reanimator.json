@@ -1,0 +1,184 @@
+{
+  "id": "legacy-reanimator",
+  "format": "legacy",
+  "name": {
+    "en": "Reanimator",
+    "zh": "再动"
+  },
+  "colors": [
+    "B"
+  ],
+  "playstyle": "combo",
+  "era": "1990s–",
+  "coverCard": "Griselbrand",
+  "summary": {
+    "en": "Discard a monster, reanimate it on turn one or two. Reanimator is Legacy's purest unfair creature combo.",
+    "zh": "弃掉巨兽，第一二回合再动上场。再动是薪传最纯粹的不公平生物组合。"
+  },
+  "howItWins": {
+    "en": "Entomb or Careful Study a Griselbrand or Atraxa, Reanimate or Animate Dead it, then draw half your deck and finish.",
+    "zh": "用入土为安或谨慎研究把格利斯布兰德或阿特拉克萨送坟，再动/动死复活，抽半副牌收割。"
+  },
+  "keyCards": [
+    "Reanimate",
+    "Griselbrand",
+    "Entomb",
+    "Faithless Looting"
+  ],
+  "sampleList": [
+    {
+      "name": "Griselbrand",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Atraxa, Grand Unifier",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Archon of Cruelty",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Sire of Insanity",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Reanimate",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Animate Dead",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Entomb",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Faithless Looting",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Careful Study",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Brainstorm",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Ponder",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Thoughtseize",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Dark Ritual",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Lotus Petal",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Swamp",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Underground Sea",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Volcanic Island",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Badlands",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Polluted Delta",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Bloodstained Mire",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Scalding Tarn",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Verdant Catacombs",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Show and Tell",
+      "qty": 1,
+      "board": "side"
+    },
+    {
+      "name": "Wear // Tear",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Faerie Macabre",
+      "qty": 3,
+      "board": "side"
+    },
+    {
+      "name": "Magus of the Moon",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Massacre",
+      "qty": 1,
+      "board": "side"
+    },
+    {
+      "name": "Dismember",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Thoughtseize",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Chain of Vapor",
+      "qty": 2,
+      "board": "side"
+    }
+  ],
+  "links": {
+    "wiki": "https://mtg.wiki/page/Reanimator",
+    "scryfallQuery": "f:legacy reanimate"
+  }
+}

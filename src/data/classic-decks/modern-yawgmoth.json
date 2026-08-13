@@ -1,0 +1,195 @@
+{
+  "id": "modern-yawgmoth",
+  "format": "modern",
+  "name": {
+    "en": "Yawgmoth",
+    "zh": "约格莫夫"
+  },
+  "colors": [
+    "B",
+    "G"
+  ],
+  "playstyle": "combo",
+  "era": "2020–",
+  "coverCard": "Yawgmoth, Thran Physician",
+  "summary": {
+    "en": "A grindy creature toolbox that can suddenly combo kill with Yawgmoth's undying loop.",
+    "zh": "磨人的生物工具箱，又能用约格莫夫的不死循环突然斩杀。"
+  },
+  "howItWins": {
+    "en": "Generate undying creatures, draw and drain with Yawgmoth, or grind value with Chord of Calling into the perfect silver bullet.",
+    "zh": "堆不死生物，用约格莫夫抽牌吸生命，或以召唤之弦找银弹磨死对手。"
+  },
+  "keyCards": [
+    "Yawgmoth, Thran Physician",
+    "Young Wolf",
+    "Chord of Calling",
+    "Orcish Bowmasters"
+  ],
+  "sampleList": [
+    {
+      "name": "Yawgmoth, Thran Physician",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Young Wolf",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Wall of Roots",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Orcish Bowmasters",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Endurance",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Walking Ballista",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Blood Artist",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Chord of Calling",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Agatha's Soul Cauldron",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Fatal Push",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Blooming Marsh",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Overgrown Tomb",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Verdant Catacombs",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Twilight Mire",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Forest",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Swamp",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Boseiju, Who Endures",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Takenuma, Abandoned Mire",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Khalni Garden",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Nurturing Peatland",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Underground Mortuary",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Phyrexian Tower",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Grist, the Hunger Tide",
+      "qty": 1,
+      "board": "main"
+    },
+    {
+      "name": "Prosperous Innkeeper",
+      "qty": 2,
+      "board": "main"
+    },
+    {
+      "name": "Ignoble Hierarch",
+      "qty": 4,
+      "board": "main"
+    },
+    {
+      "name": "Force of Vigor",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Collector Ouphe",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Leyline of the Void",
+      "qty": 3,
+      "board": "side"
+    },
+    {
+      "name": "Tear Asunder",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Veil of Summer",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Haywire Mite",
+      "qty": 2,
+      "board": "side"
+    },
+    {
+      "name": "Pithing Needle",
+      "qty": 2,
+      "board": "side"
+    }
+  ],
+  "links": {
+    "wiki": "https://mtg.wiki/page/Yawgmoth",
+    "scryfallQuery": "f:modern yawgmoth"
+  }
+}
