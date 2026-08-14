@@ -93,11 +93,37 @@ export function CardDetailsBody({
           })}
         </span>
       </p>
-      <h3>{name}</h3>
+      {card.scryfallUri ? (
+        <a
+          className="pack-card-name-link"
+          href={card.scryfallUri}
+          target="_blank"
+          rel="noreferrer"
+          title="Scryfall"
+        >
+          <h3>{name}</h3>
+        </a>
+      ) : (
+        <h3>{name}</h3>
+      )}
       {zhUi && card.nameZh && card.nameZh !== card.name ? (
-        <p className="pack-en-name" title={t('packDraw.englishName')}>
-          {card.name}
-        </p>
+        card.scryfallUri ? (
+          <a
+            className="pack-card-name-link pack-en-name-link"
+            href={card.scryfallUri}
+            target="_blank"
+            rel="noreferrer"
+            title="Scryfall"
+          >
+            <p className="pack-en-name" title={t('packDraw.englishName')}>
+              {card.name}
+            </p>
+          </a>
+        ) : (
+          <p className="pack-en-name" title={t('packDraw.englishName')}>
+            {card.name}
+          </p>
+        )
       ) : null}
       <p className="type-line">{typeLine}</p>
       {card.manaCost ? <ManaCost cost={card.manaCost} /> : null}

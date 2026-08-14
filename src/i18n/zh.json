@@ -10,18 +10,18 @@
     "backToTop": "回到顶部",
     "floatingNav": "快捷导航",
     "attribution": "卡牌数据与图片由 Scryfall 提供。",
-    "rulesAttribution": "规则整理自 MTG Wiki 与威世智官方资料。卡牌中文采用万智牌官方简体术语。"
+    "rulesAttribution": ""
   },
   "home": {
     "eyebrow": "挑战套牌",
     "title": "Magic Solo",
-    "lead": "三套自运行挑战套牌：勇战多头龙、勇战蛮群、勇战天神。可选完整挑战体验，或用游戏助手配合线下牌组试玩。",
+    "lead": "三套挑战套牌：勇战多头龙、勇战蛮群、勇战天神。可选完整挑战体验，或用游戏助手配合线下牌组试玩。",
     "cta": "进入挑战",
     "sharedTitle": "什么是挑战套牌？",
     "references": "参考资料",
     "referencesLead": "规则与资料来源：",
     "viewDeck": "打开挑战",
-    "cardsLabel": "{{count}} 种卡牌 · 套牌共 {{total}} 张",
+    "cardsLabel": "{{count}} / {{total}}",
     "pathMeta": "{{expansion}}"
   },
   "classicDecks": {

@@ -9,13 +9,7 @@ import {
   updateCollected,
   type CollectedCard,
 } from '../data/packCollection'
-import {
-  filterAndSortCollection,
-  uniqueSetCodes,
-  type CollectionColorFilter,
-  type CollectionRarityFilter,
-  type CollectionSort,
-} from '../data/packCollectionQuery'
+import { filterAndSortCollection } from '../data/packCollectionQuery'
 import {
   enrichDrawnCardZh,
   hasZhPrint,
@@ -31,7 +25,7 @@ type PackCollectionCabinetProps = {
 }
 
 /**
- * Shared collection cabinet (grid, filters, import/export, inspect).
+ * Shared collection cabinet (grid, import/export, inspect).
  * Used by pack open and single-draw modals.
  */
 export function PackCollectionCabinet({
@@ -43,13 +37,6 @@ export function PackCollectionCabinet({
     listCollected(),
   )
   const [inspect, setInspect] = useState<CollectedCard | null>(null)
-  const [filterRarity, setFilterRarity] =
-    useState<CollectionRarityFilter>('all')
-  const [filterColor, setFilterColor] =
-    useState<CollectionColorFilter>('all')
-  const [filterSet, setFilterSet] = useState('')
-  const [sortBy, setSortBy] = useState<CollectionSort>('newest')
-  const [searchQuery, setSearchQuery] = useState('')
   const [importMessage, setImportMessage] = useState<string | null>(null)
   const [clearConfirmOpen, setClearConfirmOpen] = useState(false)
 
@@ -62,27 +49,17 @@ export function PackCollectionCabinet({
     onCollectionChange?.(items)
   }
 
-  const filteredCollection = useMemo(
+  const sortedCollection = useMemo(
     () =>
       filterAndSortCollection(collection, {
-        rarity: filterRarity,
-        color: filterColor,
-        setCode: filterSet,
-        sort: sortBy,
+        rarity: 'all',
+        color: 'all',
+        setCode: '',
+        sort: 'newest',
         lang: i18n.language,
-        query: searchQuery,
       }),
-    [
-      collection,
-      filterRarity,
-      filterColor,
-      filterSet,
-      sortBy,
-      i18n.language,
-      searchQuery,
-    ],
+    [collection, i18n.language],
   )
-  const setOptions = uniqueSetCodes(collection)
   const rarityStats = collectionRarityStats(collection)
 
   const openInspect = (item: CollectedCard) => {
@@ -207,79 +184,6 @@ export function PackCollectionCabinet({
               ) : null}
             </div>
             <div className="pack-collection-toolbar">
-              <label className="pack-collection-filter pack-collection-search">
-                <span>{t('packDraw.search')}</span>
-                <input
-                  type="search"
-                  value={searchQuery}
-                  placeholder={t('packDraw.searchPlaceholder')}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </label>
-              <label className="pack-collection-filter">
-                <span>{t('packDraw.filterRarity')}</span>
-                <select
-                  value={filterRarity}
-                  onChange={(e) =>
-                    setFilterRarity(e.target.value as CollectionRarityFilter)
-                  }
-                >
-                  <option value="all">{t('packDraw.filterAll')}</option>
-                  <option value="mythic">{t('packDraw.rarity.mythic')}</option>
-                  <option value="rare">{t('packDraw.rarity.rare')}</option>
-                  <option value="uncommon">
-                    {t('packDraw.rarity.uncommon')}
-                  </option>
-                  <option value="common">{t('packDraw.rarity.common')}</option>
-                </select>
-              </label>
-              <label className="pack-collection-filter">
-                <span>{t('packDraw.filterColor')}</span>
-                <select
-                  value={filterColor}
-                  onChange={(e) =>
-                    setFilterColor(e.target.value as CollectionColorFilter)
-                  }
-                >
-                  <option value="all">{t('packDraw.filterAll')}</option>
-                  <option value="W">{t('packDraw.color.W')}</option>
-                  <option value="U">{t('packDraw.color.U')}</option>
-                  <option value="B">{t('packDraw.color.B')}</option>
-                  <option value="R">{t('packDraw.color.R')}</option>
-                  <option value="G">{t('packDraw.color.G')}</option>
-                  <option value="C">{t('packDraw.color.C')}</option>
-                  <option value="M">{t('packDraw.color.M')}</option>
-                </select>
-              </label>
-              <label className="pack-collection-filter">
-                <span>{t('packDraw.filterSet')}</span>
-                <select
-                  value={filterSet}
-                  onChange={(e) => setFilterSet(e.target.value)}
-                >
-                  <option value="">{t('packDraw.filterAll')}</option>
-                  {setOptions.map((code) => (
-                    <option key={code} value={code}>
-                      {code}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="pack-collection-filter">
-                <span>{t('packDraw.sortBy')}</span>
-                <select
-                  value={sortBy}
-                  onChange={(e) =>
-                    setSortBy(e.target.value as CollectionSort)
-                  }
-                >
-                  <option value="newest">{t('packDraw.sort.newest')}</option>
-                  <option value="oldest">{t('packDraw.sort.oldest')}</option>
-                  <option value="rarity">{t('packDraw.sort.rarity')}</option>
-                  <option value="name">{t('packDraw.sort.name')}</option>
-                  <option value="set">{t('packDraw.sort.set')}</option>
-                </select>
-              </label>
               <div className="pack-collection-filter pack-collection-actions">
                 <span>{t('packDraw.manage')}</span>
                 <div
@@ -319,30 +223,24 @@ export function PackCollectionCabinet({
                 {importMessage}
               </p>
             ) : null}
-            {filteredCollection.length === 0 ? (
-              <p className="pack-draw-hint">{t('packDraw.filterEmpty')}</p>
-            ) : (
-              <ul className="pack-collection-grid">
-                {filteredCollection.map((item) => (
-                  <li key={item.id}>
-                    <button
-                      type="button"
-                      className="pack-collection-tile"
-                      onClick={() => openInspect(item)}
-                    >
-                      <img src={item.frontImageUrl} alt={item.name} />
-                      <span
-                        className={`pack-rarity-chip rarity-${item.rarity}`}
-                      >
-                        {t(`packDraw.rarity.${item.rarity}`, {
-                          defaultValue: item.rarity,
-                        })}
-                      </span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
+            <ul className="pack-collection-grid">
+              {sortedCollection.map((item) => (
+                <li key={item.id}>
+                  <button
+                    type="button"
+                    className="pack-collection-tile"
+                    onClick={() => openInspect(item)}
+                  >
+                    <img src={item.frontImageUrl} alt={item.name} />
+                    <span className={`pack-rarity-chip rarity-${item.rarity}`}>
+                      {t(`packDraw.rarity.${item.rarity}`, {
+                        defaultValue: item.rarity,
+                      })}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
           </>
         )}
       </div>
@@ -350,11 +248,11 @@ export function PackCollectionCabinet({
       {inspect ? (
         <DrawnCardModal
           card={inspect}
-          cards={filteredCollection.length > 0 ? filteredCollection : collection}
+          cards={sortedCollection.length > 0 ? sortedCollection : collection}
           onSelect={(next) => {
             const found =
-              (filteredCollection.length > 0
-                ? filteredCollection
+              (sortedCollection.length > 0
+                ? sortedCollection
                 : collection
               ).find((c) => c.id === next.id) ?? null
             if (found) openInspect(found)

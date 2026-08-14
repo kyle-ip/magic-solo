@@ -535,16 +535,6 @@ export function SingleDrawButton() {
                             : t('packDraw.collect')}
                         </button>
                       ) : null}
-                      {showDetails && card.scryfallUri ? (
-                        <a
-                          href={card.scryfallUri}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="pack-scryfall-link"
-                        >
-                          {t('packDraw.scryfall')}
-                        </a>
-                      ) : null}
                     </div>
                   </div>
                 </div>

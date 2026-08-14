@@ -21,10 +21,6 @@ import {
 } from '../data/packCollection'
 import {
   filterAndSortCollection,
-  uniqueSetCodes,
-  type CollectionColorFilter,
-  type CollectionRarityFilter,
-  type CollectionSort,
 } from '../data/packCollectionQuery'
 import {
   defaultCardBackUrl,
@@ -464,13 +460,6 @@ export function PackDrawButton() {
   const [stageFlash, setStageFlash] = useState<'rare' | 'mythic' | null>(null)
   const [tearReacting, setTearReacting] = useState(false)
   const [activeFlipMs, setActiveFlipMs] = useState(FLIP_MS)
-  const [filterRarity, setFilterRarity] =
-    useState<CollectionRarityFilter>('all')
-  const [filterColor, setFilterColor] =
-    useState<CollectionColorFilter>('all')
-  const [filterSet, setFilterSet] = useState('')
-  const [sortBy, setSortBy] = useState<CollectionSort>('newest')
-  const [searchQuery, setSearchQuery] = useState('')
   const [importMessage, setImportMessage] = useState<string | null>(null)
   const [clearConfirmOpen, setClearConfirmOpen] = useState(false)
   const enrichGen = useRef(0)
@@ -952,14 +941,12 @@ export function PackDrawButton() {
   }
 
   const filteredCollection = filterAndSortCollection(collection, {
-    rarity: filterRarity,
-    color: filterColor,
-    setCode: filterSet,
-    sort: sortBy,
+    rarity: 'all',
+    color: 'all',
+    setCode: '',
+    sort: 'newest',
     lang: i18n.language,
-    query: searchQuery,
   })
-  const setOptions = uniqueSetCodes(collection)
   const rarityStats = collectionRarityStats(collection)
 
   const downloadCollection = () => {
@@ -1261,99 +1248,6 @@ export function PackDrawButton() {
                         ) : null}
                       </div>
                       <div className="pack-collection-toolbar">
-                        <label className="pack-collection-filter pack-collection-search">
-                          <span>{t('packDraw.search')}</span>
-                          <input
-                            type="search"
-                            value={searchQuery}
-                            placeholder={t('packDraw.searchPlaceholder')}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                          />
-                        </label>
-                        <label className="pack-collection-filter">
-                          <span>{t('packDraw.filterRarity')}</span>
-                          <select
-                            value={filterRarity}
-                            onChange={(e) =>
-                              setFilterRarity(
-                                e.target.value as CollectionRarityFilter,
-                              )
-                            }
-                          >
-                            <option value="all">{t('packDraw.filterAll')}</option>
-                            <option value="mythic">
-                              {t('packDraw.rarity.mythic')}
-                            </option>
-                            <option value="rare">
-                              {t('packDraw.rarity.rare')}
-                            </option>
-                            <option value="uncommon">
-                              {t('packDraw.rarity.uncommon')}
-                            </option>
-                            <option value="common">
-                              {t('packDraw.rarity.common')}
-                            </option>
-                          </select>
-                        </label>
-                        <label className="pack-collection-filter">
-                          <span>{t('packDraw.filterColor')}</span>
-                          <select
-                            value={filterColor}
-                            onChange={(e) =>
-                              setFilterColor(
-                                e.target.value as CollectionColorFilter,
-                              )
-                            }
-                          >
-                            <option value="all">{t('packDraw.filterAll')}</option>
-                            <option value="W">{t('packDraw.color.W')}</option>
-                            <option value="U">{t('packDraw.color.U')}</option>
-                            <option value="B">{t('packDraw.color.B')}</option>
-                            <option value="R">{t('packDraw.color.R')}</option>
-                            <option value="G">{t('packDraw.color.G')}</option>
-                            <option value="C">{t('packDraw.color.C')}</option>
-                            <option value="M">{t('packDraw.color.M')}</option>
-                          </select>
-                        </label>
-                        <label className="pack-collection-filter">
-                          <span>{t('packDraw.filterSet')}</span>
-                          <select
-                            value={filterSet}
-                            onChange={(e) => setFilterSet(e.target.value)}
-                          >
-                            <option value="">{t('packDraw.filterAll')}</option>
-                            {setOptions.map((code) => (
-                              <option key={code} value={code}>
-                                {code}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-                        <label className="pack-collection-filter">
-                          <span>{t('packDraw.sortBy')}</span>
-                          <select
-                            value={sortBy}
-                            onChange={(e) =>
-                              setSortBy(e.target.value as CollectionSort)
-                            }
-                          >
-                            <option value="newest">
-                              {t('packDraw.sort.newest')}
-                            </option>
-                            <option value="oldest">
-                              {t('packDraw.sort.oldest')}
-                            </option>
-                            <option value="rarity">
-                              {t('packDraw.sort.rarity')}
-                            </option>
-                            <option value="name">
-                              {t('packDraw.sort.name')}
-                            </option>
-                            <option value="set">
-                              {t('packDraw.sort.set')}
-                            </option>
-                          </select>
-                        </label>
                         <div className="pack-collection-filter pack-collection-actions">
                           <span>{t('packDraw.manage')}</span>
                           <div className="pack-collection-manage" role="group" aria-label={t('packDraw.manage')}>
@@ -1386,35 +1280,29 @@ export function PackDrawButton() {
                           {importMessage}
                         </p>
                       ) : null}
-                      {filteredCollection.length === 0 ? (
-                        <p className="pack-draw-hint">
-                          {t('packDraw.filterEmpty')}
-                        </p>
-                      ) : (
-                        <ul className="pack-collection-grid">
-                          {filteredCollection.map((item) => (
-                            <li key={item.id}>
-                              <button
-                                type="button"
-                                className="pack-collection-tile"
-                                onClick={() => openInspect(item)}
+                      <ul className="pack-collection-grid">
+                        {filteredCollection.map((item) => (
+                          <li key={item.id}>
+                            <button
+                              type="button"
+                              className="pack-collection-tile"
+                              onClick={() => openInspect(item)}
+                            >
+                              <img
+                                src={item.frontImageUrl}
+                                alt={item.name}
+                              />
+                              <span
+                                className={`pack-rarity-chip rarity-${item.rarity}`}
                               >
-                                <img
-                                  src={item.frontImageUrl}
-                                  alt={item.name}
-                                />
-                                <span
-                                  className={`pack-rarity-chip rarity-${item.rarity}`}
-                                >
-                                  {t(`packDraw.rarity.${item.rarity}`, {
-                                    defaultValue: item.rarity,
-                                  })}
-                                </span>
-                              </button>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
+                                {t(`packDraw.rarity.${item.rarity}`, {
+                                  defaultValue: item.rarity,
+                                })}
+                              </span>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
                     </>
                   )}
                   {inspect ? (
@@ -1539,16 +1427,6 @@ export function PackDrawButton() {
                             >
                               {t('packDraw.removeCollect')}
                             </button>
-                            {inspect.scryfallUri ? (
-                              <a
-                                href={inspect.scryfallUri}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="pack-scryfall-link"
-                              >
-                                {t('packDraw.scryfall')}
-                              </a>
-                            ) : null}
                           </div>
                         </div>
                       </div>
@@ -1911,16 +1789,6 @@ export function PackDrawButton() {
                                 ? t('packDraw.collected')
                                 : t('packDraw.collect')}
                             </button>
-                          ) : null}
-                          {showDetails && card?.scryfallUri ? (
-                            <a
-                              href={card.scryfallUri}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="pack-scryfall-link"
-                            >
-                              {t('packDraw.scryfall')}
-                            </a>
                           ) : null}
                         </div>
                       </div>

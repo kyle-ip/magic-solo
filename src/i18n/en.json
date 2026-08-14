@@ -10,7 +10,7 @@
     "backToTop": "Back to top",
     "floatingNav": "Quick navigation",
     "attribution": "Card data and images provided by Scryfall.",
-    "rulesAttribution": "Rules summarized from MTG Wiki and official Wizards of the Coast materials. Chinese text uses official Magic terminology."
+    "rulesAttribution": ""
   },
   "home": {
     "eyebrow": "Challenge Decks",
@@ -21,7 +21,7 @@
     "references": "References",
     "referencesLead": "Rules and source material.",
     "viewDeck": "Open Challenge",
-    "cardsLabel": "{{count}} unique cards · {{total}} in deck",
+    "cardsLabel": "{{count}} / {{total}}",
     "pathMeta": "{{expansion}}"
   },
   "classicDecks": {

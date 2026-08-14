@@ -112,7 +112,6 @@ export function HomePage() {
                     total: deck.totalDeckSize,
                   })}
                 </span>
-                <span className="btn ghost">{t('home.viewDeck')}</span>
               </div>
               <CardImage
                 className="path-thumb"

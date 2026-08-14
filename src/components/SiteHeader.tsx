@@ -133,10 +133,10 @@ export function SiteHeader() {
         <Link to="/" className="brand-lockup">
           <img
             className="brand-logo"
-            src={assetUrl('mtg-logo.svg')}
+            src={assetUrl('mtg-logo-mark.svg')}
             alt={t('app.brand')}
-            width={210}
-            height={48}
+            width={56}
+            height={56}
           />
           <span className="brand-solo">
             <strong>{t('app.brand')}</strong>

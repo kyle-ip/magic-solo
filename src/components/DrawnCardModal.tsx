@@ -233,18 +233,6 @@ function DrawnCardModalBody({
                     <p className="qty">{t('deck.quantity', { n: quantity })}</p>
                   ) : null}
                 </div>
-                <div className="pack-draw-actions">
-                  {card.scryfallUri ? (
-                    <a
-                      href={card.scryfallUri}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="pack-scryfall-link"
-                    >
-                      {t('packDraw.scryfall')}
-                    </a>
-                  ) : null}
-                </div>
               </div>
             </div>
           </div>
