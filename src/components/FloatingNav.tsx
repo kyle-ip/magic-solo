@@ -9,13 +9,21 @@ export function FloatingNav() {
   const isChallengeDeck = pathname.startsWith('/decks/')
   const isClassicDeck =
     pathname === '/classic-decks' || pathname.startsWith('/classic-decks/')
-  const isDeckPage = isChallengeDeck || isClassicDeck
+  const isSetGallery =
+    pathname === '/sets' || pathname.startsWith('/sets/')
+  const isDeckPage = isChallengeDeck || isClassicDeck || isSetGallery
   const homeTo =
-    isClassicDeck && pathname !== '/classic-decks' ? '/classic-decks' : '/'
+    isClassicDeck && pathname !== '/classic-decks'
+      ? '/classic-decks'
+      : isSetGallery && pathname !== '/sets'
+        ? '/sets'
+        : '/'
   const homeLabel =
     isClassicDeck && pathname !== '/classic-decks'
       ? t('classicDecks.backToList')
-      : t('app.home')
+      : isSetGallery && pathname !== '/sets'
+        ? t('sets.backToList')
+        : t('app.home')
 
   useEffect(() => {
     const onScroll = () => {

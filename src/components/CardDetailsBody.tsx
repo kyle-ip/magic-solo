@@ -99,7 +99,7 @@ export function CardDetailsBody({
           href={card.scryfallUri}
           target="_blank"
           rel="noreferrer"
-          title="Scryfall"
+          title={t('packDraw.openOnScryfall')}
         >
           <h3>{name}</h3>
         </a>
@@ -113,7 +113,7 @@ export function CardDetailsBody({
             href={card.scryfallUri}
             target="_blank"
             rel="noreferrer"
-            title="Scryfall"
+            title={t('packDraw.openOnScryfall')}
           >
             <p className="pack-en-name" title={t('packDraw.englishName')}>
               {card.name}

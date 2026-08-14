@@ -21,13 +21,32 @@ const UUID_RE =
 const resolveCache = new Map<string, string>()
 const resolveInflight = new Map<string, Promise<string>>()
 
+export type ScryfallFaceSize =
+  | 'small'
+  | 'normal'
+  | 'large'
+  | 'png'
+  | 'art_crop'
+  | 'border_crop'
+
 export function scryfallCardFaceUrl(
   cardId: string,
-  size: 'normal' | 'large' | 'art_crop',
+  size: 'small' | 'normal' | 'large' | 'art_crop',
   face: 'front' | 'back' = 'front',
 ): string {
   const id = cardId.toLowerCase()
   return `https://cards.scryfall.io/${size}/${face}/${id[0]}/${id[1]}/${id}.jpg`
+}
+
+/** Swap Scryfall CDN face size in an existing cards.scryfall.io URL. */
+export function scryfallResizeFaceUrl(
+  url: string,
+  size: ScryfallFaceSize,
+): string {
+  return url.replace(
+    /\/(small|normal|large|png|art_crop|border_crop)\//,
+    `/${size}/`,
+  )
 }
 
 export function scryfallCardBackUrl(backId: string): string {
@@ -101,7 +120,12 @@ function deriveRemote(
   }
 
   if (!id) return null
-  if (kind === 'normal' || kind === 'large' || kind === 'art_crop') {
+  if (
+    kind === 'small' ||
+    kind === 'normal' ||
+    kind === 'large' ||
+    kind === 'art_crop'
+  ) {
     const fromMap = lookupByCardId(id, kind)
     if (fromMap) return fromMap.remote
     return scryfallCardFaceUrl(id, kind)
@@ -150,6 +174,23 @@ export function preferredAssetUrl(
   },
 ): string {
   return assetCandidates(localPath, opts).primary
+}
+
+/** Gallery / list thumbs — Scryfall `small` (146×204). */
+export function thumbUrlFromFaceUrl(frontImageUrl: string): string {
+  return scryfallResizeFaceUrl(frontImageUrl, 'small')
+}
+
+/** Detail-modal face — Scryfall `large` (672×936). */
+export function largeUrlFromFaceUrl(frontImageUrl: string): string {
+  return scryfallResizeFaceUrl(frontImageUrl, 'large')
+}
+
+export function withLargeFace<T extends { frontImageUrl: string }>(card: T): T {
+  return {
+    ...card,
+    frontImageUrl: largeUrlFromFaceUrl(card.frontImageUrl),
+  }
 }
 
 /** Remote image probe timeout — fall back to local rather than hang. */

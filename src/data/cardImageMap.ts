@@ -5,6 +5,7 @@
 import mapJson from './cardImageMap.json'
 
 export type CardImageKind =
+  | 'small'
   | 'normal'
   | 'large'
   | 'art_crop'

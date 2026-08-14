@@ -18,6 +18,19 @@
   color: #f3e6c8;
 }
 
+.classic-title-link {
+  display: inline-block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.classic-title-link:hover h1,
+.classic-title-link:focus-visible h1 {
+  color: #f0d48a;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
 .classic-format-filters {
   display: flex;
   flex-wrap: wrap;
@@ -179,37 +192,43 @@
   margin: 0.75rem 0 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
   gap: 1rem 0.85rem;
+  justify-items: center;
 }
 
 .classic-key-card {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  align-items: stretch;
+  align-items: center;
+  width: 100%;
+  max-width: 9.5rem;
 }
 
-/* Reuse pack flip geometry: aspect-ratio on the transforming inner, faces absolute. */
-.classic-key-flip.card-flip {
-  width: 100%;
-  max-height: none;
-  align-self: stretch;
-  justify-self: stretch;
-}
-
-.classic-key-flip .card-flip-inner {
-  width: 100%;
-  height: auto;
-  aspect-ratio: 5 / 7;
-  border-radius: 0.35rem;
-  box-shadow: none;
+/* Native Scryfall small thumbs — clip JPG white corners; click opens details */
+.classic-key-thumb {
+  appearance: none;
+  display: block;
+  width: 146px;
+  height: 204px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--card-radius);
+  overflow: hidden;
+  background: var(--card-face-bg);
   cursor: pointer;
+  line-height: 0;
 }
 
-.classic-key-flip .card-face {
-  border-radius: 0.35rem;
-  box-shadow: none;
+.classic-key-thumb img {
+  width: 146px;
+  height: 204px;
+  object-fit: cover;
+  transform: scale(var(--card-img-scale));
+  transform-origin: center center;
+  pointer-events: none;
 }
 
 .classic-key-card-meta {
@@ -218,6 +237,7 @@
   align-items: baseline;
   gap: 0.35rem 0.45rem;
   min-width: 0;
+  width: 100%;
   position: relative;
   z-index: 1;
 }
@@ -243,7 +263,9 @@
 }
 
 .classic-key-card-placeholder {
-  aspect-ratio: 5 / 7;
+  width: 146px;
+  height: 204px;
+  aspect-ratio: auto;
   display: grid;
   place-items: center;
   padding: 0.5rem;
@@ -252,7 +274,7 @@
   color: rgba(231, 215, 184, 0.55);
   background: rgba(28, 22, 16, 0.65);
   border: 1px dashed rgba(184, 137, 58, 0.28);
-  border-radius: 0.35rem;
+  border-radius: 0.25rem;
 }
 
 .classic-card-qty-badge {
@@ -276,7 +298,7 @@
   background: rgba(231, 180, 110, 0.95);
 }
 
-.classic-key-card.is-key .classic-key-flip .card-flip-inner {
+.classic-key-card.is-key .classic-key-thumb {
   box-shadow: 0 0 0 1px rgba(240, 212, 138, 0.45);
 }
 
@@ -295,12 +317,8 @@
 }
 
 .classic-full-cards {
-  grid-template-columns: repeat(auto-fill, minmax(13.2rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
   gap: 1rem 0.85rem;
-}
-
-.classic-key-flip {
-  position: relative;
 }
 
 @media (max-width: 720px) {

@@ -22,6 +22,14 @@ const ClassicDeckDetailPage = lazy(() =>
     default: m.ClassicDeckDetailPage,
   })),
 )
+const SetsPage = lazy(() =>
+  import('./pages/SetsPage').then((m) => ({ default: m.SetsPage })),
+)
+const SetGalleryPage = lazy(() =>
+  import('./pages/SetGalleryPage').then((m) => ({
+    default: m.SetGalleryPage,
+  })),
+)
 const ChallengePage = lazy(() =>
   import('./pages/ChallengePage').then((m) => ({ default: m.ChallengePage })),
 )
@@ -73,6 +81,8 @@ export default function App() {
           <Route path="/decks/:setCode" element={<DeckPage />} />
           <Route path="/classic-decks" element={<ClassicDecksPage />} />
           <Route path="/classic-decks/:id" element={<ClassicDeckDetailPage />} />
+          <Route path="/sets" element={<SetsPage />} />
+          <Route path="/sets/:code" element={<SetGalleryPage />} />
           <Route path="/experience/decks/:setCode" element={<LegacyModeDeckRedirect />} />
           <Route path="/assistant/decks/:setCode" element={<LegacyModeDeckRedirect />} />
           <Route path="/challenge/:setCode" element={<ChallengePage />} />

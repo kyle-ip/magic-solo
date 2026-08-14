@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { DrawnCardModal } from '../components/DrawnCardModal'
-import { CardFaceButton } from '../components/CardFaceButton'
 import {
   getClassicDeck,
   getClassicDeckLocalizedName,
@@ -14,6 +13,11 @@ import {
   type DrawnCard,
 } from '../data/randomCard'
 import { resolveCardsByNameProgressive } from '../data/resolveClassicCards'
+import { preloadImage } from '../utils/imageCache'
+import {
+  thumbUrlFromFaceUrl,
+  withLargeFace,
+} from '../utils/remoteAsset'
 import type { ClassicDeckListEntry } from '../types'
 import '../styles/classic.css'
 
@@ -28,7 +32,6 @@ export function ClassicDeckDetailPage() {
   )
   const [loading, setLoading] = useState(true)
   const [inspect, setInspect] = useState<DrawnCard | null>(null)
-  const [flipKey, setFlipKey] = useState<Record<string, number>>({})
 
   useEffect(() => {
     let cancelled = false
@@ -62,7 +65,7 @@ export function ClassicDeckDetailPage() {
       const card = resolved.get(row.name)
       if (card && !seen.has(card.id)) {
         seen.add(card.id)
-        list.push(card)
+        list.push(withLargeFace(card))
       }
     }
     return list
@@ -105,11 +108,10 @@ export function ClassicDeckDetailPage() {
 
   const openCard = (name: string) => {
     const card = resolved.get(name)
-    if (card) setInspect(card)
-  }
-
-  const flipThumb = (cardId: string) => {
-    setFlipKey((prev) => ({ ...prev, [cardId]: (prev[cardId] ?? 0) + 1 }))
+    if (!card) return
+    const large = withLargeFace(card)
+    setInspect(large)
+    void preloadImage(large.frontImageUrl).catch(() => undefined)
   }
 
   const qtyFor = (card: DrawnCard | null) => {
@@ -140,7 +142,19 @@ export function ClassicDeckDetailPage() {
           {t(`classicDecks.format.${deck.format}`)} ·{' '}
           {t(`classicDecks.playstyle.${deck.playstyle}`)} · {deck.era}
         </p>
-        <h1>{title}</h1>
+        {scryfallSearchUrl ? (
+          <a
+            className="classic-title-link"
+            href={scryfallSearchUrl}
+            target="_blank"
+            rel="noreferrer"
+            title={t('classicDecks.openOnScryfall')}
+          >
+            <h1>{title}</h1>
+          </a>
+        ) : (
+          <h1>{title}</h1>
+        )}
         <p className="lede">{summary}</p>
       </header>
 
@@ -161,10 +175,8 @@ export function ClassicDeckDetailPage() {
           resolved={resolved}
           lang={i18n.language}
           keySet={keySet}
-          flipKey={flipKey}
           keyBadge={t('classicDecks.keyBadge')}
           unresolvedLabel={t('classicDecks.unresolved')}
-          onFlip={flipThumb}
           onOpen={openCard}
         />
         <CardGallery
@@ -173,35 +185,24 @@ export function ClassicDeckDetailPage() {
           resolved={resolved}
           lang={i18n.language}
           keySet={keySet}
-          flipKey={flipKey}
           keyBadge={t('classicDecks.keyBadge')}
           unresolvedLabel={t('classicDecks.unresolved')}
-          onFlip={flipThumb}
           onOpen={openCard}
         />
       </section>
 
-      {(deck.links?.wiki || scryfallSearchUrl) && (
+      {deck.links?.wiki ? (
         <section className="classic-detail-section classic-detail-links">
           <h2>{t('classicDecks.links')}</h2>
           <ul>
-            {deck.links?.wiki ? (
-              <li>
-                <a href={deck.links.wiki} target="_blank" rel="noreferrer">
-                  {t('classicDecks.wiki')}
-                </a>
-              </li>
-            ) : null}
-            {scryfallSearchUrl ? (
-              <li>
-                <a href={scryfallSearchUrl} target="_blank" rel="noreferrer">
-                  {t('classicDecks.scryfallSearch')}
-                </a>
-              </li>
-            ) : null}
+            <li>
+              <a href={deck.links.wiki} target="_blank" rel="noreferrer">
+                {t('classicDecks.wiki')}
+              </a>
+            </li>
           </ul>
         </section>
-      )}
+      ) : null}
 
       <DrawnCardModal
         card={inspect}
@@ -220,10 +221,8 @@ function CardGallery({
   resolved,
   lang,
   keySet,
-  flipKey,
   keyBadge,
   unresolvedLabel,
-  onFlip,
   onOpen,
 }: {
   title: string
@@ -231,10 +230,8 @@ function CardGallery({
   resolved: Map<string, DrawnCard | null>
   lang: string
   keySet: Set<string>
-  flipKey: Record<string, number>
   keyBadge: string
   unresolvedLabel: string
-  onFlip: (cardId: string) => void
   onOpen: (name: string) => void
 }) {
   if (rows.length === 0) return null
@@ -268,43 +265,34 @@ function CardGallery({
               </li>
             )
           }
-          const turns = flipKey[card.id] ?? 0
           const label = displayName(card, lang)
+          const thumb = thumbUrlFromFaceUrl(card.frontImageUrl)
           return (
             <li
               key={rowKey}
               className={`classic-key-card${isKey ? ' is-key' : ''}`}
             >
-              <div className="card-flip classic-key-flip">
-                <CardFaceButton
-                  className="card-flip-inner"
-                  ariaLabel={label}
-                  style={{
-                    transform: `translate3d(0, 0, 0) rotateY(${turns * 180}deg)`,
-                  }}
-                  onFlip={() => onFlip(card.id)}
-                  onToggleZoom={() => onOpen(row.name)}
-                >
-                  <span className="card-face front">
-                    <img
-                      src={card.frontImageUrl}
-                      alt={label}
-                      draggable={false}
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  </span>
-                  <span className="card-face back">
-                    <img
-                      src={card.backImageUrl}
-                      alt=""
-                      draggable={false}
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  </span>
-                </CardFaceButton>
-              </div>
+              <button
+                type="button"
+                className="classic-key-thumb"
+                onClick={() => onOpen(row.name)}
+                onPointerEnter={() => {
+                  void preloadImage(withLargeFace(card).frontImageUrl).catch(
+                    () => undefined,
+                  )
+                }}
+                aria-label={label}
+              >
+                <img
+                  src={thumb}
+                  alt={label}
+                  width={146}
+                  height={204}
+                  loading="lazy"
+                  decoding="async"
+                  draggable={false}
+                />
+              </button>
               <div className="classic-key-card-meta">
                 <span className="classic-card-qty-badge">{row.qty}</span>
                 {isKey ? (

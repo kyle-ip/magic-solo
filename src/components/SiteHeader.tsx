@@ -147,6 +147,9 @@ export function SiteHeader() {
           <Link to="/classic-decks" className="references-text-btn">
             {t('classicDecks.open')}
           </Link>
+          <Link to="/sets" className="references-text-btn">
+            {t('sets.open')}
+          </Link>
           <PackDrawSlot />
           <SingleDrawSlot />
           <ReferencesButton />
