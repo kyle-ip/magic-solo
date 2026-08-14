@@ -25,7 +25,7 @@
     "pathMeta": "{{expansion}}"
   },
   "classicDecks": {
-    "open": "经典牌组",
+    "open": "牌组",
     "eyebrow": "构筑原型",
     "title": "经典牌组",
     "lead": "探索万智牌著名构筑原型：如何取胜，以及定义它们的核心卡牌。",
@@ -63,12 +63,13 @@
     }
   },
   "packDraw": {
-    "open": "拆卡包",
+    "open": "开卡包",
     "title": "拆包时刻",
-    "lead": "撕开卡包，抽出三张卡牌，从背面翻到正面。",
+    "lead": "撕开卡包，抽出三张卡牌，再逐张点按翻开。",
     "openPack": "撕开",
     "packLabel": "万智牌补充包",
     "drawAgain": "再拆一包",
+    "tapToReveal": "点按卡牌翻开",
     "loading": "开启中…",
     "prevCard": "上一张",
     "nextCard": "下一张",
@@ -130,6 +131,14 @@
       "special": "特别",
       "bonus": "额外"
     }
+  },
+  "singleDraw": {
+    "open": "抽一张",
+    "title": "单卡抽取",
+    "loading": "抽取中…",
+    "drawAgain": "再抽一张",
+    "backToDraw": "返回抽取",
+    "error": "抽取失败，请再试一次。"
   },
   "deck": {
     "challenge": "挑战套牌 #{{n}}",

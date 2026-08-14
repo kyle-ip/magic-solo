@@ -8,6 +8,9 @@ import { assetUrl } from '../utils/assetUrl'
 const PackDrawButton = lazy(() =>
   import('./PackDrawButton').then((m) => ({ default: m.PackDrawButton })),
 )
+const SingleDrawButton = lazy(() =>
+  import('./SingleDrawButton').then((m) => ({ default: m.SingleDrawButton })),
+)
 
 function PackDrawSlot() {
   const { t } = useTranslation()
@@ -17,9 +20,14 @@ function PackDrawSlot() {
   useEffect(() => {
     let cancelled = false
     const start = () => {
-      void import('./PackDrawButton').then(() => {
-        if (!cancelled) setShow(true)
-      })
+      void import('./PackDrawButton')
+        .then(() => {
+          if (!cancelled) setShow(true)
+        })
+        .catch(() => {
+          // Keep a clickable control even if prefetch fails; Suspense will retry.
+          if (!cancelled) setShow(true)
+        })
     }
     const ric = (
       window as Window & {
@@ -61,6 +69,61 @@ function PackDrawSlot() {
   )
 }
 
+function SingleDrawSlot() {
+  const { t } = useTranslation()
+  const [show, setShow] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    const start = () => {
+      void import('./SingleDrawButton')
+        .then(() => {
+          if (!cancelled) setShow(true)
+        })
+        .catch(() => {
+          if (!cancelled) setShow(true)
+        })
+    }
+    const ric = (
+      window as Window & {
+        requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number
+      }
+    ).requestIdleCallback
+    if (typeof ric === 'function') {
+      const id = ric(start, { timeout: 1400 })
+      return () => {
+        cancelled = true
+        window.cancelIdleCallback?.(id)
+      }
+    }
+    const tid = window.setTimeout(start, 50)
+    return () => {
+      cancelled = true
+      window.clearTimeout(tid)
+    }
+  }, [])
+
+  if (!show) {
+    return (
+      <button type="button" className="references-text-btn" disabled aria-busy>
+        {t('singleDraw.open')}
+      </button>
+    )
+  }
+
+  return (
+    <Suspense
+      fallback={
+        <button type="button" className="references-text-btn" disabled aria-busy>
+          {t('singleDraw.open')}
+        </button>
+      }
+    >
+      <SingleDrawButton />
+    </Suspense>
+  )
+}
+
 export function SiteHeader() {
   const { t } = useTranslation()
 
@@ -85,6 +148,7 @@ export function SiteHeader() {
             {t('classicDecks.open')}
           </Link>
           <PackDrawSlot />
+          <SingleDrawSlot />
           <ReferencesButton />
           <LanguageSwitch />
         </div>

@@ -117,6 +117,7 @@
 }
 
 .pack-draw-stage {
+  position: relative;
   display: grid;
   grid-template-columns: auto minmax(22rem, 1.2fr);
   gap: 1.75rem;
@@ -130,6 +131,20 @@
   align-content: center;
   justify-content: center;
   align-items: center;
+}
+
+.pack-open-again-bar {
+  position: absolute;
+  right: max(0.85rem, env(safe-area-inset-right, 0px));
+  bottom: max(0.85rem, env(safe-area-inset-bottom, 0px));
+  z-index: 6;
+  display: flex;
+  justify-content: flex-end;
+  pointer-events: none;
+}
+
+.pack-open-again-bar .btn {
+  pointer-events: auto;
 }
 
 .pack-stage-visual {
@@ -161,6 +176,18 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+}
+
+.pack-card-copy.is-awaiting .pack-card-copy-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.pack-card-copy.is-awaiting .pack-tap-hint {
+  margin: 0;
+  max-width: 16rem;
 }
 
 .pack-card-copy-cluster {
@@ -621,12 +648,38 @@
 .pack-shell.is-sealed {
   filter: drop-shadow(0 22px 32px rgba(0, 0, 0, 0.55));
   cursor: pointer;
+  animation: pack-sealed-breathe 2.8s ease-in-out infinite;
+}
+
+.pack-shell.is-sealed.is-pressing {
+  animation: none;
+  transform: scale(0.965);
+  transition: transform 0.08s ease-out;
 }
 
 .pack-shell.is-tearing {
-  cursor: default;
-  pointer-events: none;
+  cursor: pointer;
+  pointer-events: auto;
   filter: drop-shadow(0 18px 26px rgba(0, 0, 0, 0.5));
+}
+
+.pack-shell.is-tearing.is-tap-react {
+  animation: pack-tear-tap 0.42s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@keyframes pack-tear-tap {
+  0% {
+    filter: drop-shadow(0 18px 26px rgba(0, 0, 0, 0.5));
+    transform: scale(1);
+  }
+  40% {
+    filter: drop-shadow(0 22px 34px rgba(212, 168, 75, 0.4));
+    transform: scale(0.985);
+  }
+  100% {
+    filter: drop-shadow(0 18px 26px rgba(0, 0, 0, 0.5));
+    transform: scale(1);
+  }
 }
 
 .pack-shell:disabled {
@@ -793,16 +846,92 @@
 .pack-reveal-stack.is-in-tear .pack-card-wrap.stack-0 {
   transform: scale(0.9) translate(0, 2px);
   z-index: 1;
+  animation: pack-under-float-0 2.4s ease-in-out infinite;
 }
 
 .pack-reveal-stack.is-in-tear .pack-card-wrap.stack-1 {
   transform: scale(0.93) translate(0, 1px);
   z-index: 2;
+  animation: pack-under-float-1 2.4s ease-in-out infinite;
+  animation-delay: 0.12s;
 }
 
 .pack-reveal-stack.is-in-tear .pack-card-wrap.stack-2 {
   transform: scale(0.96);
   z-index: 3;
+  animation: pack-under-float-2 2.4s ease-in-out infinite;
+  animation-delay: 0.24s;
+}
+
+@keyframes pack-under-float-0 {
+  0%,
+  100% {
+    transform: scale(0.9) translate(0, 2px);
+  }
+  50% {
+    transform: scale(0.9) translate(0, -6px);
+  }
+}
+
+@keyframes pack-under-float-1 {
+  0%,
+  100% {
+    transform: scale(0.93) translate(0, 1px);
+  }
+  50% {
+    transform: scale(0.93) translate(0, -9px);
+  }
+}
+
+@keyframes pack-under-float-2 {
+  0%,
+  100% {
+    transform: scale(0.96) translate(0, 0);
+  }
+  50% {
+    transform: scale(0.97) translate(0, -14px);
+  }
+}
+
+.pack-reveal-stack.is-in-tear.is-tap-react .pack-card-wrap.stack-0,
+.pack-reveal-stack.is-in-tear.is-tap-react .pack-card-wrap.stack-1,
+.pack-reveal-stack.is-in-tear.is-tap-react .pack-card-wrap.stack-2 {
+  animation: pack-under-tap 0.48s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.pack-reveal-stack.is-in-tear.is-tap-react .pack-card-wrap.stack-1 {
+  animation-delay: 0.04s;
+}
+
+.pack-reveal-stack.is-in-tear.is-tap-react .pack-card-wrap.stack-2 {
+  animation-delay: 0.08s;
+}
+
+@keyframes pack-under-tap {
+  0% {
+    transform: scale(0.96) translate(0, 0);
+  }
+  32% {
+    transform: scale(0.99) translate(0, -20px);
+  }
+  58% {
+    transform: scale(0.97) translate(0, -6px);
+  }
+  100% {
+    transform: scale(0.96) translate(0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pack-reveal-stack.is-in-tear .pack-card-wrap.stack-0,
+  .pack-reveal-stack.is-in-tear .pack-card-wrap.stack-1,
+  .pack-reveal-stack.is-in-tear .pack-card-wrap.stack-2,
+  .pack-reveal-stack.is-in-tear.is-tap-react .pack-card-wrap.stack-0,
+  .pack-reveal-stack.is-in-tear.is-tap-react .pack-card-wrap.stack-1,
+  .pack-reveal-stack.is-in-tear.is-tap-react .pack-card-wrap.stack-2,
+  .pack-shell.is-tearing.is-tap-react {
+    animation: none;
+  }
 }
 
 .pack-card-wrap.is-in-pack {
@@ -843,6 +972,59 @@
   box-shadow: inset 0 0 0 1px rgba(224, 180, 90, 0.28);
 }
 
+.pack-card-deck.is-landing {
+  animation: pack-deck-land 0.28s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+/* Face-down suspense — soft float + rarity edge foreshadow */
+.pack-card-wrap.is-awaiting-flip.is-active {
+  animation: pack-await-float 2.4s ease-in-out infinite;
+}
+
+.pack-card-wrap.is-awaiting-flip.is-active .card-face.front::after {
+  animation: pack-await-rim 2.2s ease-in-out infinite;
+}
+
+.pack-card-wrap.is-awaiting-flip.pack-fx-uncommon.is-active .card-face.front::after {
+  box-shadow:
+    inset 0 0 0 1px rgba(160, 195, 235, 0.55),
+    inset 0 0 18px rgba(140, 180, 230, 0.22);
+}
+
+.pack-card-wrap.is-awaiting-flip.pack-fx-rare.is-active .card-face.front::after {
+  box-shadow:
+    inset 0 0 0 1px rgba(240, 200, 90, 0.62),
+    inset 0 0 20px rgba(230, 175, 50, 0.28);
+}
+
+.pack-card-wrap.is-awaiting-flip.pack-fx-mythic.is-active .card-face.front::after {
+  box-shadow:
+    inset 0 0 0 1px rgba(200, 150, 55, 0.7),
+    inset 0 0 22px rgba(140, 95, 25, 0.34);
+}
+
+.pack-card-wrap.is-awaiting-flip.pack-fx-uncommon.is-behind .card-face.front::after {
+  box-shadow:
+    inset 0 0 0 1px rgba(160, 195, 235, 0.4),
+    inset 0 0 12px rgba(140, 180, 230, 0.14);
+}
+
+.pack-card-wrap.is-awaiting-flip.pack-fx-rare.is-behind .card-face.front::after {
+  box-shadow:
+    inset 0 0 0 1px rgba(240, 200, 90, 0.45),
+    inset 0 0 14px rgba(230, 175, 50, 0.18);
+}
+
+.pack-card-wrap.is-awaiting-flip.pack-fx-mythic.is-behind .card-face.front::after {
+  box-shadow:
+    inset 0 0 0 1px rgba(200, 150, 55, 0.5),
+    inset 0 0 16px rgba(140, 95, 25, 0.22);
+}
+
+.pack-card-wrap .card-flip-inner {
+  transition-duration: var(--pack-flip-ms, 400ms);
+}
+
 /* Suppress cast shadows while rotating — hidden-face box-shadow paints a static rect */
 .pack-card-wrap.is-flipping .card-face,
 .card-flip-inner.is-flipping .card-face {
@@ -879,6 +1061,146 @@
   100% {
     transform: translate3d(0, 0, 0) scale(1);
   }
+}
+
+@keyframes pack-sealed-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.018);
+  }
+}
+
+@keyframes pack-impact-shake {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  25% {
+    transform: translate3d(-3px, 1px, 0);
+  }
+  55% {
+    transform: translate3d(3px, -1px, 0);
+  }
+  80% {
+    transform: translate3d(-1px, 0, 0);
+  }
+}
+
+@keyframes pack-deck-land {
+  0% {
+    transform: scale(1.045);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes pack-await-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(0, -3px, 0) scale(1.01);
+  }
+}
+
+@keyframes pack-await-rim {
+  0%,
+  100% {
+    opacity: 0.72;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes pack-stage-flash-rare {
+  0% {
+    opacity: 0;
+  }
+  18% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes pack-stage-flash-mythic {
+  0% {
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes pack-nudge-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.035);
+  }
+}
+
+.pack-draw-modal.is-impact-shake {
+  animation: pack-impact-shake 0.11s ease-out both;
+}
+
+.pack-draw-stage.is-stage-flash-rare::before,
+.pack-draw-stage.is-stage-flash-mythic::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.pack-draw-stage.is-stage-flash-rare::before {
+  background: radial-gradient(
+    ellipse 55% 50% at 50% 42%,
+    rgba(255, 220, 120, 0.28) 0%,
+    transparent 70%
+  );
+  animation: pack-stage-flash-rare 0.42s ease-out both;
+}
+
+.pack-draw-stage.is-stage-flash-mythic::before {
+  background: radial-gradient(
+    ellipse 60% 55% at 50% 42%,
+    rgba(200, 150, 55, 0.36) 0%,
+    rgba(80, 50, 10, 0.18) 45%,
+    transparent 72%
+  );
+  animation: pack-stage-flash-mythic 0.42s ease-out both;
+}
+
+.pack-tap-hint {
+  margin: 0.35rem 0 0;
+  text-align: center;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  color: rgba(255, 236, 200, 0.78);
+}
+
+.pack-reveal-stack > .pack-tap-hint {
+  margin-top: 0.85rem;
+  width: 100%;
+}
+
+.pack-card-copy.is-nudge .pack-tap-hint,
+.pack-draw-stage.is-nudge-reveal .pack-card-wrap.is-awaiting-flip.is-active {
+  animation: pack-nudge-pulse 0.55s ease-out 2;
 }
 
 .pack-nav {
@@ -968,7 +1290,7 @@
 }
 
 /* One-shot rarity FX — hierarchy: mythic (ornate) → rare → uncommon → common (plain)
-   Soft glow language (no hard rims). Peak duration unified at 2.5s. */
+   Soft glow language (no hard rims). Peak duration set in JS by rarity. */
 .pack-card-wrap[class*='pack-fx-'] .card-face {
   transition:
     box-shadow 0.85s ease,
@@ -986,7 +1308,7 @@
 
 /* ── Common — soft brightness settle ── */
 .pack-card-wrap.pack-fx-common.is-glowing .card-face {
-  animation: pack-common-flash 2.5s ease-out both;
+  animation: pack-common-flash 1.6s ease-out both;
 }
 
 .pack-card-wrap.pack-fx-common.is-glowing .card-face::after {
@@ -1003,7 +1325,7 @@
     0 0 14px rgba(170, 200, 240, 0.4),
     0 0 32px rgba(120, 165, 220, 0.22),
     0 18px 28px rgba(0, 0, 0, 0.48);
-  animation: pack-uncommon-flash 2.5s ease-out both;
+  animation: pack-uncommon-flash 2s ease-out both;
 }
 
 .pack-card-wrap.pack-fx-uncommon.is-glowing .card-face::after {
@@ -1033,7 +1355,7 @@
 }
 
 .pack-card-wrap.pack-fx-uncommon.is-glowing .card-face::before {
-  animation: pack-uncommon-shimmer 2.5s ease-out both;
+  animation: pack-uncommon-shimmer 2s ease-out both;
 }
 
 .pack-card-wrap.pack-fx-uncommon.is-fading .card-face::before {
@@ -1061,21 +1383,21 @@
   border-radius: 50%;
   background: radial-gradient(
     ellipse 48% 52% at 50% 50%,
-    rgba(255, 220, 130, 0.42) 0%,
-    rgba(240, 180, 50, 0.2) 42%,
+    rgba(255, 220, 130, 0.52) 0%,
+    rgba(240, 180, 50, 0.28) 42%,
     transparent 70%
   );
-  animation: pack-rare-aureole 2.5s ease-out both;
+  animation: pack-rare-aureole 2.6s ease-out both;
   /* Avoid mix-blend-mode: screen — often invisible on real mobile GPUs */
 }
 
 .pack-card-wrap.pack-fx-rare.is-glowing .card-face {
   box-shadow:
-    0 0 16px rgba(255, 215, 100, 0.45),
-    0 0 36px rgba(230, 170, 45, 0.28),
-    0 0 56px rgba(190, 130, 20, 0.14),
+    0 0 18px rgba(255, 215, 100, 0.55),
+    0 0 40px rgba(230, 170, 45, 0.34),
+    0 0 64px rgba(190, 130, 20, 0.18),
     0 18px 28px rgba(0, 0, 0, 0.48);
-  animation: pack-rare-flash 2.5s ease-out both;
+  animation: pack-rare-flash 2.6s ease-out both;
 }
 
 .pack-card-wrap.pack-fx-rare.is-glowing .card-face::after {
@@ -1105,7 +1427,7 @@
 }
 
 .pack-card-wrap.pack-fx-rare.is-glowing .card-face::before {
-  animation: pack-rare-foil 2.5s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  animation: pack-rare-foil 2.6s cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
 
 .pack-card-wrap.pack-fx-rare.is-fading .card-face::before {
@@ -1140,26 +1462,26 @@
   background:
     radial-gradient(
       ellipse 46% 50% at 50% 50%,
-      rgba(190, 140, 45, 0.48) 0%,
-      rgba(110, 72, 18, 0.24) 40%,
+      rgba(190, 140, 45, 0.58) 0%,
+      rgba(110, 72, 18, 0.3) 40%,
       transparent 68%
     ),
     radial-gradient(
       ellipse 68% 74% at 50% 50%,
       transparent 42%,
-      rgba(140, 95, 25, 0.22) 55%,
+      rgba(140, 95, 25, 0.28) 55%,
       transparent 76%
     );
-  animation: pack-mythic-aureole 2.5s ease-out both;
+  animation: pack-mythic-aureole 3.2s ease-out both;
 }
 
 .pack-card-wrap.pack-fx-mythic.is-glowing .card-face {
   box-shadow:
-    0 0 18px rgba(200, 150, 55, 0.48),
-    0 0 40px rgba(140, 95, 25, 0.38),
-    0 0 64px rgba(80, 50, 10, 0.28),
+    0 0 20px rgba(200, 150, 55, 0.58),
+    0 0 44px rgba(140, 95, 25, 0.44),
+    0 0 72px rgba(80, 50, 10, 0.34),
     0 18px 28px rgba(0, 0, 0, 0.52);
-  animation: pack-mythic-flash 2.5s ease-out both;
+  animation: pack-mythic-flash 3.2s ease-out both;
 }
 
 .pack-card-wrap.pack-fx-mythic.is-glowing .card-face::after {
@@ -1193,7 +1515,7 @@
 }
 
 .pack-card-wrap.pack-fx-mythic.is-glowing .card-face::before {
-  animation: pack-mythic-foil 2.5s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  animation: pack-mythic-foil 3.2s cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
 
 .pack-card-wrap.pack-fx-mythic.is-fading .card-face::before {
@@ -1237,7 +1559,7 @@
     radial-gradient(circle at 78% 18%, rgba(255, 225, 140, 0.9) 0 2px, transparent 7px),
     radial-gradient(circle at 28% 72%, rgba(240, 185, 70, 0.85) 0 2px, transparent 7px),
     radial-gradient(circle at 70% 78%, rgba(255, 215, 120, 0.9) 0 2px, transparent 7px);
-  animation: pack-rare-filigree 2.5s ease-out both;
+  animation: pack-rare-filigree 2.6s ease-out both;
 }
 
 /* Mythic particles — denser soft antique-gold dust */
@@ -1252,7 +1574,7 @@
     radial-gradient(circle at 58% 62%, rgba(170, 120, 35, 0.8) 0 2px, transparent 7px),
     radial-gradient(circle at 36% 48%, rgba(220, 175, 80, 0.7) 0 1.5px, transparent 6px),
     radial-gradient(circle at 64% 38%, rgba(200, 150, 55, 0.7) 0 1.5px, transparent 6px);
-  animation: pack-mythic-glints 2.5s ease-out both;
+  animation: pack-mythic-glints 3.2s ease-out both;
 }
 
 .pack-card-wrap.is-fading .pack-fx-layer {
@@ -1285,6 +1607,23 @@
   .pack-card-wrap.pack-fx-rare.is-fading .card-face::before,
   .pack-card-wrap.pack-fx-mythic.is-glowing .card-face::before,
   .pack-card-wrap.pack-fx-mythic.is-fading .card-face::before {
+    display: none;
+  }
+
+  .pack-shell.is-sealed,
+  .pack-card-wrap.is-awaiting-flip.is-active,
+  .pack-card-wrap.is-awaiting-flip.is-active .card-face.front::after,
+  .pack-card-deck.is-landing,
+  .pack-draw-modal.is-impact-shake,
+  .pack-draw-stage.is-stage-flash-rare::before,
+  .pack-draw-stage.is-stage-flash-mythic::before,
+  .pack-card-copy.is-nudge .pack-tap-hint,
+  .pack-draw-stage.is-nudge-reveal .pack-card-wrap.is-awaiting-flip.is-active {
+    animation: none !important;
+  }
+
+  .pack-draw-stage.is-stage-flash-rare::before,
+  .pack-draw-stage.is-stage-flash-mythic::before {
     display: none;
   }
 }
@@ -1764,18 +2103,19 @@
   cursor: grabbing;
 }
 
-/* Double-click art zoom — pack / collection / deck: centered, fully visible */
+/* Double-click art zoom — larger than the pane; drag to pan clipped edges */
 .pack-inspect.is-art-zoomed,
 .pack-draw-stage.is-art-zoomed {
-  /* Fallback budget when container queries aren't used (pack open stage) */
-  --pack-art-zoom-pad: 5.75rem;
+  --pack-art-zoom-pad: 4.5rem;
   --pack-art-zoom-max-h: min(
     calc(100dvh - var(--pack-art-zoom-pad) - var(--safe-top, 0px) - var(--safe-bottom, 0px)),
     calc(100svh - var(--pack-art-zoom-pad) - var(--safe-top, 0px) - var(--safe-bottom, 0px))
   );
+  /* Intentionally larger than the visible stage so PC zoom can crop — pan to explore */
+  --pack-art-zoom-scale: 1.28;
   --pack-art-zoom-max-w: min(
-    calc(100vw - 1rem - var(--safe-left, 0px) - var(--safe-right, 0px)),
-    calc(var(--pack-art-zoom-max-h) * 744 / 1040)
+    calc((100vw - 1rem - var(--safe-left, 0px) - var(--safe-right, 0px)) * var(--pack-art-zoom-scale)),
+    calc(var(--pack-art-zoom-max-h) * var(--pack-art-zoom-scale) * 744 / 1040)
   );
 }
 
@@ -1807,19 +2147,30 @@
   min-height: 0;
   padding: 0;
   overflow: hidden;
-  /* Inspect panel has a definite box (absolute inset) — safe for size CQ */
+  cursor: grab;
+  touch-action: none;
   container-type: size;
 }
 
+.pack-inspect.is-art-zoomed .pack-inspect-stage:active {
+  cursor: grabbing;
+}
+
 .pack-inspect.is-art-zoomed .pack-inspect-wrap.pack-card-wrap {
-  /* Shrink on BOTH axes so the full card always fits the stage */
   box-sizing: border-box;
-  width: min(100cqw, calc(100cqh * 744 / 1040));
-  height: min(100cqh, calc(100cqw * 1040 / 744));
-  max-width: 100%;
-  max-height: 100%;
+  width: min(
+    calc(100cqw * var(--pack-art-zoom-scale)),
+    calc(100cqh * var(--pack-art-zoom-scale) * 744 / 1040)
+  );
+  height: min(
+    calc(100cqh * var(--pack-art-zoom-scale)),
+    calc(100cqw * var(--pack-art-zoom-scale) * 1040 / 744)
+  );
+  max-width: none;
+  max-height: none;
   aspect-ratio: 744 / 1040;
   margin: 0;
+  will-change: transform;
 }
 
 .pack-inspect.is-art-zoomed .pack-inspect-flip.card-flip,
@@ -1837,7 +2188,14 @@
   object-fit: contain;
 }
 
-.pack-draw-stage.is-art-zoomed.has-copy {
+/* Full art edges while zoomed — default face imgs are slightly overscaled */
+.pack-inspect.is-art-zoomed .card-face img,
+.pack-draw-stage.is-art-zoomed .card-face img {
+  transform: translateZ(0) scale(1);
+}
+
+.pack-draw-stage.is-art-zoomed.has-copy,
+.pack-draw-stage.is-art-zoomed.pack-only {
   grid-template-columns: 1fr;
   grid-template-rows: minmax(0, 1fr);
   justify-items: center;
@@ -1861,28 +2219,34 @@
   overflow: hidden;
   padding: 0.35rem;
   box-sizing: border-box;
+  cursor: grab;
+  touch-action: none;
+}
+
+.pack-draw-stage.is-art-zoomed .pack-stage-visual:active {
+  cursor: grabbing;
 }
 
 .pack-draw-stage.is-art-zoomed .pack-reveal-stack.is-deck,
 .pack-draw-stage.is-art-zoomed .pack-reveal-stack.is-browsable {
-  /* Dual-axis clamp (viewport fallback — no CQ on this stage) */
   width: min(
     var(--pack-art-zoom-max-w),
-    calc(var(--pack-art-zoom-max-h) * 744 / 1040)
+    calc(var(--pack-art-zoom-max-h) * var(--pack-art-zoom-scale) * 744 / 1040)
   );
   height: min(
-    var(--pack-art-zoom-max-h),
+    calc(var(--pack-art-zoom-max-h) * var(--pack-art-zoom-scale)),
     calc(var(--pack-art-zoom-max-w) * 1040 / 744)
   );
-  max-width: 100%;
-  max-height: 100%;
+  max-width: none;
+  max-height: none;
   aspect-ratio: 744 / 1040;
   padding: 0;
   box-sizing: border-box;
   display: grid;
   place-items: center;
-  overflow: hidden;
+  overflow: visible;
   margin-inline: auto;
+  will-change: transform;
 }
 
 .pack-draw-stage.is-art-zoomed .pack-card-deck {
@@ -2192,4 +2556,6 @@
     max-height: 100%;
   }
 }
+
+
 

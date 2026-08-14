@@ -2,6 +2,7 @@ import { useCallback, useEffect, useId, useRef, useState, type CSSProperties } f
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { useSwipeNavigate } from '../hooks/useSwipeNavigate'
+import { useArtZoomPan } from '../hooks/useArtZoomPan'
 import { assetUrl } from '../utils/assetUrl'
 import '../styles/pack.css'
 import '../styles/deck.css'
@@ -50,16 +51,31 @@ const TEAR_FLOOR_MS = 260
 const EXIT_MS = 300
 /** Same in-pack stack scales up before the deck peeks settle. */
 const EXPAND_MS = 400
+/** Default / inspect flip duration. Pack reveal uses rarity-scaled flipDurationMs. */
 const FLIP_MS = 400
+const IMPACT_SHAKE_MS = 110
+const DECK_LAND_MS = 280
+const STAGE_FLASH_MS = 420
 
 function prefersReducedMotion(): boolean {
   if (typeof window === 'undefined') return false
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
-/** Random peel direction in degrees (0 = right, 90 = down). Not limited to axis-aligned. */
+function packHaptic(pattern: number | number[]): void {
+  if (typeof navigator === 'undefined' || !('vibrate' in navigator)) return
+  if (prefersReducedMotion()) return
+  try {
+    navigator.vibrate(pattern)
+  } catch {
+    /* ignore unsupported / blocked vibrate */
+  }
+}
+
+/** Prefer across-pack rips (horizontal seam), with light angle jitter. */
 function randomTearAngle(): number {
-  return Math.random() * 360
+  const base = Math.random() < 0.5 ? 90 : 270
+  return base + (Math.random() * 2 - 1) * 16
 }
 
 function easeOutCubic(t: number): number {
@@ -150,6 +166,8 @@ type TearSpec = {
   seam: [number, number][]
   /** Mild twist so halves don’t look hinged. */
   twistBias: number
+  /** Tear start on the rim — peel/remain rotate from this hinge. */
+  hinge: [number, number]
 }
 
 /** Map a point on the unit-square border to perimeter parameter in [0, 4). */
@@ -159,7 +177,6 @@ function borderParam(x: number, y: number): number {
   if (Math.abs(x - 1) <= eps) return 1 + y // right 1→2
   if (Math.abs(y - 1) <= eps) return 2 + (1 - x) // bottom 2→3
   if (Math.abs(x) <= eps) return 3 + (1 - y) // left 3→4
-  // Fallback: project to nearest edge
   const d = [
     { p: x, e: 0, dist: Math.abs(y) },
     { p: 1 + y, e: 1, dist: Math.abs(x - 1) },
@@ -178,7 +195,7 @@ function pointOnBorder(param: number): [number, number] {
   return [0, 1 - (t - 3)]
 }
 
-/** Walk unit-square border from `from` toward `to` by the shorter arc that prefers `keepSide`. */
+/** Walk unit-square border from `from` toward `to` by the arc that prefers `keepSide`. */
 function borderWalk(
   from: [number, number],
   to: [number, number],
@@ -209,7 +226,6 @@ function borderWalk(
   let len = forward ? (b - a + 4) % 4 : (a - b + 4) % 4
   if (len < 1e-6) len = 0
   const out: [number, number][] = []
-  // Insert corners crossed along the walk (not endpoints).
   const corners = [0, 1, 2, 3, 4]
   for (const c of corners) {
     let hit = false
@@ -224,18 +240,13 @@ function borderWalk(
     }
     if (hit) out.push(pointOnBorder(c))
   }
-  // Order corners along the walk
   out.sort((p, q) => {
     const dp = borderParam(p[0], p[1])
     const dq = borderParam(q[0], q[1])
     if (forward) {
-      const rp = (dp - a + 4) % 4
-      const rq = (dq - a + 4) % 4
-      return rp - rq
+      return ((dp - a + 4) % 4) - ((dq - a + 4) % 4)
     }
-    const rp = (a - dp + 4) % 4
-    const rq = (a - dq + 4) % 4
-    return rp - rq
+    return ((a - dp + 4) % 4) - ((a - dq + 4) % 4)
   })
   return out
 }
@@ -248,11 +259,9 @@ function createTearSpec(angleDeg: number): TearSpec {
   const tx = -ny
   const ty = nx
   const seed = Math.floor(Math.random() * 10_000) + 1
-  // Organic rip: denser teeth, uneven spacing, occasional deep bites.
-  const teeth = 15 + Math.floor(Math.random() * 6) // 15–20
-  const amp = 0.02 + Math.random() * 0.014 // ~2.0%–3.4% of pack
+  const teeth = 15 + Math.floor(Math.random() * 6)
+  const amp = 0.02 + Math.random() * 0.014
   const twistBias = (Math.random() * 2 - 1) * 1.8
-  // Tiny gap between complementary clips so the crack reads as a dark seam.
   const crackGap = 0.0038 + Math.random() * 0.0014
 
   const [start, end] = unitSquareSpan(0.5, 0.5, tx, ty)
@@ -263,15 +272,12 @@ function createTearSpec(angleDeg: number): TearSpec {
     const u = params[i]
     let x = start[0] + (end[0] - start[0]) * u
     let y = start[1] + (end[1] - start[1]) * u
-    // Fuller mid-pack tear; pin the rim endpoints.
     const envelope = Math.pow(Math.sin(u * Math.PI), 0.72)
     const wave = Math.sin(u * Math.PI * waveFreq + hash01(seed, 8) * 6) * 0.38
     const tooth = jaggedNoise(seed, i)
-    // Sharp micro-nicks between larger fibers
     const nick =
       (hash01(seed + 19, i * 3) * 2 - 1) *
       (hash01(seed + 23, i) > 0.55 ? 0.55 : 0.18)
-    // Occasional deeper bite for a ripped look
     const bite =
       hash01(seed + 9, i) > 0.78
         ? (hash01(seed + 11, i) * 2 - 1) * 0.7
@@ -293,7 +299,6 @@ function createTearSpec(angleDeg: number): TearSpec {
   const halfPolygon = (positive: boolean): string => {
     const sign = positive ? 1 : -1
     const raw = positive ? seam : [...seam].reverse()
-    // Push interior seam points inward so a thin crack opens; keep rim pins tight.
     const edge: [number, number][] = raw.map(([x, y], i) => {
       if (i === 0 || i === raw.length - 1) return [x, y]
       return [
@@ -317,12 +322,14 @@ function createTearSpec(angleDeg: number): TearSpec {
     remainClip: halfPolygon(false),
     seam,
     twistBias,
+    hinge: seam[0],
   }
 }
 
 /**
- * 2D rip along a jagged seam: halves move opposite along the tear normal.
- * progress 0→1 = tear open; >1 = fly farther apart and fade.
+ * Rip along a stable jagged seam. Peel hinges from the start rim so the tear
+ * reads as opening from one end without rebuilding mid-rip clips (which gaps).
+ * progress 0→1 = pull open; >1 = fly apart and fade.
  */
 function tear2dStyles(
   spec: TearSpec,
@@ -334,24 +341,35 @@ function tear2dStyles(
   const nx = Math.cos(rad)
   const ny = Math.sin(rad)
   const unit = Math.max(44, Math.min(packAlongPx * 0.26, 100))
-  const sep = Math.min(p, 2.4) * unit
-  const rot = Math.min(p, 2.4) * (packAlongPx < 260 ? 12 : 9)
+  const unzip = Math.min(1, p)
+  const fly = Math.max(0, p - 1)
+  const unzipEased = easeOutCubic(unzip)
+  // Peel leads from the hinge; remain stays nearly planted until parting.
+  const peelSep = unzipEased * unit * 0.32 + fly * unit * 1.15
+  const remainSep = unzipEased * unit * 0.06 + fly * unit * 1.05
+  const rot = (unzipEased * 0.65 + fly) * (packAlongPx < 260 ? 13 : 10)
   const fade = p <= 1 ? 1 : Math.max(0, 1 - (p - 1) / 1.35)
   const twist =
     rot * (0.55 + Math.abs(Math.sin(rad * 2)) * 0.45) +
-    spec.twistBias * Math.min(1, p)
-  // Fibers peak early while the crack is readable, then fade as halves fly.
+    spec.twistBias * Math.min(1, unzipEased + fly)
   const seamOpacity =
-    p <= 0.12 ? p / 0.12 : Math.max(0, 1 - (p - 0.12) / 0.88)
+    unzip < 0.1
+      ? unzip / 0.1
+      : fly > 0
+        ? Math.max(0, 1 - fly / 1.2)
+        : 0.65 + 0.35 * (1 - unzipEased)
+  const origin =
+    (spec.hinge[0] * 100).toFixed(1) + '% ' + (spec.hinge[1] * 100).toFixed(1) + '%'
 
   return {
     peel: {
       clipPath: spec.peelClip,
+      transformOrigin: origin,
       transform:
         'translate3d(' +
-        (nx * sep).toFixed(1) +
+        (nx * peelSep).toFixed(1) +
         'px, ' +
-        (ny * sep).toFixed(1) +
+        (ny * peelSep).toFixed(1) +
         'px, 0) rotate(' +
         twist.toFixed(2) +
         'deg)',
@@ -359,13 +377,14 @@ function tear2dStyles(
     },
     remain: {
       clipPath: spec.remainClip,
+      transformOrigin: origin,
       transform:
         'translate3d(' +
-        (-nx * sep).toFixed(1) +
+        (-nx * remainSep).toFixed(1) +
         'px, ' +
-        (-ny * sep).toFixed(1) +
+        (-ny * remainSep).toFixed(1) +
         'px, 0) rotate(' +
-        (-twist).toFixed(2) +
+        (-twist * 0.28).toFixed(2) +
         'deg)',
       opacity: fade,
     },
@@ -382,9 +401,31 @@ function rarityFxClass(card: DrawnCard | null | undefined): string {
   return 'pack-fx-common'
 }
 
-/** Peak flash duration — shared across all rarity tiers (ms). */
-function rarityFxDurationMs(_card: DrawnCard): number {
-  return 2500
+/** Peak flash duration by rarity (ms). */
+function rarityFxDurationMs(card: DrawnCard): number {
+  const r = card.rarity
+  if (r === 'mythic' || r === 'special') return 3200
+  if (r === 'rare') return 2600
+  if (r === 'uncommon') return 2000
+  return 1600
+}
+
+/** Face-up flip duration — slight rarity weight, kept snappy. */
+function flipDurationMs(card: DrawnCard | null | undefined): number {
+  if (prefersReducedMotion()) return 0
+  const r = card?.rarity
+  if (r === 'mythic' || r === 'special') return 320
+  if (r === 'rare') return 280
+  if (r === 'uncommon') return 230
+  return 200
+}
+
+function revealLandHaptic(card: DrawnCard | null | undefined): number[] {
+  const r = card?.rarity
+  if (r === 'mythic' || r === 'special') return [30, 40, 20, 40, 45]
+  if (r === 'rare') return [25, 50, 30]
+  if (r === 'uncommon') return [18, 40, 12]
+  return [15]
 }
 
 const FX_FADE_MS = 900
@@ -406,7 +447,6 @@ export function PackDrawButton() {
     Array.from({ length: PACK_SIZE }, () => 0),
   )
   const [flippingIdx, setFlippingIdx] = useState<number | null>(null)
-  const [deckFlipping, setDeckFlipping] = useState(false)
   const [tearAngle, setTearAngle] = useState(0)
   const [fxIds, setFxIds] = useState<string[]>([])
   const [fxFadeIds, setFxFadeIds] = useState<string[]>([])
@@ -418,6 +458,12 @@ export function PackDrawButton() {
   const [inspectFlipping, setInspectFlipping] = useState(false)
   /** Double-click toggles large art preview inside the detail layout. */
   const [artZoomed, setArtZoomed] = useState(false)
+  const [packPressing, setPackPressing] = useState(false)
+  const [impactShake, setImpactShake] = useState(false)
+  const [deckLanding, setDeckLanding] = useState(false)
+  const [stageFlash, setStageFlash] = useState<'rare' | 'mythic' | null>(null)
+  const [tearReacting, setTearReacting] = useState(false)
+  const [activeFlipMs, setActiveFlipMs] = useState(FLIP_MS)
   const [filterRarity, setFilterRarity] =
     useState<CollectionRarityFilter>('all')
   const [filterColor, setFilterColor] =
@@ -428,6 +474,9 @@ export function PackDrawButton() {
   const [importMessage, setImportMessage] = useState<string | null>(null)
   const [clearConfirmOpen, setClearConfirmOpen] = useState(false)
   const enrichGen = useRef(0)
+  const openGen = useRef(0)
+  const openingLock = useRef(false)
+  const lastFlipAtRef = useRef<Record<number, number>>({})
   const importInputRef = useRef<HTMLInputElement | null>(null)
   const drawPromise = useRef<Promise<DrawnCard[]> | null>(null)
   const timers = useRef<number[]>([])
@@ -486,11 +535,17 @@ export function PackDrawButton() {
     const flaps = tear2dStyles(spec, progress, measurePackAlong())
     if (peelRef.current) {
       applyClipPath(peelRef.current, String(flaps.peel.clipPath ?? ''))
+      peelRef.current.style.transformOrigin = String(
+        flaps.peel.transformOrigin ?? '50% 50%',
+      )
       peelRef.current.style.transform = String(flaps.peel.transform ?? 'none')
       peelRef.current.style.opacity = String(flaps.peel.opacity ?? 1)
     }
     if (remainRef.current) {
       applyClipPath(remainRef.current, String(flaps.remain.clipPath ?? ''))
+      remainRef.current.style.transformOrigin = String(
+        flaps.remain.transformOrigin ?? '50% 50%',
+      )
       remainRef.current.style.transform = String(flaps.remain.transform ?? 'none')
       remainRef.current.style.opacity = String(flaps.remain.opacity ?? 1)
     }
@@ -518,6 +573,8 @@ export function PackDrawButton() {
     clearTearRaf()
     drawPromise.current = null
     enrichGen.current += 1
+    openGen.current += 1
+    openingLock.current = false
     setPhase('sealed')
     setCards([])
     setActiveIdx(0)
@@ -534,9 +591,43 @@ export function PackDrawButton() {
     setInspectFlipping(false)
     setArtZoomed(false)
     setFlippingIdx(null)
-    setDeckFlipping(false)
+    setPackPressing(false)
+    setImpactShake(false)
+    setDeckLanding(false)
+    setStageFlash(null)
+    setTearReacting(false)
+    setActiveFlipMs(FLIP_MS)
     setView('pack')
+    lastFlipAtRef.current = {}
   }, [])
+
+  const restartOpen = () => {
+    openGen.current += 1
+    openingLock.current = false
+    clearTimers()
+    clearFxTimers()
+    clearTearRaf()
+    drawPromise.current = null
+    setDrawing(false)
+    setPhase('sealed')
+    setCards([])
+    setActiveIdx(0)
+    setFlipTurns(Array.from({ length: PACK_SIZE }, () => 0))
+    tearProgressRef.current = 0
+    tearSpecRef.current = null
+    setFxIds([])
+    setFxFadeIds([])
+    setCollected(false)
+    setFlippingIdx(null)
+    setArtZoomed(false)
+    setImpactShake(false)
+    setDeckLanding(false)
+    setStageFlash(null)
+    setTearReacting(false)
+    setPackPressing(false)
+    lastFlipAtRef.current = {}
+    applyTearVisual(0)
+  }
 
   useEffect(() => {
     if (!open) return
@@ -634,19 +725,12 @@ export function PackDrawButton() {
   const finishReveal = (drawn: DrawnCard[]) => {
     setCards(drawn)
     setActiveIdx(0)
-    setCollected(isCollected(drawn[0]?.id ?? ''))
-    setPhase('flip')
-    setDeckFlipping(true)
-    requestAnimationFrame(() => {
-      setFlipTurns(drawn.map(() => 1))
-    })
-    const flipMs = prefersReducedMotion() ? 0 : FLIP_MS
-    schedule(() => {
-      setDeckFlipping(false)
-      setPhase('revealed')
-      // Glow must start after is-flipping clears (Safari animation restart).
-      triggerFrontFx(drawn[0])
-    }, flipMs)
+    setCollected(false)
+    setFlipTurns(Array.from({ length: PACK_SIZE }, () => 0))
+    setPhase('revealed')
+    setDeckLanding(true)
+    packHaptic(20)
+    schedule(() => setDeckLanding(false), prefersReducedMotion() ? 0 : DECK_LAND_MS)
     hydratePackZh(drawn)
   }
 
@@ -681,7 +765,9 @@ export function PackDrawButton() {
   const slots = cards.length > 0 ? cards : Array.from({ length: PACK_SIZE }, () => null)
 
   const runOpenSequence = async () => {
-    if (drawing || phase !== 'sealed') return
+    if (openingLock.current) return
+    openingLock.current = true
+    const gen = ++openGen.current
     setDrawing(true)
     enrichGen.current += 1
     setCards([])
@@ -704,8 +790,11 @@ export function PackDrawButton() {
     // jumping straight to reveal made real phones look "FX-less" when OS
     // Reduce Motion is on (DevTools mobile emulation usually is not).
     setPhase('tearing')
+    setPackPressing(false)
+    packHaptic(12)
     await waitAnimationFrame()
     await waitAnimationFrame()
+    if (gen !== openGen.current) return
     applyTearVisual(0)
 
     const tearPace = reduced ? Math.round(TEAR_PACE_MS * 0.45) : TEAR_PACE_MS
@@ -717,12 +806,13 @@ export function PackDrawButton() {
     let fetchSettled = false
 
     const pumpTear = (now: number) => {
-      if (fetchSettled) return
+      if (fetchSettled || gen !== openGen.current) return
       const elapsed = now - t0
+      // Steeper late phase so the rip accelerates into the snap.
       const p =
         elapsed <= tearPace
           ? 0.88 * easeOutCubic(elapsed / tearPace)
-          : 0.88 + 0.1 * (1 - Math.exp(-(elapsed - tearPace) / 650))
+          : 0.88 + 0.1 * (1 - Math.exp(-(elapsed - tearPace) / 320))
       applyTearVisual(Math.min(0.97, p))
       tearRaf.current = requestAnimationFrame(pumpTear)
     }
@@ -730,17 +820,22 @@ export function PackDrawButton() {
 
     try {
       const drawn = await drawPromise.current
+      if (gen !== openGen.current) return
       fetchSettled = true
       clearTearRaf()
 
       setCards(drawn)
       setActiveIdx(0)
-      setCollected(isCollected(drawn[0]?.id ?? ''))
+      setCollected(false)
 
       const elapsed = performance.now() - t0
       if (elapsed < tearFloor) {
         await new Promise<void>((resolve) => {
           const waitFloor = (now: number) => {
+            if (gen !== openGen.current) {
+              resolve()
+              return
+            }
             const e = now - t0
             applyTearVisual(0.88 * easeOutCubic(Math.min(1, e / tearPace)))
             if (e < tearFloor) {
@@ -753,12 +848,22 @@ export function PackDrawButton() {
         })
       }
 
+      if (gen !== openGen.current) return
       clearTearRaf()
       setPhase('parting')
+      packHaptic([8, 30, 18])
+      if (!reduced) {
+        setImpactShake(true)
+        schedule(() => setImpactShake(false), IMPACT_SHAKE_MS)
+      }
       const from = tearProgressRef.current
       const exitStart = performance.now()
       await new Promise<void>((resolve) => {
         const exitAway = (now: number) => {
+          if (gen !== openGen.current) {
+            resolve()
+            return
+          }
           const u = Math.min(1, (now - exitStart) / exitMs)
           applyTearVisual(from + (2.35 - from) * easeOutCubic(u))
           if (u < 1) {
@@ -770,38 +875,38 @@ export function PackDrawButton() {
         tearRaf.current = requestAnimationFrame(exitAway)
       })
 
+      if (gen !== openGen.current) return
       setPhase('pull')
       await new Promise<void>((resolve) => schedule(resolve, expandMs))
+      if (gen !== openGen.current) return
       finishReveal(drawn)
     } catch {
+      if (gen !== openGen.current) return
       fetchSettled = true
       clearTearRaf()
       setPhase('sealed')
       applyTearVisual(0)
     } finally {
-      setDrawing(false)
+      if (gen === openGen.current) {
+        setDrawing(false)
+        openingLock.current = false
+      }
     }
   }
 
   const onDrawAgain = () => {
-    if (drawing) return
-    clearTimers()
-    clearFxTimers()
-    clearTearRaf()
-    setPhase('sealed')
-    setCards([])
-    setActiveIdx(0)
-    setFlipTurns(Array.from({ length: PACK_SIZE }, () => 0))
-    tearProgressRef.current = 0
-    tearSpecRef.current = null
-    setFxIds([])
-    setFxFadeIds([])
-    setCollected(false)
-    setFlippingIdx(null)
-    setDeckFlipping(false)
-    schedule(() => {
-      void runOpenSequence()
-    }, 120)
+    restartOpen()
+  }
+
+  const onTearPackTap = () => {
+    if (phase !== 'tearing') return
+    packHaptic([10, 28, 14])
+    setTearReacting(false)
+    // Retrigger CSS animation even on rapid taps.
+    requestAnimationFrame(() => {
+      setTearReacting(true)
+      schedule(() => setTearReacting(false), 480)
+    })
   }
 
   const onToggleCollect = () => {
@@ -923,6 +1028,8 @@ export function PackDrawButton() {
     const next = ((index % cards.length) + cards.length) % cards.length
     setActiveIdx(next)
     setArtZoomed(false)
+    // Don't let an in-flight flip on another card swallow the first tap.
+    setFlippingIdx(null)
     const card = cards[next]
     setCollected(card ? isCollected(card.id) : false)
     // Flash when browsing onto a card already showing its front.
@@ -938,27 +1045,53 @@ export function PackDrawButton() {
 
   const packSwipe = useSwipeNavigate(
     (delta) => stepCard(delta),
-    open && view === 'pack' && (phase === 'revealed' || phase === 'flip') && cards.length > 1,
+    open &&
+      view === 'pack' &&
+      !artZoomed &&
+      (phase === 'revealed' || phase === 'flip') &&
+      cards.length > 1,
   )
   const inspectSwipe = useSwipeNavigate(
     (delta) => stepInspect(delta),
-    open && view === 'collection' && !!inspect,
+    open && view === 'collection' && !!inspect && !artZoomed,
   )
+  const { panStyle, panBind } = useArtZoomPan(artZoomed)
 
   const flipOnce = (index: number) => {
     if (phase !== 'revealed' && phase !== 'flip') return
-    setFlippingIdx(index)
+    // Only block re-taps on the same card mid-flip — switching cards must flip on first tap.
+    if (flippingIdx === index) return
+    const now = performance.now()
+    // Guard against pointerup+click double-firing on the same tap.
+    if (now - (lastFlipAtRef.current[index] ?? 0) < 320) return
+    lastFlipAtRef.current[index] = now
+    const card = cards[index]
     const nextTurns = (flipTurns[index] ?? 0) + 1
-    requestAnimationFrame(() =>
-      setFlipTurns((prev) => prev.map((n, i) => (i === index ? n + 1 : n))),
-    )
+    const revealingFront = isShowingCardFront(nextTurns)
+    const flipMs = flipDurationMs(card)
+    setActiveFlipMs(flipMs || FLIP_MS)
+    setFlippingIdx(index)
+    setFlipTurns((prev) => prev.map((n, i) => (i === index ? n + 1 : n)))
+    if (revealingFront) {
+      packHaptic(10)
+      schedule(() => packHaptic(revealLandHaptic(card)), Math.max(40, Math.round(flipMs * 0.55)))
+    }
     schedule(() => {
       setFlippingIdx((cur) => (cur === index ? null : cur))
       // Flash only after is-flipping clears — mid-flip triggers die on WebKit.
-      if (isShowingCardFront(nextTurns)) {
-        triggerFrontFx(cards[index])
+      if (revealingFront) {
+        if (card) setCollected(isCollected(card.id))
+        triggerFrontFx(card)
+        const r = card?.rarity
+        if (r === 'mythic' || r === 'special') {
+          setStageFlash('mythic')
+          schedule(() => setStageFlash(null), STAGE_FLASH_MS)
+        } else if (r === 'rare') {
+          setStageFlash('rare')
+          schedule(() => setStageFlash(null), STAGE_FLASH_MS)
+        }
       }
-    }, FLIP_MS)
+    }, flipMs)
   }
 
   const tearFlaps = tearSpecRef.current
@@ -979,6 +1112,10 @@ export function PackDrawButton() {
 
   const packBackSrc = defaultCardBackUrl()
   const card = cards[activeIdx] ?? null
+  const activeRevealed = (flipTurns[activeIdx] ?? 0) >= 1
+  const showDetails = !!card && activeRevealed
+  const openingPack =
+    phase === 'tearing' || phase === 'parting' || phase === 'pull'
 
   const dialog =
     open && typeof document !== 'undefined'
@@ -1003,6 +1140,7 @@ export function PackDrawButton() {
                   fxFadeIds.length > 0)
                   ? 'is-fx-open'
                   : '',
+                impactShake ? 'is-impact-shake' : '',
               ]
                 .filter(Boolean)
                 .join(' ')}
@@ -1298,7 +1436,10 @@ export function PackDrawButton() {
                           }, FLIP_MS)
                         }
                         return (
-                      <div className="pack-inspect-stage" {...inspectSwipe}>
+                      <div
+                        className="pack-inspect-stage"
+                        {...(artZoomed ? panBind : inspectSwipe)}
+                      >
                       <div
                         key={inspect.id}
                         className={[
@@ -1313,6 +1454,7 @@ export function PackDrawButton() {
                         ]
                           .filter(Boolean)
                           .join(' ')}
+                        style={panStyle}
                       >
                         {showInspectFxLayer ? (
                           <span
@@ -1392,6 +1534,8 @@ export function PackDrawButton() {
                     'pack-draw-stage',
                     phase === 'revealed' ? 'has-copy' : 'pack-only',
                     artZoomed ? 'is-art-zoomed' : '',
+                    stageFlash === 'rare' ? 'is-stage-flash-rare' : '',
+                    stageFlash === 'mythic' ? 'is-stage-flash-mythic' : '',
                   ]
                     .filter(Boolean)
                     .join(' ')}
@@ -1400,12 +1544,23 @@ export function PackDrawButton() {
                     className={['pack-stage-visual', `is-${phase}`]
                       .filter(Boolean)
                       .join(' ')}
+                    {...(artZoomed ? panBind : {})}
                   >
                     {phase === 'sealed' ? (
                       <button
                         type="button"
-                        className="pack-shell is-sealed"
+                        className={[
+                          'pack-shell',
+                          'is-sealed',
+                          packPressing ? 'is-pressing' : '',
+                        ]
+                          .filter(Boolean)
+                          .join(' ')}
                         onClick={() => void runOpenSequence()}
+                        onPointerDown={() => setPackPressing(true)}
+                        onPointerUp={() => setPackPressing(false)}
+                        onPointerLeave={() => setPackPressing(false)}
+                        onPointerCancel={() => setPackPressing(false)}
                         disabled={drawing}
                         aria-label={t('packDraw.openPack')}
                       >
@@ -1424,12 +1579,26 @@ export function PackDrawButton() {
                           'pack-reveal-stack',
                           'is-deck',
                           cardInPack ? 'is-in-tear' : 'is-browsable',
-                        ].join(' ')}
+                          tearReacting ? 'is-tap-react' : '',
+                        ]
+                          .filter(Boolean)
+                          .join(' ')}
+                        style={artZoomed ? panStyle : undefined}
                         {...(phase === 'revealed' || phase === 'flip'
-                          ? packSwipe
+                          ? artZoomed
+                            ? {}
+                            : packSwipe
                           : {})}
                       >
-                        <div className="pack-card-deck" role="list">
+                        <div
+                          className={[
+                            'pack-card-deck',
+                            deckLanding ? 'is-landing' : '',
+                          ]
+                            .filter(Boolean)
+                            .join(' ')}
+                          role="list"
+                        >
                           {slots.map((slot, index) => {
                             const backSrc = slot?.backImageUrl || packBackSrc
                             const frontSrc = slot?.frontImageUrl || packBackSrc
@@ -1439,6 +1608,9 @@ export function PackDrawButton() {
                             const fading = slot ? fxFadeIds.includes(slot.id) : false
                             const deckSettled =
                               phase === 'flip' || phase === 'revealed'
+                            const faceUp = isShowingCardFront(flipTurns[index] ?? 0)
+                            const cardRevealed = (flipTurns[index] ?? 0) >= 1
+                            const awaitingFlip = deckSettled && !cardRevealed
                             // Stable under-stack ranks so both peeks stay visible (1 = deepest).
                             const behindRank = !deckSettled
                               ? 0
@@ -1454,6 +1626,7 @@ export function PackDrawButton() {
                             const showFxLayer =
                               (glowing || fading) &&
                               isActive &&
+                              faceUp &&
                               (fxClass === 'pack-fx-rare' ||
                                 fxClass === 'pack-fx-mythic')
                             return (
@@ -1468,12 +1641,11 @@ export function PackDrawButton() {
                                   deckSettled ? 'is-expanded' : '',
                                   isActive && deckSettled ? 'is-active' : '',
                                   !isActive && deckSettled ? 'is-behind' : '',
-                                  flippingIdx === index || deckFlipping
-                                    ? 'is-flipping'
-                                    : '',
+                                  flippingIdx === index ? 'is-flipping' : '',
+                                  awaitingFlip ? 'is-awaiting-flip' : '',
                                   deckSettled ? fxClass : '',
-                                  glowing ? 'is-glowing' : '',
-                                  fading ? 'is-fading' : '',
+                                  glowing && faceUp ? 'is-glowing' : '',
+                                  fading && faceUp ? 'is-fading' : '',
                                 ]
                                   .filter(Boolean)
                                   .join(' ')}
@@ -1487,6 +1659,10 @@ export function PackDrawButton() {
                                           : depth,
                                         ['--pack-depth' as string]:
                                           deckSettled ? depth : 0,
+                                        ['--pack-flip-ms' as string]:
+                                          isActive && flippingIdx === index
+                                            ? `${activeFlipMs}ms`
+                                            : undefined,
                                       }
                                     : undefined
                                 }
@@ -1509,19 +1685,27 @@ export function PackDrawButton() {
                                 ) : null}
                                 <div className="card-flip pack-card-flip">
                                   <CardFaceButton
+                                    key={`${slot?.id ?? index}-${isActive ? 'active' : 'idle'}`}
                                     className="card-flip-inner"
                                     enabled={
                                       (phase === 'revealed' ||
                                         phase === 'flip') &&
                                       isActive
                                     }
+                                    immediateFlip={!cardRevealed}
                                     ariaLabel={
                                       slot
-                                        ? `${slot.name}. ${t('deck.flip')}`
-                                        : t('deck.flip')
+                                        ? cardRevealed
+                                          ? `${slot.name}. ${t('deck.flip')}`
+                                          : t('packDraw.tapToReveal')
+                                        : t('packDraw.tapToReveal')
                                     }
                                     style={{
                                       transform: `translate3d(0, 0, 0) rotateY(${(flipTurns[index] ?? 0) * 180}deg)`,
+                                      transitionDuration:
+                                        isActive && flippingIdx === index
+                                          ? `${activeFlipMs}ms`
+                                          : undefined,
                                     }}
                                     onFlip={() => {
                                       if (
@@ -1536,6 +1720,7 @@ export function PackDrawButton() {
                                       if (
                                         !slot ||
                                         !isActive ||
+                                        !cardRevealed ||
                                         (phase !== 'revealed' &&
                                           phase !== 'flip')
                                       ) {
@@ -1568,10 +1753,24 @@ export function PackDrawButton() {
                         {cardInPack ? (
                           <div
                             ref={packShellRef}
-                            className="pack-shell is-tearing"
+                            className={[
+                              'pack-shell',
+                              'is-tearing',
+                              tearReacting ? 'is-tap-react' : '',
+                            ]
+                              .filter(Boolean)
+                              .join(' ')}
                             data-tear-angle={tearAngle.toFixed(1)}
-                            role="status"
+                            role="button"
+                            tabIndex={phase === 'tearing' ? 0 : -1}
                             aria-label={t('packDraw.loading')}
+                            onClick={onTearPackTap}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault()
+                                onTearPackTap()
+                              }
+                            }}
                           >
                             <span
                               ref={remainRef}
@@ -1605,31 +1804,57 @@ export function PackDrawButton() {
                     ) : null}
                   </div>
 
-                  {phase === 'revealed' && card ? (
-                    <div className="pack-card-copy">
+                  {openingPack ? (
+                    <div className="pack-open-again-bar">
+                      <button
+                        type="button"
+                        className="btn primary"
+                        onClick={onDrawAgain}
+                      >
+                        {t('packDraw.drawAgain')}
+                      </button>
+                    </div>
+                  ) : null}
+
+                  {phase === 'revealed' && cards.length > 0 ? (
+                    <div
+                      className={[
+                        'pack-card-copy',
+                        !showDetails ? 'is-awaiting' : '',
+                      ]
+                        .filter(Boolean)
+                        .join(' ')}
+                    >
                       <div className="pack-card-copy-cluster">
                         <div className="pack-card-copy-body">
-                          <CardDetailsBody card={card} />
+                          {showDetails && card ? (
+                            <CardDetailsBody card={card} />
+                          ) : (
+                            <p className="pack-draw-hint pack-tap-hint" role="status">
+                              {t('packDraw.tapToReveal')}
+                            </p>
+                          )}
                         </div>
                         <div className="pack-draw-actions">
                           <button
                             type="button"
                             className="btn primary"
                             onClick={onDrawAgain}
-                            disabled={drawing}
                           >
                             {t('packDraw.drawAgain')}
                           </button>
-                          <button
-                            type="button"
-                            className="btn ghost"
-                            onClick={onToggleCollect}
-                          >
-                            {collected
-                              ? t('packDraw.collected')
-                              : t('packDraw.collect')}
-                          </button>
-                          {card.scryfallUri ? (
+                          {showDetails ? (
+                            <button
+                              type="button"
+                              className="btn ghost"
+                              onClick={onToggleCollect}
+                            >
+                              {collected
+                                ? t('packDraw.collected')
+                                : t('packDraw.collect')}
+                            </button>
+                          ) : null}
+                          {showDetails && card?.scryfallUri ? (
                             <a
                               href={card.scryfallUri}
                               target="_blank"

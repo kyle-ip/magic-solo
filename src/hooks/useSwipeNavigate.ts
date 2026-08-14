@@ -2,6 +2,8 @@ import { useCallback, useRef, type MouseEvent, type PointerEvent } from 'react'
 
 const SWIPE_MIN_PX = 48
 const SWIPE_RATIO = 1.15
+/** Ignore jitter below this so a click with slight drift still flips. */
+const SWIPE_CLAIM_PX = 28
 
 type SwipeHandlers = {
   onPointerDown: (e: PointerEvent) => void
@@ -24,10 +26,21 @@ export function useSwipeNavigate(
   const start = useRef<{ x: number; y: number; id: number } | null>(null)
   const suppressClick = useRef(false)
   const capturing = useRef(false)
+  const suppressTimer = useRef<number | null>(null)
 
   const endGesture = useCallback(() => {
     start.current = null
     capturing.current = false
+  }, [])
+
+  const armClickSuppress = useCallback(() => {
+    suppressClick.current = true
+    if (suppressTimer.current != null) window.clearTimeout(suppressTimer.current)
+    // Clear if no click arrives (common after pointer capture on touch).
+    suppressTimer.current = window.setTimeout(() => {
+      suppressClick.current = false
+      suppressTimer.current = null
+    }, 80)
   }, [])
 
   const onPointerDown = useCallback(
@@ -47,8 +60,9 @@ export function useSwipeNavigate(
       const dx = e.clientX - start.current.x
       const dy = e.clientY - start.current.y
       if (!capturing.current) {
-        if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return
-        // Only claim the gesture once it reads as horizontal.
+        // Don't claim (or capture) until movement is clearly a swipe —
+        // early capture was eating the click after small horizontal jitter.
+        if (Math.abs(dx) < SWIPE_CLAIM_PX) return
         if (Math.abs(dx) < Math.abs(dy) * SWIPE_RATIO) return
         capturing.current = true
         try {
@@ -79,10 +93,10 @@ export function useSwipeNavigate(
       const dy = e.clientY - origin.y
       if (Math.abs(dx) < SWIPE_MIN_PX) return
       if (Math.abs(dx) < Math.abs(dy) * SWIPE_RATIO) return
-      suppressClick.current = true
+      armClickSuppress()
       onStep(dx < 0 ? 1 : -1)
     },
-    [enabled, endGesture, onStep],
+    [enabled, endGesture, onStep, armClickSuppress],
   )
 
   const onPointerCancel = useCallback(
@@ -95,6 +109,10 @@ export function useSwipeNavigate(
   const onClickCapture = useCallback((e: MouseEvent | PointerEvent) => {
     if (!suppressClick.current) return
     suppressClick.current = false
+    if (suppressTimer.current != null) {
+      window.clearTimeout(suppressTimer.current)
+      suppressTimer.current = null
+    }
     e.preventDefault()
     e.stopPropagation()
   }, [])

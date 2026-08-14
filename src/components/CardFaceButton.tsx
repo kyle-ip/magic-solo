@@ -6,6 +6,7 @@ export function CardFaceButton({
   onFlip,
   onToggleZoom,
   enabled = true,
+  immediateFlip = false,
   className,
   style,
   ariaLabel,
@@ -14,15 +15,18 @@ export function CardFaceButton({
   onFlip: () => void
   onToggleZoom: () => void
   enabled?: boolean
+  /** Flip on first tap without waiting for double-tap detection. */
+  immediateFlip?: boolean
   className?: string
   style?: CSSProperties
   ariaLabel: string
   children: ReactNode
 }) {
-  const { onClick, onDoubleClick } = useCardFaceTap({
+  const { onClick, onDoubleClick, onPointerDown, onPointerUp } = useCardFaceTap({
     onFlip,
     onToggleZoom,
     enabled,
+    immediateFlip,
   })
 
   const onKeyDown = (e: KeyboardEvent) => {
@@ -42,6 +46,8 @@ export function CardFaceButton({
       style={style}
       onClick={onClick}
       onDoubleClick={onDoubleClick}
+      onPointerDown={onPointerDown}
+      onPointerUp={onPointerUp}
       onKeyDown={onKeyDown}
     >
       {children}

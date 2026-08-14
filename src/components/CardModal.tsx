@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { deckMetaEn, deckMetaZh } from '../data/locale/deckMeta'
 import { deckCardToDrawn, wantsZh } from '../data/randomCard'
 import { useSwipeNavigate } from '../hooks/useSwipeNavigate'
+import { useArtZoomPan } from '../hooks/useArtZoomPan'
 import { useCardImageSrc } from '../hooks/useCardImageSrc'
 import type { DeckCard } from '../types'
 import { preloadAssetCandidates } from '../utils/remoteAsset'
@@ -111,7 +112,8 @@ function CardModalBody({
     [browseList, canBrowse, cardIndex, onSelect],
   )
 
-  const swipe = useSwipeNavigate((delta) => stepCard(delta), canBrowse)
+  const swipe = useSwipeNavigate((delta) => stepCard(delta), canBrowse && !artZoomed)
+  const { panStyle, panBind } = useArtZoomPan(artZoomed)
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -184,7 +186,7 @@ function CardModalBody({
               .join(' ')}
             aria-label={displayTitle}
           >
-            <div className="pack-inspect-stage" {...swipe}>
+            <div className="pack-inspect-stage" {...(artZoomed ? panBind : swipe)}>
               <div
                 className={[
                   'pack-card-wrap',
@@ -192,6 +194,7 @@ function CardModalBody({
                   'is-expanded',
                   'is-active',
                 ].join(' ')}
+                style={panStyle}
               >
                 <div className="card-flip pack-inspect-flip">
                   <CardFaceButton

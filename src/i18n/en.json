@@ -25,7 +25,7 @@
     "pathMeta": "{{expansion}}"
   },
   "classicDecks": {
-    "open": "Classic decks",
+    "open": "Decks",
     "eyebrow": "Archetypes",
     "title": "Classic decks",
     "lead": "Explore famous constructed archetypes — how they win and the cards that define them.",
@@ -63,12 +63,13 @@
     }
   },
   "packDraw": {
-    "open": "Open a pack",
+    "open": "Pack",
     "title": "Booster thrill",
-    "lead": "Tear the pack, pull three cards, flip them face-up.",
+    "lead": "Tear the pack, pull three cards, then tap each to flip face-up.",
     "openPack": "Tear open",
     "packLabel": "Magic: The Gathering booster pack",
     "drawAgain": "Open another",
+    "tapToReveal": "Tap a card to reveal",
     "loading": "Opening…",
     "prevCard": "Previous card",
     "nextCard": "Next card",
@@ -130,6 +131,14 @@
       "special": "Special",
       "bonus": "Bonus"
     }
+  },
+  "singleDraw": {
+    "open": "Draw one",
+    "title": "Single draw",
+    "loading": "Drawing…",
+    "drawAgain": "Draw again",
+    "backToDraw": "Back to draw",
+    "error": "Draw failed — try again."
   },
   "deck": {
     "challenge": "Challenge Deck #{{n}}",

@@ -6,6 +6,7 @@ import {
   wantsZh,
   type DrawnCard,
 } from '../data/randomCard'
+import { useArtZoomPan } from '../hooks/useArtZoomPan'
 import { useSwipeNavigate } from '../hooks/useSwipeNavigate'
 import { preloadImage } from '../utils/imageCache'
 import { CardDetailsBody } from './CardDetailsBody'
@@ -95,7 +96,8 @@ function DrawnCardModalBody({
     [browseList, canBrowse, cardIndex, onSelect],
   )
 
-  const swipe = useSwipeNavigate((delta) => stepCard(delta), canBrowse)
+  const swipe = useSwipeNavigate((delta) => stepCard(delta), canBrowse && !artZoomed)
+  const { panStyle, panBind } = useArtZoomPan(artZoomed)
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -162,7 +164,7 @@ function DrawnCardModalBody({
               .join(' ')}
             aria-label={displayTitle}
           >
-            <div className="pack-inspect-stage" {...swipe}>
+            <div className="pack-inspect-stage" {...(artZoomed ? panBind : swipe)}>
               <div
                 className={[
                   'pack-card-wrap',
@@ -170,6 +172,7 @@ function DrawnCardModalBody({
                   'is-expanded',
                   'is-active',
                 ].join(' ')}
+                style={panStyle}
               >
                 <div className="card-flip pack-inspect-flip">
                   <CardFaceButton

@@ -243,13 +243,14 @@ function CardGallery({
     <div className="classic-card-gallery">
       <h3>{title}</h3>
       <ul className="classic-key-cards classic-full-cards">
-        {rows.map((row) => {
+        {rows.map((row, index) => {
           const card = resolved.get(row.name) ?? null
           const isKey = keySet.has(row.name.toLowerCase())
+          const rowKey = `${row.board}-${row.name}-${index}`
           if (!card) {
             return (
               <li
-                key={`${row.board}-${row.name}`}
+                key={rowKey}
                 className="classic-key-card is-pending"
               >
                 <div className="classic-key-card-placeholder">
@@ -271,7 +272,7 @@ function CardGallery({
           const label = displayName(card, lang)
           return (
             <li
-              key={`${row.board}-${row.name}`}
+              key={rowKey}
               className={`classic-key-card${isKey ? ' is-key' : ''}`}
             >
               <div className="card-flip classic-key-flip">
