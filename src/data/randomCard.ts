@@ -1,9 +1,10 @@
 import i18n from '../i18n'
 import type { DeckCard } from '../types'
-import { assetUrl } from '../utils/assetUrl'
 import { preloadImage } from '../utils/imageCache'
+import { preferredAssetUrl } from '../utils/remoteAsset'
 import { getCardZh } from './locale/cardsZh'
-import { getDeck, getDeckIndex } from './deckRegistry'
+import { getDeckIndex } from './deckRegistry'
+import { getDeck } from './deckStore'
 
 export type CardRarity =
   | 'common'
@@ -82,7 +83,7 @@ let lastScryfallAt = 0
 let scryfallQueue: Promise<void> = Promise.resolve()
 
 export function defaultCardBackUrl(): string {
-  return assetUrl(LOCAL_CARD_BACK)
+  return preferredAssetUrl(LOCAL_CARD_BACK, { kind: 'card_back' })
 }
 
 export function rollRarity(): CardRarity {
@@ -320,9 +321,12 @@ export function deckCardToDrawn(
     collectorNumber: card.collectorNumber,
     artist: card.artist,
     scryfallUri: card.scryfallUri,
-    frontImageUrl: assetUrl(card.images.display || card.images.front),
+    frontImageUrl: preferredAssetUrl(card.images.display || card.images.front, {
+      id: card.id,
+      kind: 'large',
+    }),
     backImageUrl: options?.useDeckBack
-      ? assetUrl(card.images.back)
+      ? preferredAssetUrl(card.images.back, { kind: 'card_back' })
       : defaultCardBackUrl(),
     source: 'local',
     oracleId: '',
@@ -569,22 +573,30 @@ async function waitForDrawGap(): Promise<void> {
   }
 }
 
-async function drawOneUnchecked(): Promise<DrawnCard> {
+async function drawOneUnchecked(options?: {
+  /** When false, skip blocking image preload (pack tear covers latency). */
+  preload?: boolean
+}): Promise<DrawnCard> {
   const rarity = rollRarity()
+  const shouldPreload = options?.preload !== false
   try {
     const card = await fetchScryfallRandom(rarity)
-    try {
-      await preloadImage(card.frontImageUrl)
-    } catch {
-      /* still usable if CDN is flaky */
+    if (shouldPreload) {
+      try {
+        await preloadImage(card.frontImageUrl)
+      } catch {
+        /* still usable if CDN is flaky */
+      }
     }
     return card
   } catch {
     const local = pickLocal(rarity)
-    try {
-      await preloadImage(local.frontImageUrl)
-    } catch {
-      /* ignore */
+    if (shouldPreload) {
+      try {
+        await preloadImage(local.frontImageUrl)
+      } catch {
+        /* ignore */
+      }
     }
     return local
   }
@@ -601,13 +613,16 @@ export async function drawWeightedCard(): Promise<DrawnCard> {
 
 /**
  * Open a pack of `count` cards. Requests run concurrently (one rate-limit gap for the pack).
+ * Image preload is fire-and-forget so tear animation can overlap network.
  */
 export async function drawWeightedPack(count = 3): Promise<DrawnCard[]> {
   const n = Math.max(1, Math.floor(count))
   await waitForDrawGap()
   lastDrawAt = Date.now()
 
-  let cards = await Promise.all(Array.from({ length: n }, () => drawOneUnchecked()))
+  let cards = await Promise.all(
+    Array.from({ length: n }, () => drawOneUnchecked({ preload: false })),
+  )
 
   // Concurrent random can collide — replace duplicate ids when possible.
   const seen = new Set<string>()
@@ -618,7 +633,7 @@ export async function drawWeightedPack(count = 3): Promise<DrawnCard[]> {
         return card
       }
       for (let attempt = 0; attempt < 3; attempt++) {
-        const next = await drawOneUnchecked()
+        const next = await drawOneUnchecked({ preload: false })
         if (!seen.has(next.id)) {
           seen.add(next.id)
           return next
@@ -627,6 +642,11 @@ export async function drawWeightedPack(count = 3): Promise<DrawnCard[]> {
       return card
     }),
   )
+
+  // Warm faces during / after tear without blocking pack reveal.
+  for (const card of cards) {
+    void preloadImage(card.frontImageUrl).catch(() => undefined)
+  }
 
   return cards
 }

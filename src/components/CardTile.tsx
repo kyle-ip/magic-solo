@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next'
 import { useLocalizedCard } from '../hooks/useLocalizedCard'
+import { CardImage } from '../hooks/useCardImageSrc'
 import type { DeckCard } from '../types'
-import { assetUrl } from '../utils/assetUrl'
-import { preloadImage } from '../utils/imageCache'
+import { preloadAssetCandidates } from '../utils/remoteAsset'
 
 interface CardTileProps {
   card: DeckCard
@@ -14,12 +14,17 @@ interface CardTileProps {
 export function CardTile({ card, setCode, onOpen, index }: CardTileProps) {
   const { t } = useTranslation()
   const localized = useLocalizedCard(setCode, card)
-  const displaySrc = assetUrl(card.images.display || card.images.front)
-  const backSrc = assetUrl(card.images.back)
+  const facePath = card.images.display || card.images.front
 
   const warmImages = () => {
-    void preloadImage(displaySrc).catch(() => undefined)
-    void preloadImage(backSrc).catch(() => undefined)
+    void preloadAssetCandidates(facePath, {
+      id: card.id,
+      kind: 'normal',
+    }).catch(() => undefined)
+    void preloadAssetCandidates(card.images.back, {
+      id: card.id,
+      kind: 'card_back',
+    }).catch(() => undefined)
   }
 
   return (
@@ -32,8 +37,10 @@ export function CardTile({ card, setCode, onOpen, index }: CardTileProps) {
       onFocus={warmImages}
     >
       <span className="card-tile-frame">
-        <img
-          src={displaySrc}
+        <CardImage
+          localPath={facePath}
+          cardId={card.id}
+          kind="normal"
           alt={localized.name}
           loading="lazy"
         />

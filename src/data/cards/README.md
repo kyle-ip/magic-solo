@@ -10,7 +10,7 @@ Edit **this folder** when you need to change card text or image paths. The app r
 | `challenge/tbth.json` | Battle the Horde |
 | `challenge/tdag.json` | Defeat a God |
 
-Each card entry has bilingual copy and asset paths under `images` (relative to `public/` via `assetUrl`).
+Each card entry has bilingual copy and asset paths under `images` (relative to `public/`). At runtime the UI prefers **remote CDN** URLs (see mapping below) and falls back to these local paths.
 
 ## Player Constructed deck (Challenge Experience)
 
@@ -25,6 +25,33 @@ Setup lets you pick either list for all three challenges. Each entry includes `q
 
 Legacy muster roster files (`akroan.json`, etc.) are unused by the Experience engine.
 
+## Local ↔ remote image mapping
+
+Canonical table: [`../cardImageMap.json`](../cardImageMap.json) (generated — do not hand-edit).
+
+```bash
+npm run generate:card-image-map
+```
+
+Re-run after `fetch:cards` / `fetch:local` / `fetch:mana-symbols` when asset paths change.
+
+Lookup helpers: [`../cardImageMap.ts`](../cardImageMap.ts) — `lookupByLocalPath`, `lookupByCardId`, `listMappedCardImages`.
+
+Runtime strategies ([`../../utils/remoteAsset.ts`](../../utils/remoteAsset.ts)):
+
+| Strategy | When |
+| --- | --- |
+| `remote-first` (default) | Online / GitHub Pages: try Scryfall (or Wikia for covers) first, then local |
+| `local-first` | Offline-first experiments: try local, then remote |
+
+CDN size convention (containers / layout unchanged):
+
+- Lists, battlefield, hand → `normal`
+- Modal / inspect → `large`
+- Hero / atmosphere art → `art_crop`
+
+**UI constraint:** swapping URL sources must not change layout, CSS, or interaction.
+
 ## Related (not card faces)
 
 - Deck blurbs on the home/deck pages: `src/data/locale/deckMeta.ts`
@@ -33,4 +60,6 @@ Legacy muster roster files (`akroan.json`, etc.) are unused by the Experience en
 - Site logo / favicon: `public/mtg-logo.svg`, `public/favicon.svg`
 - Home page blurred backdrop: `public/assets/home/atmosphere.jpg`
 
-After running `npm run fetch:cards`, re-check `challenge/*.json` if Scryfall paths or English oracle text changed — the app prefers this folder over the raw deck manifests.
+After running `npm run fetch:cards`, re-check `challenge/*.json` if Scryfall paths or English oracle text changed — the app prefers this folder over the raw deck manifests. Then run `npm run generate:card-image-map`.
+
+Note: `src/data/decks/*.json` hold **meta only** (no `cards[]`); card faces live in this catalog folder and are loaded via `deckStore` on Deck/Challenge/Assistant routes.

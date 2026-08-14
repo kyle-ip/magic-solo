@@ -1,0 +1,244 @@
+/**
+ * Resolve local public paths vs remote CDN with remote-first / local-first strategies.
+ * Uses cardImageMap when present; otherwise derives Scryfall URLs from UUID + kind.
+ */
+
+import {
+  getClassicCardBackId,
+  lookupByCardId,
+  lookupByLocalPath,
+  type CardImageKind,
+} from '../data/cardImageMap'
+import { assetUrl } from './assetUrl'
+
+export type AssetStrategy = 'remote-first' | 'local-first'
+
+export type { CardImageKind }
+
+const UUID_RE =
+  /([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i
+
+const resolveCache = new Map<string, string>()
+const resolveInflight = new Map<string, Promise<string>>()
+
+export function scryfallCardFaceUrl(
+  cardId: string,
+  size: 'normal' | 'large' | 'art_crop',
+  face: 'front' | 'back' = 'front',
+): string {
+  const id = cardId.toLowerCase()
+  return `https://cards.scryfall.io/${size}/${face}/${id[0]}/${id[1]}/${id}.jpg`
+}
+
+export function scryfallCardBackUrl(backId: string): string {
+  const id = backId.toLowerCase()
+  return `https://backs.scryfall.io/png/${id[0]}/${id[1]}/${id}.png`
+}
+
+export function extractCardUuid(
+  pathOrId: string | null | undefined,
+): string | null {
+  if (!pathOrId) return null
+  const m = pathOrId.match(UUID_RE)
+  return m ? m[1]!.toLowerCase() : null
+}
+
+/** Infer map kind from a local asset path when not passed explicitly. */
+export function inferKindFromLocalPath(
+  localPath: string | null | undefined,
+): CardImageKind | undefined {
+  if (!localPath) return undefined
+  const p = localPath.toLowerCase()
+  if (p.includes('mana-symbols/')) return 'mana_symbol'
+  if (p.includes('/covers/')) return 'cover'
+  if (p.endsWith('mtg-card-back.jpg') || p.endsWith('/back.png')) {
+    return 'card_back'
+  }
+  if (p.includes('-art.') || p.endsWith('-art.jpg')) return 'art_crop'
+  if (p.includes('-display.') || p.includes('display')) return 'large'
+  if (
+    p.includes('-normal.') ||
+    p.includes('-front.') ||
+    p.endsWith('-front.png')
+  ) {
+    return 'normal'
+  }
+  return undefined
+}
+
+function deriveRemote(
+  localPath: string | null | undefined,
+  opts?: { id?: string; kind?: CardImageKind },
+): string | null {
+  const mapped = lookupByLocalPath(localPath)
+  if (mapped) return mapped.remote
+
+  const kind =
+    opts?.kind ??
+    inferKindFromLocalPath(localPath) ??
+    'normal'
+  const id =
+    opts?.id?.toLowerCase() ??
+    extractCardUuid(localPath) ??
+    extractCardUuid(opts?.id)
+
+  if (kind === 'mana_symbol' && localPath) {
+    const file = localPath.split('/').pop()?.replace(/\.svg$/i, '')
+    if (file) {
+      return `https://svgs.scryfall.io/card-symbols/${encodeURIComponent(file.toUpperCase())}.svg`
+    }
+  }
+
+  if (kind === 'card_back') {
+    const backId = id || getClassicCardBackId()
+    const fromMap = lookupByCardId(backId, 'card_back')
+    if (fromMap) return fromMap.remote
+    return scryfallCardBackUrl(backId)
+  }
+
+  if (kind === 'cover') {
+    return lookupByLocalPath(localPath)?.remote ?? null
+  }
+
+  if (!id) return null
+  if (kind === 'normal' || kind === 'large' || kind === 'art_crop') {
+    const fromMap = lookupByCardId(id, kind)
+    if (fromMap) return fromMap.remote
+    return scryfallCardFaceUrl(id, kind)
+  }
+
+  return null
+}
+
+export interface AssetCandidates {
+  primary: string
+  fallback: string
+  remote: string | null
+  local: string
+}
+
+export function assetCandidates(
+  localPath: string | null | undefined,
+  opts?: {
+    id?: string
+    kind?: CardImageKind
+    strategy?: AssetStrategy
+  },
+): AssetCandidates {
+  const strategy = opts?.strategy ?? 'remote-first'
+  const local = assetUrl(localPath)
+  const remote = deriveRemote(localPath, opts)
+
+  if (!remote || !local) {
+    const only = remote || local || ''
+    return { primary: only, fallback: only, remote, local }
+  }
+
+  if (strategy === 'local-first') {
+    return { primary: local, fallback: remote, remote, local }
+  }
+  return { primary: remote, fallback: local, remote, local }
+}
+
+/** Prefer remote URL for display; local remains fallback via onError / resolve. */
+export function preferredAssetUrl(
+  localPath: string | null | undefined,
+  opts?: {
+    id?: string
+    kind?: CardImageKind
+    strategy?: AssetStrategy
+  },
+): string {
+  return assetCandidates(localPath, opts).primary
+}
+
+/** Remote image probe timeout — fall back to local rather than hang. */
+export const REMOTE_IMAGE_TIMEOUT_MS = 2000
+
+function probeImage(url: string, timeoutMs = REMOTE_IMAGE_TIMEOUT_MS): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (typeof Image === 'undefined') {
+      resolve(true)
+      return
+    }
+    if (!url) {
+      resolve(false)
+      return
+    }
+    const img = new Image()
+    let settled = false
+    const done = (ok: boolean) => {
+      if (settled) return
+      settled = true
+      clearTimeout(timer)
+      resolve(ok)
+    }
+    const timer = setTimeout(() => done(false), timeoutMs)
+    img.onload = () => done(true)
+    img.onerror = () => done(false)
+    img.src = url
+  })
+}
+
+/**
+ * Async resolve with session cache — for CSS background-image and preload.
+ * Tries primary then fallback according to strategy.
+ */
+export async function resolveAssetUrl(
+  localPath: string | null | undefined,
+  opts?: {
+    id?: string
+    kind?: CardImageKind
+    strategy?: AssetStrategy
+  },
+): Promise<string> {
+  const { primary, fallback } = assetCandidates(localPath, opts)
+  const cacheKey = `${opts?.strategy ?? 'remote-first'}|${primary}|${fallback}`
+  const hit = resolveCache.get(cacheKey)
+  if (hit) return hit
+
+  const pending = resolveInflight.get(cacheKey)
+  if (pending) return pending
+
+  const task = (async () => {
+    const strategy = opts?.strategy ?? 'remote-first'
+    // Prefer timing out the remote leg quickly under remote-first.
+    const primaryTimeout =
+      strategy === 'remote-first' && primary !== fallback
+        ? REMOTE_IMAGE_TIMEOUT_MS
+        : REMOTE_IMAGE_TIMEOUT_MS * 2
+    if (await probeImage(primary, primaryTimeout)) {
+      resolveCache.set(cacheKey, primary)
+      return primary
+    }
+    if (fallback && fallback !== primary && (await probeImage(fallback))) {
+      resolveCache.set(cacheKey, fallback)
+      return fallback
+    }
+    resolveCache.set(cacheKey, primary || fallback)
+    return primary || fallback
+  })().finally(() => {
+    resolveInflight.delete(cacheKey)
+  })
+
+  resolveInflight.set(cacheKey, task)
+  return task
+}
+
+/** Preload primary then fallback (does not throw). */
+export async function preloadAssetCandidates(
+  localPath: string | null | undefined,
+  opts?: {
+    id?: string
+    kind?: CardImageKind
+    strategy?: AssetStrategy
+  },
+): Promise<string> {
+  return resolveAssetUrl(localPath, opts)
+}
+
+/** @internal Vitest */
+export function resetRemoteAssetCacheForTests(): void {
+  resolveCache.clear()
+  resolveInflight.clear()
+}

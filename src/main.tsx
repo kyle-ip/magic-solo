@@ -8,7 +8,7 @@ import { preloadCommonManaSymbols } from './utils/manaSymbols'
 import { installScrollRevealScrollbars } from './utils/scrollReveal'
 
 installScrollRevealScrollbars()
-// Scryfall SVGs lack Cache-Control — fetch each code once and reuse blob URLs.
+// Warm common mana symbols (CDN-first); remaining codes resolve on first use.
 preloadCommonManaSymbols()
 
 if ('scrollRestoration' in history) {

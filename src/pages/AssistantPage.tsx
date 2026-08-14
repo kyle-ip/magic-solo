@@ -9,6 +9,7 @@ import {
 } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import '../styles/arena.css'
 import type { DragPayload, DropTarget } from '../assistant/dnd'
 import { createAssistantReducer } from '../assistant/reducer'
 import { createInitialSetup } from '../assistant/setup'
@@ -32,12 +33,13 @@ import {
   arenaToolIcons,
 } from '../components/ArenaToolButton'
 import { LanguageSwitch } from '../components/LanguageSwitch'
-import { getDeck } from '../data/deckRegistry'
+import { getDeck } from '../data/deckStore'
 import { getCardZh } from '../data/locale/cardsZh'
 import { deckMetaEn, deckMetaZh } from '../data/locale/deckMeta'
 import type { ChallengeCode } from '../game/types'
 import { defsFromDeck } from '../game/types'
-import { assetUrl } from '../utils/assetUrl'
+import { CardImage, RemoteArtBackground } from '../hooks/useCardImageSrc'
+import { preferredAssetUrl } from '../utils/remoteAsset'
 
 const CODES: ChallengeCode[] = ['tfth', 'tbth', 'tdag']
 
@@ -360,12 +362,7 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
   if (state.status === 'setup') {
     return (
       <main className={`arena-root assistant-root theme-${deck.theme} is-setup`}>
-        <div
-          className="arena-bg"
-          style={
-            heroArt ? { backgroundImage: `url(${assetUrl(heroArt)})` } : undefined
-          }
-        />
+        <RemoteArtBackground className="arena-bg" localPath={heroArt} kind="art_crop" />
         <div className="arena-bg-veil" />
         <div className="assistant-setup arena-setup">
           <Link to={`/decks/${code}`} className="back-link">
@@ -652,12 +649,7 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
         drag ? ' is-dragging' : ''
       }`}
     >
-      <div
-        className="arena-bg"
-        style={
-          heroArt ? { backgroundImage: `url(${assetUrl(heroArt)})` } : undefined
-        }
-      />
+      <RemoteArtBackground className="arena-bg" localPath={heroArt} kind="art_crop" />
       <div className="arena-bg-veil" />
 
       <header className="arena-topbar assistant-topbar">
@@ -707,7 +699,7 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
                 hint={t('assistant.drawHint')}
                 stackImage={
                   deck?.cards[0]?.images.back
-                    ? assetUrl(deck.cards[0].images.back)
+                    ? preferredAssetUrl(deck.cards[0].images.back, { kind: 'card_back' })
                     : undefined
                 }
                 onClick={onLibraryClick}
@@ -830,7 +822,7 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
             .filter(Boolean)
             .join(' ')}
         >
-          <img src={assetUrl(preview.image)} alt={preview.name} />
+          <CardImage localPath={preview.image} kind="large" alt={preview.name} />
           <div className="card-preview-copy">
             <p className="card-preview-name">{preview.name}</p>
             <p className="card-preview-text">{preview.text}</p>
@@ -844,7 +836,7 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
           style={{ left: drag.x, top: drag.y }}
           aria-hidden="true"
         >
-          <img src={assetUrl(drag.image)} alt="" />
+          <CardImage localPath={drag.image} kind="normal" alt="" />
         </div>
       ) : null}
 

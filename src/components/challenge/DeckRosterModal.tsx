@@ -5,7 +5,7 @@ import {
   type ConstructedCardDef,
   type PlayerDeckId,
 } from '../../game/playerDecks'
-import { assetUrl } from '../../utils/assetUrl'
+import { CardImage } from '../../hooks/useCardImageSrc'
 
 interface DeckRosterModalProps {
   deckId: PlayerDeckId
@@ -77,7 +77,13 @@ export function DeckRosterModal({
                   onClick={() => setFocusId(card.id)}
                 >
                   <span className="deck-roster-tile-art">
-                    <img src={assetUrl(card.image)} alt="" loading="lazy" />
+                    <CardImage
+                      localPath={card.image}
+                      cardId={card.id}
+                      kind="normal"
+                      alt=""
+                      loading="lazy"
+                    />
                   </span>
                   <span className="deck-roster-tile-meta">
                     <strong>{zh ? card.nameZh : card.name}</strong>
@@ -96,7 +102,12 @@ export function DeckRosterModal({
           {focus ? (
             <aside className="deck-roster-detail">
               <div className="deck-roster-art">
-                <img src={assetUrl(focus.image)} alt="" />
+                <CardImage
+                  localPath={focus.image}
+                  cardId={focus.id}
+                  kind="large"
+                  alt=""
+                />
               </div>
               <div className="deck-roster-detail-body">
                 <h3>{zh ? focus.nameZh : focus.name}</h3>

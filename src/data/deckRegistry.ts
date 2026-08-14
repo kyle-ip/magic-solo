@@ -1,9 +1,5 @@
-import type { DeckData, DeckIndexEntry, DeckRules, SharedRules } from '../types'
-import { loadChallengeCards } from './cards/loadChallengeCards'
+import type { DeckIndexEntry, DeckRules, SharedRules } from '../types'
 import deckIndex from './decks/index.json'
-import tfth from './decks/tfth.json'
-import tbth from './decks/tbth.json'
-import tdag from './decks/tdag.json'
 import sharedRulesEn from './rules/shared.json'
 import tfthRulesEn from './rules/tfth.json'
 import tbthRulesEn from './rules/tbth.json'
@@ -12,17 +8,6 @@ import sharedRulesZh from './rules/zh/shared.json'
 import tfthRulesZh from './rules/zh/tfth.json'
 import tbthRulesZh from './rules/zh/tbth.json'
 import tdagRulesZh from './rules/zh/tdag.json'
-
-function withCatalogCards(deck: DeckData): DeckData {
-  const cards = loadChallengeCards(deck.code)
-  return cards ? { ...deck, cards } : deck
-}
-
-const decksByCode: Record<string, DeckData> = {
-  tfth: withCatalogCards(tfth as DeckData),
-  tbth: withCatalogCards(tbth as DeckData),
-  tdag: withCatalogCards(tdag as DeckData),
-}
 
 const rulesEn: Record<string, DeckRules> = {
   tfth: tfthRulesEn as DeckRules,
@@ -38,10 +23,6 @@ const rulesZh: Record<string, DeckRules> = {
 
 export function getDeckIndex(): DeckIndexEntry[] {
   return (deckIndex as { decks: DeckIndexEntry[] }).decks
-}
-
-export function getDeck(code: string): DeckData | undefined {
-  return decksByCode[code]
 }
 
 export function getDeckRules(code: string, lang = 'en'): DeckRules | undefined {

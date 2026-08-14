@@ -4,11 +4,13 @@ import { useTranslation } from 'react-i18next'
 import { deckMetaEn, deckMetaZh } from '../data/locale/deckMeta'
 import { deckCardToDrawn, wantsZh } from '../data/randomCard'
 import { useSwipeNavigate } from '../hooks/useSwipeNavigate'
+import { useCardImageSrc } from '../hooks/useCardImageSrc'
 import type { DeckCard } from '../types'
-import { assetUrl } from '../utils/assetUrl'
-import { preloadImage } from '../utils/imageCache'
+import { preloadAssetCandidates } from '../utils/remoteAsset'
 import { CardDetailsBody } from './CardDetailsBody'
 import { CardFaceButton } from './CardFaceButton'
+import '../styles/pack.css'
+import '../styles/deck.css'
 
 interface CardModalProps {
   card: DeckCard | null
@@ -85,10 +87,15 @@ function CardModalBody({
   }, [card.id])
 
   useEffect(() => {
-    const front = assetUrl(card.images.display || card.images.front)
-    const back = assetUrl(card.images.back)
-    void preloadImage(front).catch(() => undefined)
-    void preloadImage(back).catch(() => undefined)
+    const facePath = card.images.display || card.images.front
+    void preloadAssetCandidates(facePath, {
+      id: card.id,
+      kind: 'large',
+    }).catch(() => undefined)
+    void preloadAssetCandidates(card.images.back, {
+      id: card.id,
+      kind: 'card_back',
+    }).catch(() => undefined)
   }, [card])
 
   const stepCard = useCallback(
@@ -129,8 +136,12 @@ function CardModalBody({
     return () => window.removeEventListener('keydown', onKey)
   }, [artZoomed, canBrowse, onClose, stepCard])
 
-  const frontSrc = assetUrl(card.images.display || card.images.front)
-  const backSrc = assetUrl(card.images.back)
+  const facePath = card.images.display || card.images.front
+  const front = useCardImageSrc(facePath, { id: card.id, kind: 'large' })
+  const back = useCardImageSrc(card.images.back, {
+    id: card.id,
+    kind: 'card_back',
+  })
   const displayTitle = wantsZh(i18n.language)
     ? drawn.nameZh || drawn.name
     : drawn.name
@@ -199,16 +210,20 @@ function CardModalBody({
                   >
                     <span className="card-face front">
                       <img
-                        src={frontSrc}
+                        src={front.src}
                         alt={displayTitle}
                         draggable={false}
+                        decoding="async"
+                        onError={front.onError}
                       />
                     </span>
                     <span className="card-face back">
                       <img
-                        src={backSrc}
+                        src={back.src}
                         alt={t('deck.backHint')}
                         draggable={false}
+                        decoding="async"
+                        onError={back.onError}
                       />
                     </span>
                   </CardFaceButton>

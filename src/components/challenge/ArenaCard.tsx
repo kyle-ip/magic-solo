@@ -1,10 +1,11 @@
-import type {
-  ButtonHTMLAttributes,
-  MouseEventHandler,
-  PointerEventHandler,
-  ReactNode,
+import {
+  memo,
+  type ButtonHTMLAttributes,
+  type MouseEventHandler,
+  type PointerEventHandler,
+  type ReactNode,
 } from 'react'
-import { assetUrl } from '../../utils/assetUrl'
+import { CardImage } from '../../hooks/useCardImageSrc'
 
 interface ArenaCardProps {
   image: string
@@ -38,7 +39,7 @@ interface ArenaCardProps {
   children?: ReactNode
 }
 
-export function ArenaCard({
+function ArenaCardInner({
   image,
   name,
   instanceId,
@@ -81,7 +82,6 @@ export function ArenaCard({
     .filter(Boolean)
     .join(' ')
 
-  // Card art already prints P/T — overlay when damaged so effective toughness is obvious.
   const showPt = toughness != null && markedDamage > 0
   const pt = showPt
     ? `${power ?? 0}/${Math.max(0, toughness - markedDamage)}`
@@ -98,7 +98,12 @@ export function ArenaCard({
 
   const inner = (
     <>
-      <img src={assetUrl(image)} alt={name} draggable={false} />
+      <CardImage
+        localPath={image}
+        kind="normal"
+        alt={name}
+        draggable={false}
+      />
       {badge ? <span className="arena-card-badge">{badge}</span> : null}
       {note ? <span className="arena-card-note">{note}</span> : null}
       {markedDamage > 0 ? (
@@ -165,3 +170,5 @@ export function ArenaCard({
     </div>
   )
 }
+
+export const ArenaCard = memo(ArenaCardInner)

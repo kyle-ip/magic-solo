@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import type { CardInstance } from '../../game/types'
-import { assetUrl } from '../../utils/assetUrl'
+import { CardImage } from '../../hooks/useCardImageSrc'
 
 interface CastStageProps {
   card: CardInstance | null
@@ -35,7 +35,7 @@ export function CastStage({
     <div className="cast-stage" role="presentation" onClick={onAdvance}>
       <div className="cast-stage-panel">
         <div className="cast-stage-card">
-          <img src={assetUrl(card.image)} alt={label} />
+          <CardImage localPath={card.image} kind="normal" alt={label} />
         </div>
         <div className="cast-stage-detail">
           <p className="cast-stage-name">{label}</p>

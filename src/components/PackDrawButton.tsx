@@ -3,6 +3,8 @@ import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { useSwipeNavigate } from '../hooks/useSwipeNavigate'
 import { assetUrl } from '../utils/assetUrl'
+import '../styles/pack.css'
+import '../styles/deck.css'
 import { CardFaceButton } from './CardFaceButton'
 import {
   addCollected,

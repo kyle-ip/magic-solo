@@ -4,10 +4,12 @@ import { useTranslation } from 'react-i18next'
 import { CardModal } from '../components/CardModal'
 import { CardTile } from '../components/CardTile'
 import { RulesPanel } from '../components/RulesPanel'
-import { getDeck, getDeckRules } from '../data/deckRegistry'
+import { getDeckRules } from '../data/deckRegistry'
+import { getDeck } from '../data/deckStore'
 import { deckMetaEn, deckMetaZh } from '../data/locale/deckMeta'
+import { CardImage, useResolvedCardImageUrl } from '../hooks/useCardImageSrc'
 import type { DeckCard } from '../types'
-import { assetUrl } from '../utils/assetUrl'
+import '../styles/deck.css'
 
 export function DeckPage() {
   const { setCode = '' } = useParams()
@@ -23,11 +25,15 @@ export function DeckPage() {
     [deck],
   )
 
+  const heroArtUrl = useResolvedCardImageUrl(hero?.images.artCrop, {
+    id: hero?.id,
+    kind: 'art_crop',
+  })
+  const heroFront = hero?.images.display || hero?.images.front
+
   if (!deck || !rules) {
     return <Navigate to="/" replace />
   }
-
-  const heroFront = hero?.images.display || hero?.images.front
 
   return (
     <main className={`page deck-page theme-${deck.theme}`}>
@@ -36,7 +42,7 @@ export function DeckPage() {
           className="deck-atmosphere-bg"
           style={
             hero?.images.artCrop
-              ? { backgroundImage: `url(${assetUrl(hero.images.artCrop)})` }
+              ? { backgroundImage: `url(${heroArtUrl})` }
               : undefined
           }
         />
@@ -68,7 +74,13 @@ export function DeckPage() {
             </div>
           </div>
           <div className="deck-hero-card">
-            <img src={assetUrl(heroFront)} alt={meta?.name ?? deck.name} />
+            <CardImage
+              localPath={heroFront}
+              cardId={hero?.id}
+              kind="large"
+              alt={meta?.name ?? deck.name}
+              fetchPriority="high"
+            />
           </div>
         </div>
       </section>

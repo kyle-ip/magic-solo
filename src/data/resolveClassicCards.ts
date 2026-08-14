@@ -200,8 +200,8 @@ export async function resolveCardsByNameProgressive(
   // actually what we want (queue serializes). Good.
 
   let result = buildResultMap(unique)
-  await preloadFronts(result.values())
   options?.onProgress?.({ cards: result, done: !enrichZh })
+  void preloadFronts(result.values())
 
   if (enrichZh) {
     result = await enrichAllZh(unique, result)

@@ -9,13 +9,14 @@ import {
 } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import '../styles/arena.css'
 import { ArenaCard } from '../components/challenge/ArenaCard'
 import { AttackArrows } from '../components/challenge/AttackArrows'
 import { CastStage } from '../components/challenge/CastStage'
 import { DeckRosterModal } from '../components/challenge/DeckRosterModal'
 import { ZonePile } from '../components/challenge/ZonePile'
 import { LanguageSwitch } from '../components/LanguageSwitch'
-import { getDeck } from '../data/deckRegistry'
+import { getDeck } from '../data/deckStore'
 import { getCardZh } from '../data/locale/cardsZh'
 import { deckMetaEn, deckMetaZh } from '../data/locale/deckMeta'
 import { coachTipKey } from '../game/coachTip'
@@ -43,7 +44,8 @@ import type {
   FxPop,
   LogEntry,
 } from '../game/types'
-import { assetUrl } from '../utils/assetUrl'
+import { CardImage, RemoteArtBackground } from '../hooks/useCardImageSrc'
+import { preferredAssetUrl } from '../utils/remoteAsset'
 import { setHideSiteChrome } from '../utils/siteChrome'
 
 const CODES: ChallengeCode[] = ['tfth', 'tbth', 'tdag']
@@ -387,12 +389,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
   if (state.status === 'setup') {
     return (
       <main className={`arena-root theme-${deck.theme}`}>
-        <div
-          className="arena-bg"
-          style={
-            heroArt ? { backgroundImage: `url(${assetUrl(heroArt)})` } : undefined
-          }
-        />
+        <RemoteArtBackground className="arena-bg" localPath={heroArt} kind="art_crop" />
         <div className="arena-bg-veil" />
         <section className="arena-setup">
           <Link to={`/decks/${code}`} className="back-link">
@@ -461,7 +458,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                     <span
                       className="setup-hero-art"
                       style={{
-                        backgroundImage: `url(${assetUrl(hero.art || hero.image)})`,
+                        backgroundImage: `url(${preferredAssetUrl(hero.art || hero.image, { kind: 'art_crop' })})`,
                       }}
                     />
                     <strong>{zh ? hero.nameZh : hero.name}</strong>
@@ -491,7 +488,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                   >
                     <span
                       className="setup-deck-art"
-                      style={{ backgroundImage: `url(${assetUrl(d.art)})` }}
+                      style={{ backgroundImage: `url(${preferredAssetUrl(d.art, { kind: 'art_crop' })})` }}
                     />
                     <span className="setup-deck-body">
                       <strong>{zh ? d.nameZh : d.name}</strong>
@@ -564,12 +561,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
       >
         <p>{t('challenge.rotateLandscape')}</p>
       </div>
-      <div
-        className="arena-bg"
-        style={
-          heroArt ? { backgroundImage: `url(${assetUrl(heroArt)})` } : undefined
-        }
-      />
+      <RemoteArtBackground className="arena-bg" localPath={heroArt} kind="art_crop" />
       <div className="arena-bg-veil" />
       <AttackArrows rootRef={arenaRef} links={attackLinks} />
 
@@ -615,7 +607,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
               kind="library"
               stackImage={
                 deck?.cards[0]?.images.back
-                  ? assetUrl(deck.cards[0].images.back)
+                  ? preferredAssetUrl(deck.cards[0].images.back, { kind: 'card_back' })
                   : undefined
               }
               onClick={
@@ -903,9 +895,10 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                     onMouseLeave={clearPreview}
                   >
                     {def?.art || def?.image || h.image ? (
-                      <img
+                      <CardImage
                         className="hero-chip-art"
-                        src={assetUrl(def?.art || def?.image || h.image)}
+                        localPath={def?.art || def?.image || h.image}
+                        kind="art_crop"
                         alt=""
                         draggable={false}
                       />
@@ -1181,7 +1174,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                 }
                 onMouseLeave={clearPreview}
               >
-                <img src={assetUrl(card.image)} alt="" draggable={false} />
+                <CardImage localPath={card.image} kind="normal" alt="" draggable={false} />
                 <span className="hand-cost">
                   {card.kind === 'land' ? t('challenge.landShort') : card.manaCost || '0'}
                 </span>
@@ -1200,7 +1193,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
       {preview ? (
         <aside className="card-preview-pane">
           {preview.image ? (
-            <img src={assetUrl(preview.image)} alt={preview.name} />
+            <CardImage localPath={preview.image} kind="large" alt={preview.name} />
           ) : (
             <div className="preview-token">
               <strong>{preview.name}</strong>

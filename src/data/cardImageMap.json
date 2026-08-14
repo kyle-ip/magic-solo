@@ -1,0 +1,1469 @@
+{
+  "generatedAt": "2026-08-14T01:01:01.062Z",
+  "classicCardBackId": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "entries": [
+    {
+      "id": "3d2f2bcc-0db9-4aa1-b63d-587c62468015",
+      "kind": "art_crop",
+      "local": "assets/cards/tbth/1-minotaur-goreseeker-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/3/d/3d2f2bcc-0db9-4aa1-b63d-587c62468015.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "d4d98fc6-da00-4d65-9469-9d2c5b111f2e",
+      "kind": "art_crop",
+      "local": "assets/cards/tbth/10-unquenchable-fury-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/d/4/d4d98fc6-da00-4d65-9469-9d2c5b111f2e.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "f6882d51-1db2-4b08-8873-cb6f2d96b260",
+      "kind": "art_crop",
+      "local": "assets/cards/tbth/11-altar-of-mogis-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/f/6/f6882d51-1db2-4b08-8873-cb6f2d96b260.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "a6e352e9-20ac-485b-bcaf-1d053c4ecb40",
+      "kind": "art_crop",
+      "local": "assets/cards/tbth/12-massacre-totem-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/a/6/a6e352e9-20ac-485b-bcaf-1d053c4ecb40.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "8eea07ed-a321-4403-b3a9-ce5e69a175fd",
+      "kind": "art_crop",
+      "local": "assets/cards/tbth/13-plundered-statue-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/8/e/8eea07ed-a321-4403-b3a9-ce5e69a175fd.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "b1d75296-e2a5-48f3-a98d-3633be9f6138",
+      "kind": "art_crop",
+      "local": "assets/cards/tbth/14-refreshing-elixir-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/b/1/b1d75296-e2a5-48f3-a98d-3633be9f6138.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "6ede8ada-95c6-426b-83f6-17f25afc3c21",
+      "kind": "art_crop",
+      "local": "assets/cards/tbth/15-vitality-salve-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/6/e/6ede8ada-95c6-426b-83f6-17f25afc3c21.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "2c8e22f9-6b70-425c-a0a8-09b6101a286e",
+      "kind": "art_crop",
+      "local": "assets/cards/tbth/2-minotaur-younghorn-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/2/c/2c8e22f9-6b70-425c-a0a8-09b6101a286e.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "553ae9d2-3807-4ca8-a575-7fa6667ee212",
+      "kind": "art_crop",
+      "local": "assets/cards/tbth/3-mogiss-chosen-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/5/5/553ae9d2-3807-4ca8-a575-7fa6667ee212.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "1eda2434-523d-4e9c-a8f1-acbee5c87aac",
+      "kind": "art_crop",
+      "local": "assets/cards/tbth/4-phoberos-reaver-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/1/e/1eda2434-523d-4e9c-a8f1-acbee5c87aac.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "938272b2-8e1c-4196-8557-c597735dd96e",
+      "kind": "art_crop",
+      "local": "assets/cards/tbth/5-reckless-minotaur-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/9/3/938272b2-8e1c-4196-8557-c597735dd96e.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "7e5d19fa-0f12-41cb-90a8-c027edbc893b",
+      "kind": "art_crop",
+      "local": "assets/cards/tbth/6-consuming-rage-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/7/e/7e5d19fa-0f12-41cb-90a8-c027edbc893b.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "95e0a522-2395-438a-83bc-ea092e4286c3",
+      "kind": "art_crop",
+      "local": "assets/cards/tbth/7-descend-on-the-prey-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/9/5/95e0a522-2395-438a-83bc-ea092e4286c3.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "661e8959-4c63-439b-8cbf-837f84ad3e57",
+      "kind": "art_crop",
+      "local": "assets/cards/tbth/8-intervention-of-keranos-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/6/6/661e8959-4c63-439b-8cbf-837f84ad3e57.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "c58bacd4-e84b-4c73-802f-5f65e5c94a46",
+      "kind": "art_crop",
+      "local": "assets/cards/tbth/9-touch-of-the-horned-god-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/c/5/c58bacd4-e84b-4c73-802f-5f65e5c94a46.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "fe9dd9f0-3071-4bbd-80d2-e35b153006d7",
+      "kind": "art_crop",
+      "local": "assets/cards/tdag/1-xenagos-ascended-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/f/e/fe9dd9f0-3071-4bbd-80d2-e35b153006d7.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "b52d516f-d425-49f1-99cc-17f743aa41b2",
+      "kind": "art_crop",
+      "local": "assets/cards/tdag/10-impulsive-return-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/b/5/b52d516f-d425-49f1-99cc-17f743aa41b2.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "33307f9a-9c09-402a-9c76-a0a76b3a9a6a",
+      "kind": "art_crop",
+      "local": "assets/cards/tdag/11-rip-to-pieces-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/3/3/33307f9a-9c09-402a-9c76-a0a76b3a9a6a.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "d1b30dc4-9d7c-4098-87a6-f7434030a427",
+      "kind": "art_crop",
+      "local": "assets/cards/tdag/12-xenagoss-scorn-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/d/1/d1b30dc4-9d7c-4098-87a6-f7434030a427.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "6b5fef7d-b8bb-43e2-a36b-d4cc98c3ef13",
+      "kind": "art_crop",
+      "local": "assets/cards/tdag/13-xenagoss-strike-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/6/b/6b5fef7d-b8bb-43e2-a36b-d4cc98c3ef13.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "3c85c8c7-e415-411d-b1b3-edc45c0e3fb0",
+      "kind": "art_crop",
+      "local": "assets/cards/tdag/14-dance-of-flame-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/3/c/3c85c8c7-e415-411d-b1b3-edc45c0e3fb0.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "6ce2817d-bb90-4cc0-beca-9f8af865c7a2",
+      "kind": "art_crop",
+      "local": "assets/cards/tdag/15-dance-of-panic-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/6/c/6ce2817d-bb90-4cc0-beca-9f8af865c7a2.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "8da84d4f-5526-401f-9762-4fcfbc313c81",
+      "kind": "art_crop",
+      "local": "assets/cards/tdag/2-rollicking-throng-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/8/d/8da84d4f-5526-401f-9762-4fcfbc313c81.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "8f960d71-b55d-4730-9b3f-49e9afd2809c",
+      "kind": "art_crop",
+      "local": "assets/cards/tdag/3-ecstatic-piper-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/8/f/8f960d71-b55d-4730-9b3f-49e9afd2809c.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "076ad38c-30ec-41a4-be18-c287f65d1d86",
+      "kind": "art_crop",
+      "local": "assets/cards/tdag/4-maddened-oread-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/0/7/076ad38c-30ec-41a4-be18-c287f65d1d86.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "ae0182f2-31c0-4927-9ca5-0b3f4d342409",
+      "kind": "art_crop",
+      "local": "assets/cards/tdag/5-pheres-band-revelers-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/a/e/ae0182f2-31c0-4927-9ca5-0b3f4d342409.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "f4210dae-7248-4a7b-9646-99683c0dce17",
+      "kind": "art_crop",
+      "local": "assets/cards/tdag/6-serpent-dancers-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/f/4/f4210dae-7248-4a7b-9646-99683c0dce17.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "7b8ec95a-e728-446b-8c4a-a3571e6aa458",
+      "kind": "art_crop",
+      "local": "assets/cards/tdag/7-wild-maenads-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/7/b/7b8ec95a-e728-446b-8c4a-a3571e6aa458.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "6eaba998-11dc-4a0c-a755-4332f22e6dfc",
+      "kind": "art_crop",
+      "local": "assets/cards/tdag/8-impulsive-charge-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/6/e/6eaba998-11dc-4a0c-a755-4332f22e6dfc.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "8262a9f7-010a-4fc0-bcb6-86b2b1253000",
+      "kind": "art_crop",
+      "local": "assets/cards/tdag/9-impulsive-destruction-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/8/2/8262a9f7-010a-4fc0-bcb6-86b2b1253000.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "27d772a9-7542-4ffe-9cd4-e144d129f342",
+      "kind": "art_crop",
+      "local": "assets/cards/tfth/1-hydra-head-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/2/7/27d772a9-7542-4ffe-9cd4-e144d129f342.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "b1f3cf6e-e681-461f-8754-b3e464b150d9",
+      "kind": "art_crop",
+      "local": "assets/cards/tfth/10-neck-tangle-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/b/1/b1f3cf6e-e681-461f-8754-b3e464b150d9.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "21533aec-7c28-4d20-9cc8-96b962d445bf",
+      "kind": "art_crop",
+      "local": "assets/cards/tfth/11-noxious-hydra-breath-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/2/1/21533aec-7c28-4d20-9cc8-96b962d445bf.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "40ffc5ec-67da-4af7-ae3a-e33fea136eac",
+      "kind": "art_crop",
+      "local": "assets/cards/tfth/12-strike-the-weak-spot-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/4/0/40ffc5ec-67da-4af7-ae3a-e33fea136eac.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "9b1871c1-59e5-4c2f-8e05-944d6cbabf99",
+      "kind": "art_crop",
+      "local": "assets/cards/tfth/13-swallow-the-hero-whole-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/9/b/9b1871c1-59e5-4c2f-8e05-944d6cbabf99.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "0fe46ef0-86f6-42f7-b78e-a148d7f00456",
+      "kind": "art_crop",
+      "local": "assets/cards/tfth/14-torn-between-heads-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/0/f/0fe46ef0-86f6-42f7-b78e-a148d7f00456.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "bbb3bcaf-73f4-4f41-a0dc-0a3d710ad507",
+      "kind": "art_crop",
+      "local": "assets/cards/tfth/15-unified-lunge-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/b/b/bbb3bcaf-73f4-4f41-a0dc-0a3d710ad507.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "a76d49f7-2860-4972-ab97-1e798ea017d1",
+      "kind": "art_crop",
+      "local": "assets/cards/tfth/2-ravenous-brute-head-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/a/7/a76d49f7-2860-4972-ab97-1e798ea017d1.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "4b90bd09-d6aa-4201-a7fe-78accbcfc4e8",
+      "kind": "art_crop",
+      "local": "assets/cards/tfth/3-savage-vigor-head-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/4/b/4b90bd09-d6aa-4201-a7fe-78accbcfc4e8.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "44ef6754-b611-4e52-a04b-dc2c794d2cb8",
+      "kind": "art_crop",
+      "local": "assets/cards/tfth/4-shrieking-titan-head-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/4/4/44ef6754-b611-4e52-a04b-dc2c794d2cb8.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "11decc7a-58e7-43f3-acc5-9ec94cce858d",
+      "kind": "art_crop",
+      "local": "assets/cards/tfth/5-snapping-fang-head-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/1/1/11decc7a-58e7-43f3-acc5-9ec94cce858d.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "7b0f9139-6366-4334-b532-1385336f5a04",
+      "kind": "art_crop",
+      "local": "assets/cards/tfth/6-disorienting-glower-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/7/b/7b0f9139-6366-4334-b532-1385336f5a04.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "263da86e-6e10-40fb-bbf0-5a577c63fc0a",
+      "kind": "art_crop",
+      "local": "assets/cards/tfth/7-distract-the-hydra-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/2/6/263da86e-6e10-40fb-bbf0-5a577c63fc0a.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "e24e319f-494e-4ea8-8435-1207d18cc86b",
+      "kind": "art_crop",
+      "local": "assets/cards/tfth/8-grown-from-the-stump-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/e/2/e24e319f-494e-4ea8-8435-1207d18cc86b.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "6f85efed-56e7-488f-ac82-8829ad8b64ad",
+      "kind": "art_crop",
+      "local": "assets/cards/tfth/9-hydras-impenetrable-hide-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/6/f/6f85efed-56e7-488f-ac82-8829ad8b64ad.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "3d2f2bcc-0db9-4aa1-b63d-587c62468015",
+      "kind": "normal",
+      "local": "assets/cards/tbth/1-minotaur-goreseeker-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/3/d/3d2f2bcc-0db9-4aa1-b63d-587c62468015.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "d4d98fc6-da00-4d65-9469-9d2c5b111f2e",
+      "kind": "normal",
+      "local": "assets/cards/tbth/10-unquenchable-fury-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/d/4/d4d98fc6-da00-4d65-9469-9d2c5b111f2e.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "f6882d51-1db2-4b08-8873-cb6f2d96b260",
+      "kind": "normal",
+      "local": "assets/cards/tbth/11-altar-of-mogis-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/f/6/f6882d51-1db2-4b08-8873-cb6f2d96b260.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "a6e352e9-20ac-485b-bcaf-1d053c4ecb40",
+      "kind": "normal",
+      "local": "assets/cards/tbth/12-massacre-totem-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/a/6/a6e352e9-20ac-485b-bcaf-1d053c4ecb40.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "8eea07ed-a321-4403-b3a9-ce5e69a175fd",
+      "kind": "normal",
+      "local": "assets/cards/tbth/13-plundered-statue-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/8/e/8eea07ed-a321-4403-b3a9-ce5e69a175fd.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "b1d75296-e2a5-48f3-a98d-3633be9f6138",
+      "kind": "normal",
+      "local": "assets/cards/tbth/14-refreshing-elixir-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/b/1/b1d75296-e2a5-48f3-a98d-3633be9f6138.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "6ede8ada-95c6-426b-83f6-17f25afc3c21",
+      "kind": "normal",
+      "local": "assets/cards/tbth/15-vitality-salve-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/6/e/6ede8ada-95c6-426b-83f6-17f25afc3c21.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "2c8e22f9-6b70-425c-a0a8-09b6101a286e",
+      "kind": "normal",
+      "local": "assets/cards/tbth/2-minotaur-younghorn-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/2/c/2c8e22f9-6b70-425c-a0a8-09b6101a286e.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "553ae9d2-3807-4ca8-a575-7fa6667ee212",
+      "kind": "normal",
+      "local": "assets/cards/tbth/3-mogiss-chosen-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/5/5/553ae9d2-3807-4ca8-a575-7fa6667ee212.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "1eda2434-523d-4e9c-a8f1-acbee5c87aac",
+      "kind": "normal",
+      "local": "assets/cards/tbth/4-phoberos-reaver-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/1/e/1eda2434-523d-4e9c-a8f1-acbee5c87aac.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "938272b2-8e1c-4196-8557-c597735dd96e",
+      "kind": "normal",
+      "local": "assets/cards/tbth/5-reckless-minotaur-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/9/3/938272b2-8e1c-4196-8557-c597735dd96e.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "7e5d19fa-0f12-41cb-90a8-c027edbc893b",
+      "kind": "normal",
+      "local": "assets/cards/tbth/6-consuming-rage-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/7/e/7e5d19fa-0f12-41cb-90a8-c027edbc893b.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "95e0a522-2395-438a-83bc-ea092e4286c3",
+      "kind": "normal",
+      "local": "assets/cards/tbth/7-descend-on-the-prey-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/9/5/95e0a522-2395-438a-83bc-ea092e4286c3.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "661e8959-4c63-439b-8cbf-837f84ad3e57",
+      "kind": "normal",
+      "local": "assets/cards/tbth/8-intervention-of-keranos-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/6/6/661e8959-4c63-439b-8cbf-837f84ad3e57.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "c58bacd4-e84b-4c73-802f-5f65e5c94a46",
+      "kind": "normal",
+      "local": "assets/cards/tbth/9-touch-of-the-horned-god-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/c/5/c58bacd4-e84b-4c73-802f-5f65e5c94a46.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "fe9dd9f0-3071-4bbd-80d2-e35b153006d7",
+      "kind": "normal",
+      "local": "assets/cards/tdag/1-xenagos-ascended-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/f/e/fe9dd9f0-3071-4bbd-80d2-e35b153006d7.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "b52d516f-d425-49f1-99cc-17f743aa41b2",
+      "kind": "normal",
+      "local": "assets/cards/tdag/10-impulsive-return-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/b/5/b52d516f-d425-49f1-99cc-17f743aa41b2.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "33307f9a-9c09-402a-9c76-a0a76b3a9a6a",
+      "kind": "normal",
+      "local": "assets/cards/tdag/11-rip-to-pieces-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/3/3/33307f9a-9c09-402a-9c76-a0a76b3a9a6a.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "d1b30dc4-9d7c-4098-87a6-f7434030a427",
+      "kind": "normal",
+      "local": "assets/cards/tdag/12-xenagoss-scorn-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/d/1/d1b30dc4-9d7c-4098-87a6-f7434030a427.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "6b5fef7d-b8bb-43e2-a36b-d4cc98c3ef13",
+      "kind": "normal",
+      "local": "assets/cards/tdag/13-xenagoss-strike-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/6/b/6b5fef7d-b8bb-43e2-a36b-d4cc98c3ef13.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "3c85c8c7-e415-411d-b1b3-edc45c0e3fb0",
+      "kind": "normal",
+      "local": "assets/cards/tdag/14-dance-of-flame-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/3/c/3c85c8c7-e415-411d-b1b3-edc45c0e3fb0.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "6ce2817d-bb90-4cc0-beca-9f8af865c7a2",
+      "kind": "normal",
+      "local": "assets/cards/tdag/15-dance-of-panic-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/6/c/6ce2817d-bb90-4cc0-beca-9f8af865c7a2.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "8da84d4f-5526-401f-9762-4fcfbc313c81",
+      "kind": "normal",
+      "local": "assets/cards/tdag/2-rollicking-throng-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/8/d/8da84d4f-5526-401f-9762-4fcfbc313c81.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "8f960d71-b55d-4730-9b3f-49e9afd2809c",
+      "kind": "normal",
+      "local": "assets/cards/tdag/3-ecstatic-piper-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/8/f/8f960d71-b55d-4730-9b3f-49e9afd2809c.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "076ad38c-30ec-41a4-be18-c287f65d1d86",
+      "kind": "normal",
+      "local": "assets/cards/tdag/4-maddened-oread-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/0/7/076ad38c-30ec-41a4-be18-c287f65d1d86.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "ae0182f2-31c0-4927-9ca5-0b3f4d342409",
+      "kind": "normal",
+      "local": "assets/cards/tdag/5-pheres-band-revelers-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/a/e/ae0182f2-31c0-4927-9ca5-0b3f4d342409.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "f4210dae-7248-4a7b-9646-99683c0dce17",
+      "kind": "normal",
+      "local": "assets/cards/tdag/6-serpent-dancers-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/f/4/f4210dae-7248-4a7b-9646-99683c0dce17.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "7b8ec95a-e728-446b-8c4a-a3571e6aa458",
+      "kind": "normal",
+      "local": "assets/cards/tdag/7-wild-maenads-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/7/b/7b8ec95a-e728-446b-8c4a-a3571e6aa458.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "6eaba998-11dc-4a0c-a755-4332f22e6dfc",
+      "kind": "normal",
+      "local": "assets/cards/tdag/8-impulsive-charge-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/6/e/6eaba998-11dc-4a0c-a755-4332f22e6dfc.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "8262a9f7-010a-4fc0-bcb6-86b2b1253000",
+      "kind": "normal",
+      "local": "assets/cards/tdag/9-impulsive-destruction-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/8/2/8262a9f7-010a-4fc0-bcb6-86b2b1253000.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "27d772a9-7542-4ffe-9cd4-e144d129f342",
+      "kind": "normal",
+      "local": "assets/cards/tfth/1-hydra-head-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/2/7/27d772a9-7542-4ffe-9cd4-e144d129f342.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "b1f3cf6e-e681-461f-8754-b3e464b150d9",
+      "kind": "normal",
+      "local": "assets/cards/tfth/10-neck-tangle-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/b/1/b1f3cf6e-e681-461f-8754-b3e464b150d9.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "21533aec-7c28-4d20-9cc8-96b962d445bf",
+      "kind": "normal",
+      "local": "assets/cards/tfth/11-noxious-hydra-breath-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/2/1/21533aec-7c28-4d20-9cc8-96b962d445bf.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "40ffc5ec-67da-4af7-ae3a-e33fea136eac",
+      "kind": "normal",
+      "local": "assets/cards/tfth/12-strike-the-weak-spot-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/4/0/40ffc5ec-67da-4af7-ae3a-e33fea136eac.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "9b1871c1-59e5-4c2f-8e05-944d6cbabf99",
+      "kind": "normal",
+      "local": "assets/cards/tfth/13-swallow-the-hero-whole-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/9/b/9b1871c1-59e5-4c2f-8e05-944d6cbabf99.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "0fe46ef0-86f6-42f7-b78e-a148d7f00456",
+      "kind": "normal",
+      "local": "assets/cards/tfth/14-torn-between-heads-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/0/f/0fe46ef0-86f6-42f7-b78e-a148d7f00456.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "bbb3bcaf-73f4-4f41-a0dc-0a3d710ad507",
+      "kind": "normal",
+      "local": "assets/cards/tfth/15-unified-lunge-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/b/b/bbb3bcaf-73f4-4f41-a0dc-0a3d710ad507.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "a76d49f7-2860-4972-ab97-1e798ea017d1",
+      "kind": "normal",
+      "local": "assets/cards/tfth/2-ravenous-brute-head-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/a/7/a76d49f7-2860-4972-ab97-1e798ea017d1.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "4b90bd09-d6aa-4201-a7fe-78accbcfc4e8",
+      "kind": "normal",
+      "local": "assets/cards/tfth/3-savage-vigor-head-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/4/b/4b90bd09-d6aa-4201-a7fe-78accbcfc4e8.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "44ef6754-b611-4e52-a04b-dc2c794d2cb8",
+      "kind": "normal",
+      "local": "assets/cards/tfth/4-shrieking-titan-head-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/4/4/44ef6754-b611-4e52-a04b-dc2c794d2cb8.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "11decc7a-58e7-43f3-acc5-9ec94cce858d",
+      "kind": "normal",
+      "local": "assets/cards/tfth/5-snapping-fang-head-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/1/1/11decc7a-58e7-43f3-acc5-9ec94cce858d.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "7b0f9139-6366-4334-b532-1385336f5a04",
+      "kind": "normal",
+      "local": "assets/cards/tfth/6-disorienting-glower-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/7/b/7b0f9139-6366-4334-b532-1385336f5a04.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "263da86e-6e10-40fb-bbf0-5a577c63fc0a",
+      "kind": "normal",
+      "local": "assets/cards/tfth/7-distract-the-hydra-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/2/6/263da86e-6e10-40fb-bbf0-5a577c63fc0a.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "e24e319f-494e-4ea8-8435-1207d18cc86b",
+      "kind": "normal",
+      "local": "assets/cards/tfth/8-grown-from-the-stump-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/e/2/e24e319f-494e-4ea8-8435-1207d18cc86b.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "6f85efed-56e7-488f-ac82-8829ad8b64ad",
+      "kind": "normal",
+      "local": "assets/cards/tfth/9-hydras-impenetrable-hide-front.png",
+      "remote": "https://cards.scryfall.io/normal/front/6/f/6f85efed-56e7-488f-ac82-8829ad8b64ad.jpg",
+      "source": "challenge"
+    },
+    {
+      "id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+      "kind": "card_back",
+      "local": "assets/cards/mtg-card-back.jpg",
+      "remote": "https://backs.scryfall.io/png/0/a/0aeebaf5-8c7d-4636-9e82-8c27447861f7.png",
+      "source": "classic_back"
+    },
+    {
+      "id": "tbth",
+      "kind": "cover",
+      "local": "assets/covers/tbth.webp",
+      "remote": "https://static.wikia.nocookie.net/mtgsalvation_gamepedia/images/4/4d/Battle_the_Horde.jpg/revision/latest?cb=20140223070301",
+      "source": "cover"
+    },
+    {
+      "id": "tdag",
+      "kind": "cover",
+      "local": "assets/covers/tdag.webp",
+      "remote": "https://static.wikia.nocookie.net/mtgsalvation_gamepedia/images/d/d4/Defeat_a_God.jpg/revision/latest?cb=20140523051933",
+      "source": "cover"
+    },
+    {
+      "id": "tfth",
+      "kind": "cover",
+      "local": "assets/covers/tfth.webp",
+      "remote": "https://static.wikia.nocookie.net/mtgsalvation_gamepedia/images/e/e4/FacetheHydra.jpg/revision/latest?cb=20131017044956",
+      "source": "cover"
+    },
+    {
+      "id": "87d06f2c-46ff-4cad-9ee2-1a51b26f50cd",
+      "kind": "card_back",
+      "local": "assets/cards/tbth/back.png",
+      "remote": "https://backs.scryfall.io/png/8/7/87d06f2c-46ff-4cad-9ee2-1a51b26f50cd.png",
+      "source": "deck_back"
+    },
+    {
+      "id": "7d55a5bf-a837-4a75-9cc0-438bf320111f",
+      "kind": "card_back",
+      "local": "assets/cards/tdag/back.png",
+      "remote": "https://backs.scryfall.io/png/7/d/7d55a5bf-a837-4a75-9cc0-438bf320111f.png",
+      "source": "deck_back"
+    },
+    {
+      "id": "f833d8b0-cc49-43db-a532-063453499528",
+      "kind": "card_back",
+      "local": "assets/cards/tfth/back.png",
+      "remote": "https://backs.scryfall.io/png/f/8/f833d8b0-cc49-43db-a532-063453499528.png",
+      "source": "deck_back"
+    },
+    {
+      "id": "08a63083-997b-4a72-af48-cd35e6e9599d",
+      "kind": "art_crop",
+      "local": "assets/cards/heroes/08a63083-997b-4a72-af48-cd35e6e9599d-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/0/8/08a63083-997b-4a72-af48-cd35e6e9599d.jpg",
+      "source": "heroes"
+    },
+    {
+      "id": "4ef068ff-934c-4e4d-a4ae-e44f194b8dca",
+      "kind": "art_crop",
+      "local": "assets/cards/heroes/4ef068ff-934c-4e4d-a4ae-e44f194b8dca-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/4/e/4ef068ff-934c-4e4d-a4ae-e44f194b8dca.jpg",
+      "source": "heroes"
+    },
+    {
+      "id": "5a12f3e3-5708-4d14-a1ed-600232002266",
+      "kind": "art_crop",
+      "local": "assets/cards/heroes/5a12f3e3-5708-4d14-a1ed-600232002266-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/5/a/5a12f3e3-5708-4d14-a1ed-600232002266.jpg",
+      "source": "heroes"
+    },
+    {
+      "id": "9a6eba2c-a980-4a2b-b103-bd91bc5889d2",
+      "kind": "art_crop",
+      "local": "assets/cards/heroes/9a6eba2c-a980-4a2b-b103-bd91bc5889d2-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/9/a/9a6eba2c-a980-4a2b-b103-bd91bc5889d2.jpg",
+      "source": "heroes"
+    },
+    {
+      "id": "ca66cd86-1574-4e6e-94de-a19d8d26836f",
+      "kind": "art_crop",
+      "local": "assets/cards/heroes/ca66cd86-1574-4e6e-94de-a19d8d26836f-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/c/a/ca66cd86-1574-4e6e-94de-a19d8d26836f.jpg",
+      "source": "heroes"
+    },
+    {
+      "id": "d0f83818-2c47-435c-ade3-302e4eabc2bf",
+      "kind": "art_crop",
+      "local": "assets/cards/heroes/d0f83818-2c47-435c-ade3-302e4eabc2bf-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/d/0/d0f83818-2c47-435c-ade3-302e4eabc2bf.jpg",
+      "source": "heroes"
+    },
+    {
+      "id": "d9987b43-7f20-46ce-b7dd-f3126e5bc991",
+      "kind": "art_crop",
+      "local": "assets/cards/heroes/d9987b43-7f20-46ce-b7dd-f3126e5bc991-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/d/9/d9987b43-7f20-46ce-b7dd-f3126e5bc991.jpg",
+      "source": "heroes"
+    },
+    {
+      "id": "dd60768a-c47f-4af5-bb33-c17777c7dd66",
+      "kind": "art_crop",
+      "local": "assets/cards/heroes/dd60768a-c47f-4af5-bb33-c17777c7dd66-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/d/d/dd60768a-c47f-4af5-bb33-c17777c7dd66.jpg",
+      "source": "heroes"
+    },
+    {
+      "id": "08a63083-997b-4a72-af48-cd35e6e9599d",
+      "kind": "normal",
+      "local": "assets/cards/heroes/08a63083-997b-4a72-af48-cd35e6e9599d-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/0/8/08a63083-997b-4a72-af48-cd35e6e9599d.jpg",
+      "source": "heroes"
+    },
+    {
+      "id": "4ef068ff-934c-4e4d-a4ae-e44f194b8dca",
+      "kind": "normal",
+      "local": "assets/cards/heroes/4ef068ff-934c-4e4d-a4ae-e44f194b8dca-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/4/e/4ef068ff-934c-4e4d-a4ae-e44f194b8dca.jpg",
+      "source": "heroes"
+    },
+    {
+      "id": "5a12f3e3-5708-4d14-a1ed-600232002266",
+      "kind": "normal",
+      "local": "assets/cards/heroes/5a12f3e3-5708-4d14-a1ed-600232002266-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/5/a/5a12f3e3-5708-4d14-a1ed-600232002266.jpg",
+      "source": "heroes"
+    },
+    {
+      "id": "9a6eba2c-a980-4a2b-b103-bd91bc5889d2",
+      "kind": "normal",
+      "local": "assets/cards/heroes/9a6eba2c-a980-4a2b-b103-bd91bc5889d2-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/9/a/9a6eba2c-a980-4a2b-b103-bd91bc5889d2.jpg",
+      "source": "heroes"
+    },
+    {
+      "id": "ca66cd86-1574-4e6e-94de-a19d8d26836f",
+      "kind": "normal",
+      "local": "assets/cards/heroes/ca66cd86-1574-4e6e-94de-a19d8d26836f-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/c/a/ca66cd86-1574-4e6e-94de-a19d8d26836f.jpg",
+      "source": "heroes"
+    },
+    {
+      "id": "d0f83818-2c47-435c-ade3-302e4eabc2bf",
+      "kind": "normal",
+      "local": "assets/cards/heroes/d0f83818-2c47-435c-ade3-302e4eabc2bf-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/d/0/d0f83818-2c47-435c-ade3-302e4eabc2bf.jpg",
+      "source": "heroes"
+    },
+    {
+      "id": "d9987b43-7f20-46ce-b7dd-f3126e5bc991",
+      "kind": "normal",
+      "local": "assets/cards/heroes/d9987b43-7f20-46ce-b7dd-f3126e5bc991-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/d/9/d9987b43-7f20-46ce-b7dd-f3126e5bc991.jpg",
+      "source": "heroes"
+    },
+    {
+      "id": "dd60768a-c47f-4af5-bb33-c17777c7dd66",
+      "kind": "normal",
+      "local": "assets/cards/heroes/dd60768a-c47f-4af5-bb33-c17777c7dd66-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/d/d/dd60768a-c47f-4af5-bb33-c17777c7dd66.jpg",
+      "source": "heroes"
+    },
+    {
+      "id": "0",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/0.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/0.svg",
+      "source": "mana"
+    },
+    {
+      "id": "1",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/1.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/1.svg",
+      "source": "mana"
+    },
+    {
+      "id": "10",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/10.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/10.svg",
+      "source": "mana"
+    },
+    {
+      "id": "11",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/11.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/11.svg",
+      "source": "mana"
+    },
+    {
+      "id": "12",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/12.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/12.svg",
+      "source": "mana"
+    },
+    {
+      "id": "13",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/13.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/13.svg",
+      "source": "mana"
+    },
+    {
+      "id": "14",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/14.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/14.svg",
+      "source": "mana"
+    },
+    {
+      "id": "15",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/15.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/15.svg",
+      "source": "mana"
+    },
+    {
+      "id": "16",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/16.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/16.svg",
+      "source": "mana"
+    },
+    {
+      "id": "17",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/17.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/17.svg",
+      "source": "mana"
+    },
+    {
+      "id": "18",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/18.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/18.svg",
+      "source": "mana"
+    },
+    {
+      "id": "19",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/19.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/19.svg",
+      "source": "mana"
+    },
+    {
+      "id": "2",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/2.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/2.svg",
+      "source": "mana"
+    },
+    {
+      "id": "20",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/20.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/20.svg",
+      "source": "mana"
+    },
+    {
+      "id": "2B",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/2B.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/2B.svg",
+      "source": "mana"
+    },
+    {
+      "id": "2G",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/2G.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/2G.svg",
+      "source": "mana"
+    },
+    {
+      "id": "2R",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/2R.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/2R.svg",
+      "source": "mana"
+    },
+    {
+      "id": "2U",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/2U.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/2U.svg",
+      "source": "mana"
+    },
+    {
+      "id": "2W",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/2W.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/2W.svg",
+      "source": "mana"
+    },
+    {
+      "id": "3",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/3.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/3.svg",
+      "source": "mana"
+    },
+    {
+      "id": "4",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/4.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/4.svg",
+      "source": "mana"
+    },
+    {
+      "id": "5",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/5.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/5.svg",
+      "source": "mana"
+    },
+    {
+      "id": "6",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/6.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/6.svg",
+      "source": "mana"
+    },
+    {
+      "id": "7",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/7.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/7.svg",
+      "source": "mana"
+    },
+    {
+      "id": "8",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/8.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/8.svg",
+      "source": "mana"
+    },
+    {
+      "id": "9",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/9.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/9.svg",
+      "source": "mana"
+    },
+    {
+      "id": "B",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/B.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/B.svg",
+      "source": "mana"
+    },
+    {
+      "id": "BG",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/BG.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/BG.svg",
+      "source": "mana"
+    },
+    {
+      "id": "BP",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/BP.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/BP.svg",
+      "source": "mana"
+    },
+    {
+      "id": "BR",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/BR.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/BR.svg",
+      "source": "mana"
+    },
+    {
+      "id": "C",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/C.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/C.svg",
+      "source": "mana"
+    },
+    {
+      "id": "CHAOS",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/CHAOS.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/CHAOS.svg",
+      "source": "mana"
+    },
+    {
+      "id": "E",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/E.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/E.svg",
+      "source": "mana"
+    },
+    {
+      "id": "G",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/G.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/G.svg",
+      "source": "mana"
+    },
+    {
+      "id": "GP",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/GP.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/GP.svg",
+      "source": "mana"
+    },
+    {
+      "id": "GU",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/GU.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/GU.svg",
+      "source": "mana"
+    },
+    {
+      "id": "GW",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/GW.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/GW.svg",
+      "source": "mana"
+    },
+    {
+      "id": "H",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/H.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/H.svg",
+      "source": "mana"
+    },
+    {
+      "id": "P",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/P.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/P.svg",
+      "source": "mana"
+    },
+    {
+      "id": "PW",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/PW.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/PW.svg",
+      "source": "mana"
+    },
+    {
+      "id": "Q",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/Q.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/Q.svg",
+      "source": "mana"
+    },
+    {
+      "id": "R",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/R.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/R.svg",
+      "source": "mana"
+    },
+    {
+      "id": "RG",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/RG.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/RG.svg",
+      "source": "mana"
+    },
+    {
+      "id": "RP",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/RP.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/RP.svg",
+      "source": "mana"
+    },
+    {
+      "id": "RW",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/RW.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/RW.svg",
+      "source": "mana"
+    },
+    {
+      "id": "S",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/S.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/S.svg",
+      "source": "mana"
+    },
+    {
+      "id": "T",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/T.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/T.svg",
+      "source": "mana"
+    },
+    {
+      "id": "TK",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/TK.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/TK.svg",
+      "source": "mana"
+    },
+    {
+      "id": "U",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/U.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/U.svg",
+      "source": "mana"
+    },
+    {
+      "id": "UB",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/UB.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/UB.svg",
+      "source": "mana"
+    },
+    {
+      "id": "UP",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/UP.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/UP.svg",
+      "source": "mana"
+    },
+    {
+      "id": "UR",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/UR.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/UR.svg",
+      "source": "mana"
+    },
+    {
+      "id": "W",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/W.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/W.svg",
+      "source": "mana"
+    },
+    {
+      "id": "WB",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/WB.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/WB.svg",
+      "source": "mana"
+    },
+    {
+      "id": "WP",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/WP.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/WP.svg",
+      "source": "mana"
+    },
+    {
+      "id": "WU",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/WU.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/WU.svg",
+      "source": "mana"
+    },
+    {
+      "id": "WUBRG",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/WUBRG.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/WUBRG.svg",
+      "source": "mana"
+    },
+    {
+      "id": "X",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/X.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/X.svg",
+      "source": "mana"
+    },
+    {
+      "id": "Y",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/Y.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/Y.svg",
+      "source": "mana"
+    },
+    {
+      "id": "Z",
+      "kind": "mana_symbol",
+      "local": "mana-symbols/Z.svg",
+      "remote": "https://svgs.scryfall.io/card-symbols/Z.svg",
+      "source": "mana"
+    },
+    {
+      "id": "04aa9d4f-37cc-4fc8-877a-6190f96eb509",
+      "kind": "art_crop",
+      "local": "assets/cards/player/04aa9d4f-37cc-4fc8-877a-6190f96eb509-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/0/4/04aa9d4f-37cc-4fc8-877a-6190f96eb509.jpg",
+      "source": "player"
+    },
+    {
+      "id": "2569d4f3-55ed-4f99-9592-34c7df0aab72",
+      "kind": "art_crop",
+      "local": "assets/cards/player/2569d4f3-55ed-4f99-9592-34c7df0aab72-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/2/5/2569d4f3-55ed-4f99-9592-34c7df0aab72.jpg",
+      "source": "player"
+    },
+    {
+      "id": "4736a2c4-c89c-48db-a104-6303e7e2eee8",
+      "kind": "art_crop",
+      "local": "assets/cards/player/4736a2c4-c89c-48db-a104-6303e7e2eee8-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/4/7/4736a2c4-c89c-48db-a104-6303e7e2eee8.jpg",
+      "source": "player"
+    },
+    {
+      "id": "4979cc1b-9c1a-47e4-ae37-7c41798eb89a",
+      "kind": "art_crop",
+      "local": "assets/cards/player/4979cc1b-9c1a-47e4-ae37-7c41798eb89a-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/4/9/4979cc1b-9c1a-47e4-ae37-7c41798eb89a.jpg",
+      "source": "player"
+    },
+    {
+      "id": "87a12eac-c104-4a91-a9d3-ccc450d5114c",
+      "kind": "art_crop",
+      "local": "assets/cards/player/87a12eac-c104-4a91-a9d3-ccc450d5114c-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/8/7/87a12eac-c104-4a91-a9d3-ccc450d5114c.jpg",
+      "source": "player"
+    },
+    {
+      "id": "9f9db424-e668-48b4-b275-7b35be4e1bf8",
+      "kind": "art_crop",
+      "local": "assets/cards/player/9f9db424-e668-48b4-b275-7b35be4e1bf8-art.jpg",
+      "remote": "https://cards.scryfall.io/art_crop/front/9/f/9f9db424-e668-48b4-b275-7b35be4e1bf8.jpg",
+      "source": "player"
+    },
+    {
+      "id": "082b52c9-c46e-44d3-b723-546ba528e07b",
+      "kind": "normal",
+      "local": "assets/cards/player/082b52c9-c46e-44d3-b723-546ba528e07b-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/0/8/082b52c9-c46e-44d3-b723-546ba528e07b.jpg",
+      "source": "player"
+    },
+    {
+      "id": "08b9a296-3b76-4f8f-9d71-7c9af92bb3b4",
+      "kind": "normal",
+      "local": "assets/cards/player/08b9a296-3b76-4f8f-9d71-7c9af92bb3b4-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/0/8/08b9a296-3b76-4f8f-9d71-7c9af92bb3b4.jpg",
+      "source": "player"
+    },
+    {
+      "id": "0eb1b036-0856-4cfb-ace5-2731f13696bd",
+      "kind": "normal",
+      "local": "assets/cards/player/0eb1b036-0856-4cfb-ace5-2731f13696bd-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/0/e/0eb1b036-0856-4cfb-ace5-2731f13696bd.jpg",
+      "source": "player"
+    },
+    {
+      "id": "135946fc-fe67-401f-821d-d7145c63f030",
+      "kind": "normal",
+      "local": "assets/cards/player/135946fc-fe67-401f-821d-d7145c63f030-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/1/3/135946fc-fe67-401f-821d-d7145c63f030.jpg",
+      "source": "player"
+    },
+    {
+      "id": "1a297bae-f259-4fc7-b76a-285f972d69e3",
+      "kind": "normal",
+      "local": "assets/cards/player/1a297bae-f259-4fc7-b76a-285f972d69e3-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/1/a/1a297bae-f259-4fc7-b76a-285f972d69e3.jpg",
+      "source": "player"
+    },
+    {
+      "id": "1f343724-6ecd-494f-8bfc-93676af4e173",
+      "kind": "normal",
+      "local": "assets/cards/player/1f343724-6ecd-494f-8bfc-93676af4e173-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/1/f/1f343724-6ecd-494f-8bfc-93676af4e173.jpg",
+      "source": "player"
+    },
+    {
+      "id": "2569d4f3-55ed-4f99-9592-34c7df0aab72",
+      "kind": "normal",
+      "local": "assets/cards/player/2569d4f3-55ed-4f99-9592-34c7df0aab72-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/2/5/2569d4f3-55ed-4f99-9592-34c7df0aab72.jpg",
+      "source": "player"
+    },
+    {
+      "id": "2a844b96-6616-4c39-8f4f-5d14a3b2bd55",
+      "kind": "normal",
+      "local": "assets/cards/player/2a844b96-6616-4c39-8f4f-5d14a3b2bd55-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/2/a/2a844b96-6616-4c39-8f4f-5d14a3b2bd55.jpg",
+      "source": "player"
+    },
+    {
+      "id": "3637d9b8-87bb-478d-bfb1-59ddab7b5e4c",
+      "kind": "normal",
+      "local": "assets/cards/player/3637d9b8-87bb-478d-bfb1-59ddab7b5e4c-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/3/6/3637d9b8-87bb-478d-bfb1-59ddab7b5e4c.jpg",
+      "source": "player"
+    },
+    {
+      "id": "4697f3aa-abde-4379-af82-f30115f59be0",
+      "kind": "normal",
+      "local": "assets/cards/player/4697f3aa-abde-4379-af82-f30115f59be0-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/4/6/4697f3aa-abde-4379-af82-f30115f59be0.jpg",
+      "source": "player"
+    },
+    {
+      "id": "4979cc1b-9c1a-47e4-ae37-7c41798eb89a",
+      "kind": "normal",
+      "local": "assets/cards/player/4979cc1b-9c1a-47e4-ae37-7c41798eb89a-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/4/9/4979cc1b-9c1a-47e4-ae37-7c41798eb89a.jpg",
+      "source": "player"
+    },
+    {
+      "id": "4afee6b3-55a4-44e5-b08c-85e0c813cd09",
+      "kind": "normal",
+      "local": "assets/cards/player/4afee6b3-55a4-44e5-b08c-85e0c813cd09-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/4/a/4afee6b3-55a4-44e5-b08c-85e0c813cd09.jpg",
+      "source": "player"
+    },
+    {
+      "id": "4f616706-ec97-4923-bb1e-11a69fbaa1f8",
+      "kind": "normal",
+      "local": "assets/cards/player/4f616706-ec97-4923-bb1e-11a69fbaa1f8-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/4/f/4f616706-ec97-4923-bb1e-11a69fbaa1f8.jpg",
+      "source": "player"
+    },
+    {
+      "id": "55b5b094-9d2d-4d96-b90c-78fecdae725a",
+      "kind": "normal",
+      "local": "assets/cards/player/55b5b094-9d2d-4d96-b90c-78fecdae725a-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/5/5/55b5b094-9d2d-4d96-b90c-78fecdae725a.jpg",
+      "source": "player"
+    },
+    {
+      "id": "79563dd1-640c-4ebd-a347-0b71439b79d3",
+      "kind": "normal",
+      "local": "assets/cards/player/79563dd1-640c-4ebd-a347-0b71439b79d3-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/7/9/79563dd1-640c-4ebd-a347-0b71439b79d3.jpg",
+      "source": "player"
+    },
+    {
+      "id": "88b13bc0-da54-4c3b-917c-7c8345a329f5",
+      "kind": "normal",
+      "local": "assets/cards/player/88b13bc0-da54-4c3b-917c-7c8345a329f5-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/8/8/88b13bc0-da54-4c3b-917c-7c8345a329f5.jpg",
+      "source": "player"
+    },
+    {
+      "id": "8c204471-d908-4a08-83e4-cf38999fa80f",
+      "kind": "normal",
+      "local": "assets/cards/player/8c204471-d908-4a08-83e4-cf38999fa80f-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/8/c/8c204471-d908-4a08-83e4-cf38999fa80f.jpg",
+      "source": "player"
+    },
+    {
+      "id": "8dd4374f-0301-4b2e-bc99-2cd19568cb3b",
+      "kind": "normal",
+      "local": "assets/cards/player/8dd4374f-0301-4b2e-bc99-2cd19568cb3b-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/8/d/8dd4374f-0301-4b2e-bc99-2cd19568cb3b.jpg",
+      "source": "player"
+    },
+    {
+      "id": "aa6494ad-a35e-4b09-8623-7740f3c20b0b",
+      "kind": "normal",
+      "local": "assets/cards/player/aa6494ad-a35e-4b09-8623-7740f3c20b0b-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/a/a/aa6494ad-a35e-4b09-8623-7740f3c20b0b.jpg",
+      "source": "player"
+    },
+    {
+      "id": "aba79021-39af-4e74-beb5-f2f508c865b2",
+      "kind": "normal",
+      "local": "assets/cards/player/aba79021-39af-4e74-beb5-f2f508c865b2-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/a/b/aba79021-39af-4e74-beb5-f2f508c865b2.jpg",
+      "source": "player"
+    },
+    {
+      "id": "b0eab397-25a6-4377-8e12-e8acef9675cf",
+      "kind": "normal",
+      "local": "assets/cards/player/b0eab397-25a6-4377-8e12-e8acef9675cf-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/b/0/b0eab397-25a6-4377-8e12-e8acef9675cf.jpg",
+      "source": "player"
+    },
+    {
+      "id": "b5545882-6963-4729-b2c6-fb4bdc75ffcc",
+      "kind": "normal",
+      "local": "assets/cards/player/b5545882-6963-4729-b2c6-fb4bdc75ffcc-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/b/5/b5545882-6963-4729-b2c6-fb4bdc75ffcc.jpg",
+      "source": "player"
+    },
+    {
+      "id": "b6fef9f8-ff3e-4a3f-a3ff-4534ff0c3946",
+      "kind": "normal",
+      "local": "assets/cards/player/b6fef9f8-ff3e-4a3f-a3ff-4534ff0c3946-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/b/6/b6fef9f8-ff3e-4a3f-a3ff-4534ff0c3946.jpg",
+      "source": "player"
+    },
+    {
+      "id": "b7387103-1df1-4fd0-9e91-1544509792c7",
+      "kind": "normal",
+      "local": "assets/cards/player/b7387103-1df1-4fd0-9e91-1544509792c7-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/b/7/b7387103-1df1-4fd0-9e91-1544509792c7.jpg",
+      "source": "player"
+    },
+    {
+      "id": "bbc3152e-7b3b-4ac6-8b33-abfebde216aa",
+      "kind": "normal",
+      "local": "assets/cards/player/bbc3152e-7b3b-4ac6-8b33-abfebde216aa-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/b/b/bbc3152e-7b3b-4ac6-8b33-abfebde216aa.jpg",
+      "source": "player"
+    },
+    {
+      "id": "cedd44eb-f381-46e1-bcb0-88416b4ce33d",
+      "kind": "normal",
+      "local": "assets/cards/player/cedd44eb-f381-46e1-bcb0-88416b4ce33d-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/c/e/cedd44eb-f381-46e1-bcb0-88416b4ce33d.jpg",
+      "source": "player"
+    },
+    {
+      "id": "dce15387-4114-4b3e-91aa-5b42b45c44ac",
+      "kind": "normal",
+      "local": "assets/cards/player/dce15387-4114-4b3e-91aa-5b42b45c44ac-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/d/c/dce15387-4114-4b3e-91aa-5b42b45c44ac.jpg",
+      "source": "player"
+    },
+    {
+      "id": "e2715851-9def-42a0-bed4-0923e599e19a",
+      "kind": "normal",
+      "local": "assets/cards/player/e2715851-9def-42a0-bed4-0923e599e19a-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/e/2/e2715851-9def-42a0-bed4-0923e599e19a.jpg",
+      "source": "player"
+    },
+    {
+      "id": "f3cc07cd-cc79-4745-b0b7-eade60175cc3",
+      "kind": "normal",
+      "local": "assets/cards/player/f3cc07cd-cc79-4745-b0b7-eade60175cc3-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/f/3/f3cc07cd-cc79-4745-b0b7-eade60175cc3.jpg",
+      "source": "player"
+    },
+    {
+      "id": "fd1f95bf-48ea-455a-8a6c-0249b11c8900",
+      "kind": "normal",
+      "local": "assets/cards/player/fd1f95bf-48ea-455a-8a6c-0249b11c8900-normal.jpg",
+      "remote": "https://cards.scryfall.io/normal/front/f/d/fd1f95bf-48ea-455a-8a6c-0249b11c8900.jpg",
+      "source": "player"
+    }
+  ]
+}

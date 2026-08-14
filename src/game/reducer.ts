@@ -1,4 +1,4 @@
-import { getDeck } from '../data/deckRegistry'
+import { getDeck } from '../data/deckStore'
 import { resolvePlayerCombat } from './combat'
 import {
   advanceChallenge,

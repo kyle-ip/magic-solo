@@ -1,0 +1,2195 @@
+/* —— Pack draw (booster tear → pull → flip) —— */
+.pack-draw-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  /* Flex + margin:auto — avoid place-items:center (clips tall overflow tops) */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding:
+    max(1rem, var(--safe-top, 0px))
+    max(1rem, var(--safe-right, 0px))
+    max(1rem, var(--safe-bottom, 0px))
+    max(1rem, var(--safe-left, 0px));
+  background: rgba(8, 6, 4, 0.78);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.pack-draw-modal {
+  position: relative;
+  width: min(1180px, 100%);
+  max-height: min(90dvh, 90vh);
+  overflow: auto;
+  margin-block: auto;
+  box-sizing: border-box;
+  padding: 1.35rem 1.5rem 1.35rem;
+  border-radius: var(--btn-radius, 12px);
+  border: 1px solid rgba(184, 137, 58, 0.28);
+  background: #000;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+}
+
+/* Pack open: fixed frame so sealed / tear / reveal share one modal size */
+.pack-draw-modal:not(.is-collection) {
+  display: flex;
+  flex-direction: column;
+  width: min(1180px, 100%);
+  height: min(90dvh, 90vh);
+  max-height: min(90dvh, 90vh);
+  overflow: hidden;
+  /* Shared budgets — shell & reveal cards fit the same stage */
+  --pack-stage-pad-y: clamp(0.35rem, 1.5vh, 1rem);
+  --pack-reveal-card-max-h: calc(min(68vh, calc(90dvh - 8.5rem), 640px) * 0.9);
+  --pack-shell-max-h: min(68vh, calc(90dvh - 8.5rem), 640px);
+}
+
+/* Tear / glow may extend past the pack box — don't hard-clip auras.
+   Prefer `.is-fx-open` (JS) over :has alone — older WebKit :has was flaky. */
+.pack-draw-modal:not(.is-collection).is-fx-open,
+.pack-draw-modal:not(.is-collection):has(
+  .pack-stage-visual.is-tearing,
+  .pack-stage-visual.is-parting,
+  .pack-card-wrap.is-glowing
+) {
+  overflow: visible;
+}
+
+.pack-draw-modal:not(.is-collection).is-fx-open > .pack-draw-stage,
+.pack-draw-modal:not(.is-collection):has(
+  .pack-stage-visual.is-tearing,
+  .pack-stage-visual.is-parting,
+  .pack-card-wrap.is-glowing
+)
+  > .pack-draw-stage {
+  overflow: visible;
+}
+
+.pack-draw-modal.is-collection {
+  display: flex;
+  flex-direction: column;
+  width: min(1180px, 100%);
+  height: auto;
+  max-height: min(90dvh, 90vh);
+  overflow-x: clip;
+  overflow-y: auto;
+  --pack-inspect-card-max-h: calc(min(68vh, calc(90dvh - 8.5rem), 640px) * 0.9);
+}
+
+.pack-draw-modal.is-collection:has(.pack-inspect) {
+  height: min(90dvh, 90vh);
+  overflow: hidden;
+}
+
+.pack-draw-modal:not(.is-collection) > .pack-draw-stage {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  /* Visible so rarity bloom isn't cut into a hard rectangle */
+  overflow: visible;
+}
+
+.pack-draw-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.85rem;
+  flex-shrink: 0;
+}
+
+.pack-draw-head h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.45rem, 2.6vw, 1.85rem);
+  letter-spacing: 0.02em;
+}
+
+.pack-draw-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.pack-draw-stage {
+  display: grid;
+  grid-template-columns: auto minmax(22rem, 1.2fr);
+  gap: 1.75rem;
+  align-items: stretch;
+  align-content: stretch;
+}
+
+.pack-draw-stage.pack-only {
+  grid-template-columns: 1fr;
+  justify-items: center;
+  align-content: center;
+  justify-content: center;
+  align-items: center;
+}
+
+.pack-stage-visual {
+  position: relative;
+  min-height: 0;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+  overflow: visible;
+  /* Reserve travel room so tear halves stay inside the fixed frame */
+  padding-block: var(--pack-stage-pad-y, 0.75rem);
+  box-sizing: border-box;
+}
+
+.pack-draw-stage.pack-only .pack-stage-visual {
+  width: 100%;
+  min-height: 0;
+}
+
+/* Shared card details column — pack open + collection inspect */
+.pack-card-copy {
+  min-width: 0;
+  height: 100%;
+  max-height: none;
+  overflow: hidden;
+  padding-right: 0;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.pack-card-copy-cluster {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  max-height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.pack-card-copy-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-right: 0.35rem;
+  overscroll-behavior: contain;
+}
+
+.pack-card-copy h3 {
+  margin: 0.15rem 0 0.35rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 2.5vw, 1.95rem);
+}
+
+.pack-card-copy h4 {
+  margin: 0.85rem 0 0.35rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(231, 215, 184, 0.62);
+}
+
+.pack-card-copy .eyebrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.65rem;
+  margin: 0 0 0.35rem;
+}
+
+.pack-draw-lead,
+.pack-draw-hint {
+  margin: 0;
+  color: rgba(231, 215, 184, 0.72);
+  line-height: 1.5;
+}
+
+.pack-draw-hint {
+  margin-top: 0.65rem;
+  font-size: 0.85rem;
+}
+
+.pack-en-name {
+  margin: -0.15rem 0 0.45rem;
+  font-size: 0.92rem;
+  color: rgba(231, 215, 184, 0.58);
+  font-style: italic;
+}
+
+.pack-mana-cost {
+  margin: 0 0 0.35rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.12rem;
+  line-height: 1;
+}
+
+.mana-symbol {
+  width: 1.05em;
+  height: 1.05em;
+  vertical-align: -0.15em;
+  display: inline-block;
+}
+
+.mana-symbol.is-loading {
+  border-radius: 50%;
+  background: rgba(224, 180, 90, 0.22);
+}
+
+.mana-symbol.is-fallback {
+  width: auto;
+  min-width: 1.05em;
+  height: 1.05em;
+  padding: 0 0.15em;
+  font-size: 0.72em;
+  line-height: 1.05em;
+  text-align: center;
+  border-radius: 0.2em;
+  background: rgba(224, 180, 90, 0.18);
+  color: rgba(231, 215, 184, 0.9);
+}
+
+.oracle-text .mana-symbol,
+.pack-details-block .mana-symbol {
+  width: 1em;
+  height: 1em;
+  margin: 0 0.05em;
+}
+
+.pack-collection-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 0.85rem;
+  margin: 0 0 0.85rem;
+  align-items: flex-end;
+}
+
+.pack-collection-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.85rem;
+  margin: 0 0 0.75rem;
+  font-size: 0.88rem;
+  color: rgba(231, 215, 184, 0.78);
+}
+
+.pack-collection-stats .rarity-mythic {
+  color: rgba(240, 170, 80, 0.95);
+}
+
+.pack-collection-stats .rarity-rare {
+  color: rgba(220, 190, 110, 0.92);
+}
+
+.pack-collection-stats .rarity-uncommon {
+  color: rgba(180, 200, 220, 0.9);
+}
+
+.pack-collection-stats .rarity-common {
+  color: rgba(231, 215, 184, 0.65);
+}
+
+.pack-collection-manage {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.55rem;
+  margin: 0;
+}
+
+.pack-collection-manage .btn {
+  box-sizing: border-box;
+  height: 2.15rem;
+  min-height: 2.15rem;
+  padding: 0 0.75rem;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  letter-spacing: 0;
+  box-shadow: inset 0 1px 0 rgba(255, 236, 196, 0.06);
+  background: linear-gradient(180deg, rgba(42, 34, 26, 0.98), rgba(18, 14, 10, 0.98));
+}
+
+.pack-collection-manage .btn:hover {
+  transform: none;
+  filter: none;
+  border-color: rgba(240, 212, 138, 0.48);
+  box-shadow: inset 0 1px 0 rgba(255, 236, 196, 0.06);
+}
+
+.pack-collection-actions {
+  margin-left: auto;
+}
+
+.pack-collection-empty .pack-collection-manage {
+  margin-top: 0.75rem;
+}
+
+.pack-confirm-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: rgba(8, 6, 4, 0.72);
+  backdrop-filter: blur(2px);
+}
+
+.pack-confirm-dialog {
+  width: min(100%, 22rem);
+  padding: 1.25rem 1.35rem 1.2rem;
+  border-radius: var(--btn-radius, 12px);
+  border: 1px solid rgba(184, 137, 58, 0.4);
+  background:
+    linear-gradient(165deg, rgba(42, 32, 22, 0.98), rgba(22, 16, 12, 0.99));
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.55);
+}
+
+.pack-confirm-dialog h3 {
+  margin: 0 0 0.55rem;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  letter-spacing: 0.02em;
+}
+
+.pack-confirm-dialog p {
+  margin: 0;
+  color: rgba(231, 215, 184, 0.78);
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.pack-confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.55rem 0.75rem;
+  margin-top: 1.15rem;
+}
+
+.pack-confirm-actions .btn {
+  min-height: 2.35rem;
+  padding-inline: 1.05rem;
+}
+
+.pack-collection-search {
+  flex: 1 1 12rem;
+  min-width: 10rem;
+}
+
+.pack-collection-search input {
+  width: 100%;
+  box-sizing: border-box;
+  height: 2.15rem;
+  padding: 0 0.55rem;
+  border-radius: 6px;
+  border: 1px solid rgba(184, 137, 58, 0.35);
+  background: rgba(0, 0, 0, 0.35);
+  color: rgba(231, 215, 184, 0.92);
+  font-size: 0.88rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.pack-collection-search input:focus {
+  outline: none;
+  border-color: rgba(240, 212, 138, 0.58);
+}
+
+.pack-other-face {
+  margin-top: 0.85rem;
+}
+
+.pack-other-face-name {
+  margin: 0.15rem 0 0.35rem;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+}
+
+.pack-collection-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(231, 215, 184, 0.55);
+}
+
+.pack-collection-filter select {
+  appearance: none;
+  -webkit-appearance: none;
+  color-scheme: dark;
+  box-sizing: border-box;
+  height: 2.15rem;
+  min-width: 7.5rem;
+  max-width: 11rem;
+  padding: 0 1.85rem 0 0.55rem;
+  border-radius: 6px;
+  border: 1px solid rgba(184, 137, 58, 0.35);
+  color: rgba(231, 215, 184, 0.92);
+  font-size: 0.88rem;
+  letter-spacing: 0;
+  text-transform: none;
+  cursor: pointer;
+  background-color: #17120e;
+  background-image:
+    linear-gradient(180deg, rgba(42, 34, 26, 0.98), rgba(18, 14, 10, 0.98)),
+    linear-gradient(45deg, transparent 50%, var(--bronze-bright) 50%),
+    linear-gradient(135deg, var(--bronze-bright) 50%, transparent 50%);
+  background-position:
+    0 0,
+    calc(100% - 12px) calc(50% - 2px),
+    calc(100% - 7px) calc(50% - 2px);
+  background-size:
+    auto,
+    5px 5px,
+    5px 5px;
+  background-repeat: no-repeat;
+  box-shadow: inset 0 1px 0 rgba(255, 236, 196, 0.06);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.pack-collection-filter select:hover {
+  border-color: rgba(240, 212, 138, 0.48);
+}
+
+.pack-collection-filter select:focus {
+  outline: none;
+  border-color: rgba(240, 212, 138, 0.58);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 236, 196, 0.06),
+    0 0 0 1px rgba(184, 137, 58, 0.28);
+}
+
+.pack-collection-filter select option,
+.pack-collection-filter select optgroup {
+  background-color: #17120e;
+  color: #e7d7b8;
+}
+
+.pack-details-block {
+  margin: 0.5rem 0 1rem;
+  /* No frame — pack / collection / deck details share a borderless reading pane */
+  background: transparent;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  padding: 0.15rem 0 0;
+  /* Keep a stable reading pane even for short oracle text */
+  min-height: clamp(8.5rem, 22vh, 13rem);
+  box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.pack-details-block .oracle-text {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.pack-flavor-text {
+  margin: 0.75rem 0 0;
+  font-style: italic;
+  line-height: 1.55;
+  color: rgba(231, 215, 184, 0.78);
+  white-space: pre-wrap;
+}
+
+.pack-keywords {
+  margin: 0.35rem 0 0.65rem;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: rgba(231, 215, 184, 0.78);
+}
+
+.pack-keywords-label {
+  display: inline-block;
+  margin-right: 0.45rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(231, 215, 184, 0.55);
+}
+
+.pack-card-copy .type-line {
+  color: var(--bronze-bright);
+  margin: 0 0 0.35rem;
+}
+
+.pack-card-copy .pt-line {
+  font-family: var(--font-display);
+  margin: 0 0 0.35rem;
+}
+
+.pack-pick-hint {
+  margin: 0 0 0.85rem;
+  font-size: 0.88rem;
+}
+
+.pack-draw-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65rem 0.85rem;
+  margin-top: auto;
+  padding-top: 0.75rem;
+  flex-shrink: 0;
+}
+
+.pack-draw-actions .btn {
+  min-height: 2.55rem;
+  padding-inline: 1.15rem;
+  font-size: 0.95rem;
+  flex: 0 0 auto;
+}
+
+.pack-draw-actions a,
+.pack-scryfall-link {
+  color: #f0d48a;
+  white-space: nowrap;
+  text-decoration: none;
+  font-size: 0.92rem;
+  letter-spacing: 0.02em;
+}
+
+.pack-scryfall-link:hover {
+  color: #ffe6a8;
+  text-decoration: underline;
+}
+
+.pack-rarity-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.12rem 0.45rem;
+  border-radius: 4px;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid rgba(184, 137, 58, 0.35);
+  color: rgba(231, 215, 184, 0.88);
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.pack-rarity-chip.rarity-uncommon {
+  border-color: rgba(180, 196, 210, 0.55);
+  color: #d5e0ea;
+}
+
+.pack-rarity-chip.rarity-rare {
+  border-color: rgba(230, 190, 70, 0.75);
+  color: #f3d978;
+  background: rgba(90, 60, 10, 0.45);
+}
+
+.pack-rarity-chip.rarity-mythic,
+.pack-rarity-chip.rarity-special {
+  border-color: rgba(180, 140, 55, 0.8);
+  color: #d4b056;
+  background: rgba(48, 34, 12, 0.55);
+}
+
+/* Sealed / tearing pack — size inherited from modal (--pack-shell-max-h) */
+.pack-shell {
+  appearance: none;
+  position: relative;
+  width: min(500px, 78vw, calc(var(--pack-shell-max-h, 52vh) * 755 / 1424));
+  max-height: var(--pack-shell-max-h, 52vh);
+  aspect-ratio: 755 / 1424;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  background: transparent;
+  transform-origin: center;
+}
+
+.pack-shell.is-sealed {
+  filter: drop-shadow(0 22px 32px rgba(0, 0, 0, 0.55));
+  cursor: pointer;
+}
+
+.pack-shell.is-tearing {
+  cursor: default;
+  pointer-events: none;
+  filter: drop-shadow(0 18px 26px rgba(0, 0, 0, 0.5));
+}
+
+.pack-shell:disabled {
+  cursor: progress;
+}
+
+.pack-shell-full {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 4px;
+  pointer-events: none;
+  user-select: none;
+  display: block;
+}
+
+.pack-shell-peel,
+.pack-shell-remain {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  will-change: transform, opacity;
+  /* JS also sets -webkit-clip-path; keep both for Safari compositing */
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.pack-shell-peel {
+  z-index: 3;
+  /* Soft edge outline follows jagged clip so the crack reads clearly */
+  filter:
+    drop-shadow(0 0 0.6px rgba(18, 8, 2, 0.75))
+    drop-shadow(0 1px 2px rgba(40, 24, 10, 0.4));
+}
+
+.pack-shell-remain {
+  z-index: 2;
+  filter:
+    drop-shadow(0 0 0.6px rgba(18, 8, 2, 0.7))
+    drop-shadow(0 1px 2px rgba(40, 24, 10, 0.35));
+}
+
+.pack-shell-peel img,
+.pack-shell-remain img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  display: block;
+}
+
+/* Clipped with each pack half so fibers sit on wrapper paper, not the cards in the crack */
+.pack-tear-edge-tex {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 2;
+  width: 132%;
+  height: clamp(22px, 5.2%, 34px);
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  opacity: 0;
+  mix-blend-mode: multiply;
+  filter: contrast(1.12) saturate(0.85) brightness(0.92);
+}
+
+/* Deck stack: three cards piled; browse with hover arrows */
+.pack-reveal-stack {
+  position: relative;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+  width: min(500px, 78vw, calc(var(--pack-shell-max-h, 52vh) * 744 / 1040));
+  min-height: 0;
+  overflow: visible;
+}
+
+.pack-reveal-stack.is-deck {
+  width: min(640px, 94vw);
+  min-height: 0;
+  /* Extra pad so outer bloom isn't clipped by nearby ancestors */
+  padding: 2.25rem 2.75rem 2.5rem;
+  touch-action: pan-y;
+}
+
+.pack-reveal-stack.is-browsable {
+  cursor: grab;
+  user-select: none;
+}
+
+.pack-reveal-stack.is-browsable:active {
+  cursor: grabbing;
+}
+
+.pack-card-deck {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: min(450px, 78vw, calc(var(--pack-reveal-card-max-h, 56vh) * 744 / 1040));
+  /* Room for under-card peeks bottom-right */
+  padding: 0 1.35rem 1.5rem 0;
+}
+
+/* While tearing, cards must fill the pack face — not the smaller post-reveal budget */
+.pack-reveal-stack.is-in-tear .pack-card-deck {
+  width: min(
+    420px,
+    76vw,
+    calc(var(--pack-shell-max-h, 52vh) * 755 / 1424 * 0.9)
+  );
+  padding: 0;
+}
+
+.pack-reveal-stack.is-in-tear .pack-card-wrap .card-flip.pack-card-flip {
+  --pack-card-max-h: calc(var(--pack-shell-max-h, 52vh) * 0.7);
+  width: 100%;
+  max-height: var(--pack-card-max-h);
+}
+
+.pack-reveal-stack .pack-shell.is-tearing {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  width: min(500px, 78vw, calc(var(--pack-shell-max-h) * 755 / 1424));
+  max-height: var(--pack-shell-max-h);
+  aspect-ratio: 755 / 1424;
+  z-index: 2;
+}
+
+.pack-card-wrap {
+  position: relative;
+  width: 100%;
+  display: grid;
+  place-items: center;
+  z-index: 1;
+  transform-origin: center center;
+  overflow: visible;
+  transition:
+    transform 0.42s cubic-bezier(0.22, 0.61, 0.36, 1),
+    opacity 0.28s ease,
+    filter 0.28s ease;
+}
+
+.pack-card-wrap .card-flip {
+  position: relative;
+  z-index: 1;
+}
+
+.pack-card-deck .pack-card-wrap {
+  grid-area: 1 / 1;
+}
+
+/* Slight inset so the stack reads as sitting inside the wrapper */
+.pack-reveal-stack.is-in-tear .pack-card-wrap.stack-0 {
+  transform: scale(0.9) translate(0, 2px);
+  z-index: 1;
+}
+
+.pack-reveal-stack.is-in-tear .pack-card-wrap.stack-1 {
+  transform: scale(0.93) translate(0, 1px);
+  z-index: 2;
+}
+
+.pack-reveal-stack.is-in-tear .pack-card-wrap.stack-2 {
+  transform: scale(0.96);
+  z-index: 3;
+}
+
+.pack-card-wrap.is-in-pack {
+  pointer-events: none;
+}
+
+.pack-card-wrap.is-expanding {
+  animation: pack-expand-deck 0.4s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  pointer-events: none;
+}
+
+.pack-card-wrap.is-expanded.is-active {
+  transform: translate3d(0, 0, 0) scale(1);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Clear deck peeks — both under-cards stay readable at the bottom-right edge */
+.pack-card-wrap.is-expanded.is-behind {
+  transform:
+    translate3d(
+      calc(var(--pack-depth, 1) * 16px),
+      calc(var(--pack-depth, 1) * 14px),
+      0
+    )
+    rotate(calc(var(--pack-depth, 1) * 3.2deg))
+    scale(0.965);
+  opacity: 1;
+  pointer-events: none;
+  filter: brightness(calc(1 - var(--pack-depth, 1) * 0.06));
+}
+
+.pack-card-wrap.is-expanded.is-behind .card-face {
+  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.4);
+}
+
+.pack-card-wrap.is-expanded.is-behind .card-face::after {
+  box-shadow: inset 0 0 0 1px rgba(224, 180, 90, 0.28);
+}
+
+/* Suppress cast shadows while rotating — hidden-face box-shadow paints a static rect */
+.pack-card-wrap.is-flipping .card-face,
+.card-flip-inner.is-flipping .card-face {
+  box-shadow: none !important;
+  animation: none !important;
+  filter: none !important;
+}
+
+.pack-card-wrap.is-flipping .card-face::before {
+  opacity: 0 !important;
+}
+
+.pack-card-wrap.is-flipping::before {
+  opacity: 0 !important;
+  animation: none !important;
+}
+
+.pack-card-flip {
+  width: 100%;
+  max-height: none;
+}
+
+.pack-card-wrap .card-flip.pack-card-flip {
+  /* Same formula as .pack-inspect-flip in collection cabinet */
+  --pack-card-max-h: var(--pack-reveal-card-max-h, calc(min(68vh, calc(90dvh - 8.5rem), 640px) * 0.9));
+  width: min(450px, calc(var(--pack-card-max-h) * 744 / 1040));
+  max-height: var(--pack-card-max-h);
+}
+
+@keyframes pack-expand-deck {
+  0% {
+    transform: scale(0.94);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+.pack-nav {
+  appearance: none;
+  position: absolute;
+  top: 50%;
+  translate: 0 -50%;
+  z-index: 6;
+  width: 2.85rem;
+  height: 2.85rem;
+  border: 0;
+  border-radius: 999px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: rgba(255, 244, 220, 0.55);
+  background: transparent;
+  opacity: 0.1;
+  transition: opacity 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  font-size: 1.85rem;
+  line-height: 1;
+  font-family: var(--font-display);
+}
+
+.pack-nav span {
+  display: block;
+  margin-top: -0.1em;
+}
+
+.pack-nav-prev {
+  left: 0.15rem;
+}
+
+.pack-nav-next {
+  right: 0.15rem;
+}
+
+.pack-reveal-stack.is-browsable:hover .pack-nav,
+.pack-reveal-stack.is-browsable:focus-within .pack-nav {
+  opacity: 0.28;
+}
+
+.pack-nav:hover,
+.pack-nav:focus-visible {
+  opacity: 0.55 !important;
+  color: rgba(255, 244, 220, 0.85);
+  background: transparent;
+  outline: none;
+}
+
+.pack-deck-index {
+  position: absolute;
+  left: 50%;
+  bottom: 0.15rem;
+  translate: -50% 0;
+  z-index: 6;
+  margin: 0;
+  font-size: 0.82rem;
+  letter-spacing: 0.12em;
+  color: rgba(231, 215, 184, 0.55);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.pack-reveal-stack.is-browsable:hover .pack-deck-index,
+.pack-reveal-stack.is-browsable:focus-within .pack-deck-index {
+  opacity: 0.9;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .pack-reveal-stack.is-browsable .pack-nav {
+    display: none;
+  }
+
+  .pack-reveal-stack.is-browsable .pack-deck-index {
+    opacity: 0.75;
+  }
+
+  .pack-inspect-stage .pack-nav {
+    display: none;
+  }
+
+  .pack-inspect-stage .pack-deck-index {
+    opacity: 0.7;
+  }
+}
+
+/* One-shot rarity FX — hierarchy: mythic (ornate) → rare → uncommon → common (plain)
+   Soft glow language (no hard rims). Peak duration unified at 2.5s. */
+.pack-card-wrap[class*='pack-fx-'] .card-face {
+  transition:
+    box-shadow 0.85s ease,
+    filter 0.75s ease;
+}
+
+.pack-card-wrap[class*='pack-fx-'] .card-face::after {
+  transition: box-shadow 0.75s ease;
+}
+
+.pack-card-wrap.is-glowing .card-face,
+.pack-card-wrap.is-glowing .card-face::after {
+  transition-duration: 0.22s;
+}
+
+/* ── Common — soft brightness settle ── */
+.pack-card-wrap.pack-fx-common.is-glowing .card-face {
+  animation: pack-common-flash 2.5s ease-out both;
+}
+
+.pack-card-wrap.pack-fx-common.is-glowing .card-face::after {
+  box-shadow: inset 0 0 12px rgba(210, 200, 185, 0.18);
+}
+
+/* ── Uncommon — soft steel bloom + cool sweep ── */
+.pack-card-wrap.pack-fx-uncommon.is-glowing {
+  filter: none;
+}
+
+.pack-card-wrap.pack-fx-uncommon.is-glowing .card-face {
+  box-shadow:
+    0 0 14px rgba(170, 200, 240, 0.4),
+    0 0 32px rgba(120, 165, 220, 0.22),
+    0 18px 28px rgba(0, 0, 0, 0.48);
+  animation: pack-uncommon-flash 2.5s ease-out both;
+}
+
+.pack-card-wrap.pack-fx-uncommon.is-glowing .card-face::after {
+  box-shadow: inset 0 0 18px rgba(180, 210, 245, 0.28);
+}
+
+.pack-card-wrap.pack-fx-uncommon.is-glowing .card-face::before,
+.pack-card-wrap.pack-fx-uncommon.is-fading .card-face::before {
+  content: '';
+  position: absolute;
+  inset: -8%;
+  z-index: 2;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(
+    118deg,
+    transparent 0%,
+    transparent 32%,
+    rgba(180, 210, 245, 0.1) 42%,
+    rgba(255, 255, 255, 0.45) 50%,
+    rgba(150, 190, 240, 0.14) 58%,
+    transparent 70%,
+    transparent 100%
+  );
+  background-size: 240% 240%;
+  mix-blend-mode: screen;
+}
+
+.pack-card-wrap.pack-fx-uncommon.is-glowing .card-face::before {
+  animation: pack-uncommon-shimmer 2.5s ease-out both;
+}
+
+.pack-card-wrap.pack-fx-uncommon.is-fading .card-face::before {
+  animation: none;
+  opacity: 0;
+  transition: opacity 0.85s ease;
+}
+
+.pack-card-wrap.pack-fx-uncommon.is-fading {
+  filter: none;
+  transition: filter 0.85s ease;
+}
+
+/* ── Rare — soft bright-gold aureole + foil + corner stars ── */
+.pack-card-wrap.pack-fx-rare.is-glowing {
+  filter: none;
+}
+
+.pack-card-wrap.pack-fx-rare.is-glowing::before {
+  content: '';
+  position: absolute;
+  inset: -22%;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse 48% 52% at 50% 50%,
+    rgba(255, 220, 130, 0.42) 0%,
+    rgba(240, 180, 50, 0.2) 42%,
+    transparent 70%
+  );
+  animation: pack-rare-aureole 2.5s ease-out both;
+  /* Avoid mix-blend-mode: screen — often invisible on real mobile GPUs */
+}
+
+.pack-card-wrap.pack-fx-rare.is-glowing .card-face {
+  box-shadow:
+    0 0 16px rgba(255, 215, 100, 0.45),
+    0 0 36px rgba(230, 170, 45, 0.28),
+    0 0 56px rgba(190, 130, 20, 0.14),
+    0 18px 28px rgba(0, 0, 0, 0.48);
+  animation: pack-rare-flash 2.5s ease-out both;
+}
+
+.pack-card-wrap.pack-fx-rare.is-glowing .card-face::after {
+  box-shadow: inset 0 0 22px rgba(255, 210, 90, 0.28);
+}
+
+.pack-card-wrap.pack-fx-rare.is-glowing .card-face::before,
+.pack-card-wrap.pack-fx-rare.is-fading .card-face::before {
+  content: '';
+  position: absolute;
+  inset: -10%;
+  z-index: 2;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(
+    122deg,
+    transparent 0%,
+    transparent 30%,
+    rgba(255, 220, 120, 0.08) 40%,
+    rgba(255, 245, 200, 0.48) 50%,
+    rgba(255, 200, 70, 0.2) 58%,
+    transparent 70%,
+    transparent 100%
+  );
+  background-size: 240% 240%;
+  mix-blend-mode: screen;
+}
+
+.pack-card-wrap.pack-fx-rare.is-glowing .card-face::before {
+  animation: pack-rare-foil 2.5s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.pack-card-wrap.pack-fx-rare.is-fading .card-face::before {
+  animation: none;
+  opacity: 0;
+  transition: opacity 0.85s ease;
+}
+
+.pack-card-wrap.pack-fx-rare.is-fading {
+  filter: none;
+  transition: filter 0.85s ease;
+}
+
+.pack-card-wrap.pack-fx-rare.is-fading::before {
+  animation: none;
+  opacity: 0;
+  transition: opacity 0.85s ease;
+}
+
+/* ── Mythic — soft dark-gold nested bloom + foil + rich glints ── */
+.pack-card-wrap.pack-fx-mythic.is-glowing {
+  filter: none;
+}
+
+.pack-card-wrap.pack-fx-mythic.is-glowing::before {
+  content: '';
+  position: absolute;
+  inset: -28%;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      ellipse 46% 50% at 50% 50%,
+      rgba(190, 140, 45, 0.48) 0%,
+      rgba(110, 72, 18, 0.24) 40%,
+      transparent 68%
+    ),
+    radial-gradient(
+      ellipse 68% 74% at 50% 50%,
+      transparent 42%,
+      rgba(140, 95, 25, 0.22) 55%,
+      transparent 76%
+    );
+  animation: pack-mythic-aureole 2.5s ease-out both;
+}
+
+.pack-card-wrap.pack-fx-mythic.is-glowing .card-face {
+  box-shadow:
+    0 0 18px rgba(200, 150, 55, 0.48),
+    0 0 40px rgba(140, 95, 25, 0.38),
+    0 0 64px rgba(80, 50, 10, 0.28),
+    0 18px 28px rgba(0, 0, 0, 0.52);
+  animation: pack-mythic-flash 2.5s ease-out both;
+}
+
+.pack-card-wrap.pack-fx-mythic.is-glowing .card-face::after {
+  box-shadow:
+    inset 0 0 20px rgba(200, 150, 55, 0.28),
+    inset 0 0 36px rgba(100, 65, 16, 0.22);
+}
+
+.pack-card-wrap.pack-fx-mythic.is-glowing .card-face::before,
+.pack-card-wrap.pack-fx-mythic.is-fading .card-face::before {
+  content: '';
+  position: absolute;
+  inset: -12%;
+  z-index: 2;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(
+    128deg,
+    transparent 0%,
+    transparent 24%,
+    rgba(180, 130, 40, 0.1) 36%,
+    rgba(255, 220, 140, 0.4) 47%,
+    rgba(255, 235, 180, 0.58) 50%,
+    rgba(160, 110, 30, 0.28) 55%,
+    rgba(90, 55, 12, 0.1) 64%,
+    transparent 76%,
+    transparent 100%
+  );
+  background-size: 260% 260%;
+  mix-blend-mode: screen;
+}
+
+.pack-card-wrap.pack-fx-mythic.is-glowing .card-face::before {
+  animation: pack-mythic-foil 2.5s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.pack-card-wrap.pack-fx-mythic.is-fading .card-face::before {
+  animation: none;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+
+.pack-card-wrap.pack-fx-mythic.is-fading {
+  filter: none;
+  transition: filter 0.9s ease;
+}
+
+.pack-card-wrap.pack-fx-mythic.is-fading::before {
+  animation: none;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+
+.pack-card-wrap.is-fading .card-face {
+  animation: none;
+  filter: brightness(1);
+}
+
+.pack-card-wrap.is-fading .card-face::after {
+  box-shadow: inset 0 0 10px rgba(224, 180, 90, 0.12);
+}
+
+.pack-fx-layer {
+  pointer-events: none;
+  position: absolute;
+  z-index: 3;
+  transition: opacity 0.85s ease;
+}
+
+/* Rare particles — soft floating glints (not frame-aligned) */
+.pack-fx-layer.is-sparkles {
+  inset: -16% -12%;
+  background:
+    radial-gradient(circle at 18% 22%, rgba(255, 245, 200, 0.95) 0 2px, transparent 7px),
+    radial-gradient(circle at 78% 18%, rgba(255, 225, 140, 0.9) 0 2px, transparent 7px),
+    radial-gradient(circle at 28% 72%, rgba(240, 185, 70, 0.85) 0 2px, transparent 7px),
+    radial-gradient(circle at 70% 78%, rgba(255, 215, 120, 0.9) 0 2px, transparent 7px);
+  animation: pack-rare-filigree 2.5s ease-out both;
+}
+
+/* Mythic particles — denser soft antique-gold dust */
+.pack-fx-layer.is-sparkles.is-mythic {
+  inset: -22% -16%;
+  background:
+    radial-gradient(circle at 16% 18%, rgba(255, 230, 160, 0.95) 0 2.5px, transparent 8px),
+    radial-gradient(circle at 82% 14%, rgba(200, 150, 55, 0.9) 0 3px, transparent 9px),
+    radial-gradient(circle at 72% 74%, rgba(235, 190, 95, 0.88) 0 2.5px, transparent 8px),
+    radial-gradient(circle at 22% 80%, rgba(140, 95, 25, 0.85) 0 3px, transparent 9px),
+    radial-gradient(circle at 48% 28%, rgba(255, 240, 180, 0.85) 0 2px, transparent 7px),
+    radial-gradient(circle at 58% 62%, rgba(170, 120, 35, 0.8) 0 2px, transparent 7px),
+    radial-gradient(circle at 36% 48%, rgba(220, 175, 80, 0.7) 0 1.5px, transparent 6px),
+    radial-gradient(circle at 64% 38%, rgba(200, 150, 55, 0.7) 0 1.5px, transparent 6px);
+  animation: pack-mythic-glints 2.5s ease-out both;
+}
+
+.pack-card-wrap.is-fading .pack-fx-layer {
+  animation: none;
+  opacity: 0;
+}
+
+.pack-card-wrap.is-flipping .pack-fx-layer {
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Keep static peak glow (box-shadow / aureole); only drop motion layers */
+  .pack-card-wrap.is-glowing .card-face,
+  .pack-fx-layer {
+    animation: none !important;
+  }
+
+  .pack-card-wrap.pack-fx-rare.is-glowing::before,
+  .pack-card-wrap.pack-fx-mythic.is-glowing::before {
+    animation: none !important;
+    opacity: 0.85;
+  }
+
+  .pack-fx-layer.is-sparkles,
+  .pack-card-wrap.pack-fx-uncommon.is-glowing .card-face::before,
+  .pack-card-wrap.pack-fx-uncommon.is-fading .card-face::before,
+  .pack-card-wrap.pack-fx-rare.is-glowing .card-face::before,
+  .pack-card-wrap.pack-fx-rare.is-fading .card-face::before,
+  .pack-card-wrap.pack-fx-mythic.is-glowing .card-face::before,
+  .pack-card-wrap.pack-fx-mythic.is-fading .card-face::before {
+    display: none;
+  }
+}
+
+@media (max-height: 780px) {
+  .pack-draw-modal:not(.is-collection) {
+    --pack-stage-pad-y: clamp(0.4rem, 1.5vh, 0.85rem);
+    --pack-reveal-card-max-h: calc(min(58vh, calc(90dvh - 9rem), 520px) * 0.9);
+    --pack-shell-max-h: min(58vh, calc(90dvh - 9rem), 520px);
+  }
+
+  .pack-draw-modal.is-collection {
+    --pack-inspect-card-max-h: calc(min(58vh, calc(90dvh - 9rem), 520px) * 0.9);
+  }
+}
+
+/* Phone layout + slightly stronger flashes */
+@media (max-width: 640px) {
+  .pack-draw-modal:not(.is-collection) {
+    --pack-stage-pad-y: 0.35rem;
+    /* Keep sealed pack and in-tear cards on the same scale */
+    --pack-reveal-card-max-h: calc(min(48vh, calc(100dvh - 10.5rem), 420px) * 0.94);
+    --pack-shell-max-h: min(52vh, calc(100dvh - 6rem), 480px);
+  }
+
+  .pack-draw-modal:not(.is-collection):has(.pack-draw-stage.has-copy) {
+    --pack-reveal-card-max-h: calc(min(42vh, calc(100dvh - 11.5rem), 380px) * 0.94);
+    --pack-shell-max-h: min(42vh, calc(100dvh - 11.5rem), 380px);
+  }
+
+  .pack-reveal-stack.is-deck {
+    width: min(100%, 100%);
+    padding: 0.35rem 0.4rem 0.45rem;
+    min-height: 0;
+  }
+
+  .pack-card-deck {
+    width: min(288px, 78vw, calc(var(--pack-reveal-card-max-h, 40vh) * 744 / 1040));
+    padding: 0 1rem 1rem 0;
+  }
+
+  .pack-reveal-stack.is-in-tear .pack-card-deck {
+    width: min(
+      310px,
+      78vw,
+      calc(var(--pack-shell-max-h) * 755 / 1424 * 0.9)
+    );
+    padding: 0;
+  }
+
+  .pack-card-wrap .card-flip.pack-card-flip {
+    --pack-card-max-h: var(--pack-reveal-card-max-h, 40vh);
+    width: min(288px, 78vw, calc(var(--pack-card-max-h) * 744 / 1040));
+    max-height: var(--pack-card-max-h);
+  }
+
+  .pack-reveal-stack.is-in-tear .pack-card-wrap .card-flip.pack-card-flip {
+    --pack-card-max-h: calc(var(--pack-shell-max-h) * 0.7);
+    width: 100%;
+    max-height: var(--pack-card-max-h);
+  }
+
+  .pack-shell.is-sealed,
+  .pack-reveal-stack .pack-shell.is-tearing {
+    width: min(320px, 80vw, calc(var(--pack-shell-max-h) * 755 / 1424));
+  }
+
+  .pack-draw-stage.pack-only .pack-stage-visual {
+    min-height: 0;
+  }
+
+  .pack-card-copy {
+    height: auto;
+    max-height: none;
+    overflow: hidden;
+    justify-content: flex-start;
+    min-height: 0;
+  }
+
+  .pack-card-copy-body {
+    overflow-y: auto;
+    max-height: none;
+    min-height: 0;
+  }
+
+  .pack-draw-stage.has-copy {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .pack-draw-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.45rem 0.65rem;
+    margin-top: auto;
+    padding-top: 0.55rem;
+  }
+
+  .pack-draw-actions .btn {
+    flex: 0 0 auto;
+    min-width: 0;
+    min-height: 2.35rem;
+    padding-inline: 0.75rem;
+    font-size: 0.86rem;
+  }
+
+  .pack-draw-actions .pack-scryfall-link,
+  .pack-draw-actions a.pack-scryfall-link {
+    flex: 0 0 auto;
+    font-size: 0.86rem;
+  }
+
+  .pack-details-block {
+    min-height: clamp(7.5rem, 20vh, 11.5rem);
+  }
+
+  /* Collection cabinet — balanced filter grid */
+  .pack-collection-toolbar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem 0.55rem;
+    align-items: end;
+    margin-bottom: 0.7rem;
+  }
+
+  .pack-collection-search {
+    grid-column: 1 / -1;
+    flex: none;
+    min-width: 0;
+  }
+
+  .pack-collection-filter select {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+  }
+
+  .pack-collection-actions {
+    grid-column: 1 / -1;
+    margin-left: 0;
+  }
+
+  .pack-collection-actions > span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .pack-collection-manage {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.45rem;
+    width: 100%;
+  }
+
+  .pack-collection-manage .btn {
+    width: 100%;
+    padding-inline: 0.35rem;
+    font-size: 0.82rem;
+  }
+
+  .pack-collection-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.7rem;
+  }
+
+  .pack-card-wrap.pack-fx-uncommon.is-glowing .card-face {
+    box-shadow:
+      0 0 18px rgba(170, 200, 240, 0.5),
+      0 0 36px rgba(120, 165, 220, 0.28),
+      0 16px 26px rgba(0, 0, 0, 0.48);
+  }
+
+  .pack-card-wrap.pack-fx-rare.is-glowing .card-face {
+    box-shadow:
+      0 0 20px rgba(255, 215, 100, 0.55),
+      0 0 42px rgba(230, 170, 45, 0.32),
+      0 0 60px rgba(190, 130, 20, 0.16),
+      0 16px 26px rgba(0, 0, 0, 0.48);
+  }
+
+  .pack-card-wrap.pack-fx-mythic.is-glowing .card-face {
+    box-shadow:
+      0 0 22px rgba(200, 150, 55, 0.55),
+      0 0 46px rgba(140, 95, 25, 0.42),
+      0 0 68px rgba(80, 50, 10, 0.32),
+      0 16px 26px rgba(0, 0, 0, 0.52);
+  }
+
+  .pack-fx-layer.is-sparkles {
+    inset: -18% -14%;
+  }
+
+  .pack-fx-layer.is-sparkles.is-mythic {
+    inset: -24% -18%;
+  }
+
+  /* Prefer compositing-friendly shadow over filter+clip-path combos on Safari */
+  .pack-shell.is-sealed,
+  .pack-shell.is-tearing {
+    filter: none;
+    box-shadow: 0 18px 32px rgba(0, 0, 0, 0.55);
+  }
+}
+
+@keyframes pack-common-flash {
+  0% {
+    filter: brightness(1.12);
+  }
+  35% {
+    filter: brightness(1.06);
+  }
+  100% {
+    filter: brightness(1);
+  }
+}
+
+@keyframes pack-uncommon-shimmer {
+  0% {
+    background-position: 130% 130%;
+    opacity: 0;
+  }
+  14% {
+    opacity: 1;
+  }
+  100% {
+    background-position: -30% -30%;
+    opacity: 0;
+  }
+}
+
+@keyframes pack-uncommon-flash {
+  0% {
+    filter: brightness(1.2) saturate(1.06);
+  }
+  40% {
+    filter: brightness(1.1) saturate(1.03);
+  }
+  100% {
+    filter: brightness(1) saturate(1);
+  }
+}
+
+@keyframes pack-rare-flash {
+  0% {
+    filter: brightness(1.32) saturate(1.08);
+  }
+  35% {
+    filter: brightness(1.16) saturate(1.04);
+  }
+  100% {
+    filter: brightness(1) saturate(1);
+  }
+}
+
+@keyframes pack-rare-aureole {
+  0% {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  22% {
+    opacity: 1;
+    transform: scale(1.01);
+  }
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+}
+
+@keyframes pack-rare-foil {
+  0% {
+    background-position: 130% 130%;
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  100% {
+    background-position: -30% -30%;
+    opacity: 0;
+  }
+}
+
+@keyframes pack-rare-filigree {
+  0% {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  18% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes pack-mythic-flash {
+  0% {
+    filter: brightness(1.4) saturate(1.14);
+  }
+  28% {
+    filter: brightness(1.22) saturate(1.08);
+  }
+  65% {
+    filter: brightness(1.1) saturate(1.04);
+  }
+  100% {
+    filter: brightness(1) saturate(1);
+  }
+}
+
+@keyframes pack-mythic-aureole {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  20% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 0.68;
+    transform: scale(1);
+  }
+}
+
+@keyframes pack-mythic-foil {
+  0% {
+    background-position: 140% 140%;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  55% {
+    opacity: 0.85;
+  }
+  100% {
+    background-position: -40% -40%;
+    opacity: 0;
+  }
+}
+
+@keyframes pack-mythic-glints {
+  0% {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  16% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  55% {
+    opacity: 0.75;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.05);
+  }
+}
+
+.pack-draw-modal.is-collection .pack-draw-head {
+  flex-shrink: 0;
+}
+
+.pack-draw-modal.is-collection:has(.pack-inspect) .pack-draw-head {
+  margin-bottom: 0.35rem;
+}
+
+/* Collection cabinet — fill modal; inspect card scales to fit fully */
+.pack-collection {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+.pack-collection:has(.pack-inspect) {
+  overflow: hidden;
+}
+
+.pack-collection:has(.pack-inspect) .pack-collection-toolbar,
+.pack-collection:has(.pack-inspect) .pack-collection-grid {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.pack-collection-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 0.85rem;
+}
+
+.pack-collection-tile {
+  appearance: none;
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 1px solid rgba(184, 137, 58, 0.28);
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  aspect-ratio: 744 / 1040;
+}
+
+.pack-collection-tile img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pack-collection-tile .pack-rarity-chip {
+  position: absolute;
+  left: 0.35rem;
+  bottom: 0.35rem;
+  max-width: calc(100% - 0.7rem);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pack-inspect {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(16rem, 1.05fr);
+  align-items: stretch;
+  gap: 1.75rem;
+  padding: 1.1rem 1.35rem 1.15rem;
+  border-radius: 0;
+  border: none;
+  /* Must be opaque — covers the collection grid underneath */
+  background: #000;
+  overflow: hidden;
+  min-height: 0;
+  box-shadow: none;
+}
+
+.pack-inspect-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  justify-self: stretch;
+  align-self: stretch;
+  touch-action: pan-y;
+  cursor: grab;
+  user-select: none;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: visible;
+  padding: 1.25rem 2.4rem 1.4rem;
+  box-sizing: border-box;
+}
+
+.pack-inspect-stage:active {
+  cursor: grabbing;
+}
+
+/* Double-click art zoom — pack / collection / deck: centered, fully visible */
+.pack-inspect.is-art-zoomed,
+.pack-draw-stage.is-art-zoomed {
+  /* Fallback budget when container queries aren't used (pack open stage) */
+  --pack-art-zoom-pad: 5.75rem;
+  --pack-art-zoom-max-h: min(
+    calc(100dvh - var(--pack-art-zoom-pad) - var(--safe-top, 0px) - var(--safe-bottom, 0px)),
+    calc(100svh - var(--pack-art-zoom-pad) - var(--safe-top, 0px) - var(--safe-bottom, 0px))
+  );
+  --pack-art-zoom-max-w: min(
+    calc(100vw - 1rem - var(--safe-left, 0px) - var(--safe-right, 0px)),
+    calc(var(--pack-art-zoom-max-h) * 744 / 1040)
+  );
+}
+
+.pack-inspect.is-art-zoomed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  grid-template-columns: unset;
+  grid-template-rows: unset;
+  gap: 0;
+  padding: 0.35rem;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.pack-inspect.is-art-zoomed .pack-inspect-copy {
+  display: none;
+}
+
+.pack-inspect.is-art-zoomed .pack-inspect-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 auto;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  /* Inspect panel has a definite box (absolute inset) — safe for size CQ */
+  container-type: size;
+}
+
+.pack-inspect.is-art-zoomed .pack-inspect-wrap.pack-card-wrap {
+  /* Shrink on BOTH axes so the full card always fits the stage */
+  box-sizing: border-box;
+  width: min(100cqw, calc(100cqh * 744 / 1040));
+  height: min(100cqh, calc(100cqw * 1040 / 744));
+  max-width: 100%;
+  max-height: 100%;
+  aspect-ratio: 744 / 1040;
+  margin: 0;
+}
+
+.pack-inspect.is-art-zoomed .pack-inspect-flip.card-flip,
+.pack-inspect.is-art-zoomed .pack-inspect-flip .card-flip-inner {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.pack-inspect.is-art-zoomed .pack-inspect-flip .card-face,
+.pack-inspect.is-art-zoomed .pack-inspect-flip .card-face img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.pack-draw-stage.is-art-zoomed.has-copy {
+  grid-template-columns: 1fr;
+  grid-template-rows: minmax(0, 1fr);
+  justify-items: center;
+  align-content: center;
+  min-height: 0;
+  height: 100%;
+}
+
+.pack-draw-stage.is-art-zoomed .pack-card-copy {
+  display: none;
+}
+
+.pack-draw-stage.is-art-zoomed .pack-stage-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: stretch;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0.35rem;
+  box-sizing: border-box;
+}
+
+.pack-draw-stage.is-art-zoomed .pack-reveal-stack.is-deck,
+.pack-draw-stage.is-art-zoomed .pack-reveal-stack.is-browsable {
+  /* Dual-axis clamp (viewport fallback — no CQ on this stage) */
+  width: min(
+    var(--pack-art-zoom-max-w),
+    calc(var(--pack-art-zoom-max-h) * 744 / 1040)
+  );
+  height: min(
+    var(--pack-art-zoom-max-h),
+    calc(var(--pack-art-zoom-max-w) * 1040 / 744)
+  );
+  max-width: 100%;
+  max-height: 100%;
+  aspect-ratio: 744 / 1040;
+  padding: 0;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  margin-inline: auto;
+}
+
+.pack-draw-stage.is-art-zoomed .pack-card-deck {
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  padding: 0;
+}
+
+.pack-draw-stage.is-art-zoomed .pack-card-wrap.is-behind {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.pack-draw-stage.is-art-zoomed .pack-card-wrap.is-active {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.pack-draw-stage.is-art-zoomed .pack-card-wrap.is-active .card-flip.pack-card-flip {
+  --pack-card-max-h: 100%;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.pack-inspect-stage .pack-deck-index {
+  opacity: 0.55;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .pack-inspect-stage .pack-nav {
+    display: none;
+  }
+
+  .pack-inspect-stage .pack-deck-index {
+    opacity: 0.7;
+  }
+}
+
+.pack-inspect-wrap.pack-card-wrap {
+  /* Height budget from modal; width follows card aspect so nothing clips */
+  width: min(450px, 100%, calc(var(--pack-inspect-card-max-h) * 744 / 1040));
+  max-width: 100%;
+  height: auto;
+  max-height: var(--pack-inspect-card-max-h);
+  aspect-ratio: 744 / 1040;
+  margin-inline: auto;
+}
+
+.pack-inspect-flip.card-flip {
+  width: 100%;
+  height: auto;
+  max-height: var(--pack-inspect-card-max-h);
+  overflow: visible;
+}
+
+.pack-inspect-wrap .pack-inspect-flip.card-flip {
+  width: 100%;
+  max-height: inherit;
+}
+
+.pack-inspect-flip .card-flip-inner {
+  width: 100%;
+  max-height: var(--pack-inspect-card-max-h);
+}
+
+.pack-inspect-copy {
+  min-height: 0;
+}
+
+@media (max-width: 820px) {
+  .pack-draw-stage {
+    grid-template-columns: 1fr;
+  }
+
+  .pack-stage-visual {
+    min-height: 0;
+    height: auto;
+    align-content: start;
+    padding-block: 0.25rem;
+  }
+
+  .pack-card-copy {
+    height: auto;
+    max-height: none;
+    min-height: 0;
+    overflow: hidden;
+    justify-content: flex-start;
+  }
+
+  .pack-card-copy-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .pack-draw-stage.has-copy {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+    align-items: stretch;
+    min-height: 0;
+    flex: 1 1 auto;
+  }
+
+  .pack-draw-modal:not(.is-collection) {
+    --pack-reveal-card-max-h: calc(min(44vh, calc(92dvh - 10rem), 420px) * 0.92);
+    --pack-shell-max-h: min(52vh, calc(92dvh - 6rem), 480px);
+  }
+
+  .pack-draw-modal:not(.is-collection):has(.pack-draw-stage.has-copy) {
+    --pack-shell-max-h: min(44vh, calc(92dvh - 10rem), 420px);
+  }
+
+  .pack-inspect {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+    justify-items: stretch;
+    align-content: stretch;
+    gap: 0.55rem;
+    overflow: hidden;
+  }
+
+  .pack-inspect-stage {
+    width: 100%;
+    max-width: none;
+    justify-self: stretch;
+    height: auto;
+    padding: 0.35rem 0.5rem 0.45rem;
+  }
+
+  .pack-inspect-wrap.pack-card-wrap {
+    width: min(
+      268px,
+      74vw,
+      calc(var(--pack-inspect-card-max-h, 36vh) * 744 / 1040)
+    );
+    max-height: var(--pack-inspect-card-max-h, 36vh);
+    margin-inline: auto;
+  }
+
+  .pack-inspect-flip.card-flip {
+    width: 100%;
+    height: auto;
+    max-height: var(--pack-inspect-card-max-h, 36vh);
+  }
+
+  .pack-inspect-copy {
+    width: 100%;
+    height: auto;
+    max-height: none;
+    min-height: 0;
+  }
+
+  .pack-draw-modal.is-collection {
+    height: auto;
+    max-height: min(88dvh, 90vh);
+    --pack-inspect-card-max-h: calc(min(40vh, calc(92dvh - 11rem), 400px) * 0.9);
+  }
+
+  .pack-draw-modal.is-collection:has(.pack-inspect) {
+    height: min(88dvh, 90vh);
+    overflow: hidden;
+  }
+
+  /* Art zoom: keep the same centered fit as desktop (override compact layout) */
+  .pack-draw-stage.is-art-zoomed .pack-stage-visual {
+    height: 100%;
+    align-content: center;
+    padding: 0.5rem;
+  }
+
+  .pack-inspect.is-art-zoomed {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    padding: 0.5rem;
+  }
+
+  .pack-inspect.is-art-zoomed .pack-inspect-stage {
+    height: 100%;
+    flex: 1 1 auto;
+    padding: 0;
+    container-type: size;
+  }
+
+  .pack-inspect.is-art-zoomed .pack-inspect-wrap.pack-card-wrap {
+    width: min(100cqw, calc(100cqh * 744 / 1040));
+    height: min(100cqh, calc(100cqw * 1040 / 744));
+    max-width: 100%;
+    max-height: 100%;
+  }
+
+  .pack-inspect.is-art-zoomed .pack-inspect-flip.card-flip {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .pack-draw-backdrop {
+    align-items: stretch;
+    justify-content: stretch;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .pack-draw-modal {
+    width: 100%;
+    height: 100%;
+    max-height: 100dvh;
+    max-height: 100svh;
+    margin: 0;
+    border-radius: 0;
+    border-width: 0;
+    box-shadow: none;
+    padding:
+      max(0.75rem, var(--safe-top))
+      max(0.85rem, var(--safe-right))
+      max(0.75rem, var(--safe-bottom))
+      max(0.85rem, var(--safe-left));
+  }
+
+  .pack-draw-modal:not(.is-collection) {
+    height: 100%;
+    max-height: 100dvh;
+    max-height: 100svh;
+    --pack-reveal-card-max-h: calc(min(48vh, calc(100dvh - 10.5rem), 420px) * 0.94);
+    --pack-shell-max-h: min(52vh, calc(100dvh - 6rem), 480px);
+  }
+
+  .pack-draw-modal:not(.is-collection):has(.pack-draw-stage.has-copy) {
+    --pack-reveal-card-max-h: calc(min(42vh, calc(100dvh - 11.5rem), 380px) * 0.94);
+    --pack-shell-max-h: min(42vh, calc(100dvh - 11.5rem), 380px);
+  }
+
+  .pack-draw-modal.is-collection {
+    height: 100%;
+    max-height: 100dvh;
+    max-height: 100svh;
+    --pack-inspect-card-max-h: calc(min(38vh, calc(100dvh - 12rem), 340px) * 0.94);
+  }
+
+  .pack-draw-modal.is-collection:has(.pack-inspect) {
+    height: 100%;
+    max-height: 100dvh;
+    max-height: 100svh;
+    overflow: hidden;
+  }
+
+  .pack-inspect {
+    padding: 0.55rem 0.35rem 0.45rem;
+    border-radius: 0;
+    gap: 0.45rem;
+  }
+
+  .pack-inspect-stage {
+    padding: 0.25rem 0.25rem 0.35rem;
+  }
+
+  .pack-inspect-stage .pack-deck-index,
+  .pack-reveal-stack.is-browsable .pack-deck-index {
+    opacity: 0.7;
+  }
+
+  .pack-draw-stage.is-art-zoomed .pack-stage-visual {
+    height: 100%;
+    align-content: center;
+    padding: 0.5rem;
+  }
+
+  .pack-inspect.is-art-zoomed {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    padding: 0.5rem;
+  }
+
+  .pack-inspect.is-art-zoomed .pack-inspect-stage {
+    height: 100%;
+    flex: 1 1 auto;
+    padding: 0;
+    container-type: size;
+  }
+
+  .pack-inspect.is-art-zoomed .pack-inspect-wrap.pack-card-wrap {
+    width: min(100cqw, calc(100cqh * 744 / 1040));
+    height: min(100cqh, calc(100cqw * 1040 / 744));
+    max-width: 100%;
+    max-height: 100%;
+  }
+
+  .pack-inspect.is-art-zoomed .pack-inspect-flip.card-flip {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+  }
+}
+

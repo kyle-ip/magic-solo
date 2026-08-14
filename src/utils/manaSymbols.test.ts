@@ -6,14 +6,17 @@ import {
   resetManaSymbolCacheForTests,
   splitManaTokens,
 } from './manaSymbols'
+import { resetRemoteAssetCacheForTests } from './remoteAsset'
 
 describe('manaSymbols', () => {
   beforeEach(() => {
     resetManaSymbolCacheForTests()
+    resetRemoteAssetCacheForTests()
   })
 
   afterEach(() => {
     resetManaSymbolCacheForTests()
+    resetRemoteAssetCacheForTests()
     vi.unstubAllGlobals()
     vi.restoreAllMocks()
   })
@@ -72,7 +75,26 @@ describe('manaSymbols', () => {
     expect(probes).toBe(1)
   })
 
-  it('falls back to CDN when local image fails', async () => {
+  it('falls back to local when CDN image fails', async () => {
+    vi.stubGlobal(
+      'Image',
+      class {
+        onload: (() => void) | null = null
+        onerror: (() => void) | null = null
+        set src(url: string) {
+          queueMicrotask(() => {
+            if (String(url).includes('mana-symbols')) this.onload?.()
+            else this.onerror?.()
+          })
+        }
+      },
+    )
+    const url = await loadManaSymbol('R')
+    expect(url).toContain('mana-symbols')
+    expect(url).toContain('R.svg')
+  })
+
+  it('prefers CDN when it loads', async () => {
     vi.stubGlobal(
       'Image',
       class {

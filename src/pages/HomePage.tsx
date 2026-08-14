@@ -1,8 +1,27 @@
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { getDeck, getDeckIndex, getSharedRules } from '../data/deckRegistry'
+import { getDeckIndex, getSharedRules } from '../data/deckRegistry'
 import { deckMetaEn, deckMetaZh } from '../data/locale/deckMeta'
+import { CardImage, useResolvedCardImageUrl } from '../hooks/useCardImageSrc'
 import { assetUrl } from '../utils/assetUrl'
+
+function PathArtBg({ art }: { art: string | null | undefined }) {
+  const url = useResolvedCardImageUrl(art, { kind: 'art_crop' })
+  if (!art) return <div className="path-bg" aria-hidden="true" />
+  return (
+    <div
+      className="path-bg"
+      style={{ backgroundImage: `url(${url})` }}
+      aria-hidden="true"
+    />
+  )
+}
+
+/** Index heroArt is `…-art.jpg`; gallery thumb uses the matching front face. */
+function heroFrontFromArt(art: string | null | undefined): string | undefined {
+  if (!art) return undefined
+  return art.replace(/-art\.(jpe?g|webp|png)$/i, '-front.png')
+}
 
 export function HomePage() {
   const { t, i18n } = useTranslation()
@@ -11,12 +30,9 @@ export function HomePage() {
   const metaTable = i18n.language.startsWith('zh') ? deckMetaZh : deckMetaEn
 
   const deckPreviews = decks.map((entry) => {
-    const full = getDeck(entry.code)
-    const heroCard =
-      full?.cards.find((card) => card.images.artCrop === entry.heroArt) ?? full?.cards[0]
-    const thumb = heroCard?.images.display || heroCard?.images.front || entry.backImage
-    const art = heroCard?.images.artCrop || entry.heroArt
     const meta = metaTable[entry.code]
+    const art = entry.heroArt
+    const thumb = heroFrontFromArt(art) || entry.backImage
     return {
       ...entry,
       localizedName: meta?.name ?? entry.name,
@@ -47,11 +63,13 @@ export function HomePage() {
           </div>
           <div className="home-hero-art" aria-hidden="true">
             {deckPreviews.map((deck, i) => (
-              <img
+              <CardImage
                 key={deck.code}
                 className={`orbit-card orbit-${i}`}
-                src={assetUrl(deck.thumb)}
+                localPath={deck.thumb}
+                kind="normal"
                 alt=""
+                fetchPriority={i === 0 ? 'high' : undefined}
               />
             ))}
           </div>
@@ -78,15 +96,7 @@ export function HomePage() {
               className={`path-band theme-${deck.theme}`}
               style={{ animationDelay: `${index * 80}ms` }}
             >
-              <div
-                className="path-bg"
-                style={
-                  deck.art
-                    ? { backgroundImage: `url(${assetUrl(deck.art)})` }
-                    : undefined
-                }
-                aria-hidden="true"
-              />
+              <PathArtBg art={deck.art} />
               <div className="path-copy">
                 <p className="eyebrow">
                   {t('deck.challenge', { n: deck.challengeNumber })} ·{' '}
@@ -104,7 +114,13 @@ export function HomePage() {
                 </span>
                 <span className="btn ghost">{t('home.viewDeck')}</span>
               </div>
-              <img className="path-thumb" src={assetUrl(deck.thumb)} alt="" />
+              <CardImage
+                className="path-thumb"
+                localPath={deck.thumb}
+                kind="normal"
+                alt=""
+                loading="lazy"
+              />
             </Link>
           ))}
         </section>

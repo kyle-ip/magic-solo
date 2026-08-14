@@ -10,6 +10,8 @@ import { useSwipeNavigate } from '../hooks/useSwipeNavigate'
 import { preloadImage } from '../utils/imageCache'
 import { CardDetailsBody } from './CardDetailsBody'
 import { CardFaceButton } from './CardFaceButton'
+import '../styles/pack.css'
+import '../styles/deck.css'
 
 interface DrawnCardModalProps {
   card: DrawnCard | null

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
@@ -6,8 +6,10 @@ import {
   getClassicDeckIndex,
   getClassicDeckLocalizedName,
   getClassicDeckText,
+  loadAllClassicDecks,
 } from '../data/classicDeckRegistry'
 import type { ClassicFormat } from '../types'
+import '../styles/classic.css'
 
 const FORMATS: Array<ClassicFormat | 'all'> = [
   'all',
@@ -36,6 +38,19 @@ export function ClassicDecksPage() {
   const { t, i18n } = useTranslation()
   const [format, setFormat] = useState<ClassicFormat | 'all'>('all')
   const index = getClassicDeckIndex()
+  const [ready, setReady] = useState(() =>
+    index.every((e) => !!getClassicDeck(e.id)),
+  )
+
+  useEffect(() => {
+    let cancelled = false
+    void loadAllClassicDecks().then(() => {
+      if (!cancelled) setReady(true)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const decks = useMemo(() => {
     const rows = index.map((entry) => {
@@ -49,7 +64,7 @@ export function ClassicDecksPage() {
     })
     if (format === 'all') return rows
     return rows.filter((d) => d.format === format)
-  }, [format, i18n.language, index])
+  }, [format, i18n.language, index, ready])
 
   return (
     <main className="page classic-decks-page">

@@ -14,7 +14,8 @@
     "fetch:local": "node scripts/fetch-local-assets.mjs",
     "fetch:classic-decks": "node scripts/fetch-classic-from-spicerack.mjs",
     "generate:classic-decks": "node scripts/generate-classic-decks.mjs",
-    "fetch:mana-symbols": "node scripts/fetch-mana-symbols.mjs"
+    "fetch:mana-symbols": "node scripts/fetch-mana-symbols.mjs",
+    "generate:card-image-map": "node scripts/generate-card-image-map.mjs"
   },
   "dependencies": {
     "i18next": "^25.3.2",

@@ -1,0 +1,344 @@
+/* —— Classic decks —— */
+.classic-decks-page,
+.classic-deck-detail-page {
+  padding-block: 1.5rem 3rem;
+}
+
+.classic-decks-hero,
+.classic-detail-hero {
+  max-width: 42rem;
+  margin-bottom: 1.75rem;
+}
+
+.classic-decks-hero h1,
+.classic-detail-hero h1 {
+  margin: 0.2rem 0 0.65rem;
+  font-size: clamp(1.85rem, 3.2vw, 2.55rem);
+  letter-spacing: 0.01em;
+  color: #f3e6c8;
+}
+
+.classic-format-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 1.5rem;
+}
+
+.classic-format-chip {
+  appearance: none;
+  border: 1px solid rgba(184, 137, 58, 0.28);
+  background: rgba(28, 22, 16, 0.55);
+  color: rgba(231, 215, 184, 0.82);
+  font: inherit;
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: color 140ms ease, border-color 140ms ease, background 140ms ease;
+}
+
+.classic-format-chip:hover {
+  color: #f0d48a;
+  border-color: rgba(240, 212, 138, 0.4);
+}
+
+.classic-format-chip.is-active {
+  color: #1a140e;
+  background: linear-gradient(180deg, #e8c878, #c9a04a);
+  border-color: transparent;
+}
+
+.classic-deck-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 17.5rem), 1fr));
+  gap: 1rem;
+}
+
+.classic-deck-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-height: 100%;
+  padding: 1.1rem 1.15rem 1.2rem;
+  text-decoration: none;
+  color: inherit;
+  background:
+    linear-gradient(160deg, rgba(42, 32, 22, 0.72), rgba(18, 14, 10, 0.55));
+  border: 1px solid rgba(184, 137, 58, 0.22);
+  border-radius: 0.35rem;
+  transition:
+    border-color 160ms ease,
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.classic-deck-card:hover {
+  border-color: rgba(240, 212, 138, 0.45);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+}
+
+.classic-deck-card h2 {
+  margin: 0.15rem 0 0;
+  font-size: 1.28rem;
+  color: #f3e6c8;
+}
+
+.classic-deck-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.classic-deck-meta,
+.classic-deck-era {
+  margin: 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(231, 215, 184, 0.55);
+}
+
+.classic-deck-summary {
+  margin: 0.35rem 0 0.55rem;
+  flex: 1;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: rgba(231, 215, 184, 0.78);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.classic-deck-cta {
+  font-size: 0.86rem;
+  color: #f0d48a;
+  border-bottom: 1px solid rgba(240, 212, 138, 0.35);
+  align-self: flex-start;
+}
+
+.classic-color-dots {
+  display: inline-flex;
+  gap: 0.28rem;
+  align-items: center;
+}
+
+.classic-color-dot {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.classic-color-dot.is-W { background: #f0e6c8; }
+.classic-color-dot.is-U { background: #3d6db5; }
+.classic-color-dot.is-B { background: #2a2a2a; }
+.classic-color-dot.is-R { background: #c0402a; }
+.classic-color-dot.is-G { background: #2f7a3e; }
+.classic-color-dot.is-colorless,
+.classic-color-dot.is-C {
+  background: linear-gradient(135deg, #c8c4bc, #8a8680);
+}
+
+.classic-empty,
+.classic-loading {
+  color: rgba(231, 215, 184, 0.7);
+}
+
+.classic-detail-nav {
+  margin-bottom: 1rem;
+}
+
+.classic-detail-section {
+  margin-top: 1.75rem;
+  max-width: 48rem;
+}
+
+.classic-detail-section h2 {
+  margin: 0 0 0.55rem;
+  font-size: 1.15rem;
+  color: #f0d48a;
+}
+
+.classic-detail-section > p {
+  margin: 0;
+  line-height: 1.55;
+  color: rgba(231, 215, 184, 0.86);
+}
+
+.classic-key-cards {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 1rem 0.85rem;
+}
+
+.classic-key-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  align-items: stretch;
+}
+
+/* Reuse pack flip geometry: aspect-ratio on the transforming inner, faces absolute. */
+.classic-key-flip.card-flip {
+  width: 100%;
+  max-height: none;
+  align-self: stretch;
+  justify-self: stretch;
+}
+
+.classic-key-flip .card-flip-inner {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 5 / 7;
+  border-radius: 0.35rem;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.classic-key-flip .card-face {
+  border-radius: 0.35rem;
+  box-shadow: none;
+}
+
+.classic-key-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.45rem;
+  min-width: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.classic-key-card-name {
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  font-size: 0.92rem;
+  line-height: 1.25;
+  text-align: left;
+  color: rgba(231, 215, 184, 0.88);
+  cursor: pointer;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.classic-key-card-name:hover {
+  color: #f0d48a;
+}
+
+.classic-key-card-placeholder {
+  aspect-ratio: 5 / 7;
+  display: grid;
+  place-items: center;
+  padding: 0.5rem;
+  text-align: center;
+  font-size: 0.78rem;
+  color: rgba(231, 215, 184, 0.55);
+  background: rgba(28, 22, 16, 0.65);
+  border: 1px dashed rgba(184, 137, 58, 0.28);
+  border-radius: 0.35rem;
+}
+
+.classic-card-qty-badge {
+  flex: 0 0 auto;
+  min-width: 1.2rem;
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: rgba(240, 212, 138, 0.95);
+  line-height: 1.25;
+}
+
+.classic-key-badge {
+  flex: 0 0 auto;
+  padding: 0.08rem 0.38rem;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+  line-height: 1.3;
+  color: #1a140e;
+  background: rgba(231, 180, 110, 0.95);
+}
+
+.classic-key-card.is-key .classic-key-flip .card-flip-inner {
+  box-shadow: 0 0 0 1px rgba(240, 212, 138, 0.45);
+}
+
+.classic-detail-gallery-section {
+  max-width: none;
+}
+
+.classic-card-gallery {
+  margin-top: 1.35rem;
+}
+
+.classic-card-gallery h3 {
+  margin: 0 0 0.65rem;
+  font-size: 1rem;
+  color: rgba(240, 212, 138, 0.92);
+}
+
+.classic-full-cards {
+  grid-template-columns: repeat(auto-fill, minmax(13.2rem, 1fr));
+  gap: 1rem 0.85rem;
+}
+
+.classic-key-flip {
+  position: relative;
+}
+
+@media (max-width: 720px) {
+  .classic-full-cards,
+  .classic-key-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 420px) {
+  .classic-full-cards,
+  .classic-key-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.classic-detail-links ul {
+  list-style: none;
+  margin: 0.4rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+}
+
+.classic-detail-links a {
+  color: #f0d48a;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(240, 212, 138, 0.35);
+}
+
+.classic-detail-links a:hover {
+  border-bottom-color: rgba(240, 212, 138, 0.7);
+}
+
+@media (max-width: 720px) {
+  .site-header-actions {
+    gap: 0.55rem;
+  }
+}
+

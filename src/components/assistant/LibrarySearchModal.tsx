@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import type { AssistantCard } from '../../assistant/types'
 import type { DragPayload } from '../../assistant/dnd'
 import { ArenaCard } from '../challenge/ArenaCard'
-import { assetUrl } from '../../utils/assetUrl'
+import { CardImage } from '../../hooks/useCardImageSrc'
 
 type Props = {
   library: AssistantCard[]
@@ -90,7 +90,7 @@ export function LibrarySearchModal({
         </div>
         {library[0] ? (
           <div className="assistant-search-preview" aria-hidden="true">
-            <img src={assetUrl(library[0].image)} alt="" />
+            <CardImage localPath={library[0].image} kind="large" alt="" />
           </div>
         ) : null}
       </div>

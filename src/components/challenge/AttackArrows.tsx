@@ -74,11 +74,14 @@ export function AttackArrows({ rootRef, links }: AttackArrowsProps) {
     const ro = new ResizeObserver(measure)
     ro.observe(root)
     window.addEventListener('resize', measure)
-    const id = window.setInterval(measure, 120)
+    // Remeasure once after layout/paint (tap animations) — no permanent polling.
+    const raf = requestAnimationFrame(() => {
+      requestAnimationFrame(measure)
+    })
     return () => {
       ro.disconnect()
       window.removeEventListener('resize', measure)
-      window.clearInterval(id)
+      cancelAnimationFrame(raf)
     }
   }, [rootRef, links])
 

@@ -1,6 +1,7 @@
-/** Mana / card symbols: same-origin public/mana-symbols, CDN <img> fallback (no CORS fetch). */
+/** Mana / card symbols: Scryfall CDN first, same-origin public/mana-symbols fallback. */
 
 import { assetUrl } from './assetUrl'
+import { assetCandidates, resolveAssetUrl } from './remoteAsset'
 
 const SYMBOL_CDN = 'https://svgs.scryfall.io/card-symbols'
 
@@ -41,7 +42,7 @@ export function manaSymbolLocalUrl(braceContent: string): string {
 /** @deprecated Use cache helpers. */
 export function manaSymbolUrl(braceContent: string): string {
   const code = normalizeManaCode(braceContent)
-  return memory.get(code) ?? manaSymbolLocalUrl(code)
+  return memory.get(code) ?? manaSymbolCdnUrl(code)
 }
 
 /** Sync peek — URL if already primed this session. */
@@ -49,33 +50,12 @@ export function getCachedManaSymbolUrl(braceContent: string): string | null {
   return memory.get(normalizeManaCode(braceContent)) ?? null
 }
 
-/** Resolve only if the URL actually paints as an image. */
-function probeImage(url: string): Promise<boolean> {
-  return new Promise((resolve) => {
-    if (typeof Image === 'undefined') {
-      resolve(true)
-      return
-    }
-    const img = new Image()
-    img.onload = () => resolve(true)
-    img.onerror = () => resolve(false)
-    img.src = url
-  })
-}
-
-/**
- * Prefer local SVG (no CORS). Fall back to Scryfall CDN via <img> only —
- * never fetch() the CDN (that triggers CORS errors in the browser).
- */
 async function resolveSymbolUrl(code: string): Promise<string> {
-  const localUrl = manaSymbolLocalUrl(code)
-  if (await probeImage(localUrl)) return localUrl
-
-  const cdnUrl = manaSymbolCdnUrl(code)
-  if (await probeImage(cdnUrl)) return cdnUrl
-
-  // Last resort: still return local path so UI can text-fallback on <img onError>.
-  return localUrl
+  const localPath = `mana-symbols/${normalizeManaCode(code)}.svg`
+  return resolveAssetUrl(localPath, {
+    kind: 'mana_symbol',
+    strategy: 'remote-first',
+  })
 }
 
 /** Prime a symbol at most once per session; subsequent mounts reuse the URL. */
@@ -98,7 +78,22 @@ export function loadManaSymbol(braceContent: string): Promise<string> {
   return task
 }
 
-/** Common symbols seen in costs / oracle — warm cache on app start. */
+/**
+ * Warm only frequently seen cost symbols on startup.
+ * Full COMMON_MANA_SYMBOLS remains available for callers that want a wider set.
+ */
+export const STARTUP_MANA_SYMBOLS = [
+  'W',
+  'U',
+  'B',
+  'R',
+  'G',
+  'C',
+  'X',
+  ...Array.from({ length: 16 }, (_, i) => String(i)),
+] as const
+
+/** Common symbols seen in costs / oracle — optional wider warm set. */
 export const COMMON_MANA_SYMBOLS = [
   'W',
   'U',
@@ -141,11 +136,23 @@ export const COMMON_MANA_SYMBOLS = [
 
 /** Fire-and-forget preload; safe to call once from main. */
 export function preloadCommonManaSymbols(
-  codes: readonly string[] = COMMON_MANA_SYMBOLS,
+  codes: readonly string[] = STARTUP_MANA_SYMBOLS,
 ): void {
   for (const code of codes) {
     void loadManaSymbol(code)
   }
+}
+
+/** Optimistic CDN URL before async resolve finishes (remote-first). */
+export function peekManaSymbolUrl(braceContent: string): string {
+  const code = normalizeManaCode(braceContent)
+  return (
+    memory.get(code) ??
+    assetCandidates(`mana-symbols/${code}.svg`, {
+      kind: 'mana_symbol',
+      strategy: 'remote-first',
+    }).primary
+  )
 }
 
 /** @internal Vitest only — clears memory/inflight so mocks stay honest. */

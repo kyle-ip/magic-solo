@@ -7,6 +7,7 @@ import {
   getClassicDeck,
   getClassicDeckLocalizedName,
   getClassicDeckText,
+  loadClassicDeck,
 } from '../data/classicDeckRegistry'
 import {
   displayName,
@@ -14,11 +15,13 @@ import {
 } from '../data/randomCard'
 import { resolveCardsByNameProgressive } from '../data/resolveClassicCards'
 import type { ClassicDeckListEntry } from '../types'
+import '../styles/classic.css'
 
 export function ClassicDeckDetailPage() {
   const { id = '' } = useParams()
   const { t, i18n } = useTranslation()
-  const deck = getClassicDeck(id)
+  const [deck, setDeck] = useState(() => getClassicDeck(id))
+  const [deckReady, setDeckReady] = useState(() => !!getClassicDeck(id))
 
   const [resolved, setResolved] = useState<Map<string, DrawnCard | null>>(
     () => new Map(),
@@ -26,6 +29,20 @@ export function ClassicDeckDetailPage() {
   const [loading, setLoading] = useState(true)
   const [inspect, setInspect] = useState<DrawnCard | null>(null)
   const [flipKey, setFlipKey] = useState<Record<string, number>>({})
+
+  useEffect(() => {
+    let cancelled = false
+    setDeckReady(!!getClassicDeck(id))
+    setDeck(getClassicDeck(id))
+    void loadClassicDeck(id).then((loaded) => {
+      if (cancelled) return
+      setDeck(loaded)
+      setDeckReady(true)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [id])
 
   const allNames = useMemo(() => {
     if (!deck) return [] as string[]
@@ -69,6 +86,10 @@ export function ClassicDeckDetailPage() {
       cancelled = true
     }
   }, [allNames, deck, i18n.language])
+
+  if (!deckReady) {
+    return null
+  }
 
   if (!deck) {
     return <Navigate to="/classic-decks" replace />

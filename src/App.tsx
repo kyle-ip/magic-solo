@@ -1,18 +1,33 @@
-import { useLayoutEffect, useSyncExternalStore } from 'react'
+import { lazy, Suspense, useLayoutEffect, useSyncExternalStore } from 'react'
 import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
 import { FloatingNav } from './components/FloatingNav'
 import { SiteFooter } from './components/SiteFooter'
 import { SiteHeader } from './components/SiteHeader'
-import { AssistantPage } from './pages/AssistantPage'
-import { ChallengePage } from './pages/ChallengePage'
-import { ClassicDeckDetailPage } from './pages/ClassicDeckDetailPage'
-import { ClassicDecksPage } from './pages/ClassicDecksPage'
-import { DeckPage } from './pages/DeckPage'
 import { HomePage } from './pages/HomePage'
 import {
   getHideSiteChrome,
   subscribeHideSiteChrome,
 } from './utils/siteChrome'
+
+const DeckPage = lazy(() =>
+  import('./pages/DeckPage').then((m) => ({ default: m.DeckPage })),
+)
+const ClassicDecksPage = lazy(() =>
+  import('./pages/ClassicDecksPage').then((m) => ({
+    default: m.ClassicDecksPage,
+  })),
+)
+const ClassicDeckDetailPage = lazy(() =>
+  import('./pages/ClassicDeckDetailPage').then((m) => ({
+    default: m.ClassicDeckDetailPage,
+  })),
+)
+const ChallengePage = lazy(() =>
+  import('./pages/ChallengePage').then((m) => ({ default: m.ChallengePage })),
+)
+const AssistantPage = lazy(() =>
+  import('./pages/AssistantPage').then((m) => ({ default: m.AssistantPage })),
+)
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -52,17 +67,19 @@ export default function App() {
     <div className={`app-shell ${isArena ? 'is-arena' : ''}`}>
       <ScrollToTop />
       {!hideChrome ? <SiteHeader /> : null}
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/decks/:setCode" element={<DeckPage />} />
-        <Route path="/classic-decks" element={<ClassicDecksPage />} />
-        <Route path="/classic-decks/:id" element={<ClassicDeckDetailPage />} />
-        <Route path="/experience/decks/:setCode" element={<LegacyModeDeckRedirect />} />
-        <Route path="/assistant/decks/:setCode" element={<LegacyModeDeckRedirect />} />
-        <Route path="/challenge/:setCode" element={<ChallengePage />} />
-        <Route path="/assistant/:setCode" element={<AssistantPage />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <Suspense fallback={null}>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/decks/:setCode" element={<DeckPage />} />
+          <Route path="/classic-decks" element={<ClassicDecksPage />} />
+          <Route path="/classic-decks/:id" element={<ClassicDeckDetailPage />} />
+          <Route path="/experience/decks/:setCode" element={<LegacyModeDeckRedirect />} />
+          <Route path="/assistant/decks/:setCode" element={<LegacyModeDeckRedirect />} />
+          <Route path="/challenge/:setCode" element={<ChallengePage />} />
+          <Route path="/assistant/:setCode" element={<AssistantPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
       {!hideChrome ? <SiteFooter /> : null}
       {!hideChrome ? <FloatingNav /> : null}
     </div>
