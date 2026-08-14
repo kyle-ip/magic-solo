@@ -667,10 +667,10 @@ export function PackDrawButton() {
       if (phase !== 'revealed' && phase !== 'flip') return
       if (e.key === 'ArrowLeft') {
         e.preventDefault()
-        selectCard(activeIdx - 1)
+        stepCard(-1)
       } else if (e.key === 'ArrowRight') {
         e.preventDefault()
-        selectCard(activeIdx + 1)
+        stepCard(1)
       }
     }
     const prevOverflow = document.body.style.overflow
@@ -1038,9 +1038,39 @@ export function PackDrawButton() {
     }
   }
 
-  const stepCard = (delta: number) => {
+  /**
+   * Browse like a physical stack: move the top card to the bottom (or pull
+   * the bottom to the top). Peeks on the right are always the next cards.
+   * delta > 0 → drag left → reveal the card that was on the right.
+   * delta < 0 → drag right → reveal the card that rises from under/left.
+   */
+  const rotateDeck = (delta: -1 | 1) => {
     if (phase !== 'revealed' && phase !== 'flip') return
-    selectCard(activeIdx + delta)
+    if (cards.length < 2) return
+    setArtZoomed(false)
+    setFlippingIdx(null)
+
+    const n = cards.length
+    // Bring desired card to index 0 by rotating the whole deck + flip state.
+    const from = ((activeIdx % n) + n) % n
+    const to = ((from + delta) % n + n) % n
+    const order = Array.from({ length: n }, (_, i) => (to + i) % n)
+
+    const nextCards = order.map((i) => cards[i]!)
+    const nextFlips = order.map((i) => flipTurns[i] ?? 0)
+    setCards(nextCards)
+    setFlipTurns(nextFlips)
+    setActiveIdx(0)
+
+    const top = nextCards[0]
+    setCollected(top ? isCollected(top.id) : false)
+    if (top && isShowingCardFront(nextFlips[0] ?? 0)) {
+      triggerFrontFx(top)
+    }
+  }
+
+  const stepCard = (delta: number) => {
+    rotateDeck(delta < 0 ? -1 : 1)
   }
 
   const packSwipe = useSwipeNavigate(
@@ -1438,7 +1468,7 @@ export function PackDrawButton() {
                         return (
                       <div
                         className="pack-inspect-stage"
-                        {...(artZoomed ? panBind : inspectSwipe)}
+                        {...(artZoomed ? panBind : inspectSwipe.bind)}
                       >
                       <div
                         key={inspect.id}
@@ -1451,10 +1481,22 @@ export function PackDrawButton() {
                           inspectFlipping ? 'is-flipping' : '',
                           inspectGlowing ? 'is-glowing' : '',
                           inspectFading ? 'is-fading' : '',
+                          inspectSwipe.holding ? 'is-holding' : '',
+                          inspectSwipe.dragging ? 'is-dragging' : '',
+                          inspectSwipe.dragHint < 0 ? 'is-drag-prev' : '',
+                          inspectSwipe.dragHint > 0 ? 'is-drag-next' : '',
                         ]
                           .filter(Boolean)
                           .join(' ')}
-                        style={panStyle}
+                        style={{
+                          ...panStyle,
+                          ['--pack-hold-x' as string]: inspectSwipe.holding
+                            ? `${inspectSwipe.dragX}px`
+                            : undefined,
+                          ['--pack-hold-rot' as string]: inspectSwipe.holding
+                            ? `${inspectSwipe.dragX * 0.12}deg`
+                            : undefined,
+                        }}
                       >
                         {showInspectFxLayer ? (
                           <span
@@ -1579,6 +1621,7 @@ export function PackDrawButton() {
                           'pack-reveal-stack',
                           'is-deck',
                           cardInPack ? 'is-in-tear' : 'is-browsable',
+                          phase === 'tearing' ? 'is-charging' : '',
                           tearReacting ? 'is-tap-react' : '',
                         ]
                           .filter(Boolean)
@@ -1587,7 +1630,7 @@ export function PackDrawButton() {
                         {...(phase === 'revealed' || phase === 'flip'
                           ? artZoomed
                             ? {}
-                            : packSwipe
+                            : packSwipe.bind
                           : {})}
                       >
                         <div
@@ -1611,13 +1654,12 @@ export function PackDrawButton() {
                             const faceUp = isShowingCardFront(flipTurns[index] ?? 0)
                             const cardRevealed = (flipTurns[index] ?? 0) >= 1
                             const awaitingFlip = deckSettled && !cardRevealed
-                            // Stable under-stack ranks so both peeks stay visible (1 = deepest).
-                            const behindRank = !deckSettled
-                              ? 0
-                              : slots
-                                  .map((_, i) => i)
-                                  .filter((i) => i !== activeIdx)
-                                  .indexOf(index) + 1
+                            // Right-hand peeks follow deck order: 1 = next card, …
+                            const n = slots.length
+                            const behindRank =
+                              !deckSettled || isActive || n === 0
+                                ? 0
+                                : ((index - activeIdx + n) % n)
                             const depth = cardInPack
                               ? index
                               : deckSettled
@@ -1646,6 +1688,26 @@ export function PackDrawButton() {
                                   deckSettled ? fxClass : '',
                                   glowing && faceUp ? 'is-glowing' : '',
                                   fading && faceUp ? 'is-fading' : '',
+                                  isActive &&
+                                  deckSettled &&
+                                  packSwipe.holding
+                                    ? 'is-holding'
+                                    : '',
+                                  isActive &&
+                                  deckSettled &&
+                                  packSwipe.dragging
+                                    ? 'is-dragging'
+                                    : '',
+                                  isActive &&
+                                  deckSettled &&
+                                  packSwipe.dragHint < 0
+                                    ? 'is-drag-prev'
+                                    : '',
+                                  isActive &&
+                                  deckSettled &&
+                                  packSwipe.dragHint > 0
+                                    ? 'is-drag-next'
+                                    : '',
                                 ]
                                   .filter(Boolean)
                                   .join(' ')}
@@ -1654,7 +1716,9 @@ export function PackDrawButton() {
                                     ? {
                                         zIndex: deckSettled
                                           ? isActive
-                                            ? 5
+                                            ? packSwipe.holding
+                                              ? 6
+                                              : 5
                                             : Math.max(1, 3 - depth)
                                           : depth,
                                         ['--pack-depth' as string]:
@@ -1662,6 +1726,14 @@ export function PackDrawButton() {
                                         ['--pack-flip-ms' as string]:
                                           isActive && flippingIdx === index
                                             ? `${activeFlipMs}ms`
+                                            : undefined,
+                                        ['--pack-hold-x' as string]:
+                                          isActive && packSwipe.holding
+                                            ? `${packSwipe.dragX}px`
+                                            : undefined,
+                                        ['--pack-hold-rot' as string]:
+                                          isActive && packSwipe.holding
+                                            ? `${packSwipe.dragX * 0.12}deg`
                                             : undefined,
                                       }
                                     : undefined
@@ -1756,6 +1828,7 @@ export function PackDrawButton() {
                             className={[
                               'pack-shell',
                               'is-tearing',
+                              phase === 'tearing' ? 'is-charging' : '',
                               tearReacting ? 'is-tap-react' : '',
                             ]
                               .filter(Boolean)

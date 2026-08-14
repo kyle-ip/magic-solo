@@ -5,6 +5,7 @@ import { deckMetaEn, deckMetaZh } from '../data/locale/deckMeta'
 import { deckCardToDrawn, wantsZh } from '../data/randomCard'
 import { useSwipeNavigate } from '../hooks/useSwipeNavigate'
 import { useArtZoomPan } from '../hooks/useArtZoomPan'
+import { useCardHoldDrag } from '../hooks/useCardHoldDrag'
 import { useCardImageSrc } from '../hooks/useCardImageSrc'
 import type { DeckCard } from '../types'
 import { preloadAssetCandidates } from '../utils/remoteAsset'
@@ -113,6 +114,8 @@ function CardModalBody({
   )
 
   const swipe = useSwipeNavigate((delta) => stepCard(delta), canBrowse && !artZoomed)
+  const hold = useCardHoldDrag(!canBrowse && !artZoomed)
+  const gesture = canBrowse ? swipe : hold
   const { panStyle, panBind } = useArtZoomPan(artZoomed)
 
   useEffect(() => {
@@ -186,15 +189,29 @@ function CardModalBody({
               .join(' ')}
             aria-label={displayTitle}
           >
-            <div className="pack-inspect-stage" {...(artZoomed ? panBind : swipe)}>
+            <div className="pack-inspect-stage" {...(artZoomed ? panBind : gesture.bind)}>
               <div
                 className={[
                   'pack-card-wrap',
                   'pack-inspect-wrap',
                   'is-expanded',
                   'is-active',
-                ].join(' ')}
-                style={panStyle}
+                  gesture.holding ? 'is-holding' : '',
+                  gesture.dragging ? 'is-dragging' : '',
+                  gesture.dragHint < 0 ? 'is-drag-prev' : '',
+                  gesture.dragHint > 0 ? 'is-drag-next' : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+                style={{
+                  ...panStyle,
+                  ['--pack-hold-x' as string]: gesture.holding
+                    ? `${gesture.dragX}px`
+                    : undefined,
+                  ['--pack-hold-rot' as string]: gesture.holding
+                    ? `${gesture.dragX * 0.12}deg`
+                    : undefined,
+                }}
               >
                 <div className="card-flip pack-inspect-flip">
                   <CardFaceButton

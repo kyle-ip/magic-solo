@@ -20,6 +20,7 @@ import {
   type DrawnCard,
 } from '../data/randomCard'
 import { useArtZoomPan } from '../hooks/useArtZoomPan'
+import { useCardHoldDrag } from '../hooks/useCardHoldDrag'
 import { PackCollectionCabinet } from './PackCollectionCabinet'
 
 const FLIP_MS = 220
@@ -308,6 +309,7 @@ export function SingleDrawButton() {
   const frontSrc = waiting ? packBackSrc : card?.frontImageUrl || packBackSrc
   const showDetails = !!card && revealed
   const { panStyle, panBind } = useArtZoomPan(artZoomed)
+  const hold = useCardHoldDrag(!artZoomed)
 
   const dialog =
     open && typeof document !== 'undefined'
@@ -395,6 +397,7 @@ export function SingleDrawButton() {
                   <div
                     className="pack-reveal-stack is-deck is-browsable"
                     style={panStyle}
+                    {...(artZoomed ? {} : hold.bind)}
                   >
                     <div className="pack-card-deck" role="list">
                       <div
@@ -408,13 +411,23 @@ export function SingleDrawButton() {
                           card && !waiting ? fxClass : '',
                           fxGlow && faceUp ? 'is-glowing' : '',
                           fxFade && faceUp ? 'is-fading' : '',
+                          hold.holding ? 'is-holding' : '',
+                          hold.dragging ? 'is-dragging' : '',
+                          hold.dragHint < 0 ? 'is-drag-prev' : '',
+                          hold.dragHint > 0 ? 'is-drag-next' : '',
                         ]
                           .filter(Boolean)
                           .join(' ')}
                         style={{
-                          zIndex: 5,
+                          zIndex: hold.holding ? 6 : 5,
                           ['--pack-flip-ms' as string]: flipping
                             ? `${flipMs}ms`
+                            : undefined,
+                          ['--pack-hold-x' as string]: hold.holding
+                            ? `${hold.dragX}px`
+                            : undefined,
+                          ['--pack-hold-rot' as string]: hold.holding
+                            ? `${hold.dragX * 0.12}deg`
                             : undefined,
                         }}
                       >

@@ -1,13 +1,11 @@
 import { useCallback, useRef, useState, type MouseEvent, type PointerEvent } from 'react'
 
-const SWIPE_MIN_PX = 48
-const SWIPE_RATIO = 1.15
-/** Ignore jitter below this so a click with slight drift still flips. */
-const SWIPE_CLAIM_PX = 28
-/** Visual follow cap while dragging (px). */
+/** Match swipe claim so hold-drag feels the same before a tap-to-flip. */
+const DRAG_CLAIM_PX = 28
+const DRAG_RATIO = 1.15
 const DRAG_VISUAL_MAX = 28
 
-type SwipeHandlers = {
+type HoldHandlers = {
   onPointerDown: (e: PointerEvent) => void
   onPointerMove: (e: PointerEvent) => void
   onPointerUp: (e: PointerEvent) => void
@@ -15,15 +13,12 @@ type SwipeHandlers = {
   onClickCapture: (e: MouseEvent | PointerEvent) => void
 }
 
-export type SwipeNavigateResult = {
-  bind: SwipeHandlers
-  /** Finger/mouse is down on the swipe surface. */
+export type CardHoldDragResult = {
+  bind: HoldHandlers
   holding: boolean
-  /** True once the gesture is claimed as a horizontal drag. */
   dragging: boolean
-  /** Live horizontal offset for lift/tilt feedback (clamped). */
   dragX: number
-  /** -1 = toward previous, 1 = toward next, 0 = no clear intent yet. */
+  /** -1 = drag right, 1 = drag left (same sign as pack browse hints). */
   dragHint: -1 | 0 | 1
 }
 
@@ -32,7 +27,7 @@ function prefersReducedMotion(): boolean {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
-function swipeHaptic(pattern: number | number[]): void {
+function holdHaptic(pattern: number | number[]): void {
   if (typeof navigator === 'undefined' || !('vibrate' in navigator)) return
   if (prefersReducedMotion()) return
   try {
@@ -43,25 +38,21 @@ function swipeHaptic(pattern: number | number[]): void {
 }
 
 /**
- * Horizontal swipe / left-button drag → prev/next.
- * Exposes hold/drag feedback so the active card can float and tremor
- * while browsing — distinct from a tap-to-flip.
+ * Hold-to-float + horizontal drag tremor for single-card previews.
+ * Does not change cards — only visual feedback to distinguish from tap-flip.
  */
-export function useSwipeNavigate(
-  onStep: (delta: -1 | 1) => void,
-  enabled = true,
-): SwipeNavigateResult {
+export function useCardHoldDrag(enabled = true): CardHoldDragResult {
   const start = useRef<{ x: number; y: number; id: number } | null>(null)
-  const suppressClick = useRef(false)
-  const capturing = useRef(false)
+  const draggingRef = useRef(false)
   const hinted = useRef(false)
+  const suppressClick = useRef(false)
   const suppressTimer = useRef<number | null>(null)
+  const holdTimer = useRef<number | null>(null)
 
   const [holding, setHolding] = useState(false)
   const [dragging, setDragging] = useState(false)
   const [dragX, setDragX] = useState(0)
   const [dragHint, setDragHint] = useState<-1 | 0 | 1>(0)
-  const holdTimer = useRef<number | null>(null)
 
   const clearHoldTimer = useCallback(() => {
     if (holdTimer.current != null) {
@@ -72,17 +63,13 @@ export function useSwipeNavigate(
 
   const resetVisual = useCallback(() => {
     clearHoldTimer()
+    draggingRef.current = false
     setHolding(false)
     setDragging(false)
     setDragX(0)
     setDragHint(0)
     hinted.current = false
   }, [clearHoldTimer])
-
-  const endGesture = useCallback(() => {
-    start.current = null
-    capturing.current = false
-  }, [])
 
   const armClickSuppress = useCallback(() => {
     suppressClick.current = true
@@ -98,14 +85,13 @@ export function useSwipeNavigate(
       if (!enabled) return
       if (e.pointerType === 'mouse' && e.button !== 0) return
       start.current = { x: e.clientX, y: e.clientY, id: e.pointerId }
-      suppressClick.current = false
-      capturing.current = false
+      draggingRef.current = false
       hinted.current = false
+      suppressClick.current = false
       setDragging(false)
       setDragX(0)
       setDragHint(0)
       clearHoldTimer()
-      // Delay lift so a quick tap-to-flip does not flash the browse float.
       holdTimer.current = window.setTimeout(() => {
         holdTimer.current = null
         setHolding(true)
@@ -120,31 +106,23 @@ export function useSwipeNavigate(
       const dx = e.clientX - start.current.x
       const dy = e.clientY - start.current.y
 
-      if (!capturing.current) {
-        if (Math.abs(dx) < SWIPE_CLAIM_PX) return
-        if (Math.abs(dx) < Math.abs(dy) * SWIPE_RATIO) return
-        capturing.current = true
+      if (!draggingRef.current) {
+        if (Math.abs(dx) < DRAG_CLAIM_PX) return
+        if (Math.abs(dx) < Math.abs(dy) * DRAG_RATIO) return
+        draggingRef.current = true
         clearHoldTimer()
         setHolding(true)
         setDragging(true)
-        try {
-          ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
-        } catch {
-          /* ignore */
-        }
       }
 
-      if (capturing.current) {
-        e.preventDefault()
-        const visual = Math.max(-DRAG_VISUAL_MAX, Math.min(DRAG_VISUAL_MAX, dx * 0.45))
-        setDragX(visual)
-        const hint: -1 | 0 | 1 =
-          Math.abs(dx) < SWIPE_MIN_PX * 0.55 ? 0 : dx < 0 ? 1 : -1
-        setDragHint(hint)
-        if (hint !== 0 && !hinted.current) {
-          hinted.current = true
-          swipeHaptic(8)
-        }
+      const visual = Math.max(-DRAG_VISUAL_MAX, Math.min(DRAG_VISUAL_MAX, dx * 0.45))
+      setDragX(visual)
+      const hint: -1 | 0 | 1 =
+        Math.abs(dx) < DRAG_CLAIM_PX * 1.2 ? 0 : dx < 0 ? 1 : -1
+      setDragHint(hint)
+      if (hint !== 0 && !hinted.current) {
+        hinted.current = true
+        holdHaptic(8)
       }
     },
     [enabled, clearHoldTimer],
@@ -156,35 +134,23 @@ export function useSwipeNavigate(
         resetVisual()
         return
       }
-      const origin = start.current
-      const wasCapturing = capturing.current
-      endGesture()
+      const didDrag = draggingRef.current
+      start.current = null
       resetVisual()
-      if (wasCapturing) {
-        try {
-          ;(e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId)
-        } catch {
-          /* ignore */
-        }
-      }
-      const dx = e.clientX - origin.x
-      const dy = e.clientY - origin.y
-      if (Math.abs(dx) < SWIPE_MIN_PX) return
-      if (Math.abs(dx) < Math.abs(dy) * SWIPE_RATIO) return
-      armClickSuppress()
-      onStep(dx < 0 ? 1 : -1)
+      // Clear drag should not also flip the card.
+      if (didDrag) armClickSuppress()
     },
-    [enabled, endGesture, onStep, armClickSuppress, resetVisual],
+    [enabled, resetVisual, armClickSuppress],
   )
 
   const onPointerCancel = useCallback(
     (e: PointerEvent) => {
       if (start.current?.id === e.pointerId) {
-        endGesture()
+        start.current = null
         resetVisual()
       }
     },
-    [endGesture, resetVisual],
+    [resetVisual],
   )
 
   const onClickCapture = useCallback((e: MouseEvent | PointerEvent) => {
