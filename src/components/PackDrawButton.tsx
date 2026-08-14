@@ -1023,21 +1023,6 @@ export function PackDrawButton() {
     openInspect(next)
   }
 
-  const selectCard = (index: number) => {
-    if (cards.length === 0) return
-    const next = ((index % cards.length) + cards.length) % cards.length
-    setActiveIdx(next)
-    setArtZoomed(false)
-    // Don't let an in-flight flip on another card swallow the first tap.
-    setFlippingIdx(null)
-    const card = cards[next]
-    setCollected(card ? isCollected(card.id) : false)
-    // Flash when browsing onto a card already showing its front.
-    if (card && isShowingCardFront(flipTurns[next] ?? 0)) {
-      triggerFrontFx(card)
-    }
-  }
-
   /**
    * Browse like a physical stack: move the top card to the bottom (or pull
    * the bottom to the top). Peeks on the right are always the next cards.
