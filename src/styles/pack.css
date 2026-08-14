@@ -210,6 +210,23 @@
   overscroll-behavior: contain;
 }
 
+/* PC: vertically center details beside the card art */
+@media (min-width: 821px) {
+  .pack-card-copy {
+    justify-content: center;
+  }
+
+  .pack-card-copy-cluster {
+    flex: 0 1 auto;
+    max-height: 100%;
+  }
+
+  .pack-card-copy-body {
+    flex: 0 1 auto;
+    max-height: 100%;
+  }
+}
+
 .pack-card-copy h3 {
   margin: 0.15rem 0 0.35rem;
   font-family: var(--font-display);
@@ -226,8 +243,7 @@
 .pack-card-name-link:hover h3,
 .pack-card-name-link:focus-visible h3 {
   color: var(--gold);
-  text-decoration: underline;
-  text-underline-offset: 0.12em;
+  text-decoration: none;
 }
 
 .pack-en-name-link {
@@ -237,8 +253,7 @@
 .pack-en-name-link:hover .pack-en-name,
 .pack-en-name-link:focus-visible .pack-en-name {
   color: var(--gold);
-  text-decoration: underline;
-  text-underline-offset: 0.1em;
+  text-decoration: none;
 }
 
 .pack-card-copy h4 {
@@ -2586,6 +2601,10 @@
     min-height: 0;
     overflow: hidden;
     justify-content: flex-start;
+  }
+
+  .pack-card-copy-cluster {
+    flex: 1 1 auto;
   }
 
   .pack-card-copy-body {

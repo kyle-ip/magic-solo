@@ -27,8 +27,7 @@
 .classic-title-link:hover h1,
 .classic-title-link:focus-visible h1 {
   color: #f0d48a;
-  text-decoration: underline;
-  text-underline-offset: 0.18em;
+  text-decoration: none;
 }
 
 .classic-format-filters {

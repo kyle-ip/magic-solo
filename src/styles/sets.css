@@ -224,8 +224,7 @@
 .set-title-link:hover h1,
 .set-title-link:focus-visible h1 {
   color: #f0d48a;
-  text-decoration: underline;
-  text-underline-offset: 0.18em;
+  text-decoration: none;
 }
 
 .set-gallery-page .deck-hero-card img {
