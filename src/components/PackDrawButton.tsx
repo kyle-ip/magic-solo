@@ -35,7 +35,7 @@ import {
 } from '../data/randomCard'
 import { CardDetailsBody } from './CardDetailsBody'
 
-const PACK_ART = assetUrl('assets/pack/booster-pack.png')
+const PACK_ART = assetUrl('assets/pack/booster-pack.webp')
 const TEAR_EDGE = assetUrl('assets/pack/tear-edge.png')
 const PACK_SIZE = 3
 
