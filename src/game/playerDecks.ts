@@ -35,6 +35,12 @@ export type PlayerEffect =
   | { type: 'etb_exile_opp_graveyard' }
   | { type: 'activate_sac_damage'; amount: number }
   | { type: 'activate_draw'; manaCost: string; amount: number }
+  | {
+      type: 'activate_monstrosity'
+      manaCost: string
+      power: number
+      toughness: number
+    }
   | { type: 'anthem_other_flyers'; power: number; toughness: number }
   | { type: 'attack_guide' }
 

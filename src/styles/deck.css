@@ -168,6 +168,232 @@
   margin-top: 0.4rem;
 }
 
+.battle-history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.battle-history-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.85rem;
+  align-items: center;
+  width: 100%;
+  padding: 0.85rem 1rem;
+  text-align: left;
+  border: 1px solid rgba(184, 137, 58, 0.28);
+  border-radius: 0.55rem;
+  background: linear-gradient(180deg, rgba(28, 22, 16, 0.72), rgba(14, 11, 8, 0.82));
+  color: inherit;
+  cursor: pointer;
+  transition:
+    border-color 0.12s ease,
+    transform 0.12s ease;
+}
+
+.battle-history-row:hover,
+.battle-history-row:focus-visible {
+  border-color: rgba(240, 212, 138, 0.65);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.battle-history-badge {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.28rem 0.5rem;
+  border-radius: 0.3rem;
+  border: 1px solid rgba(184, 137, 58, 0.35);
+  color: rgba(240, 212, 138, 0.92);
+}
+
+.battle-history-row.is-won .battle-history-badge {
+  border-color: rgba(140, 180, 90, 0.5);
+  color: rgba(170, 210, 120, 0.95);
+}
+
+.battle-history-row.is-lost .battle-history-badge {
+  border-color: rgba(196, 85, 55, 0.5);
+  color: rgba(230, 140, 110, 0.95);
+}
+
+.battle-history-main {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.battle-history-title {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 650;
+  color: #f3e6c8;
+}
+
+.battle-history-meta {
+  margin: 0;
+  font-size: 0.8rem;
+  color: rgba(231, 215, 184, 0.72);
+}
+
+.battle-history-chevron {
+  color: rgba(224, 180, 90, 0.75);
+  font-size: 1.1rem;
+}
+
+.battle-history-empty {
+  margin: 0;
+  color: rgba(231, 215, 184, 0.7);
+  font-size: 0.92rem;
+}
+
+.battle-history-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+
+.battle-history-backdrop {
+  z-index: 55;
+  align-items: flex-start;
+  overflow-y: auto;
+}
+
+.battle-history-panel {
+  margin: 1.5rem auto;
+  width: min(68rem, 98vw);
+  padding: 1.6rem 1.5rem 1.4rem;
+  border-radius: 12px;
+  border: 1px solid rgba(184, 137, 58, 0.42);
+  background:
+    linear-gradient(180deg, rgba(36, 28, 18, 0.96), rgba(12, 10, 8, 0.96));
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
+  text-align: left;
+  color: #e7d7b8;
+}
+
+.battle-history-panel .settlement-eyebrow {
+  margin: 0 0 0.45rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(224, 180, 90, 0.88);
+}
+
+.battle-history-panel.is-won .settlement-eyebrow {
+  color: rgba(170, 210, 120, 0.92);
+}
+
+.battle-history-panel.is-lost .settlement-eyebrow {
+  color: rgba(230, 140, 110, 0.92);
+}
+
+.battle-history-panel h2 {
+  margin: 0 0 0.55rem;
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  color: #f6ebd0;
+}
+
+.battle-history-panel .settlement-lead {
+  margin: 0 0 0.55rem;
+  max-width: none;
+  color: rgba(231, 215, 184, 0.86);
+  line-height: 1.45;
+}
+
+.battle-history-panel .settlement-matchup {
+  margin: 0 0 0.35rem;
+  font-size: 0.9rem;
+  color: rgba(224, 180, 90, 0.92);
+}
+
+.battle-history-panel .settlement-matchup span {
+  margin: 0 0.45rem;
+  opacity: 0.65;
+}
+
+.battle-history-panel .settlement-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+  margin: 1rem 0;
+  text-align: center;
+}
+
+.battle-history-panel .settlement-stats div {
+  padding: 0.55rem 0.4rem;
+  border: 1px solid rgba(184, 137, 58, 0.22);
+  border-radius: 0.4rem;
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.battle-history-panel .settlement-stats dt {
+  margin: 0;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(231, 215, 184, 0.62);
+}
+
+.battle-history-panel .settlement-stats dd {
+  margin: 0.2rem 0 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #f3e6c8;
+}
+
+.battle-history-panel .settlement-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.battle-history-panel-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 0.85rem;
+}
+
+.battle-history-panel-head .settlement-lead,
+.battle-history-panel-head .settlement-matchup {
+  text-align: left;
+}
+
+.battle-history-when {
+  margin: 0.35rem 0 0;
+  font-size: 0.82rem;
+  color: rgba(231, 215, 184, 0.65);
+}
+
+.battle-history-empty-report {
+  margin: 0.75rem 0;
+  font-size: 0.9rem;
+  color: rgba(231, 215, 184, 0.7);
+}
+
+.battle-history-asks {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.65rem;
+}
+
+.battle-history-panel.is-won {
+  border-color: rgba(140, 180, 90, 0.55);
+}
+
+.battle-history-panel.is-lost {
+  border-color: rgba(196, 85, 55, 0.55);
+}
+
 .rules-panel {
   background:
     linear-gradient(180deg, rgba(20, 16, 12, 0.42), rgba(12, 9, 6, 0.58));
@@ -591,6 +817,10 @@
 }
 
 @media (max-width: 900px) {
+  :root {
+    --page-width: min(calc(100% - 2 * var(--page-gutter)), var(--page-max));
+  }
+
   html,
   body {
     overflow-x: clip;
@@ -616,7 +846,7 @@
 
   .site-footer,
   .page {
-    width: min(calc(100% - 2 * var(--page-gutter)), 1680px);
+    width: var(--page-width);
     padding-left: max(0px, var(--safe-left));
     padding-right: max(0px, var(--safe-right));
   }
@@ -628,7 +858,7 @@
   }
 
   .site-footer-inner {
-    width: min(calc(100% - 2 * var(--page-gutter)), 1680px);
+    width: var(--page-width);
     padding-left: max(0px, var(--safe-left));
     padding-right: max(0px, var(--safe-right));
   }
@@ -873,14 +1103,19 @@
   .arena-topbar-actions .lang-switch {
     flex: 0 0 auto;
     width: auto;
+    height: 2.15rem;
   }
 
   .arena-topbar-actions .lang-switch select {
     width: auto;
     min-width: 3.6rem;
     max-width: 4.5rem;
-    padding: 0.4rem 1.35rem 0.4rem 0.45rem;
+    height: 2.15rem;
+    min-height: 2.15rem;
+    max-height: 2.15rem;
+    padding: 0 1.35rem 0 0.55rem;
     font-size: 0.72rem;
+    line-height: 1;
     white-space: nowrap;
   }
 
@@ -924,9 +1159,11 @@
 }
 
 .challenge-setup {
-  max-width: min(72rem, 94vw);
+  width: var(--page-width);
+  max-width: 100%;
+  box-sizing: border-box;
   margin: 2rem auto 3rem;
-  padding: 0 0.5rem;
+  padding: 0 clamp(0.5rem, 2.5vw, 1.75rem);
 }
 
 .setup-field {
@@ -1050,7 +1287,7 @@
   justify-content: center;
   /* Keep centered cards clear of the absolute hero strip */
   padding-inline: min(180px, 22%);
-  align-items: flex-end;
+  align-items: center;
   gap: 0.55rem 0.5rem;
 }
 
@@ -1323,6 +1560,72 @@
 
 .prompt-shell-scry {
   width: min(560px, 100%);
+}
+
+.prompt-shell-cards {
+  width: min(720px, 100%);
+}
+
+.prompt-card-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1rem;
+  justify-content: center;
+  max-height: min(52vh, 28rem);
+  overflow: auto;
+  padding: 0.15rem;
+}
+
+.prompt-pick-card {
+  position: relative;
+  width: 5.6rem;
+  padding: 0;
+  border: 1px solid rgba(184, 137, 58, 0.45);
+  border-radius: 0.35rem;
+  background: #120e0a;
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    transform 0.12s ease,
+    border-color 0.12s ease,
+    box-shadow 0.12s ease;
+}
+
+.prompt-pick-card:hover,
+.prompt-pick-card:focus-visible {
+  transform: translateY(-0.2rem) scale(1.04);
+  border-color: rgba(240, 212, 138, 0.85);
+  box-shadow: 0 0.45rem 1.1rem rgba(0, 0, 0, 0.45);
+  outline: none;
+  z-index: 1;
+}
+
+.prompt-pick-card img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 5 / 7;
+  object-fit: cover;
+  vertical-align: top;
+}
+
+.prompt-pick-card-name {
+  display: block;
+  padding: 0.28rem 0.3rem 0.35rem;
+  font-size: 0.68rem;
+  line-height: 1.2;
+  color: #f3e6c8;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 520px) {
+  .prompt-pick-card {
+    width: 4.6rem;
+  }
 }
 
 .scry-preview {

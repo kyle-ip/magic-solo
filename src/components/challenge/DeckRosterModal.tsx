@@ -229,6 +229,9 @@ export function DeckRosterModal({
                   <ul>
                     {group.cards.map((card) => {
                       const label = zh ? card.nameZh : card.name
+                      const simplified =
+                        /Challenge Experience|挑战体验/i.test(card.oracleText) ||
+                        /Challenge Experience|挑战体验/i.test(card.oracleTextZh)
                       return (
                         <li key={card.id}>
                           <button
@@ -238,6 +241,14 @@ export function DeckRosterModal({
                           >
                             <span className="deck-roster-qty">{card.quantity}</span>
                             <span className="deck-roster-name">{label}</span>
+                            {simplified ? (
+                              <span
+                                className="deck-roster-simplified"
+                                title={t('challenge.simplifiedCardHint')}
+                              >
+                                {t('challenge.simplifiedCard')}
+                              </span>
+                            ) : null}
                             {card.kind === 'land' ? (
                               <span className="deck-roster-land-tag">
                                 {t('challenge.land')}

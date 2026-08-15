@@ -5,6 +5,8 @@ export function coachTipKey(state: GameState): string {
   if (state.pendingCast) {
     if (state.pendingCast.mode === 'damage') return 'targetDamage'
     if (state.pendingCast.mode === 'pump') return 'targetPump'
+    if (state.pendingCast.mode === 'fangs') return 'targetFangs'
+    if (state.pendingCast.mode === 'destroy') return 'targetDestroy'
     if (state.pendingCast.mode === 'fight_mine') return 'fightMine'
     return 'fightTheirs'
   }

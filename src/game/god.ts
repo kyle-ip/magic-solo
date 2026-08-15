@@ -10,6 +10,7 @@ import {
 } from './helpers'
 import { challengeAttackLinks, setFx } from './fx'
 import { pushLog, resetLogSeq } from './log'
+import { canBlockAttacker, creatureHasDeathtouch } from './playerAbilities'
 import type { CardDef, CardInstance, GameState, SetupConfig } from './types'
 
 export function startGod(
@@ -347,7 +348,9 @@ export function resolveGodCombat(state: GameState): GameState {
       (next.flags.xenagosTrample && atk.isGod) ||
       atk.keywords.some((k) => /trample/i.test(k))
     const blockers = next.player.creatures.filter(
-      (c) => next.blockAssignments[c.instanceId] === atk.instanceId,
+      (c) =>
+        next.blockAssignments[c.instanceId] === atk.instanceId &&
+        canBlockAttacker(c, atk),
     )
 
     if (blockers.length === 0) {
@@ -358,6 +361,7 @@ export function resolveGodCombat(state: GameState): GameState {
     } else {
       const blockPower = blockers.reduce((s, b) => s + b.power, 0)
       const blockToughness = blockers.reduce((s, b) => s + (b.toughness - b.markedDamage), 0)
+      const blockerDeathtouch = blockers.some((b) => creatureHasDeathtouch(b))
       if (atk.keywords.some((k) => /deathtouch/i.test(k)) || /deathtouch/i.test(atk.oracleText)) {
         next = {
           ...next,
@@ -389,8 +393,11 @@ export function resolveGodCombat(state: GameState): GameState {
         }
       }
       // Damage to attacker (not Xenagos if revelers remain — lethal still marks)
+      const atkToughLeft = (atk.toughness ?? 0) - atk.markedDamage
+      const killsAttacker =
+        (blockerDeathtouch && blockPower > 0) || blockPower >= atkToughLeft
       if (!atk.isGod || revelersOf(next).length === 0) {
-        if (blockPower >= (atk.toughness ?? 0) - atk.markedDamage) {
+        if (killsAttacker) {
           next = destroyChallengePermanent(next, atk.instanceId)
         }
       } else if (atk.isGod) {

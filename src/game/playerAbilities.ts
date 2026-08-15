@@ -1,4 +1,5 @@
 import { findCardDef, type PlayerEffect } from './playerDecks'
+import { heroBoost } from './heroes'
 import { pushLog } from './log'
 import type { GameState, PlayerCreature } from './types'
 
@@ -96,7 +97,11 @@ export function creatureHasWard(creature: PlayerCreature): boolean {
 }
 
 export function isActivatableEffect(effect: PlayerEffect): boolean {
-  return effect.type === 'activate_sac_damage' || effect.type === 'activate_draw'
+  return (
+    effect.type === 'activate_sac_damage' ||
+    effect.type === 'activate_draw' ||
+    effect.type === 'activate_monstrosity'
+  )
 }
 
 export function getCreatureEffect(
@@ -117,9 +122,83 @@ export function canActivateCreature(
   if (!c || c.tapped || c.summoningSickness) return false
   const effect = getCreatureEffect(state, c)
   if (!effect || !isActivatableEffect(effect)) return false
+  if (effect.type === 'activate_monstrosity' && c.monstrous) return false
   if (effect.type === 'activate_draw') {
     // Affordability checked at activation time via autoTap
     return true
   }
   return true
+}
+
+function textHasKeyword(
+  keywords: string[],
+  oracleText: string | undefined,
+  re: RegExp,
+): boolean {
+  if (keywords.some((k) => re.test(k))) return true
+  return oracleText ? re.test(oracleText) : false
+}
+
+export function creatureHasFlying(creature: {
+  keywords: string[]
+  oracleText?: string
+}): boolean {
+  return textHasKeyword(creature.keywords, creature.oracleText, /flying/i)
+}
+
+export function creatureHasReach(creature: {
+  keywords: string[]
+  oracleText?: string
+}): boolean {
+  return textHasKeyword(creature.keywords, creature.oracleText, /reach/i)
+}
+
+export function creatureHasDeathtouch(creature: {
+  keywords: string[]
+  oracleText?: string
+}): boolean {
+  return textHasKeyword(creature.keywords, creature.oracleText, /deathtouch/i)
+}
+
+/** Delta vs printed P/T (+ hero ETB boost). Anthem / temp / counters / monstrosity. */
+export function creatureEnhancement(
+  state: GameState,
+  creature: PlayerCreature,
+): { power: number; toughness: number; monstrous: boolean } | null {
+  const def = findCardDef(creature.defId, state.playerDeckId)
+  if (!def || def.power == null || def.toughness == null) {
+    if (creature.monstrous) return { power: 0, toughness: 0, monstrous: true }
+    return null
+  }
+  const boost = heroBoost(state.player.heroes)
+  const baseP = def.power + boost.power
+  const baseT = def.toughness + boost.toughness
+  const curP = effectivePower(state, creature)
+  const curT = effectiveToughness(state, creature)
+  const power = curP - baseP
+  const toughness = curT - baseT
+  if (!creature.monstrous && power === 0 && toughness === 0) return null
+  return { power, toughness, monstrous: Boolean(creature.monstrous) }
+}
+
+export function formatEnhancementLabel(
+  enh: { power: number; toughness: number; monstrous: boolean },
+): string {
+  const parts: string[] = []
+  if (enh.monstrous) parts.push('M')
+  if (enh.power !== 0 || enh.toughness !== 0) {
+    const p = enh.power > 0 ? `+${enh.power}` : String(enh.power)
+    const t = enh.toughness > 0 ? `+${enh.toughness}` : String(enh.toughness)
+    parts.push(`${p}/${t}`)
+  }
+  return parts.join(' ')
+}
+
+/** True when blocker can legally block this attacker (flying/reach). */
+export function canBlockAttacker(
+  blocker: { keywords: string[]; oracleText?: string },
+  attacker: { keywords: string[]; oracleText?: string },
+): boolean {
+  if (!creatureHasFlying(attacker)) return true
+  return creatureHasFlying(blocker) || creatureHasReach(blocker)
 }

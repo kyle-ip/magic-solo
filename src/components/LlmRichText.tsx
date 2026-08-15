@@ -2,8 +2,8 @@ import { Fragment, type ReactNode } from 'react'
 
 /**
  * Lightweight, XSS-safe rendering for LLM replies.
- * Supports: paragraphs, line breaks, **bold**, *italic*, `code`,
- * unordered (- / *) and ordered (1.) lists.
+ * Supports: headings (#–###), paragraphs, line breaks, **bold**, *italic*,
+ * `code`, unordered (- / *) and ordered (1.) lists.
  */
 
 function renderInline(text: string, keyPrefix: string): ReactNode[] {
@@ -55,52 +55,88 @@ function stripListMarker(line: string): string {
   return line.replace(/^\s*(?:[-*•]|\d+[.)])\s+/, '')
 }
 
-function renderBlock(block: string, bi: number): ReactNode {
-  const lines = block.split('\n').filter((l, idx, arr) => {
-    // keep empty lines only if not collapsing entire block
-    return !(l.trim() === '' && (idx === 0 || idx === arr.length - 1))
-  })
-  if (lines.length === 0) return null
+function headingMatch(line: string): RegExpMatchArray | null {
+  return /^(#{1,3})\s+(.+?)\s*$/.exec(line.trim())
+}
 
-  const allUl = lines.every((l) => !l.trim() || isUlLine(l))
-  const allOl = lines.every((l) => !l.trim() || isOlLine(l))
-  const listLines = lines.filter((l) => l.trim())
+function renderBlocks(text: string): ReactNode[] {
+  const lines = text.split('\n')
+  const nodes: ReactNode[] = []
+  let i = 0
+  let bi = 0
 
-  if (listLines.length > 0 && allUl && listLines.every(isUlLine)) {
-    return (
-      <ul key={`ul-${bi}`} className="llm-md-list">
-        {listLines.map((line, li) => (
-          <li key={`uli-${bi}-${li}`}>
-            {renderInline(stripListMarker(line), `uli-${bi}-${li}`)}
-          </li>
-        ))}
-      </ul>
+  while (i < lines.length) {
+    const raw = lines[i]
+    if (!raw.trim()) {
+      i += 1
+      continue
+    }
+
+    const hm = headingMatch(raw)
+    if (hm) {
+      const level = hm[1].length as 1 | 2 | 3
+      const Tag = level === 1 ? 'h3' : level === 2 ? 'h4' : 'h5'
+      nodes.push(
+        <Tag key={`h-${bi++}`} className={`llm-md-h llm-md-h${level}`}>
+          {renderInline(hm[2], `h-${bi}`)}
+        </Tag>,
+      )
+      i += 1
+      continue
+    }
+
+    if (isUlLine(raw) || isOlLine(raw)) {
+      const ordered = isOlLine(raw)
+      const items: string[] = []
+      while (i < lines.length) {
+        const L = lines[i]
+        if (!L.trim()) {
+          // allow a blank line inside a list only if next line continues the list
+          const next = lines[i + 1]
+          if (next && (ordered ? isOlLine(next) : isUlLine(next))) {
+            i += 1
+            continue
+          }
+          break
+        }
+        if (ordered ? !isOlLine(L) : !isUlLine(L)) break
+        items.push(stripListMarker(L))
+        i += 1
+      }
+      const ListTag = ordered ? 'ol' : 'ul'
+      nodes.push(
+        <ListTag key={`list-${bi++}`} className="llm-md-list">
+          {items.map((item, li) => (
+            <li key={`li-${bi}-${li}`}>
+              {renderInline(item, `li-${bi}-${li}`)}
+            </li>
+          ))}
+        </ListTag>,
+      )
+      continue
+    }
+
+    const paraLines: string[] = []
+    while (i < lines.length) {
+      const L = lines[i]
+      if (!L.trim()) break
+      if (headingMatch(L) || isUlLine(L) || isOlLine(L)) break
+      paraLines.push(L)
+      i += 1
+    }
+    const parts: ReactNode[] = []
+    paraLines.forEach((line, li) => {
+      if (li > 0) parts.push(<br key={`br-${bi}-${li}`} />)
+      parts.push(...renderInline(line, `p-${bi}-${li}`))
+    })
+    nodes.push(
+      <p key={`p-${bi++}`} className="llm-md-p">
+        {parts}
+      </p>,
     )
   }
 
-  if (listLines.length > 0 && allOl && listLines.every(isOlLine)) {
-    return (
-      <ol key={`ol-${bi}`} className="llm-md-list">
-        {listLines.map((line, li) => (
-          <li key={`oli-${bi}-${li}`}>
-            {renderInline(stripListMarker(line), `oli-${bi}-${li}`)}
-          </li>
-        ))}
-      </ol>
-    )
-  }
-
-  // Paragraph with soft line breaks
-  const parts: ReactNode[] = []
-  lines.forEach((line, li) => {
-    if (li > 0) parts.push(<br key={`br-${bi}-${li}`} />)
-    parts.push(...renderInline(line, `p-${bi}-${li}`))
-  })
-  return (
-    <p key={`p-${bi}`} className="llm-md-p">
-      {parts}
-    </p>
-  )
+  return nodes
 }
 
 export function LlmRichText({
@@ -124,10 +160,9 @@ export function LlmRichText({
     )
   }
 
-  const blocks = normalized.split(/\n{2,}/)
   return (
     <div className={className ? `llm-md ${className}` : 'llm-md'}>
-      {blocks.map((block, i) => renderBlock(block.trim(), i))}
+      {renderBlocks(normalized)}
     </div>
   )
 }

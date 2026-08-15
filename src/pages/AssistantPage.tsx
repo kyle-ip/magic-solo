@@ -671,7 +671,7 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
             onClick={() => setSearchOpen(true)}
           />
           <AssistantLlmAdvisor state={state} />
-          <LanguageSwitch compact />
+          <LanguageSwitch compact asButton />
         </div>
       </header>
 

@@ -5,13 +5,28 @@ import {
   millHorde,
 } from './helpers'
 import { pushLog } from './log'
-import { applyAttackTriggers, effectivePower } from './playerAbilities'
+import {
+  applyAttackTriggers,
+  creatureHasDeathtouch,
+  effectivePower,
+} from './playerAbilities'
 import type { AttackLink, GameState, PlayerCreature } from './types'
 
 function attackPower(state: GameState, creature: PlayerCreature): number {
   let power = effectivePower(state, creature)
   if (creature.keywords.some((k) => /double strike/i.test(k))) power *= 2
   return power
+}
+
+function dealPlayerAttackDamage(
+  state: GameState,
+  targetId: string,
+  amount: number,
+  attacker: PlayerCreature,
+): GameState {
+  return dealDamageToChallengeCreature(state, targetId, amount, {
+    deathtouch: creatureHasDeathtouch(attacker),
+  })
 }
 
 /** Resolve player attacks based on selectedAttackers + attackAssignments. */
@@ -85,7 +100,7 @@ export function resolvePlayerCombat(state: GameState): GameState {
     return checkHordeWin(next)
   }
 
-  const byTarget: Record<string, number> = {}
+  // Per-attacker damage so deathtouch applies per source (not merged).
   let lifeGain = 0
   for (let i = 0; i < attackers.length; i += 1) {
     const a = attackers[i]
@@ -94,34 +109,35 @@ export function resolvePlayerCombat(state: GameState): GameState {
       next = pushLog(next, 'attackNoTarget', 'info', { name: a.name })
       continue
     }
-    byTarget[target] = (byTarget[target] ?? 0) + powers[i]
     if (a.keywords.some((k) => /lifelink/i.test(k))) lifeGain += powers[i]
-  }
 
-  for (const [targetId, dmg] of Object.entries(byTarget)) {
     if (next.code === 'tfth') {
-      next = dealDamageToChallengeCreature(next, targetId, dmg)
+      next = dealPlayerAttackDamage(next, target, powers[i], a)
     } else if (next.code === 'tdag') {
-      const target = next.challenge.battlefield.find((c) => c.instanceId === targetId)
-      if (!target) continue
-      if (target.isGod && next.challenge.battlefield.some((c) => c.isReveler)) {
+      const enemy = next.challenge.battlefield.find((c) => c.instanceId === target)
+      if (!enemy) continue
+      if (enemy.isGod && next.challenge.battlefield.some((c) => c.isReveler)) {
         const updated = {
-          ...target,
-          markedDamage: target.markedDamage + dmg,
+          ...enemy,
+          markedDamage: enemy.markedDamage + powers[i],
         }
         next = {
           ...next,
           challenge: {
             ...next.challenge,
             battlefield: next.challenge.battlefield.map((c) =>
-              c.instanceId === targetId ? updated : c,
+              c.instanceId === target ? updated : c,
             ),
           },
         }
-        next = pushLog(next, 'xenagosDamagedStuck', 'info', { n: dmg })
-        next = addFxPop(next, { targetId, kind: 'damage', amount: dmg }, 'damage')
+        next = pushLog(next, 'xenagosDamagedStuck', 'info', { n: powers[i] })
+        next = addFxPop(
+          next,
+          { targetId: target, kind: 'damage', amount: powers[i] },
+          'damage',
+        )
       } else {
-        next = dealDamageToChallengeCreature(next, targetId, dmg)
+        next = dealPlayerAttackDamage(next, target, powers[i], a)
       }
     }
   }

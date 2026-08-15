@@ -24,6 +24,10 @@ interface ArenaCardProps {
   dimmed?: boolean
   compact?: boolean
   badge?: string | null
+  /** Bottom-left buff / monstrosity marker, e.g. "+2/+1" or "M +3/+3" */
+  enhancement?: string | null
+  /** Force showing the P/T chip even without damage */
+  showPt?: boolean
   /** Transient combat VFX */
   hitFx?: boolean
   strikeFx?: boolean
@@ -54,6 +58,8 @@ function ArenaCardInner({
   dimmed,
   compact,
   badge,
+  enhancement,
+  showPt = false,
   hitFx,
   strikeFx,
   floater,
@@ -77,15 +83,17 @@ function ArenaCardInner({
     dimmed ? 'is-dimmed' : '',
     hitFx ? 'is-hit' : '',
     strikeFx ? 'is-striking' : '',
+    enhancement ? 'is-enhanced' : '',
     onPointerDown ? 'is-draggable' : '',
   ]
     .filter(Boolean)
     .join(' ')
 
-  const showPt = toughness != null && markedDamage > 0
-  const pt = showPt
-    ? `${power ?? 0}/${Math.max(0, toughness - markedDamage)}`
-    : null
+  const damaged = toughness != null && markedDamage > 0
+  const displayPt =
+    toughness != null && (showPt || damaged || Boolean(enhancement))
+      ? `${power ?? 0}/${Math.max(0, toughness - markedDamage)}`
+      : null
 
   const floaterText =
     floater?.amount != null
@@ -106,14 +114,24 @@ function ArenaCardInner({
       />
       {badge ? <span className="arena-card-badge">{badge}</span> : null}
       {note ? <span className="arena-card-note">{note}</span> : null}
+      {enhancement ? (
+        <span className="arena-card-buff" title={enhancement}>
+          {enhancement}
+        </span>
+      ) : null}
       {markedDamage > 0 ? (
         <span className="arena-card-dmg" title={`−${markedDamage}`}>
           −{markedDamage}
         </span>
       ) : null}
-      {pt ? (
-        <span className="arena-card-pt is-damaged" title={pt}>
-          {pt}
+      {displayPt ? (
+        <span
+          className={`arena-card-pt${damaged ? ' is-damaged' : ''}${
+            enhancement && !damaged ? ' is-buffed' : ''
+          }`}
+          title={displayPt}
+        >
+          {displayPt}
         </span>
       ) : null}
       {floaterText ? (

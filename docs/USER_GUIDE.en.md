@@ -96,7 +96,7 @@ A simplified solo PvE board (Arena-inspired), not a full Comprehensive Rules eng
 | `burn` | Challenge Burn | R aggro / burn |
 | `skies` | Azure Skies | WU flyers + removal |
 
-Only **implemented** abilities fire (evergreen keywords plus selected effects such as Fog, fight, burn-to-any, mill/draw, flashback, delve discount, prowess, flyer anthem, attack-reveal triggers, and some activated abilities). Many printed cards are approximated or simplified.
+Only **implemented** abilities fire (supported evergreen today: haste, flash, vigilance, lifelink, prowess, flyer anthem, flying/reach blocking, deathtouch; double strike approximated as ×2 power; player-side trample has limited effect without multi-blocker assignment. Also Fog, fight, burn-to-any, mill/draw, flashback, delve discount, attack-reveal triggers, monstrosity activation, and choice prompts). Many printed cards are approximated or simplified. Azure Skies uses white removal you can actually pay with W/U mana.
 
 ### During play
 

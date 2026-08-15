@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { CARD_EDITOR_ENABLED } from '../features'
@@ -61,7 +61,8 @@ export function FloatingNav({ arenaMode = false }: FloatingNavProps) {
 
   // Match pre-LLM visibility: nothing on plain pages until scroll, unless opted-in key.
   if (!showHome && !showBackTop && !showLlm) return null
-  if (arenaMode && !showLlm) return null
+  // Challenge / assistant board: keep the arena chrome-free (no settings/chat FABs).
+  if (arenaMode) return null
 
   return (
     <div className="floating-nav" role="navigation" aria-label={t('app.floatingNav')}>

@@ -40,7 +40,7 @@ function kindOf(typeLine) {
   if (/Land/i.test(typeLine)) return 'land'
   if (/Creature/i.test(typeLine)) return 'creature'
   if (/Instant/i.test(typeLine)) return 'instant'
-  if (/Sorcery/i.test(typeLine)) return 'sorcery'
+  if (/Sorcery|Enchantment|Artifact/i.test(typeLine)) return 'sorcery'
   return 'instant'
 }
 
@@ -162,12 +162,23 @@ const DECKS = {
         effect: { type: 'anthem_other_flyers', power: 1, toughness: 1 },
       },
       {
-        name: 'Cast Down',
+        name: 'Journey to Nowhere',
         quantity: 4,
-        nameZh: '湮灭',
-        effect: { type: 'destroy_creature', nonlegendary: true },
+        nameZh: '渺无人烟之旅',
+        effect: { type: 'destroy_creature' },
+        oracleNote:
+          '(Challenge Experience: exile is treated as destroying the challenge permanent.)',
+        oracleNoteZh: '（挑战体验：放逐按消灭挑战永久物处理。）',
       },
-      { name: 'Murder', quantity: 4, effect: { type: 'destroy_creature' } },
+      {
+        name: 'Banishing Light',
+        quantity: 4,
+        nameZh: '放逐之光',
+        effect: { type: 'destroy_creature' },
+        oracleNote:
+          '(Challenge Experience: exile is treated as destroying the challenge permanent.)',
+        oracleNoteZh: '（挑战体验：放逐按消灭挑战永久物处理。）',
+      },
       { name: 'Opt', quantity: 4, effect: { type: 'scry_draw', scry: 1, draw: 1 } },
       { name: 'Brainstorm', quantity: 2, effect: { type: 'brainstorm' } },
       { name: 'Plains', quantity: 12, effect: { type: 'none' } },

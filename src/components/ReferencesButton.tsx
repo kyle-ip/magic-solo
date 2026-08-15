@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { getDeckIndex, getDeckRules, getSharedRules } from '../data/deckRegistry'
+import { PackHeadIconButton } from './PackHeadIconButton'
 
 export function ReferencesButton() {
   const { t, i18n } = useTranslation()
@@ -68,13 +69,11 @@ export function ReferencesButton() {
             >
               <header className="references-modal-head">
                 <h2 id="references-modal-title">{t('home.references')}</h2>
-                <button
-                  type="button"
-                  className="references-text-btn"
+                <PackHeadIconButton
+                  icon="close"
+                  label={t('deck.close')}
                   onClick={() => setOpen(false)}
-                >
-                  {t('deck.close')}
-                </button>
+                />
               </header>
               <ul className="reference-list">
                 {referenceLinks.map((source) => (

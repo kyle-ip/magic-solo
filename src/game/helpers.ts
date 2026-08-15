@@ -84,6 +84,7 @@ export function dealDamageToChallengeCreature(
   state: GameState,
   instanceId: string,
   amount: number,
+  opts: { deathtouch?: boolean } = {},
 ): GameState {
   let next = { ...state, challenge: { ...state.challenge, battlefield: [...state.challenge.battlefield] } }
   const idx = next.challenge.battlefield.findIndex((c) => c.instanceId === instanceId)
@@ -93,7 +94,9 @@ export function dealDamageToChallengeCreature(
   next.challenge.battlefield[idx] = card
   next = pushLog(next, 'takesDamage', 'info', { name: card.name, n: amount })
   next = addFxPop(next, { targetId: instanceId, kind: 'damage', amount }, 'damage')
-  if (effectiveToughness(card) <= 0 && !isIndestructible(next, card)) {
+  const lethal =
+    effectiveToughness(card) <= 0 || (opts.deathtouch && amount > 0)
+  if (lethal && !isIndestructible(next, card)) {
     next = destroyChallengePermanent(next, instanceId)
   }
   return next

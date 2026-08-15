@@ -83,6 +83,8 @@ export interface PlayerCreature {
   /** Until-EOT pumps to clear on turn begin */
   tempPower?: number
   tempToughness?: number
+  /** Monstrosity resolved at least once */
+  monstrous?: boolean
 }
 
 export interface PlayerLand {
@@ -140,6 +142,10 @@ export type PromptKind =
   | 'vitality_return'
   | 'confirm_continue'
   | 'scry'
+  | 'brainstorm'
+  | 'choose_edict'
+  | 'choose_crawl'
+  | 'choose_crawl_zombie'
 
 export type LogTone = 'info' | 'good' | 'bad' | 'cast'
 

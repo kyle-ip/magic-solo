@@ -35,6 +35,9 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
   --page-gutter: clamp(0.75rem, 3.5vw, 1.25rem);
+  /* Shared content column — header, footer inner, deck/challenge pages */
+  --page-max: 1680px;
+  --page-width: min(75vw, var(--page-max));
   color: var(--parchment);
   background: var(--ink);
   font-family: var(--font-body);
@@ -218,7 +221,7 @@ select {
 .site-footer,
 .page {
   /* ~3/4 viewport on desktop — footer bar is full-bleed; inner is constrained */
-  width: min(75vw, 1680px);
+  width: var(--page-width);
   margin-inline: auto;
   padding-inline: 0;
 }
@@ -243,7 +246,7 @@ select {
 }
 
 .site-header-inner {
-  width: min(75vw, 1680px);
+  width: var(--page-width);
   margin-inline: auto;
   display: flex;
   align-items: center;
@@ -466,7 +469,7 @@ a.references-text-btn:visited {
 }
 
 .site-footer-inner {
-  width: min(75vw, 1680px);
+  width: var(--page-width);
   margin-inline: auto;
   display: flex;
   flex-wrap: wrap;
@@ -1250,15 +1253,17 @@ h2 {
     gap: 0.45rem;
   }
 
-  /* Challenge / assistant arenas */
+  /* Challenge / assistant arenas — fixed card scale, page may scroll */
   .arena-root.is-playing {
-    padding: 0.45rem;
-    padding-top: calc(0.45rem + var(--safe-top));
-    padding-right: calc(0.45rem + var(--safe-right));
-    padding-bottom: calc(0.55rem + var(--safe-bottom));
-    padding-left: calc(0.45rem + var(--safe-left));
-    gap: 0.3rem;
-    overflow: hidden;
+    padding: 0.35rem;
+    padding-top: calc(0.35rem + var(--safe-top));
+    padding-right: calc(0.35rem + var(--safe-right));
+    padding-bottom: calc(var(--hand-dock-h, 12rem) + 0.6rem);
+    padding-left: calc(0.35rem + var(--safe-left));
+    gap: var(--arena-gap, 0.2rem);
+    overflow: visible;
+    height: auto;
+    max-height: none;
   }
 
   .arena-topbar {
@@ -1271,12 +1276,18 @@ h2 {
   }
 
   .arena-card,
-  .opponent-row .arena-card {
-    width: min(104px, 28vw);
+  .opponent-row .arena-card,
+  .player-row .bf-board .arena-card {
+    height: var(--bf-card-h, 10rem);
+    width: calc(var(--bf-card-h, 10rem) * 744 / 1040);
+    max-height: none;
+    max-width: none;
+    aspect-ratio: 744 / 1040;
   }
 
   .hand-card {
-    width: min(88px, 22vw);
+    width: calc(var(--hand-full, 7rem) * 744 / 1040);
+    max-width: none;
   }
 
   .arena-log {
@@ -1322,36 +1333,24 @@ h2 {
 
   .assistant-zone-piles .zone-pile {
     width: 72px;
-    height: 96px;
-  }
-
-  .assistant-zone-piles .zone-pile-stack {
-    left: 8px;
-    right: 10px;
-    top: 8px;
-    bottom: 22px;
+    height: auto;
+    padding: 0.3rem 0.25rem;
   }
 
   .assistant-zone-piles .zone-pile-count {
-    font-size: 1.15rem;
-    margin-top: 0.95rem;
+    font-size: 0.95rem;
+    margin-top: 0;
   }
 
   .challenge-zone-piles .zone-pile {
     width: 72px;
-    height: 96px;
-  }
-
-  .challenge-zone-piles .zone-pile-stack {
-    left: 8px;
-    right: 10px;
-    top: 8px;
-    bottom: 22px;
+    height: auto;
+    padding: 0.3rem 0.25rem;
   }
 
   .challenge-zone-piles .zone-pile-count {
-    font-size: 1.15rem;
-    margin-top: 0.95rem;
+    font-size: 0.95rem;
+    margin-top: 0;
   }
 
   .assistant-drag-source {
@@ -1436,10 +1435,15 @@ h2 {
     padding: 0.4rem 0.45rem;
   }
 
-  .prompt-shell,
-  .inspect-shell {
+  .prompt-shell {
     width: min(100%, 96vw);
     max-height: min(86dvh, 920px);
+  }
+
+  .prompt-shell.inspect-shell {
+    width: min(100%, 98vw);
+    max-width: min(100%, 98vw);
+    max-height: min(88dvh, 920px);
   }
 
   .prompt-shell.deck-roster-shell {
@@ -1480,7 +1484,7 @@ h2 {
   bottom: 1.25rem;
   z-index: 40;
   /* Match .page side margin: (100vw - content) / 2 */
-  width: calc((100vw - min(75vw, 1680px)) / 2);
+  width: calc((100vw - var(--page-width)) / 2);
   display: flex;
   flex-direction: column;
   gap: 0.55rem;

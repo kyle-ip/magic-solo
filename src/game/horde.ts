@@ -13,6 +13,7 @@ import {
 } from './helpers'
 import { addFxPop, challengeAttackLinks, setFx } from './fx'
 import { pushLog, resetLogSeq } from './log'
+import { canBlockAttacker, creatureHasDeathtouch } from './playerAbilities'
 import type { CardDef, CardInstance, GameState, SetupConfig } from './types'
 
 export function startHorde(
@@ -269,7 +270,9 @@ export function resolveHordeCombat(state: GameState): GameState {
     if (next.flags.consumingRage) power += 2
 
     const blockers = next.player.creatures.filter(
-      (c) => next.blockAssignments[c.instanceId] === atk.instanceId,
+      (c) =>
+        next.blockAssignments[c.instanceId] === atk.instanceId &&
+        canBlockAttacker(c, atk),
     )
 
     if (next.flags.unquenchable && blockers.length === 1) {
@@ -330,13 +333,15 @@ export function resolveHordeCombat(state: GameState): GameState {
           },
         }
       }
-      // Blockers deal damage back
+      // Blockers deal damage back (player deathtouch kills with any damage)
       const blockPower = blockers.reduce((s, b) => s + b.power, 0)
-      if (blockPower >= (atk.toughness ?? 0) - atk.markedDamage || next.flags.touchHorned) {
-        // touch is on minotaur not blockers — minotaur dies if lethal from blockers
-        if (blockPower >= (atk.toughness ?? 0) - atk.markedDamage) {
-          deadAttackers.push(atk.instanceId)
-        }
+      const blockerDeathtouch = blockers.some((b) => creatureHasDeathtouch(b))
+      const atkToughLeft = (atk.toughness ?? 0) - atk.markedDamage
+      if (
+        (blockerDeathtouch && blockPower > 0) ||
+        blockPower >= atkToughLeft
+      ) {
+        deadAttackers.push(atk.instanceId)
       }
       if (remaining > 0) totalDamage += remaining
     }

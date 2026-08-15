@@ -8,7 +8,15 @@ import {
   resolveHordeCombat,
 } from './challengeTurn'
 import { DEFAULT_PLAYER_DECK } from './playerDecks'
-import { castFromHand, activateCreature, castFlashback, resolveScryPrompt } from './playerCast'
+import {
+  castFromHand,
+  activateCreature,
+  castFlashback,
+  resolveScryPrompt,
+  resolveBrainstormPrompt,
+  resolveEdictPrompt,
+  resolveCrawlPrompt,
+} from './playerCast'
 import { emptyManaPool } from './mana'
 import { defsFromDeck, type ChallengeCode, type GameState, type SetupConfig } from './types'
 import {
@@ -26,6 +34,7 @@ import {
   returnCreatureFromGraveyard,
 } from './helpers'
 import { pushLog } from './log'
+import { canBlockAttacker } from './playerAbilities'
 
 export type GameAction =
   | { type: 'START'; config: SetupConfig }
@@ -128,7 +137,17 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'SET_PHASE': {
       if (state.activeSide !== 'player' || state.status !== 'playing') return state
-      return { ...state, playerPhase: action.phase, phase: action.phase, pendingCast: null }
+      const leavingCombat =
+        state.playerPhase === 'combat' && action.phase !== 'combat'
+      return {
+        ...state,
+        playerPhase: action.phase,
+        phase: action.phase,
+        pendingCast: null,
+        ...(leavingCombat
+          ? { selectedAttackers: [], attackAssignments: {} }
+          : {}),
+      }
     }
 
     case 'TOGGLE_ATTACKER': {
@@ -226,6 +245,18 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         return resolveScryPrompt(state, action.optionId)
       }
 
+      if (kind === 'brainstorm') {
+        return resolveBrainstormPrompt(state, action.optionId)
+      }
+
+      if (kind === 'choose_edict') {
+        return resolveEdictPrompt(state, action.optionId)
+      }
+
+      if (kind === 'choose_crawl' || kind === 'choose_crawl_zombie') {
+        return resolveCrawlPrompt(state, action.optionId)
+      }
+
       if (kind === 'vitality_return') {
         let next = returnCreatureFromGraveyard(state, action.optionId)
         if (next.activeSide === 'challenge' && !next.prompt && next.status === 'playing') {
@@ -295,8 +326,22 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'ASSIGN_BLOCKER': {
       const blockAssignments = { ...state.blockAssignments }
-      if (action.attackerId == null) delete blockAssignments[action.blockerId]
-      else blockAssignments[action.blockerId] = action.attackerId
+      if (action.attackerId == null) {
+        delete blockAssignments[action.blockerId]
+      } else {
+        const blocker = state.player.creatures.find(
+          (c) => c.instanceId === action.blockerId,
+        )
+        const attacker = state.revealed.find((c) => c.instanceId === action.attackerId)
+        if (
+          blocker &&
+          attacker &&
+          !canBlockAttacker(blocker, attacker)
+        ) {
+          return pushLog(state, 'cannotBlockFlying', 'info', { name: attacker.name })
+        }
+        blockAssignments[action.blockerId] = action.attackerId
+      }
       return { ...state, blockAssignments }
     }
 

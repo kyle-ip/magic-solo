@@ -26,7 +26,7 @@ import {
   checkWinLoss,
 } from './helpers'
 import { addFxPop, FX_HORDE, FX_PLAYER_LIFE } from './fx'
-import { applyProwessPumps, effectivePower } from './playerAbilities'
+import { applyProwessPumps, creatureHasDeathtouch, effectivePower } from './playerAbilities'
 
 function cardToGy(card: PlayerCardInstance | PlayerCreature | PlayerLand): PlayerCardInstance {
   if ('kind' in card && card.kind) {
@@ -256,6 +256,7 @@ function applyDamageAny(
   state: GameState,
   amount: number,
   targetId: string,
+  opts: { deathtouch?: boolean } = {},
 ): GameState {
   let next = state
   if (targetId === FX_PLAYER_LIFE || targetId === 'player') {
@@ -282,13 +283,16 @@ function applyDamageAny(
       next = pushLog(next, 'xenagosDamagedStuck', 'info', { n: amount })
       return addFxPop(next, { targetId, kind: 'damage', amount }, 'damage')
     }
-    return dealDamageToChallengeCreature(next, targetId, amount)
+    return dealDamageToChallengeCreature(next, targetId, amount, {
+      deathtouch: opts.deathtouch,
+    })
   }
   const pl = next.player.creatures.find((c) => c.instanceId === targetId)
   if (pl) {
     next = addFxPop(next, { targetId, kind: 'damage', amount }, 'damage')
     const dmg = pl.markedDamage + amount
-    if (pl.toughness - dmg <= 0) {
+    const lethal = pl.toughness - dmg <= 0 || (opts.deathtouch && amount > 0)
+    if (lethal) {
       return {
         ...next,
         player: {
@@ -324,6 +328,7 @@ function resolveEffect(
     case 'delve':
     case 'activate_sac_damage':
     case 'activate_draw':
+    case 'activate_monstrosity':
     case 'anthem_other_flyers':
     case 'attack_guide':
       return next
@@ -396,10 +401,14 @@ function resolveEffect(
       const enemy = next.challenge.battlefield.find((c) => c.instanceId === opts.targetId)
       if (!fighter || !enemy) return pushLog(next, 'invalidTarget', 'info')
       next = pushLog(next, 'fight', 'info', { a: fighter.name, b: enemy.name })
-      next = applyDamageAny(next, effectivePower(next, fighter), enemy.instanceId)
+      next = applyDamageAny(next, effectivePower(next, fighter), enemy.instanceId, {
+        deathtouch: creatureHasDeathtouch(fighter),
+      })
       const enemyPower = enemy.power ?? 0
       if (enemyPower > 0) {
-        next = applyDamageAny(next, enemyPower, fighter.instanceId)
+        next = applyDamageAny(next, enemyPower, fighter.instanceId, {
+          deathtouch: creatureHasDeathtouch(enemy),
+        })
       }
       return next
     }
@@ -412,27 +421,26 @@ function resolveEffect(
     case 'brainstorm': {
       next = drawCards(next, 3)
       if (next.status !== 'playing') return next
-      const hand = [...next.player.hand]
-      const putBack: PlayerCardInstance[] = []
-      const score = (c: PlayerCardInstance) => {
-        if (c.kind === 'land') return 100
-        if (c.effect.type === 'none' && (c.kind === 'instant' || c.kind === 'sorcery'))
-          return 80
-        return c.cmc
+      if (next.player.hand.length === 0) {
+        return pushLog(next, 'brainstorm', 'good')
       }
-      hand.sort((a, b) => score(b) - score(a))
-      while (putBack.length < 2 && hand.length > 0) {
-        putBack.push(hand.shift()!)
-      }
-      next = {
+      const putBack = Math.min(2, next.player.hand.length)
+      return {
         ...next,
-        player: {
-          ...next.player,
-          hand,
-          library: [...putBack, ...next.player.library],
+        prompt: {
+          id: `brainstorm-${Date.now()}`,
+          kind: 'brainstorm',
+          titleKey: 'brainstormTitle',
+          messageKey: 'brainstormMsg',
+          messageParams: { n: putBack, left: putBack },
+          resume: `brainstorm:${putBack}`,
+          options: next.player.hand.map((c) => ({
+            id: c.instanceId,
+            labelKey: 'brainstormPutBack',
+            name: c.name,
+          })),
         },
       }
-      return pushLog(next, 'brainstorm', 'good')
     }
     case 'draw': {
       next = drawCards(next, effect.amount)
@@ -471,15 +479,35 @@ function resolveEffect(
       return checkWinLoss(next)
     }
     case 'edict': {
-      const victims = next.challenge.battlefield
-        .filter((c) => !c.isGod && (c.power != null || c.isHead || c.isReveler || c.isMinotaur))
-        .slice()
-        .sort((a, b) => (a.power ?? 0) - (b.power ?? 0))
-      const victim = victims[0]
-      if (!victim) return pushLog(next, 'edictNoVictim', 'info')
-      next = destroyChallengePermanent(next, victim.instanceId)
-      next = pushLog(next, 'edictSac', 'good', { name: victim.name })
-      return checkWinLoss(next)
+      const victims = next.challenge.battlefield.filter(
+        (c) =>
+          !c.isGod &&
+          (c.power != null || c.isHead || c.isReveler || c.isMinotaur),
+      )
+      if (victims.length === 0) return pushLog(next, 'edictNoVictim', 'info')
+      if (victims.length === 1) {
+        next = destroyChallengePermanent(next, victims[0].instanceId)
+        next = pushLog(next, 'edictSac', 'good', { name: victims[0].name })
+        return checkWinLoss(next)
+      }
+      return {
+        ...next,
+        prompt: {
+          id: `edict-${Date.now()}`,
+          kind: 'choose_edict',
+          titleKey: 'edictTitle',
+          messageKey: 'edictMsg',
+          resume: 'edict',
+          options: victims.map((c) => ({
+            id: c.instanceId,
+            labelKey: 'edictOpt',
+            name: c.name,
+            labelParams: {
+              pt: `${c.power ?? 0}/${(c.toughness ?? 0) - c.markedDamage}`,
+            },
+          })),
+        },
+      }
     }
     case 'fangs': {
       if (!opts.targetId) return pushLog(next, 'needTarget', 'info')
@@ -506,41 +534,30 @@ function resolveEffect(
       return pushLog(next, 'fangs', 'good', { name: mine.name })
     }
     case 'crawl_cellar': {
-      // Return highest-CMC creature card from GY to hand (auto-pick).
-      const creatures = next.player.graveyard
-        .filter((c) => c.kind === 'creature')
-        .slice()
-        .sort((a, b) => b.cmc - a.cmc)
-      const card = creatures[0]
-      if (!card) return pushLog(next, 'crawlEmpty', 'info')
-      next = {
+      const creatures = next.player.graveyard.filter((c) => c.kind === 'creature')
+      if (creatures.length === 0) return pushLog(next, 'crawlEmpty', 'info')
+      if (creatures.length === 1) {
+        return finishCrawlReturn(next, creatures[0].instanceId)
+      }
+      return {
         ...next,
-        player: {
-          ...next.player,
-          graveyard: next.player.graveyard.filter((c) => c.instanceId !== card.instanceId),
-          hand: [...next.player.hand, card],
+        prompt: {
+          id: `crawl-${Date.now()}`,
+          kind: 'choose_crawl',
+          titleKey: 'crawlTitle',
+          messageKey: 'crawlMsg',
+          resume: 'crawl',
+          options: creatures
+            .slice()
+            .sort((a, b) => b.cmc - a.cmc)
+            .map((c) => ({
+              id: c.instanceId,
+              labelKey: 'crawlOpt',
+              name: c.name,
+              labelParams: { cmc: c.cmc },
+            })),
         },
       }
-      next = pushLog(next, 'crawlToHand', 'good', { name: card.name })
-      // Optional +1/+1 on a Zombie you control — pick first Zombie if any.
-      const zombie = next.player.creatures.find((c) =>
-        /zombie/i.test(findCardDef(c.defId, next.playerDeckId)?.typeLine ?? ''),
-      )
-      if (zombie) {
-        next = {
-          ...next,
-          player: {
-            ...next.player,
-            creatures: next.player.creatures.map((c) =>
-              c.instanceId === zombie.instanceId
-                ? { ...c, power: c.power + 1, toughness: c.toughness + 1 }
-                : c,
-            ),
-          },
-        }
-        next = pushLog(next, 'crawlZombiePump', 'good', { name: zombie.name })
-      }
-      return next
     }
     case 'etb_miscreant_draw': {
       if (!opts.selfId) return next
@@ -710,8 +727,8 @@ export function castFromHand(
   }
 
   next = resolveEffect(next, effect, opts)
-  // Spell may have opened a scry prompt — still put card in GY / finish later draws
-  if (next.prompt?.kind === 'scry') {
+  // Spell may have opened a choice prompt — still put card in GY / finish later
+  if (isPlayerChoicePrompt(next.prompt?.kind)) {
     next = {
       ...next,
       pendingCast: null,
@@ -734,6 +751,76 @@ export function castFromHand(
   next = pushLog(next, 'castSpell', 'good', { name: card.name })
   next = applyProwessPumps(next)
   return checkWinLoss(next)
+}
+
+function isPlayerChoicePrompt(
+  kind: string | undefined,
+): boolean {
+  return (
+    kind === 'scry' ||
+    kind === 'brainstorm' ||
+    kind === 'choose_edict' ||
+    kind === 'choose_crawl' ||
+    kind === 'choose_crawl_zombie'
+  )
+}
+
+function finishCrawlReturn(state: GameState, cardId: string): GameState {
+  const card = state.player.graveyard.find((c) => c.instanceId === cardId)
+  if (!card || card.kind !== 'creature') {
+    return pushLog({ ...state, prompt: null }, 'crawlEmpty', 'info')
+  }
+  let next: GameState = {
+    ...state,
+    prompt: null,
+    player: {
+      ...state.player,
+      graveyard: state.player.graveyard.filter((c) => c.instanceId !== cardId),
+      hand: [...state.player.hand, card],
+    },
+  }
+  next = pushLog(next, 'crawlToHand', 'good', { name: card.name })
+  const zombies = next.player.creatures.filter((c) =>
+    /zombie/i.test(findCardDef(c.defId, next.playerDeckId)?.typeLine ?? ''),
+  )
+  if (zombies.length === 0) return next
+  if (zombies.length === 1) {
+    return pumpCrawlZombie(next, zombies[0].instanceId)
+  }
+  return {
+    ...next,
+    prompt: {
+      id: `crawl-zombie-${Date.now()}`,
+      kind: 'choose_crawl_zombie',
+      titleKey: 'crawlZombieTitle',
+      messageKey: 'crawlZombieMsg',
+      resume: 'crawl_zombie',
+      options: zombies.map((c) => ({
+        id: c.instanceId,
+        labelKey: 'crawlZombieOpt',
+        name: c.name,
+        labelParams: { pt: `${c.power}/${c.toughness}` },
+      })),
+    },
+  }
+}
+
+function pumpCrawlZombie(state: GameState, zombieId: string): GameState {
+  const zombie = state.player.creatures.find((c) => c.instanceId === zombieId)
+  if (!zombie) return { ...state, prompt: null }
+  let next: GameState = {
+    ...state,
+    prompt: null,
+    player: {
+      ...state.player,
+      creatures: state.player.creatures.map((c) =>
+        c.instanceId === zombieId
+          ? { ...c, power: c.power + 1, toughness: c.toughness + 1 }
+          : c,
+      ),
+    },
+  }
+  return pushLog(next, 'crawlZombiePump', 'good', { name: zombie.name })
 }
 
 export function resolveScryPrompt(
@@ -765,6 +852,76 @@ export function resolveScryPrompt(
   return checkWinLoss(next)
 }
 
+export function resolveBrainstormPrompt(
+  state: GameState,
+  optionId: string,
+): GameState {
+  if (!state.prompt || state.prompt.kind !== 'brainstorm') return state
+  const match = /^brainstorm:(\d+)$/.exec(state.prompt.resume)
+  const left = match ? Number(match[1]) : 0
+  const card = state.player.hand.find((c) => c.instanceId === optionId)
+  if (!card || left <= 0) return { ...state, prompt: null }
+
+  let next: GameState = {
+    ...state,
+    player: {
+      ...state.player,
+      hand: state.player.hand.filter((c) => c.instanceId !== optionId),
+      library: [card, ...state.player.library],
+    },
+  }
+  const remaining = left - 1
+  if (remaining <= 0 || next.player.hand.length === 0) {
+    next = { ...next, prompt: null }
+    return pushLog(next, 'brainstorm', 'good')
+  }
+  return {
+    ...next,
+    prompt: {
+      id: `brainstorm-${Date.now()}`,
+      kind: 'brainstorm',
+      titleKey: 'brainstormTitle',
+      messageKey: 'brainstormMsg',
+      messageParams: { n: remaining, left: remaining },
+      resume: `brainstorm:${remaining}`,
+      options: next.player.hand.map((c) => ({
+        id: c.instanceId,
+        labelKey: 'brainstormPutBack',
+        name: c.name,
+      })),
+    },
+  }
+}
+
+export function resolveEdictPrompt(
+  state: GameState,
+  optionId: string,
+): GameState {
+  if (!state.prompt || state.prompt.kind !== 'choose_edict') return state
+  const victim = state.challenge.battlefield.find((c) => c.instanceId === optionId)
+  if (!victim || victim.isGod) {
+    return { ...state, prompt: null }
+  }
+  let next: GameState = { ...state, prompt: null }
+  next = destroyChallengePermanent(next, optionId)
+  next = pushLog(next, 'edictSac', 'good', { name: victim.name })
+  return checkWinLoss(next)
+}
+
+export function resolveCrawlPrompt(
+  state: GameState,
+  optionId: string,
+): GameState {
+  if (!state.prompt) return state
+  if (state.prompt.kind === 'choose_crawl') {
+    return finishCrawlReturn(state, optionId)
+  }
+  if (state.prompt.kind === 'choose_crawl_zombie') {
+    return pumpCrawlZombie(state, optionId)
+  }
+  return state
+}
+
 /** Double-click / activate a battlefield creature ability. */
 export function activateCreature(
   state: GameState,
@@ -773,12 +930,20 @@ export function activateCreature(
 ): GameState {
   if (state.status !== 'playing' || state.activeSide !== 'player') return state
   const creature = state.player.creatures.find((c) => c.instanceId === creatureId)
-  if (!creature || creature.tapped || creature.summoningSickness) {
+  if (!creature) {
     return pushLog(state, 'cannotActivate', 'info')
   }
   const def = findCardDef(creature.defId, state.playerDeckId)
   const effect = def?.effect
   if (!effect) return state
+
+  if (effect.type === 'activate_monstrosity' && creature.monstrous) {
+    return pushLog(state, 'alreadyMonstrous', 'info', { name: creature.name })
+  }
+
+  if (creature.tapped || creature.summoningSickness) {
+    return pushLog(state, 'cannotActivate', 'info')
+  }
 
   if (effect.type === 'activate_sac_damage') {
     if (!opts.targetId) {
@@ -826,6 +991,34 @@ export function activateCreature(
       n: effect.amount,
     })
     return checkWinLoss(next)
+  }
+
+  if (effect.type === 'activate_monstrosity') {
+    if (creature.monstrous) return pushLog(state, 'alreadyMonstrous', 'info')
+    const paid = autoTapForCost(state, effect.manaCost)
+    if (!paid) return pushLog(state, 'notEnoughMana', 'info')
+    let next: GameState = {
+      ...paid,
+      player: {
+        ...paid.player,
+        creatures: paid.player.creatures.map((c) =>
+          c.instanceId === creatureId
+            ? {
+                ...c,
+                power: c.power + effect.power,
+                toughness: c.toughness + effect.toughness,
+                monstrous: true,
+                tapped: true,
+              }
+            : c,
+        ),
+      },
+    }
+    next = pushLog(next, 'monstrosity', 'good', {
+      name: creature.name,
+      pt: `+${effect.power}/+${effect.toughness}`,
+    })
+    return next
   }
 
   return pushLog(state, 'cannotActivate', 'info')
@@ -919,7 +1112,7 @@ export function castFlashback(
   }
 
   next = resolveEffect(next, effect, opts)
-  if (next.prompt?.kind === 'scry') {
+  if (isPlayerChoicePrompt(next.prompt?.kind)) {
     next = {
       ...next,
       player: {

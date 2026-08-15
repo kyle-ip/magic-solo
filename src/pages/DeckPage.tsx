@@ -1,19 +1,28 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { BattleHistoryModal } from '../components/BattleHistoryModal'
 import { CardModal } from '../components/CardModal'
 import { CardTile } from '../components/CardTile'
 import { ChallengeSwitcher } from '../components/ChallengeSwitcher'
 import { PrintAssistantModal } from '../components/PrintAssistantModal'
 import { RulesPanel } from '../components/RulesPanel'
+import {
+  clearBattleHistory,
+  deleteBattleHistory,
+  listBattleHistory,
+  type BattleHistoryRecord,
+} from '../data/battleHistory'
 import { getDeckRules } from '../data/deckRegistry'
 import { getDeck } from '../data/deckStore'
 import { deckMetaEn, deckMetaZh } from '../data/locale/deckMeta'
 import { CardImage, useResolvedCardImageUrl } from '../hooks/useCardImageSrc'
 import { printItemsFromDeckCards } from '../print/printCards'
+import type { ChallengeCode } from '../game/types'
 import type { DeckCard } from '../types'
 import '../styles/deck.css'
 import '../styles/rarityFrame.css'
+import '../styles/llm.css'
 
 export function DeckPage() {
   const { setCode = '' } = useParams()
@@ -22,8 +31,11 @@ export function DeckPage() {
   const rules = getDeckRules(setCode, i18n.language)
   const [selected, setSelected] = useState<DeckCard | null>(null)
   const [printOpen, setPrintOpen] = useState(false)
+  const [historyTick, setHistoryTick] = useState(0)
+  const [viewing, setViewing] = useState<BattleHistoryRecord | null>(null)
   const metaTable = i18n.language.startsWith('zh') ? deckMetaZh : deckMetaEn
   const meta = metaTable[setCode]
+  const zh = i18n.language.startsWith('zh')
 
   const hero = useMemo(
     () => deck?.cards.find((c) => c.images.artCrop === deck.heroArt) ?? deck?.cards[0],
@@ -36,9 +48,21 @@ export function DeckPage() {
   })
   const heroFront = hero?.images.display || hero?.images.front
 
+  const history = useMemo(() => {
+    void historyTick
+    if (!deck) return []
+    return listBattleHistory(deck.code as ChallengeCode)
+  }, [deck, historyTick])
+
+  const refreshHistory = useCallback(() => {
+    setHistoryTick((n) => n + 1)
+  }, [])
+
   if (!deck || !rules) {
     return <Navigate to="/" replace />
   }
+
+  const challengeName = meta?.name ?? deck.name
 
   return (
     <main className={`page deck-page theme-${deck.theme}`}>
@@ -67,7 +91,7 @@ export function DeckPage() {
                 code: deck.setCode,
               })}
             </p>
-            <h1>{meta?.name ?? deck.name}</h1>
+            <h1>{challengeName}</h1>
             <p className="lede">{meta?.overview}</p>
             <div className="cta-row">
               <Link className="btn primary" to={`/challenge/${deck.code}`}>
@@ -91,7 +115,7 @@ export function DeckPage() {
               localPath={heroFront}
               cardId={hero?.id}
               kind="large"
-              alt={meta?.name ?? deck.name}
+              alt={challengeName}
               fetchPriority="high"
             />
           </div>
@@ -125,6 +149,77 @@ export function DeckPage() {
         </div>
       </section>
 
+      <section id="history" className="deck-section">
+        <header className="section-head">
+          <p className="eyebrow">{t('deck.history')}</p>
+          <h2>{t('deck.history')}</h2>
+          <p className="lede">{t('deck.historyLead')}</p>
+        </header>
+        {history.length > 0 ? (
+          <>
+            <div className="battle-history-toolbar">
+              <button
+                type="button"
+                className="btn ghost"
+                onClick={() => {
+                  if (window.confirm(t('deck.historyClearConfirm'))) {
+                    clearBattleHistory(deck.code as ChallengeCode)
+                    setViewing(null)
+                    refreshHistory()
+                  }
+                }}
+              >
+                {t('deck.historyClear')}
+              </button>
+            </div>
+            <ul className="battle-history-list">
+              {history.map((rec) => {
+                const deckLabel = zh ? rec.playerDeckNameZh : rec.playerDeckName
+                const when = new Date(rec.updatedAt).toLocaleString(
+                  zh ? 'zh-CN' : 'en-US',
+                  { dateStyle: 'medium', timeStyle: 'short' },
+                )
+                return (
+                  <li key={rec.id}>
+                    <button
+                      type="button"
+                      className={`battle-history-row is-${rec.status}`}
+                      onClick={() => setViewing(rec)}
+                    >
+                      <span className="battle-history-badge">
+                        {rec.status === 'won'
+                          ? t('challenge.victory')
+                          : t('challenge.defeat')}
+                      </span>
+                      <span className="battle-history-main">
+                        <p className="battle-history-title">
+                          {deckLabel} vs {challengeName}
+                        </p>
+                        <p className="battle-history-meta">
+                          {when}
+                          {' · '}
+                          {t('deck.historyTurns', { n: rec.turnNumber })}
+                          {' · '}
+                          {t('deck.historyLife', { n: rec.life })}
+                          {rec.battleReport
+                            ? ` · ${t('llm.battleReport')}`
+                            : ''}
+                        </p>
+                      </span>
+                      <span className="battle-history-chevron" aria-hidden>
+                        ›
+                      </span>
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
+          </>
+        ) : (
+          <p className="battle-history-empty">{t('deck.historyEmpty')}</p>
+        )}
+      </section>
+
       <CardModal
         card={selected}
         cards={deck.cards}
@@ -140,6 +235,18 @@ export function DeckPage() {
         sourceSlug={deck.code}
         cards={printItemsFromDeckCards(deck.cards)}
       />
+
+      {viewing ? (
+        <BattleHistoryModal
+          record={viewing}
+          challengeName={challengeName}
+          onClose={() => setViewing(null)}
+          onDelete={(id) => {
+            deleteBattleHistory(id)
+            refreshHistory()
+          }}
+        />
+      ) : null}
     </main>
   )
 }

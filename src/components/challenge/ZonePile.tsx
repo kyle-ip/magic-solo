@@ -85,8 +85,10 @@ export function ZonePile({
           </span>
         ))}
       </span>
-      <span className="zone-pile-count">{count}</span>
-      <span className="zone-pile-label">{label}</span>
+      <span className="zone-pile-caption">
+        <span className="zone-pile-label">{label}</span>
+        <span className="zone-pile-count">{count}</span>
+      </span>
     </button>
   )
 }
