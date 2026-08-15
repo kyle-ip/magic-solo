@@ -77,7 +77,6 @@ const KEYWORD_ZH: Record<string, string> = {
   backup: '后援',
   offspring: '子嗣',
   exhaust: '竭力',
-  exploit: '榨取',
 }
 
 export function localizeKeyword(keyword: string, lang?: string): string {
