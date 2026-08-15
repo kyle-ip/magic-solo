@@ -88,10 +88,13 @@ function collectVisibleCards(limit = 24): string[] {
   const names: string[] = []
   const seen = new Set<string>()
   const nodes = document.querySelectorAll(
-    '.card-tile-meta > strong, .pack-collection-tile > span:not(.pack-rarity-chip), .llm-nl-result-tile > span',
+    '.card-tile-meta > strong, .pack-collection-tile img, .llm-nl-result-tile > span',
   )
   for (const node of nodes) {
-    const name = textOf(node)
+    const name =
+      node instanceof HTMLImageElement
+        ? (node.alt || '').replace(/\s+/g, ' ').trim()
+        : textOf(node)
     if (!name || seen.has(name)) continue
     seen.add(name)
     names.push(name)

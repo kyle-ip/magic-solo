@@ -1,0 +1,230 @@
+/**
+ * Rarity frame chrome — loaded after pack/deck so it wins over tile borders.
+ * Used by: collection cabinet, set gallery, classic decks, deck CardTile.
+ *
+ * box-shadow paints outside the face even with overflow:hidden (needed to clip
+ * JPG corners). Layout margin under the face keeps the bottom bloom from
+ * colliding with the name/qty line.
+ */
+
+.card-tile-frame[class*='rarity-frame-'],
+.pack-collection-tile[class*='rarity-frame-'],
+.classic-key-thumb[class*='rarity-frame-'] {
+  --rarity-glow-ring: transparent;
+  --rarity-glow-soft: transparent;
+  --rarity-glow-bloom: transparent;
+  overflow: hidden;
+  border-style: solid;
+  border-width: var(--rarity-border-width);
+  background: var(--card-face-bg, #050403);
+  box-shadow:
+    0 0 0 1px var(--rarity-glow-ring),
+    0 0 8px var(--rarity-glow-soft),
+    0 0 18px var(--rarity-glow-bloom),
+    var(--card-shadow, 0 12px 28px rgba(0, 0, 0, 0.35));
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+/* Dark inset ring fights the colored rim */
+.card-tile-frame[class*='rarity-frame-']::after {
+  box-shadow: none;
+}
+
+.card-tile-frame.rarity-frame-common,
+.pack-collection-tile.rarity-frame-common,
+.classic-key-thumb.rarity-frame-common {
+  border-color: var(--rarity-common);
+  --rarity-glow-ring: rgba(90, 90, 90, 0.7);
+  --rarity-glow-soft: rgba(70, 70, 70, 0.4);
+  --rarity-glow-bloom: rgba(50, 50, 50, 0.22);
+}
+
+.card-tile-frame.rarity-frame-uncommon,
+.pack-collection-tile.rarity-frame-uncommon,
+.classic-key-thumb.rarity-frame-uncommon {
+  border-color: var(--rarity-uncommon);
+  --rarity-glow-ring: rgba(230, 236, 242, 0.9);
+  --rarity-glow-soft: rgba(200, 214, 228, 0.7);
+  --rarity-glow-bloom: rgba(180, 200, 220, 0.45);
+}
+
+.card-tile-frame.rarity-frame-rare,
+.pack-collection-tile.rarity-frame-rare,
+.classic-key-thumb.rarity-frame-rare {
+  border-color: var(--rarity-rare);
+  --rarity-glow-ring: rgba(255, 220, 100, 0.9);
+  --rarity-glow-soft: rgba(232, 196, 74, 0.75);
+  --rarity-glow-bloom: rgba(212, 160, 40, 0.5);
+}
+
+.card-tile-frame.rarity-frame-mythic,
+.pack-collection-tile.rarity-frame-mythic,
+.classic-key-thumb.rarity-frame-mythic {
+  border-color: var(--rarity-mythic);
+  border-width: 3px;
+  --rarity-glow-ring: rgba(230, 180, 55, 0.95);
+  --rarity-glow-soft: rgba(190, 125, 28, 0.85);
+  --rarity-glow-bloom: rgba(140, 80, 14, 0.65);
+  /* Avoid transition fighting the breathe keyframes */
+  transition: transform 180ms ease;
+  animation: rarity-mythic-breathe 2.8s ease-in-out infinite;
+}
+
+@keyframes rarity-mythic-breathe {
+  0%,
+  100% {
+    border-color: #a07a1e;
+    box-shadow:
+      0 0 0 1px rgba(200, 150, 40, 0.75),
+      0 0 10px rgba(180, 120, 28, 0.7),
+      0 0 22px rgba(140, 85, 16, 0.5),
+      0 0 36px rgba(100, 55, 8, 0.28),
+      var(--card-shadow, 0 12px 28px rgba(0, 0, 0, 0.35));
+  }
+  50% {
+    border-color: #e0b638;
+    box-shadow:
+      0 0 0 2px rgba(255, 210, 80, 0.95),
+      0 0 14px rgba(235, 170, 45, 0.95),
+      0 0 30px rgba(200, 130, 25, 0.75),
+      0 0 48px rgba(150, 80, 12, 0.45),
+      var(--card-shadow, 0 12px 28px rgba(0, 0, 0, 0.35));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-tile-frame.rarity-frame-mythic,
+  .pack-collection-tile.rarity-frame-mythic,
+  .classic-key-thumb.rarity-frame-mythic {
+    animation: none;
+  }
+}
+
+.card-tile-frame.rarity-frame-special,
+.pack-collection-tile.rarity-frame-special,
+.classic-key-thumb.rarity-frame-special {
+  border-color: var(--rarity-special);
+  --rarity-glow-ring: rgba(220, 180, 130, 0.9);
+  --rarity-glow-soft: rgba(192, 148, 104, 0.7);
+  --rarity-glow-bloom: rgba(160, 110, 70, 0.45);
+}
+
+.card-tile-frame.rarity-frame-bonus,
+.pack-collection-tile.rarity-frame-bonus,
+.classic-key-thumb.rarity-frame-bonus {
+  border-color: var(--rarity-bonus);
+  --rarity-glow-ring: rgba(180, 180, 180, 0.85);
+  --rarity-glow-soft: rgba(154, 154, 154, 0.6);
+  --rarity-glow-bloom: rgba(130, 130, 130, 0.35);
+}
+
+/* Hover / focus amplify */
+.card-tile:hover .card-tile-frame.rarity-frame-common,
+.card-tile:focus-visible .card-tile-frame.rarity-frame-common,
+.pack-collection-tile.rarity-frame-common:hover,
+.pack-collection-tile.rarity-frame-common:focus-visible,
+.classic-key-thumb.rarity-frame-common:hover,
+.classic-key-thumb.rarity-frame-common:focus-visible {
+  border-color: #7a7a7a;
+  --rarity-glow-ring: rgba(110, 110, 110, 0.85);
+  --rarity-glow-soft: rgba(90, 90, 90, 0.55);
+  --rarity-glow-bloom: rgba(70, 70, 70, 0.32);
+}
+
+.card-tile:hover .card-tile-frame.rarity-frame-uncommon,
+.card-tile:focus-visible .card-tile-frame.rarity-frame-uncommon,
+.pack-collection-tile.rarity-frame-uncommon:hover,
+.pack-collection-tile.rarity-frame-uncommon:focus-visible,
+.classic-key-thumb.rarity-frame-uncommon:hover,
+.classic-key-thumb.rarity-frame-uncommon:focus-visible {
+  border-color: #eef3f7;
+  --rarity-glow-ring: rgba(245, 248, 252, 1);
+  --rarity-glow-soft: rgba(220, 230, 240, 0.85);
+  --rarity-glow-bloom: rgba(190, 210, 230, 0.55);
+}
+
+.card-tile:hover .card-tile-frame.rarity-frame-rare,
+.card-tile:focus-visible .card-tile-frame.rarity-frame-rare,
+.pack-collection-tile.rarity-frame-rare:hover,
+.pack-collection-tile.rarity-frame-rare:focus-visible,
+.classic-key-thumb.rarity-frame-rare:hover,
+.classic-key-thumb.rarity-frame-rare:focus-visible {
+  border-color: #f3d76a;
+  --rarity-glow-ring: rgba(255, 230, 120, 1);
+  --rarity-glow-soft: rgba(245, 210, 80, 0.85);
+  --rarity-glow-bloom: rgba(230, 170, 40, 0.6);
+}
+
+.card-tile:hover .card-tile-frame.rarity-frame-mythic,
+.card-tile:focus-visible .card-tile-frame.rarity-frame-mythic,
+.pack-collection-tile.rarity-frame-mythic:hover,
+.pack-collection-tile.rarity-frame-mythic:focus-visible,
+.classic-key-thumb.rarity-frame-mythic:hover,
+.classic-key-thumb.rarity-frame-mythic:focus-visible {
+  border-color: #e0b638;
+  animation-duration: 1.8s;
+}
+
+.card-tile:hover .card-tile-frame.rarity-frame-special,
+.card-tile:focus-visible .card-tile-frame.rarity-frame-special,
+.pack-collection-tile.rarity-frame-special:hover,
+.pack-collection-tile.rarity-frame-special:focus-visible,
+.classic-key-thumb.rarity-frame-special:hover,
+.classic-key-thumb.rarity-frame-special:focus-visible {
+  border-color: #d4ae82;
+  --rarity-glow-ring: rgba(230, 190, 145, 1);
+  --rarity-glow-soft: rgba(210, 160, 110, 0.8);
+  --rarity-glow-bloom: rgba(170, 120, 70, 0.5);
+}
+
+.card-tile:hover .card-tile-frame.rarity-frame-bonus,
+.card-tile:focus-visible .card-tile-frame.rarity-frame-bonus,
+.pack-collection-tile.rarity-frame-bonus:hover,
+.pack-collection-tile.rarity-frame-bonus:focus-visible,
+.classic-key-thumb.rarity-frame-bonus:hover,
+.classic-key-thumb.rarity-frame-bonus:focus-visible {
+  border-color: #b8b8b8;
+  --rarity-glow-ring: rgba(210, 210, 210, 1);
+  --rarity-glow-soft: rgba(180, 180, 180, 0.75);
+  --rarity-glow-bloom: rgba(150, 150, 150, 0.45);
+}
+
+/*
+ * box-shadow does not consume layout space — reserve room under the face
+ * so the bottom bloom is fully visible before the name / qty line.
+ */
+.card-tile-frame[class*='rarity-frame-'],
+.classic-key-thumb[class*='rarity-frame-'] {
+  margin-bottom: 1rem;
+}
+
+.card-tile:has([class*='rarity-frame-']) .card-tile-meta {
+  padding-top: 0.2rem;
+}
+
+.set-gallery-page .card-tile:has([class*='rarity-frame-']) .card-tile-meta {
+  padding-top: 0.25rem;
+}
+
+.classic-key-card:has([class*='rarity-frame-']) {
+  gap: 0.2rem;
+  padding: 0.55rem 0.45rem 0.4rem;
+}
+
+.pack-collection-tile[class*='rarity-frame-'] {
+  z-index: 0;
+}
+
+.pack-collection-tile[class*='rarity-frame-']:hover,
+.pack-collection-tile[class*='rarity-frame-']:focus-visible {
+  z-index: 1;
+}
+
+/* Key-card marker must not wipe rarity glow */
+.classic-key-card.is-key .classic-key-thumb[class*='rarity-frame-'] {
+  outline: 1px solid rgba(240, 212, 138, 0.4);
+  outline-offset: 3px;
+}

@@ -17,11 +17,13 @@ import {
 } from '../data/randomCard'
 import { collectionPeerNames } from '../llm/context/cardBrief'
 import { printItemsFromDrawn } from '../print/printCards'
+import { rarityFrameClass } from '../utils/rarityFrame'
 import { CollectionLlmAdvisor } from './CollectionLlmAdvisor'
 import { DrawnCardModal } from './DrawnCardModal'
 import { PrintAssistantModal } from './PrintAssistantModal'
 import '../styles/pack.css'
 import '../styles/deck.css'
+import '../styles/rarityFrame.css'
 
 type PackCollectionCabinetProps = {
   /** Called whenever the stored collection list changes. */
@@ -242,15 +244,14 @@ export function PackCollectionCabinet({
                 <li key={item.id}>
                   <button
                     type="button"
-                    className="pack-collection-tile"
+                    className={`pack-collection-tile ${rarityFrameClass(item.rarity)}`}
                     onClick={() => openInspect(item)}
+                    aria-label={`${item.name} · ${t(
+                      `packDraw.rarity.${item.rarity}`,
+                      { defaultValue: item.rarity },
+                    )}`}
                   >
                     <img src={item.frontImageUrl} alt={item.name} />
-                    <span className={`pack-rarity-chip rarity-${item.rarity}`}>
-                      {t(`packDraw.rarity.${item.rarity}`, {
-                        defaultValue: item.rarity,
-                      })}
-                    </span>
                   </button>
                 </li>
               ))}

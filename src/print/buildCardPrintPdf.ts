@@ -7,6 +7,7 @@ import {
   mmToPoints,
   pageCount,
   type PaperSizeId,
+  type PrintLayoutOptions,
 } from './cardPrintLayout'
 import type { FetchedPrintImage } from './fetchPrintImages'
 
@@ -29,17 +30,18 @@ async function embedImage(
 export async function buildCardPrintPdf(
   images: FetchedPrintImage[],
   paper: PaperSizeId,
+  options: PrintLayoutOptions = {},
 ): Promise<Uint8Array> {
   if (images.length === 0) {
     throw new Error('No images to print')
   }
 
-  const layout = getPaperLayout(paper)
+  const layout = getPaperLayout(paper, options)
   const pageW = mmToPoints(layout.pageW)
   const pageH = mmToPoints(layout.pageH)
   const doc = await PDFDocument.create()
   const pages = pageCount(images.length, paper)
-  const marks = cutMarkLines(paper)
+  const marks = cutMarkLines(paper, options)
   const markColor = rgb(0.55, 0.55, 0.55)
   const markWidth = 0.4
 
@@ -49,7 +51,7 @@ export async function buildCardPrintPdf(
 
     for (const globalIndex of idxs) {
       const image = images[globalIndex]!
-      const rect = cardRectMm(globalIndex, paper)
+      const rect = cardRectMm(globalIndex, paper, options)
       const embedded = await embedImage(doc, image)
       // PDF y origin is bottom-left; layout y is top-left
       const x = mmToPoints(rect.x)

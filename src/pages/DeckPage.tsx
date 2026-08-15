@@ -13,6 +13,7 @@ import { CardImage, useResolvedCardImageUrl } from '../hooks/useCardImageSrc'
 import { printItemsFromDeckCards } from '../print/printCards'
 import type { DeckCard } from '../types'
 import '../styles/deck.css'
+import '../styles/rarityFrame.css'
 
 export function DeckPage() {
   const { setCode = '' } = useParams()

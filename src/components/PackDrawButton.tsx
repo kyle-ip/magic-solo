@@ -6,6 +6,7 @@ import { useArtZoomPan } from '../hooks/useArtZoomPan'
 import { assetUrl } from '../utils/assetUrl'
 import '../styles/pack.css'
 import '../styles/deck.css'
+import '../styles/rarityFrame.css'
 import { CardFaceButton } from './CardFaceButton'
 import {
   addCollected,
@@ -37,6 +38,7 @@ import { PackHeadIconButton } from './PackHeadIconButton'
 import { PrintAssistantModal } from './PrintAssistantModal'
 import { collectionPeerNames } from '../llm/context/cardBrief'
 import { printItemsFromDrawn } from '../print/printCards'
+import { rarityFrameClass } from '../utils/rarityFrame'
 
 const PACK_ART = assetUrl('assets/pack/booster-pack.webp')
 const TEAR_EDGE = assetUrl('assets/pack/tear-edge.png')
@@ -1321,20 +1323,17 @@ export function PackDrawButton() {
                           <li key={item.id}>
                             <button
                               type="button"
-                              className="pack-collection-tile"
+                              className={`pack-collection-tile ${rarityFrameClass(item.rarity)}`}
                               onClick={() => openInspect(item)}
+                              aria-label={`${item.name} · ${t(
+                                `packDraw.rarity.${item.rarity}`,
+                                { defaultValue: item.rarity },
+                              )}`}
                             >
                               <img
                                 src={item.frontImageUrl}
                                 alt={item.name}
                               />
-                              <span
-                                className={`pack-rarity-chip rarity-${item.rarity}`}
-                              >
-                                {t(`packDraw.rarity.${item.rarity}`, {
-                                  defaultValue: item.rarity,
-                                })}
-                              </span>
                             </button>
                           </li>
                         ))}

@@ -47,6 +47,7 @@ export function PrintAssistantModal({
 }: PrintAssistantModalProps) {
   const { t } = useTranslation()
   const [paper, setPaper] = useState<PaperSizeId>('a4')
+  const [keepEdgeMargin, setKeepEdgeMargin] = useState(false)
   const [phase, setPhase] = useState<Phase>(() =>
     initialPhase(Boolean(resolveCards)),
   )
@@ -74,6 +75,7 @@ export function PrintAssistantModal({
     if (open) {
       setSession((n) => n + 1)
       setPaper('a4')
+      setKeepEdgeMargin(false)
       setPhase(initialPhase(Boolean(resolveCards)))
       setItems(cardsProp)
       setImages([])
@@ -92,6 +94,7 @@ export function PrintAssistantModal({
 
   const paperLayout = getPaperLayout(paper)
   const paperAspect = `${paperLayout.pageW} / ${paperLayout.pageH}`
+  const sheetWidth = `min(100%, 560px, calc(min(68dvh, 720px) * ${paperLayout.pageW} / ${paperLayout.pageH}))`
 
   useEffect(() => {
     if (!open || session === 0) return
@@ -189,7 +192,7 @@ export function PrintAssistantModal({
       })
     })
     try {
-      const bytes = await buildCardPrintPdf(images, paper)
+      const bytes = await buildCardPrintPdf(images, paper, { keepEdgeMargin })
       if (gen !== exportGenRef.current) return
       downloadBlob(bytes, printFilename(sourceSlug, paper))
       setPhase('ready')
@@ -246,6 +249,7 @@ export function PrintAssistantModal({
           </div>
         </header>
         <p className="print-assistant-lead">{t('printAssistant.lead')}</p>
+        <p className="print-assistant-tip">{t('printAssistant.printTip')}</p>
 
         <div
           className="print-assistant-paper"
@@ -274,6 +278,14 @@ export function PrintAssistantModal({
           >
             {t('printAssistant.paperPhoto6')}
           </button>
+          <label className="print-assistant-option">
+            <input
+              type="checkbox"
+              checked={keepEdgeMargin}
+              onChange={(e) => setKeepEdgeMargin(e.target.checked)}
+            />
+            <span>{t('printAssistant.edgeMargin')}</span>
+          </label>
         </div>
 
         <div className="print-assistant-meta">
@@ -293,6 +305,7 @@ export function PrintAssistantModal({
                   paper={paper}
                   images={images}
                   pageIndex={pageIndex}
+                  keepEdgeMargin={keepEdgeMargin}
                   pageLabel={t('printAssistant.pageOf', {
                     current: Math.min(pageIndex + 1, Math.max(pages, 1)),
                     total: Math.max(pages, 1),
@@ -300,14 +313,13 @@ export function PrintAssistantModal({
                 />
               </div>
             ) : (
-              <div className="print-assistant-stage-loading" role="status">
+              <div
+                className="print-assistant-stage-loading"
+                role="status"
+                style={{ width: sheetWidth, aspectRatio: paperAspect }}
+              >
                 <div
                   className="print-preview-sheet print-preview-sheet--placeholder"
-                  style={{
-                    aspectRatio: paperAspect,
-                    width: `min(100%, 560px, calc(min(68dvh, 720px) * ${paperLayout.pageW} / ${paperLayout.pageH}))`,
-                    height: 'auto',
-                  }}
                   aria-hidden="true"
                 />
                 <div className="print-assistant-progress print-assistant-progress--overlay">

@@ -21,6 +21,14 @@
   --card-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
   --card-face-bg: #050403;
   --card-img-scale: 1.03;
+  /* Rarity frame chrome (series gallery + collection cabinet) */
+  --rarity-border-width: 2.5px;
+  --rarity-common: #5a5a5a;
+  --rarity-uncommon: #d7e0e8;
+  --rarity-rare: #e8c44a;
+  --rarity-mythic: #b8922a;
+  --rarity-special: #c09468;
+  --rarity-bonus: #7a7a7a;
   /* iOS notch / home indicator (iPhone 17 Pro 402×874, Pro Max 440×956) */
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-right: env(safe-area-inset-right, 0px);

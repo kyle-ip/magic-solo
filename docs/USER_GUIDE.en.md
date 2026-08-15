@@ -194,7 +194,9 @@ Client-side PDF export for cutting physical-size proxies. Opens from:
 | **A3** | 297×420 mm | 4×4 (16) |
 | **6″ photo** | 102×152 mm (4R) | 1 |
 
-Each face is drawn at about **63×88 mm** (standard card size) with **cut marks**. Front faces only (no automatic backs / double-faced backs).
+Each face is drawn at **64×88 mm** with **cut marks**. By default the grid is **flush top-left** so leftover paper sits on the right and bottom for easier strip cutting. Tick **Edge margins** to center the grid with equal white borders. Front faces only (no automatic backs / double-faced backs).
+
+When printing the PDF, use **Actual size / 100%** — **Fit to page** shrinks every card (often to ~61–62 mm wide). Some printers clip a few mm at the page edge when margins are off; enable **Edge margins** if that happens.
 
 Images prefer Scryfall **png** (~745×1040). The modal loads faces with a progress overlay, shows a live preview (same layout as the PDF), then **Export PDF** downloads a file such as `magic-solo-print-tdag-a4-2026-08-15.pdf`. Cancel / close stay available while export runs; only Export shows busy state.
 

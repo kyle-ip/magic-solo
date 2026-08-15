@@ -27,8 +27,10 @@ import {
 } from '../components/NlScryfallSearch'
 import { useHasLlmApiKey } from '../hooks/useLlmSettings'
 import { printItemsFromDrawn } from '../print/printCards'
+import { rarityFrameClass } from '../utils/rarityFrame'
 import '../styles/deck.css'
 import '../styles/sets.css'
+import '../styles/rarityFrame.css'
 
 const GALLERY_RARITIES = ['mythic', 'rare', 'uncommon', 'common'] as const
 
@@ -346,8 +348,14 @@ export function SetGalleryPage() {
                   onPointerEnter={() => {
                     void preloadImage(large).catch(() => undefined)
                   }}
+                  aria-label={`${displayName(card, i18n.language)} · ${t(
+                    `sets.rarity.${card.rarity}`,
+                    { defaultValue: card.rarity },
+                  )}`}
                 >
-                  <span className="card-tile-frame">
+                  <span
+                    className={`card-tile-frame ${rarityFrameClass(card.rarity)}`}
+                  >
                     <img
                       src={thumb}
                       alt={displayName(card, i18n.language)}
@@ -362,9 +370,6 @@ export function SetGalleryPage() {
                     <em>
                       {t('sets.collector', {
                         n: card.collectorNumber,
-                        rarity: t(`sets.rarity.${card.rarity}`, {
-                          defaultValue: card.rarity,
-                        }),
                       })}
                     </em>
                   </span>

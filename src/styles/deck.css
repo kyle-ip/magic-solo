@@ -228,6 +228,7 @@
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 1.55rem 1.25rem;
   margin-top: 1.5rem;
+  padding: 0.4rem 0.15rem 0.65rem;
   align-items: start;
   justify-items: stretch;
 }
@@ -283,6 +284,13 @@
   isolation: isolate;
 }
 
+.card-tile-frame[class*='rarity-frame-'] {
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
 .card-tile-frame::after {
   content: '';
   position: absolute;
@@ -296,6 +304,10 @@
 .card-tile:hover .card-tile-frame,
 .card-tile:focus-visible .card-tile-frame {
   transform: translateY(-4px);
+}
+
+.card-tile:hover .card-tile-frame:not([class*='rarity-frame-']),
+.card-tile:focus-visible .card-tile-frame:not([class*='rarity-frame-']) {
   border-color: var(--bronze-bright);
 }
 
@@ -315,7 +327,7 @@
 .card-tile-meta {
   display: grid;
   gap: 0.2rem;
-  padding: 0.6rem 0.05rem 0;
+  padding: 0.75rem 0.05rem 0;
   width: 100%;
 }
 

@@ -134,7 +134,7 @@
     "openOnScryfall": "Open on Scryfall",
     "cards": "Cards",
     "cardsLabel": "{{shown}} shown · {{loaded}} / {{total}} loaded",
-    "collector": "#{{n}} · {{rarity}}",
+    "collector": "#{{n}}",
     "type": {
       "all": "All",
       "expansion": "Expansion",
@@ -553,11 +553,13 @@
   "printAssistant": {
     "open": "Print assistant",
     "title": "Print assistant",
-    "lead": "Full card faces at physical size (63×88 mm) with cut marks. Preview, then export a PDF for A4, A3, or 6\" photo paper.",
+    "lead": "Full card faces at physical size (64×88 mm). Preview, then export a PDF for A4, A3, or 6\" photo paper.",
     "paper": "Paper",
     "paperA4": "A4",
     "paperA3": "A3",
     "paperPhoto6": "6\"",
+    "edgeMargin": "Edge margins",
+    "printTip": "Print at Actual size / 100%. Do not use Fit to page — that shrinks cards.",
     "cardCount": "{{n}} cards",
     "pageCount": "{{n}} pages",
     "loading": "Loading images {{done}} / {{total}}…",

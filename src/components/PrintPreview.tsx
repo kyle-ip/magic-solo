@@ -13,6 +13,7 @@ type PrintPreviewProps = {
   images: FetchedPrintImage[]
   pageIndex: number
   pageLabel: string
+  keepEdgeMargin?: boolean
 }
 
 type PrintPagerProps = {
@@ -33,12 +34,14 @@ export function PrintPreview({
   images,
   pageIndex,
   pageLabel,
+  keepEdgeMargin = false,
 }: PrintPreviewProps) {
-  const layout = getPaperLayout(paper)
+  const layoutOpts = { keepEdgeMargin }
+  const layout = getPaperLayout(paper, layoutOpts)
   const pages = pageCount(images.length, paper)
   const safePage = Math.min(Math.max(0, pageIndex), Math.max(0, pages - 1))
   const idxs = indicesOnPage(safePage, images.length, paper)
-  const marks = cutMarkLines(paper)
+  const marks = cutMarkLines(paper, layoutOpts)
   const aspect = `${layout.pageW} / ${layout.pageH}`
   // Width-first sizing (definite dvh/px). Avoid height:100% — parent height is indefinite and collapses.
   const sheetStyle = {
@@ -56,7 +59,7 @@ export function PrintPreview({
         aria-label={pageLabel}
       >
         {idxs.map((globalIndex) => {
-          const rect = cardRectMm(globalIndex, paper)
+          const rect = cardRectMm(globalIndex, paper, layoutOpts)
           const img = images[globalIndex]!
           return (
             <img

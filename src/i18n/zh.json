@@ -134,7 +134,7 @@
     "openOnScryfall": "在 Scryfall 打开",
     "cards": "卡牌",
     "cardsLabel": "显示 {{shown}} · 已加载 {{loaded}} / {{total}}",
-    "collector": "#{{n}} · {{rarity}}",
+    "collector": "#{{n}}",
     "type": {
       "all": "全部",
       "expansion": "扩张",
@@ -154,7 +154,7 @@
     },
     "rarity": {
       "all": "全部稀有度",
-      "mythic": "神话",
+      "mythic": "秘稀",
       "rare": "稀有",
       "uncommon": "非普通",
       "common": "普通",
@@ -553,11 +553,13 @@
   "printAssistant": {
     "open": "打印助手",
     "title": "打印助手",
-    "lead": "按实体卡尺寸（63×88 mm）排布完整卡面并加裁切线。可先预览，再导出 A4、A3 或 6 寸相纸 PDF。",
+    "lead": "按实体卡尺寸（64×88 mm）排布完整卡面。可先预览，再导出 A4、A3 或 6 寸相纸 PDF。",
     "paper": "纸张",
     "paperA4": "A4",
     "paperA3": "A3",
     "paperPhoto6": "6 寸相纸",
+    "edgeMargin": "边上留白",
+    "printTip": "打印时请选「实际大小 / 100%」，不要用「适合页面」，否则卡面会缩小。",
     "cardCount": "{{n}} 张卡",
     "pageCount": "{{n}} 页",
     "loading": "正在加载卡图 {{done}} / {{total}}…",

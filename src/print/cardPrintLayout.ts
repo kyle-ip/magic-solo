@@ -31,9 +31,26 @@ export interface PaperLayout {
   originY: number
 }
 
-/** Standard proxy card size. */
-export const CARD_W_MM = 63
+/**
+ * Physical MTG card size used for proxies (64×88 mm).
+ * Strict 2.5″×3.5″ is 63.5×88.9 mm; width is rounded up for common sleeve fit.
+ */
+export const CARD_W_MM = 64
 export const CARD_H_MM = 88
+
+/**
+ * Inset from page edge when edge margins are off (mm).
+ * 0 = flush top-left for strip cutting; cut marks on the outer edge may clip slightly.
+ */
+const GRID_ORIGIN_FLUSH_MM = 0
+
+export type PrintLayoutOptions = {
+  /**
+   * When true, center the card grid so leftover paper is equal on all sides.
+   * When false (default), pin the grid flush to the top-left for easier strip cutting.
+   */
+  keepEdgeMargin?: boolean
+}
 
 const PAPERS: Record<PaperSizeId, Omit<PaperLayout, 'originX' | 'originY'>> = {
   a4: {
@@ -65,14 +82,24 @@ const PAPERS: Record<PaperSizeId, Omit<PaperLayout, 'originX' | 'originY'>> = {
   },
 }
 
-export function getPaperLayout(paper: PaperSizeId): PaperLayout {
+export function getPaperLayout(
+  paper: PaperSizeId,
+  options: PrintLayoutOptions = {},
+): PaperLayout {
   const base = PAPERS[paper]
   const gridW = base.cols * base.cardW
   const gridH = base.rows * base.cardH
+  if (options.keepEdgeMargin) {
+    return {
+      ...base,
+      originX: (base.pageW - gridW) / 2,
+      originY: (base.pageH - gridH) / 2,
+    }
+  }
   return {
     ...base,
-    originX: (base.pageW - gridW) / 2,
-    originY: (base.pageH - gridH) / 2,
+    originX: GRID_ORIGIN_FLUSH_MM,
+    originY: GRID_ORIGIN_FLUSH_MM,
   }
 }
 
@@ -101,8 +128,12 @@ export function slotForIndex(
   }
 }
 
-export function cardRectMm(index: number, paper: PaperSizeId): RectMm {
-  const layout = getPaperLayout(paper)
+export function cardRectMm(
+  index: number,
+  paper: PaperSizeId,
+  options: PrintLayoutOptions = {},
+): RectMm {
+  const layout = getPaperLayout(paper, options)
   const { row, col } = slotForIndex(index, paper)
   return {
     x: layout.originX + col * layout.cardW,
@@ -132,8 +163,11 @@ const CUT_MARK_MM = 3
  * Cut marks for one page: short ticks at each card cell corner,
  * drawn just outside the card edge so they do not cover art.
  */
-export function cutMarkLines(paper: PaperSizeId): LineMm[] {
-  const layout = getPaperLayout(paper)
+export function cutMarkLines(
+  paper: PaperSizeId,
+  options: PrintLayoutOptions = {},
+): LineMm[] {
+  const layout = getPaperLayout(paper, options)
   const lines: LineMm[] = []
   const mark = CUT_MARK_MM
 

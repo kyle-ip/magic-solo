@@ -21,8 +21,10 @@ import {
   thumbUrlFromFaceUrl,
   withLargeFace,
 } from '../utils/remoteAsset'
+import { rarityFrameClass } from '../utils/rarityFrame'
 import type { ClassicDeckListEntry } from '../types'
 import '../styles/classic.css'
+import '../styles/rarityFrame.css'
 
 export function ClassicDeckDetailPage() {
   const { id = '' } = useParams()
@@ -296,7 +298,7 @@ function CardGallery({
             >
               <button
                 type="button"
-                className="classic-key-thumb"
+                className={`classic-key-thumb ${rarityFrameClass(card.rarity)}`}
                 onClick={() => onOpen(row.name)}
                 onPointerEnter={() => {
                   void preloadImage(withLargeFace(card).frontImageUrl).catch(

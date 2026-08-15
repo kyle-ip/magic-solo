@@ -335,8 +335,9 @@
 /* Set gallery thumbs: Scryfall `small` (~146×204). Keep native size — do not upscale. */
 .set-gallery-page .card-grid {
   grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
-  gap: 1.1rem 0.85rem;
+  gap: 1.55rem 1rem;
   justify-items: center;
+  padding: 0.65rem 0.35rem 1rem;
 }
 
 .set-gallery-page .card-tile {
@@ -368,7 +369,7 @@
 
 .set-gallery-page .card-tile-meta {
   width: 9.25rem;
-  padding-top: 0.45rem;
+  padding-top: 0.55rem;
 }
 
 .visually-hidden {
