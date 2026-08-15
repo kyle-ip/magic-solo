@@ -1,6 +1,6 @@
 /** Physical MTG card size (approx.) and printable paper layouts. */
 
-export type PaperSizeId = 'a4' | 'photo6'
+export type PaperSizeId = 'a4' | 'a3' | 'photo6'
 
 export interface RectMm {
   x: number
@@ -42,6 +42,15 @@ const PAPERS: Record<PaperSizeId, Omit<PaperLayout, 'originX' | 'originY'>> = {
     pageH: 297,
     cols: 3,
     rows: 3,
+    cardW: CARD_W_MM,
+    cardH: CARD_H_MM,
+  },
+  a3: {
+    id: 'a3',
+    pageW: 297,
+    pageH: 420,
+    cols: 4,
+    rows: 4,
     cardW: CARD_W_MM,
     cardH: CARD_H_MM,
   },

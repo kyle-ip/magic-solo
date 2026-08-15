@@ -1,6 +1,6 @@
 # Magic Solo — Challenge Decks
 
-Solo fan site for the three *Magic: The Gathering* **Challenge Decks** from Theros-block Game Days (Face the Hydra, Battle the Horde, Defeat a God), with a simplified PvE **Challenge Experience**, a paper-play **Game Assistant**, classic archetypes, Scryfall set gallery, local pack/collection toys, and a **Print assistant** for A4 / 6″ proxy PDFs.
+Solo fan site for the three *Magic: The Gathering* **Challenge Decks** from Theros-block Game Days (Face the Hydra, Battle the Horde, Defeat a God), with a simplified PvE **Challenge Experience**, a paper-play **Game Assistant**, classic archetypes, Scryfall set gallery, local pack/collection toys, and a **Print assistant** for A4 / A3 / 6″ proxy PDFs.
 
 **Live:** [https://kyle-ip.github.io/magic-solo/](https://kyle-ip.github.io/magic-solo/)
 
@@ -13,11 +13,12 @@ Solo fan site for the three *Magic: The Gathering* **Challenge Decks** from Ther
 | Challenge Decks | `/`, `/decks/:code` | Rules + card gallery + print PDF |
 | Challenge Experience | `/challenge/:code` | Automated solo PvE (simplified engine) |
 | Game Assistant | `/assistant/:code` | Manual challenge half-board for paper decks |
-| Classic decks | `/classic-decks` | Curated archetypes + sample lists |
+| Classic decks | `/classic-decks` | Curated archetypes + sample lists + print PDF |
 | Set gallery | `/sets` | Live Scryfall browsing + print PDF |
 | Pack / collection | Header | Weighted pack, single draw, local collection + print PDF |
-| Print assistant | Modal | Full-face proxies at 63×88 mm; A4 3×3 or 6″ photo; preview then PDF |
-| AI Assistant | Optional | User-supplied API key; see [user guide § AI](docs/USER_GUIDE.en.md#9-ai-assistant) |
+| Print assistant | Modal | Full-face proxies at 63×88 mm; A4 3×3, A3 4×4, or 6″ photo; expands deck qty; preview then PDF |
+| Card editor | `/editor` | **In development** — nav entry is disabled; visiting the URL shows 404 until enabled in `src/features.ts` |
+| AI Assistant | Optional | User-supplied API key; see [user guide § AI](docs/USER_GUIDE.en.md#10-ai-assistant) |
 
 UI: English + 中文. Without an AI key, gameplay and layout match the non-AI site.
 
@@ -63,7 +64,8 @@ High-res card PNG/`*-display.jpg` under `public/assets/cards/` are gitignored; C
 ### Layout
 
 ```
-src/pages/        Routes (home, decks, challenge, assistant, sets, classic)
+src/pages/        Routes (home, decks, challenge, assistant, sets, classic, editor)
+src/editor/       Card editor (canvas compositor; gated by CARD_EDITOR_ENABLED)
 src/game/         Challenge Experience engine
 src/assistant/    Game Assistant state
 src/print/        Print assistant layout + PDF export

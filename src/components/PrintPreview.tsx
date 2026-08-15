@@ -12,6 +12,13 @@ type PrintPreviewProps = {
   paper: PaperSizeId
   images: FetchedPrintImage[]
   pageIndex: number
+  pageLabel: string
+}
+
+type PrintPagerProps = {
+  paper: PaperSizeId
+  imageCount: number
+  pageIndex: number
   onPageChange: (page: number) => void
   prevLabel: string
   nextLabel: string
@@ -19,15 +26,12 @@ type PrintPreviewProps = {
 }
 
 /**
- * Screen preview using the same mm layout as the PDF export.
+ * Screen preview sheet using the same mm layout as the PDF export.
  */
 export function PrintPreview({
   paper,
   images,
   pageIndex,
-  onPageChange,
-  prevLabel,
-  nextLabel,
   pageLabel,
 }: PrintPreviewProps) {
   const layout = getPaperLayout(paper)
@@ -36,12 +40,18 @@ export function PrintPreview({
   const idxs = indicesOnPage(safePage, images.length, paper)
   const marks = cutMarkLines(paper)
   const aspect = `${layout.pageW} / ${layout.pageH}`
+  // Width-first sizing (definite dvh/px). Avoid height:100% — parent height is indefinite and collapses.
+  const sheetStyle = {
+    aspectRatio: aspect,
+    width: `min(100%, 560px, calc(min(68dvh, 720px) * ${layout.pageW} / ${layout.pageH}))`,
+    height: 'auto',
+  }
 
   return (
     <div className="print-preview">
       <div
         className="print-preview-sheet"
-        style={{ aspectRatio: aspect }}
+        style={sheetStyle}
         role="img"
         aria-label={pageLabel}
       >
@@ -82,27 +92,43 @@ export function PrintPreview({
           ))}
         </svg>
       </div>
-      {pages > 1 ? (
-        <div className="print-preview-pager">
-          <button
-            type="button"
-            className="btn ghost"
-            disabled={safePage <= 0}
-            onClick={() => onPageChange(safePage - 1)}
-          >
-            {prevLabel}
-          </button>
-          <span>{pageLabel}</span>
-          <button
-            type="button"
-            className="btn ghost"
-            disabled={safePage >= pages - 1}
-            onClick={() => onPageChange(safePage + 1)}
-          >
-            {nextLabel}
-          </button>
-        </div>
-      ) : null}
+    </div>
+  )
+}
+
+/** Page controls sit outside the preview stage so they are never clipped. */
+export function PrintPager({
+  paper,
+  imageCount,
+  pageIndex,
+  onPageChange,
+  prevLabel,
+  nextLabel,
+  pageLabel,
+}: PrintPagerProps) {
+  const pages = pageCount(imageCount, paper)
+  if (pages <= 1) return null
+  const safePage = Math.min(Math.max(0, pageIndex), pages - 1)
+
+  return (
+    <div className="print-preview-pager" role="navigation" aria-label={pageLabel}>
+      <button
+        type="button"
+        className="btn ghost"
+        disabled={safePage <= 0}
+        onClick={() => onPageChange(safePage - 1)}
+      >
+        {prevLabel}
+      </button>
+      <span>{pageLabel}</span>
+      <button
+        type="button"
+        className="btn ghost"
+        disabled={safePage >= pages - 1}
+        onClick={() => onPageChange(safePage + 1)}
+      >
+        {nextLabel}
+      </button>
     </div>
   )
 }

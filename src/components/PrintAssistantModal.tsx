@@ -15,7 +15,7 @@ import {
 } from '../print/fetchPrintImages'
 import type { PrintCardItem } from '../print/printCards'
 import { PackHeadIconButton } from './PackHeadIconButton'
-import { PrintPreview } from './PrintPreview'
+import { PrintPager, PrintPreview } from './PrintPreview'
 import '../styles/pack.css'
 import '../styles/print.css'
 
@@ -63,6 +63,10 @@ export function PrintAssistantModal({
   const [wasOpen, setWasOpen] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
   const imagesRef = useRef<FetchedPrintImage[]>([])
+  const progressRafRef = useRef<number | null>(null)
+  const progressLatestRef = useRef({ done: 0, total: 0 })
+  const exportingLock = useRef(false)
+  const exportGenRef = useRef(0)
 
   // Reset on the same render as open→true so we never paint stale preview first.
   if (open !== wasOpen) {
@@ -119,8 +123,14 @@ export function PrintAssistantModal({
           {
             signal: ac.signal,
             onProgress: (p) => {
-              setProgressDone(p.done)
-              setProgressTotal(p.total)
+              progressLatestRef.current = { done: p.done, total: p.total }
+              if (progressRafRef.current != null) return
+              progressRafRef.current = requestAnimationFrame(() => {
+                progressRafRef.current = null
+                const latest = progressLatestRef.current
+                setProgressDone(latest.done)
+                setProgressTotal(latest.total)
+              })
             },
           },
         )
@@ -147,6 +157,10 @@ export function PrintAssistantModal({
 
     return () => {
       ac.abort()
+      if (progressRafRef.current != null) {
+        cancelAnimationFrame(progressRafRef.current)
+        progressRafRef.current = null
+      }
       revokePrintImages(imagesRef.current)
       imagesRef.current = []
     }
@@ -161,20 +175,38 @@ export function PrintAssistantModal({
   if (!open) return null
 
   const onExport = async () => {
-    if (images.length === 0 || phase === 'exporting') return
+    if (images.length === 0 || phase === 'exporting' || exportingLock.current) {
+      return
+    }
+    exportingLock.current = true
+    const gen = ++exportGenRef.current
     setPhase('exporting')
     setError(null)
+    // Yield so the export button loading state paints before PDF work.
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => resolve())
+      })
+    })
     try {
       const bytes = await buildCardPrintPdf(images, paper)
+      if (gen !== exportGenRef.current) return
       downloadBlob(bytes, printFilename(sourceSlug, paper))
       setPhase('ready')
     } catch (err) {
+      if (gen !== exportGenRef.current) return
       setPhase('ready')
       setError(err instanceof Error ? err.message : String(err))
+    } finally {
+      if (gen === exportGenRef.current) {
+        exportingLock.current = false
+      }
     }
   }
 
   const close = () => {
+    exportGenRef.current += 1
+    exportingLock.current = false
     if (phase === 'resolving' || phase === 'loading' || phase === 'exporting') {
       abortRef.current?.abort()
     }
@@ -225,15 +257,20 @@ export function PrintAssistantModal({
             type="button"
             className={`btn ghost${paper === 'a4' ? ' is-active' : ''}`}
             onClick={() => setPaper('a4')}
-            disabled={phase === 'exporting'}
           >
             {t('printAssistant.paperA4')}
           </button>
           <button
             type="button"
+            className={`btn ghost${paper === 'a3' ? ' is-active' : ''}`}
+            onClick={() => setPaper('a3')}
+          >
+            {t('printAssistant.paperA3')}
+          </button>
+          <button
+            type="button"
             className={`btn ghost${paper === 'photo6' ? ' is-active' : ''}`}
             onClick={() => setPaper('photo6')}
-            disabled={phase === 'exporting'}
           >
             {t('printAssistant.paperPhoto6')}
           </button>
@@ -248,76 +285,96 @@ export function PrintAssistantModal({
           </span>
         </div>
 
-        <div className="print-assistant-stage">
-          {showPreview ? (
-            <div className="print-assistant-stage-ready">
-              <PrintPreview
-                paper={paper}
-                images={images}
-                pageIndex={pageIndex}
-                onPageChange={setPageIndex}
-                prevLabel={t('printAssistant.prevPage')}
-                nextLabel={t('printAssistant.nextPage')}
-                pageLabel={t('printAssistant.pageOf', {
-                  current: Math.min(pageIndex + 1, Math.max(pages, 1)),
-                  total: Math.max(pages, 1),
-                })}
-              />
-            </div>
-          ) : (
-            <div className="print-assistant-stage-loading" role="status">
-              <div
-                className="print-preview-sheet print-preview-sheet--placeholder"
-                style={{ aspectRatio: paperAspect }}
-                aria-hidden="true"
-              />
-              <div className="print-assistant-progress print-assistant-progress--overlay">
-                {phase === 'resolving' ? (
-                  <p>{t('printAssistant.fetchingSet')}</p>
-                ) : phase === 'error' ? null : (
-                  <>
-                    <p>
-                      {t('printAssistant.loading', {
-                        done: progressDone,
-                        total: progressTotal || items.length || '…',
-                      })}
-                    </p>
-                    <div className="print-assistant-progress-bar">
-                      <span style={{ width: `${progressPct}%` }} />
-                    </div>
-                  </>
-                )}
+        <div className="print-assistant-body">
+          <div className="print-assistant-stage">
+            {showPreview ? (
+              <div className="print-assistant-stage-ready">
+                <PrintPreview
+                  paper={paper}
+                  images={images}
+                  pageIndex={pageIndex}
+                  pageLabel={t('printAssistant.pageOf', {
+                    current: Math.min(pageIndex + 1, Math.max(pages, 1)),
+                    total: Math.max(pages, 1),
+                  })}
+                />
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="print-assistant-stage-loading" role="status">
+                <div
+                  className="print-preview-sheet print-preview-sheet--placeholder"
+                  style={{
+                    aspectRatio: paperAspect,
+                    width: `min(100%, 560px, calc(min(68dvh, 720px) * ${paperLayout.pageW} / ${paperLayout.pageH}))`,
+                    height: 'auto',
+                  }}
+                  aria-hidden="true"
+                />
+                <div className="print-assistant-progress print-assistant-progress--overlay">
+                  {phase === 'resolving' ? (
+                    <p>{t('printAssistant.fetchingSet')}</p>
+                  ) : phase === 'error' ? null : (
+                    <>
+                      <p>
+                        {t('printAssistant.loading', {
+                          done: progressDone,
+                          total: progressTotal || items.length || '…',
+                        })}
+                      </p>
+                      <div className="print-assistant-progress-bar">
+                        <span style={{ width: `${progressPct}%` }} />
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {failed.length > 0 && phase === 'ready' ? (
+            <p className="print-assistant-warn" role="status">
+              {t('printAssistant.partialFail', { n: failed.length })}
+            </p>
+          ) : null}
+
+          {error ? (
+            <p className="print-assistant-error" role="alert">
+              {error}
+            </p>
+          ) : null}
         </div>
 
-        {failed.length > 0 && phase === 'ready' ? (
-          <p className="print-assistant-warn" role="status">
-            {t('printAssistant.partialFail', { n: failed.length })}
-          </p>
-        ) : null}
-
-        {error ? (
-          <p className="print-assistant-error" role="alert">
-            {error}
-          </p>
-        ) : null}
-
-        <div className="print-assistant-actions">
-          <button
-            type="button"
-            className="btn primary"
-            disabled={phase !== 'ready' || images.length === 0}
-            onClick={() => void onExport()}
-          >
-            {phase === 'exporting'
-              ? t('printAssistant.exporting')
-              : t('printAssistant.export')}
-          </button>
-          <button type="button" className="btn ghost" onClick={close}>
-            {t('printAssistant.cancel')}
-          </button>
+        <div className="print-assistant-footer">
+          {showPreview ? (
+            <PrintPager
+              paper={paper}
+              imageCount={images.length}
+              pageIndex={pageIndex}
+              onPageChange={setPageIndex}
+              prevLabel={t('printAssistant.prevPage')}
+              nextLabel={t('printAssistant.nextPage')}
+              pageLabel={t('printAssistant.pageOf', {
+                current: Math.min(pageIndex + 1, Math.max(pages, 1)),
+                total: Math.max(pages, 1),
+              })}
+            />
+          ) : null}
+          <div className="print-assistant-action-btns">
+            <button
+              type="button"
+              className={`btn primary${phase === 'exporting' ? ' is-busy' : ''}`}
+              disabled={phase === 'exporting' || phase !== 'ready' || images.length === 0}
+              aria-busy={phase === 'exporting'}
+              onClick={() => void onExport()}
+            >
+              {phase === 'exporting'
+                ? t('printAssistant.exporting')
+                : t('printAssistant.export')}
+            </button>
+            <button type="button" className="btn ghost" onClick={close}>
+              {t('printAssistant.cancel')}
+            </button>
+          </div>
         </div>
       </div>
     </div>,

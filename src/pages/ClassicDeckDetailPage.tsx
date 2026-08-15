@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { DrawnCardModal } from '../components/DrawnCardModal'
+import { PrintAssistantModal } from '../components/PrintAssistantModal'
 import {
   getClassicDeck,
   getClassicDeckLocalizedName,
@@ -14,6 +15,7 @@ import {
 } from '../data/randomCard'
 import { resolveCardsByNameProgressive } from '../data/resolveClassicCards'
 import { ClassicDeckLlmAssist } from '../components/ClassicDeckLlmAssist'
+import { printItemsFromClassicList } from '../print/printCards'
 import { preloadImage } from '../utils/imageCache'
 import {
   thumbUrlFromFaceUrl,
@@ -33,6 +35,7 @@ export function ClassicDeckDetailPage() {
   )
   const [loading, setLoading] = useState(true)
   const [inspect, setInspect] = useState<DrawnCard | null>(null)
+  const [printOpen, setPrintOpen] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -157,6 +160,16 @@ export function ClassicDeckDetailPage() {
           <h1>{title}</h1>
         )}
         <p className="lede">{summary}</p>
+        <div className="cta-row">
+          <button
+            type="button"
+            className="btn ghost"
+            disabled={loading || deck.sampleList.length === 0}
+            onClick={() => setPrintOpen(true)}
+          >
+            {t('printAssistant.open')}
+          </button>
+        </div>
       </header>
 
       <section className="classic-detail-section">
@@ -212,6 +225,13 @@ export function ClassicDeckDetailPage() {
         quantity={qtyFor(inspect)}
         onSelect={setInspect}
         onClose={() => setInspect(null)}
+      />
+
+      <PrintAssistantModal
+        open={printOpen}
+        onClose={() => setPrintOpen(false)}
+        sourceSlug={deck.id}
+        cards={printItemsFromClassicList(deck.sampleList, resolved)}
       />
     </main>
   )

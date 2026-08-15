@@ -18,8 +18,9 @@ Fan site for the three *Magic: The Gathering* **Challenge Decks** from Theros-bl
 6. [Set gallery](#6-set-gallery)
 7. [Pack open, single draw & collection](#7-pack-open-single-draw--collection)
 8. [Print assistant](#8-print-assistant)
-9. [AI Assistant](#9-ai-assistant)
-10. [Notes & attribution](#10-notes--attribution)
+9. [Card editor](#9-card-editor)
+10. [AI Assistant](#10-ai-assistant)
+11. [Notes & attribution](#11-notes--attribution)
 
 ---
 
@@ -33,7 +34,7 @@ Use the header language switch for **English** or **中文**. Challenge Deck car
 
 | Control | Where | What it does |
 | --- | --- | --- |
-| Header links | Top | Home, Sets, Classic decks, language, pack / single draw |
+| Header links | Top | Home, Sets, Classic decks, Card editor (disabled while in development), language, pack / single draw |
 | Floating buttons | Right gutter | Up one level (some pages), back to top; AI settings after a key is saved |
 | Footer **Help** | Bottom | Open this user guide |
 | Footer **AI Assistant** | Bottom | Open optional AI API settings |
@@ -59,7 +60,7 @@ Overview of Challenge Decks and three paths into each deck.
 - Rules summary (expandable sections)
 - Full card gallery (open a card for art, oracle text, quantity)
 - Links to **Challenge Experience** and **Game Assistant**
-- **Print assistant** for the deck’s unique card faces (see [§8](#8-print-assistant))
+- **Print assistant** for the deck catalog, expanding each card by its quantity (see [§8](#8-print-assistant))
 
 ---
 
@@ -122,7 +123,7 @@ Digital **challenge half-board** while you play a physical deck offline. No turn
 
 Routes: `/classic-decks`, `/classic-decks/:id`
 
-Curated constructed archetypes with bilingual summary, how-it-wins text, sample list, and Scryfall-backed card art. Open cards from the list for details.
+Curated constructed archetypes with bilingual summary, how-it-wins text, sample list, and Scryfall-backed card art. Open cards from the list for details. On a deck detail page, **Print assistant** exports the full sample list (main + side) with each row’s **qty** expanded into separate faces (see [§8](#8-print-assistant)).
 
 ---
 
@@ -156,8 +157,9 @@ Client-side PDF export for cutting physical-size proxies. Opens from:
 
 | Where | What gets printed |
 | --- | --- |
-| Challenge deck page (`/decks/:code`) | All unique cards in that challenge catalog (one face each; quantity is not expanded) |
-| Set gallery (`/sets/:code`) | Every card in the set (paginates Scryfall until complete) |
+| Challenge deck page (`/decks/:code`) | All cards in that challenge catalog, **expanded by quantity** (e.g. ×4 prints four faces) |
+| Classic deck detail (`/classic-decks/:id`) | Full sample list (main + side), **expanded by each row’s qty** |
+| Set gallery (`/sets/:code`) | Every card in the set (paginates Scryfall until complete; one face per unique print) |
 | Collection cabinet | Every card currently saved in the local collection |
 
 ### Paper & layout
@@ -165,6 +167,7 @@ Client-side PDF export for cutting physical-size proxies. Opens from:
 | Option | Page size | Cards per page |
 | --- | --- | --- |
 | **A4 · 3×3** | 210×297 mm | 9 |
+| **A3 · 4×4** | 297×420 mm | 16 |
 | **6″ photo · 1/page** | 102×152 mm (4R) | 1 |
 
 Each face is drawn at about **63×88 mm** (standard card size) with **cut marks**. Front faces only (no automatic backs / double-faced backs).
@@ -175,7 +178,21 @@ Large sets take longer (especially 6″ mode, one page per card). Work stays in 
 
 ---
 
-## 9. AI Assistant
+## 9. Card editor
+
+Route: `/editor`
+
+A visual Magic-style card face compositor (frames, art, bilingual text, PNG / JSON export, print hand-off) is **under development**.
+
+**Current status:** unavailable in the live UI.
+
+- The header **Card Editor** control is grayed out and not clickable.
+- Opening `/editor` directly shows the **404** page (same as other unknown paths).
+- When ready to ship, maintainers can flip `CARD_EDITOR_ENABLED` in [`src/features.ts`](../src/features.ts).
+
+---
+
+## 10. AI Assistant
 
 Optional. The site never ships a shared API key. You bring your own OpenAI-compatible endpoint.
 
@@ -218,7 +235,7 @@ Stable answers (card text, rules, archetypes, same question, etc.) are **cached 
 
 ---
 
-## 10. Notes & attribution
+## 11. Notes & attribution
 
 - Card data and images © Wizards of the Coast; served via [Scryfall](https://scryfall.com).
 - Challenge rules adapted from [MTG Wiki — Challenge Deck](https://mtg.wiki/page/Challenge_Deck) and official Game Day materials.
