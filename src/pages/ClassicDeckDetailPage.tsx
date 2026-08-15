@@ -13,6 +13,7 @@ import {
   type DrawnCard,
 } from '../data/randomCard'
 import { resolveCardsByNameProgressive } from '../data/resolveClassicCards'
+import { ClassicDeckLlmAssist } from '../components/ClassicDeckLlmAssist'
 import { preloadImage } from '../utils/imageCache'
 import {
   thumbUrlFromFaceUrl,
@@ -161,6 +162,7 @@ export function ClassicDeckDetailPage() {
       <section className="classic-detail-section">
         <h2>{t('classicDecks.howItWins')}</h2>
         <p>{howItWins}</p>
+        <ClassicDeckLlmAssist deck={deck} />
       </section>
 
       <section className="classic-detail-section classic-detail-gallery-section">

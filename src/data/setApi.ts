@@ -303,6 +303,23 @@ async function fetchCardsPage(url: string): Promise<SetCardsPage> {
   })
 }
 
+/** Ad-hoc Scryfall card search (first page, capped). Not cached. */
+export async function searchScryfallCards(
+  query: string,
+  options?: { max?: number },
+): Promise<{ cards: DrawnCard[]; totalCards: number; query: string }> {
+  const q = query.trim()
+  if (!q) return { cards: [], totalCards: 0, query: q }
+  const max = options?.max ?? 24
+  const url = `${SEARCH_URL}?q=${encodeURIComponent(q)}&unique=cards&order=name`
+  const page = await fetchCardsPage(url)
+  return {
+    cards: page.cards.slice(0, max),
+    totalCards: page.totalCards,
+    query: q,
+  }
+}
+
 /** One Scryfall search page for a set. Pass nextPage from a prior result to continue. */
 export async function fetchSetCardsPage(
   code: string,

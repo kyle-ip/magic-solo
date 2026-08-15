@@ -1,0 +1,609 @@
+/* LLM settings modal + feature panels */
+
+.llm-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(6, 4, 3, 0.78);
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  backdrop-filter: blur(4px);
+}
+
+.llm-modal-shell {
+  width: min(440px, 100%);
+  max-height: min(90dvh, 90vh);
+  overflow: auto;
+  background: linear-gradient(180deg, #2a221a, #17120e);
+  border: 1px solid rgba(184, 137, 58, 0.4);
+  padding: 1.35rem 1.4rem 1.25rem;
+  position: relative;
+  box-shadow: var(--shadow, 0 18px 48px rgba(0, 0, 0, 0.45));
+  color-scheme: dark;
+}
+
+.llm-modal-close {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.75rem;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(240, 212, 138, 0.75);
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.llm-modal-close:hover {
+  color: #f0d48a;
+}
+
+.llm-modal-head .eyebrow {
+  margin-bottom: 0.25rem;
+}
+
+.llm-modal-head h2 {
+  margin: 0 0 0.4rem;
+  font-size: 1.35rem;
+}
+
+.llm-modal-lead {
+  margin: 0 0 1rem;
+  color: rgba(232, 214, 180, 0.72);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.llm-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.llm-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.86rem;
+  color: rgba(232, 214, 180, 0.88);
+}
+
+/* Shared dark field: kills UA white borders on Win/Chrome inputs & selects */
+.llm-field input,
+.llm-rules-ask input,
+.llm-card-assist-ask input,
+.llm-postgame-ask input,
+.llm-nl-search-form input[type='search'],
+.llm-classic-compare select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  color-scheme: dark;
+  box-sizing: border-box;
+  border: 1px solid rgba(160, 120, 55, 0.38);
+  border-radius: 0.4rem;
+  background-color: #12100c;
+  background-image: none;
+  color: #f3e6c8;
+  caret-color: #f0d48a;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.45);
+  font: inherit;
+  outline: none;
+}
+
+.llm-field input {
+  width: 100%;
+  padding: 0.55rem 0.65rem;
+}
+
+.llm-field input:focus,
+.llm-rules-ask input:focus,
+.llm-card-assist-ask input:focus,
+.llm-postgame-ask input:focus,
+.llm-nl-search-form input[type='search']:focus,
+.llm-classic-compare select:focus {
+  outline: none;
+  border-color: rgba(224, 180, 90, 0.55);
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(224, 180, 90, 0.22);
+}
+
+.llm-field input::placeholder,
+.llm-rules-ask input::placeholder,
+.llm-card-assist-ask input::placeholder,
+.llm-postgame-ask input::placeholder,
+.llm-nl-search-form input[type='search']::placeholder {
+  color: rgba(200, 180, 140, 0.45);
+}
+
+.llm-field input:-webkit-autofill,
+.llm-field input:-webkit-autofill:hover,
+.llm-field input:-webkit-autofill:focus,
+.llm-rules-ask input:-webkit-autofill,
+.llm-card-assist-ask input:-webkit-autofill,
+.llm-postgame-ask input:-webkit-autofill,
+.llm-nl-search-form input[type='search']:-webkit-autofill {
+  -webkit-text-fill-color: #f3e6c8;
+  caret-color: #f0d48a;
+  box-shadow: 0 0 0 1000px #12100c inset;
+  transition: background-color 99999s ease-out;
+}
+
+.llm-key-row {
+  display: flex;
+  gap: 0.4rem;
+  align-items: stretch;
+}
+
+.llm-key-row input {
+  flex: 1;
+  min-width: 0;
+}
+
+.llm-inline-btn {
+  flex-shrink: 0;
+  padding-inline: 0.7rem;
+  font-size: 0.8rem;
+}
+
+.llm-field-hint {
+  font-size: 0.78rem;
+  color: rgba(200, 180, 140, 0.65);
+}
+
+.llm-warning {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: rgba(224, 170, 110, 0.85);
+}
+
+.llm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.llm-status {
+  margin: 0;
+  font-size: 0.85rem;
+  color: rgba(220, 200, 160, 0.8);
+}
+
+.llm-status.is-ok {
+  color: #9dcf8a;
+}
+
+.llm-status.is-error {
+  color: #e8a090;
+}
+
+/* Soften .btn chrome inside LLM panels (inset highlight reads as white edge) */
+.llm-modal-shell .btn,
+.llm-card-assist .btn,
+.llm-rules-panel .btn,
+.llm-rules-ask .btn,
+.llm-postgame-ask .btn,
+.llm-nl-search .btn,
+.llm-classic-assist .btn,
+.llm-assistant-advisor .btn,
+.llm-setup-advisor .btn,
+.settlement-report .btn {
+  border-color: rgba(160, 120, 55, 0.42);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
+  background: linear-gradient(180deg, #2c2218, #16110d);
+  color: rgba(244, 234, 212, 0.94);
+}
+
+.llm-modal-shell .btn:hover,
+.llm-card-assist .btn:hover,
+.llm-rules-panel .btn:hover,
+.llm-rules-ask .btn:hover,
+.llm-postgame-ask .btn:hover,
+.llm-nl-search .btn:hover,
+.llm-classic-assist .btn:hover,
+.llm-assistant-advisor .btn:hover,
+.llm-setup-advisor .btn:hover,
+.settlement-report .btn:hover {
+  border-color: rgba(224, 180, 90, 0.5);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.32);
+  filter: brightness(1.06);
+}
+
+.llm-modal-shell .btn.primary,
+.llm-card-assist .btn.primary,
+.llm-rules-ask .btn.primary,
+.llm-postgame-ask .btn.primary,
+.llm-nl-search .btn.primary {
+  background: linear-gradient(180deg, #d4a84e, #8a5f1c);
+  color: #1a1208;
+  border-color: rgba(200, 150, 60, 0.55);
+  box-shadow: 0 4px 12px rgba(100, 70, 20, 0.28);
+}
+
+.floating-nav-btn {
+  position: relative;
+}
+
+.floating-nav-btn.is-configured {
+  border-color: rgba(140, 200, 120, 0.45);
+}
+
+.floating-nav-btn.is-configured::after {
+  content: '';
+  position: absolute;
+  top: 0.28rem;
+  right: 0.28rem;
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 999px;
+  background: #7ecf6a;
+  box-shadow: 0 0 0 2px rgba(22, 16, 12, 0.9);
+}
+
+/* Rules Q&A */
+.llm-rules-panel {
+  margin-top: 1.25rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid rgba(184, 137, 58, 0.28);
+}
+
+.llm-rules-panel h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+}
+
+.llm-rules-lead {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  color: rgba(232, 214, 180, 0.7);
+}
+
+.llm-rules-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 0.65rem;
+}
+
+.llm-rules-ask {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.llm-rules-ask input {
+  flex: 1;
+  min-width: 12rem;
+  padding: 0.5rem 0.65rem;
+}
+
+.llm-rules-answer,
+.llm-battle-report {
+  margin-top: 0.75rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid rgba(160, 120, 55, 0.32);
+  background: rgba(12, 9, 7, 0.55);
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: rgba(240, 224, 190, 0.92);
+  white-space: pre-wrap;
+}
+
+.llm-rules-answer.is-error,
+.llm-battle-report.is-error {
+  color: #e8a090;
+  border-color: rgba(200, 100, 80, 0.35);
+}
+
+.llm-need-key {
+  font-size: 0.88rem;
+  color: rgba(220, 190, 140, 0.75);
+}
+
+.llm-card-assist {
+  margin-top: 0.85rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(160, 120, 55, 0.28);
+  color-scheme: dark;
+}
+
+.llm-card-assist-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.llm-card-assist-ask {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.55rem;
+}
+
+.llm-card-assist-ask input {
+  flex: 1;
+  min-width: 10rem;
+  padding: 0.45rem 0.6rem;
+}
+
+.llm-card-assist-answer {
+  margin-top: 0.65rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid rgba(160, 120, 55, 0.32);
+  background: rgba(12, 9, 7, 0.55);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: rgba(240, 224, 190, 0.92);
+  white-space: pre-wrap;
+}
+
+.llm-card-assist-answer.is-error {
+  color: #e8a090;
+  border-color: rgba(200, 100, 80, 0.35);
+}
+
+.settlement-report {
+  margin: 0.85rem 0 0.35rem;
+  text-align: left;
+  color-scheme: dark;
+}
+
+.settlement-report-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.llm-postgame-ask,
+.llm-classic-compare {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.55rem;
+  align-items: center;
+}
+
+.llm-postgame-ask input {
+  flex: 1;
+  min-width: 10rem;
+  padding: 0.45rem 0.6rem;
+}
+
+.llm-nl-search {
+  color-scheme: dark;
+}
+
+.sets-controls .llm-nl-search,
+.set-gallery-filters .llm-nl-search {
+  display: contents;
+}
+
+.llm-nl-search-form.sets-search {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex: 1 1 14rem;
+  max-width: 28rem;
+  width: auto;
+}
+
+.llm-nl-search-form.sets-search input[type='search'] {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: auto;
+}
+
+.llm-nl-ai-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  flex-shrink: 0;
+  margin: 0;
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  color: rgba(231, 215, 184, 0.82);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.llm-nl-ai-toggle input {
+  width: 0.95rem;
+  height: 0.95rem;
+  margin: 0;
+  accent-color: #c9a04a;
+  cursor: pointer;
+}
+
+.llm-nl-submit {
+  flex-shrink: 0;
+  height: 2.15rem;
+  padding: 0 0.7rem;
+  font-size: 0.82rem;
+}
+
+.sets-controls .llm-nl-query,
+.sets-controls .llm-nl-error,
+.sets-controls .llm-nl-results,
+.set-gallery-filters .llm-nl-query,
+.set-gallery-filters .llm-nl-error,
+.set-gallery-filters .llm-nl-results {
+  flex: 1 1 100%;
+  order: 20;
+}
+
+.llm-nl-query {
+  margin: 0.15rem 0 0;
+  font-size: 0.82rem;
+  color: rgba(220, 200, 160, 0.75);
+}
+
+.llm-nl-error {
+  margin: 0.15rem 0 0;
+  font-size: 0.85rem;
+  color: #e8a090;
+}
+
+.llm-nl-results {
+  list-style: none;
+  margin: 0.35rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr));
+  gap: 0.55rem;
+}
+
+.llm-nl-result-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: 100%;
+  padding: 0;
+  border: 1px solid rgba(160, 120, 55, 0.32);
+  background: rgba(12, 9, 7, 0.55);
+  color: rgba(240, 224, 190, 0.9);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.72rem;
+  text-align: left;
+  box-shadow: none;
+}
+
+.llm-nl-result-tile img {
+  width: 100%;
+  aspect-ratio: 5 / 7;
+  object-fit: cover;
+  display: block;
+}
+
+.llm-nl-result-tile span {
+  padding: 0.2rem 0.35rem 0.4rem;
+  line-height: 1.25;
+}
+
+.llm-assistant-advisor,
+.llm-setup-advisor,
+.llm-classic-assist {
+  margin-top: 0.65rem;
+  color-scheme: dark;
+}
+
+.llm-assistant-answer,
+.llm-setup-answer,
+.llm-collection-answer,
+.llm-classic-answer {
+  margin-top: 0.55rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid rgba(160, 120, 55, 0.32);
+  background: rgba(12, 9, 7, 0.55);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: rgba(240, 224, 190, 0.92);
+  white-space: pre-wrap;
+  text-align: left;
+}
+
+.pack-collection-manage .llm-collection-answer {
+  flex: 1 1 100%;
+  margin-top: 0.45rem;
+}
+
+.llm-assistant-answer.is-error,
+.llm-setup-answer.is-error,
+.llm-collection-answer.is-error,
+.llm-classic-answer.is-error {
+  color: #e8a090;
+  border-color: rgba(200, 100, 80, 0.35);
+}
+
+.llm-classic-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.llm-classic-compare select {
+  min-width: 10rem;
+  padding: 0.4rem 0.5rem;
+}
+
+.arena-topbar-actions .llm-assistant-advisor {
+  margin-top: 0;
+}
+
+.arena-setup .llm-setup-advisor {
+  margin: 0.75rem 0;
+}
+
+/* Rendered LLM markdown */
+.llm-md {
+  display: block;
+}
+
+.llm-md-flush {
+  margin-top: 0.35rem;
+}
+
+.llm-md-inline {
+  display: inline;
+}
+
+.llm-md-p {
+  margin: 0 0 0.55rem;
+  line-height: 1.55;
+}
+
+.llm-md-p:last-child {
+  margin-bottom: 0;
+}
+
+.llm-md-list {
+  margin: 0 0 0.55rem;
+  padding-left: 1.25rem;
+  line-height: 1.5;
+}
+
+.llm-md-list:last-child {
+  margin-bottom: 0;
+}
+
+.llm-md-list li {
+  margin: 0.15rem 0;
+}
+
+.llm-md strong {
+  color: #f0d48a;
+  font-weight: 700;
+}
+
+.llm-md em {
+  font-style: italic;
+  color: rgba(240, 224, 190, 0.95);
+}
+
+.llm-md code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9em;
+  padding: 0.05em 0.35em;
+  border-radius: 0.25rem;
+  background: rgba(0, 0, 0, 0.35);
+  color: #f3e6c8;
+}
+
+.llm-card-assist-answer,
+.llm-rules-answer,
+.llm-battle-report,
+.llm-classic-answer,
+.llm-assistant-answer,
+.llm-setup-answer,
+.llm-collection-answer {
+  white-space: normal;
+}

@@ -15,6 +15,8 @@ import {
   hasZhPrint,
   wantsZh,
 } from '../data/randomCard'
+import { collectionPeerNames } from '../llm/context/cardBrief'
+import { CollectionLlmAdvisor } from './CollectionLlmAdvisor'
 import { DrawnCardModal } from './DrawnCardModal'
 import '../styles/pack.css'
 import '../styles/deck.css'
@@ -215,6 +217,7 @@ export function PackCollectionCabinet({
                   >
                     {t('packDraw.clearAll')}
                   </button>
+                  <CollectionLlmAdvisor collection={collection} />
                 </div>
               </div>
             </div>
@@ -249,6 +252,10 @@ export function PackCollectionCabinet({
         <DrawnCardModal
           card={inspect}
           cards={sortedCollection.length > 0 ? sortedCollection : collection}
+          collectionPeers={collectionPeerNames(
+            sortedCollection.length > 0 ? sortedCollection : collection,
+            inspect.id,
+          )}
           onSelect={(next) => {
             const found =
               (sortedCollection.length > 0

@@ -10,6 +10,7 @@ import {
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import '../styles/arena.css'
+import '../styles/llm.css'
 import { ArenaCard } from '../components/challenge/ArenaCard'
 import { AttackArrows } from '../components/challenge/AttackArrows'
 import { CastStage } from '../components/challenge/CastStage'
@@ -44,7 +45,18 @@ import type {
   FxPop,
   LogEntry,
 } from '../game/types'
+import { chatCompletion, LlmError } from '../llm/client'
+import { battleReportContext } from '../llm/context/battleReport'
+import { summarizeGameBoard } from '../llm/context/gameBoard'
+import {
+  battleReportSystemPrompt,
+  coachSystemPrompt,
+  postGameAskSystemPrompt,
+} from '../llm/prompts'
 import { CardImage, RemoteArtBackground } from '../hooks/useCardImageSrc'
+import { useHasLlmApiKey } from '../hooks/useLlmSettings'
+import { SetupLlmAdvisor } from '../components/SetupLlmAdvisor'
+import { LlmRichText } from '../components/LlmRichText'
 import { preferredAssetUrl } from '../utils/remoteAsset'
 import { setHideSiteChrome } from '../utils/siteChrome'
 
@@ -112,6 +124,18 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
   const [coachOn, setCoachOn] = useState(readCoachEnabled)
   const [logOpen, setLogOpen] = useState(readLogOpen)
   const [logVisible, setLogVisible] = useState(readLogVisible)
+  const hasLlmKey = useHasLlmApiKey()
+  const [llmTip, setLlmTip] = useState<string | null>(null)
+  const [battleReport, setBattleReport] = useState('')
+  const [battleReportError, setBattleReportError] = useState(false)
+  const [battleReportLoading, setBattleReportLoading] = useState(false)
+  const [postAsk, setPostAsk] = useState('')
+  const [postAskAnswer, setPostAskAnswer] = useState('')
+  const [postAskError, setPostAskError] = useState(false)
+  const [postAskLoading, setPostAskLoading] = useState(false)
+  const coachAbortRef = useRef<AbortController | null>(null)
+  const reportAbortRef = useRef<AbortController | null>(null)
+  const postAskAbortRef = useRef<AbortController | null>(null)
   const [logPos, setLogPos] = useState<{ left: number; top: number } | null>(null)
   const [logDragging, setLogDragging] = useState(false)
   const arenaRef = useRef<HTMLElement | null>(null)
@@ -158,6 +182,196 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
   )
 
   const tipKey = useMemo(() => coachTipKey(state), [state])
+  const staticTip = t(`challenge.tip.${tipKey}`)
+
+  useEffect(() => {
+    return () => {
+      coachAbortRef.current?.abort()
+      reportAbortRef.current?.abort()
+      postAskAbortRef.current?.abort()
+    }
+  }, [])
+
+  useEffect(() => {
+    if (state.status === 'playing') return
+    setLlmTip(null)
+    coachAbortRef.current?.abort()
+  }, [state.status])
+
+  useEffect(() => {
+    if (state.status === 'won' || state.status === 'lost') return
+    setBattleReport('')
+    setBattleReportError(false)
+    setPostAsk('')
+    setPostAskAnswer('')
+    setPostAskError(false)
+    reportAbortRef.current?.abort()
+    postAskAbortRef.current?.abort()
+  }, [state.status])
+
+  useEffect(() => {
+    if (!coachOn || !hasLlmKey || state.status !== 'playing') {
+      setLlmTip(null)
+      coachAbortRef.current?.abort()
+      return
+    }
+
+    coachAbortRef.current?.abort()
+    const ac = new AbortController()
+    coachAbortRef.current = ac
+
+    const timer = window.setTimeout(() => {
+      void (async () => {
+        try {
+          const text = await chatCompletion({
+            signal: ac.signal,
+            maxTokens: 180,
+            temperature: 0.5,
+            messages: [
+              { role: 'system', content: coachSystemPrompt(i18n.language) },
+              {
+                role: 'user',
+                content: [
+                  `Tip intent: ${tipKey}`,
+                  `Static tip (fallback): ${staticTip}`,
+                  `Board JSON:\n${JSON.stringify(summarizeGameBoard(state))}`,
+                ].join('\n'),
+              },
+            ],
+            cache: {
+              scope: 'challenge.coach',
+              payload: {
+                lang: i18n.language,
+                tipKey,
+                board: summarizeGameBoard(state),
+              },
+              ttlMs: null,
+            },
+          })
+          if (!ac.signal.aborted) {
+            setLlmTip(text)
+          }
+        } catch (err) {
+          if (err instanceof LlmError && err.code === 'aborted') return
+          if (!ac.signal.aborted) {
+            setLlmTip(null)
+          }
+        }
+      })()
+    }, 450)
+
+    return () => {
+      window.clearTimeout(timer)
+      ac.abort()
+    }
+    // Intentionally keyed on tip/phase signals, not full state object identity churn every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- throttle on tip + turn signals
+  }, [
+    coachOn,
+    hasLlmKey,
+    state.status,
+    tipKey,
+    state.turnNumber,
+    state.activeSide,
+    state.playerPhase,
+    state.challengePhase,
+    state.awaitingAdvance,
+    state.pendingCast?.mode,
+    state.prompt?.kind,
+    i18n.language,
+    staticTip,
+  ])
+
+  const generateBattleReport = useCallback(async () => {
+    if (!hasLlmKey || battleReportLoading) return
+    if (state.status !== 'won' && state.status !== 'lost') return
+    reportAbortRef.current?.abort()
+    const ac = new AbortController()
+    reportAbortRef.current = ac
+    setBattleReportLoading(true)
+    setBattleReportError(false)
+    const matchPayload = battleReportContext(state, formatLog)
+    const regenerate = Boolean(battleReport)
+    try {
+      const text = await chatCompletion({
+        signal: ac.signal,
+        maxTokens: 320,
+        temperature: 0.7,
+        messages: [
+          { role: 'system', content: battleReportSystemPrompt(i18n.language) },
+          {
+            role: 'user',
+            content: `Match data:\n${JSON.stringify(matchPayload)}`,
+          },
+        ],
+        cache: {
+          scope: 'challenge.battleReport',
+          payload: { lang: i18n.language, match: matchPayload },
+          ttlMs: null,
+        },
+        skipCache: regenerate,
+      })
+      setBattleReport(text)
+    } catch (err) {
+      if (err instanceof LlmError && err.code === 'aborted') return
+      setBattleReportError(true)
+      setBattleReport(
+        err instanceof Error ? err.message : t('llm.errorGeneric'),
+      )
+    } finally {
+      setBattleReportLoading(false)
+    }
+  }, [
+    hasLlmKey,
+    battleReportLoading,
+    battleReport,
+    state,
+    formatLog,
+    i18n.language,
+    t,
+  ])
+
+  const askPostGame = useCallback(async () => {
+    const q = postAsk.trim()
+    if (!hasLlmKey || postAskLoading || !q) return
+    if (state.status !== 'won' && state.status !== 'lost') return
+    postAskAbortRef.current?.abort()
+    const ac = new AbortController()
+    postAskAbortRef.current = ac
+    setPostAskLoading(true)
+    setPostAskError(false)
+    setPostAskAnswer('')
+    try {
+      const matchPayload = battleReportContext(state, formatLog)
+      const text = await chatCompletion({
+        signal: ac.signal,
+        maxTokens: 360,
+        temperature: 0.45,
+        messages: [
+          { role: 'system', content: postGameAskSystemPrompt(i18n.language) },
+          {
+            role: 'user',
+            content: [
+              `Match data:\n${JSON.stringify(matchPayload)}`,
+              `Question: ${q}`,
+            ].join('\n\n'),
+          },
+        ],
+        cache: {
+          scope: 'challenge.postAsk',
+          payload: { lang: i18n.language, match: matchPayload, question: q },
+          ttlMs: null,
+        },
+      })
+      setPostAskAnswer(text)
+    } catch (err) {
+      if (err instanceof LlmError && err.code === 'aborted') return
+      setPostAskError(true)
+      setPostAskAnswer(err instanceof Error ? err.message : t('llm.errorGeneric'))
+    } finally {
+      setPostAskLoading(false)
+    }
+  }, [postAsk, hasLlmKey, postAskLoading, state, formatLog, i18n.language, t])
 
   const attackLinks = useMemo(() => {
     const links: AttackLink[] = []
@@ -515,6 +729,13 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
             <li>{t('challenge.noteHeroes')}</li>
             <li>{t('challenge.noteOfficial')}</li>
           </ul>
+          <SetupLlmAdvisor
+            code={code}
+            heads={heads}
+            hordeDelay={hordeDelay}
+            heroIds={heroIds}
+            playerDeckId={playerDeckId}
+          />
           <button
             type="button"
             className="btn primary"
@@ -853,9 +1074,14 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
               {state.fx.amount != null ? ` ${state.fx.amount}` : ''}
             </div>
           ) : coachOn ? (
-            <div className="coach-tip" role="status">
+            <div
+              className={`coach-tip${hasLlmKey && llmTip ? ' is-llm' : ''}`}
+              role="status"
+            >
               <span className="coach-tip-label">{t('challenge.tipLabel')}</span>
-              <p>{t(`challenge.tip.${tipKey}`)}</p>
+              <p>
+                {hasLlmKey && llmTip ? <LlmRichText text={llmTip} inline /> : staticTip}
+              </p>
             </div>
           ) : (
             <span className="mid-hint">
@@ -1326,6 +1552,64 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                 <dd>{state.challenge.battlefield.length}</dd>
               </div>
             </dl>
+            {hasLlmKey ? (
+              <div className="settlement-report">
+                <div className="settlement-report-actions">
+                  <button
+                    type="button"
+                    className="btn ghost"
+                    disabled={battleReportLoading}
+                    onClick={() => void generateBattleReport()}
+                  >
+                    {battleReportLoading
+                      ? t('llm.rulesLoading')
+                      : battleReport
+                        ? t('llm.battleReportAgain')
+                        : t('llm.battleReportGenerate')}
+                  </button>
+                </div>
+                {battleReport ? (
+                  <div
+                    className={`llm-battle-report ${battleReportError ? 'is-error' : ''}`}
+                    role="status"
+                  >
+                    <strong>{t('llm.battleReport')}</strong>
+                    <LlmRichText text={battleReport} className="llm-md-flush" />
+                  </div>
+                ) : null}
+                <form
+                  className="llm-postgame-ask"
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    void askPostGame()
+                  }}
+                >
+                  <input
+                    type="text"
+                    value={postAsk}
+                    onChange={(e) => setPostAsk(e.target.value)}
+                    placeholder={t('llm.postAskPlaceholder')}
+                    disabled={postAskLoading}
+                    aria-label={t('llm.postAskPlaceholder')}
+                  />
+                  <button
+                    type="submit"
+                    className="btn ghost"
+                    disabled={postAskLoading || !postAsk.trim()}
+                  >
+                    {postAskLoading ? t('llm.rulesLoading') : t('llm.postAsk')}
+                  </button>
+                </form>
+                {postAskAnswer ? (
+                  <div
+                    className={`llm-battle-report ${postAskError ? 'is-error' : ''}`}
+                    role="status"
+                  >
+                    <LlmRichText text={postAskAnswer} />
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
             <div className="settlement-actions">
               <button
                 type="button"

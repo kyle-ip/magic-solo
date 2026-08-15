@@ -304,6 +304,9 @@ a.references-text-btn:visited {
 
 .lang-switch select {
   appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  color-scheme: dark;
   color: var(--parchment);
   border: 1px solid rgba(224, 180, 90, 0.28);
   padding: 0.42rem 1.85rem 0.42rem 0.8rem;
@@ -334,6 +337,24 @@ a.references-text-btn:visited {
   filter: brightness(1.05);
 }
 
+.lang-switch select:focus {
+  outline: none;
+}
+
+.lang-switch select:focus-visible {
+  border-color: rgba(240, 212, 138, 0.58);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 236, 196, 0.1),
+    0 0 0 1px rgba(184, 137, 58, 0.35);
+}
+
+.lang-switch select option {
+  color-scheme: dark;
+  background-color: #1c1410;
+  color: var(--parchment);
+}
+
 .site-footer {
   margin-top: auto;
   padding: 2.5rem 0 2rem;
@@ -344,6 +365,28 @@ a.references-text-btn:visited {
 
 .site-footer p {
   margin: 0.35rem 0;
+}
+
+.site-footer-llm-link {
+  display: inline;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  cursor: pointer;
+  opacity: 0.9;
+}
+
+a.site-footer-llm-link {
+  color: inherit;
+}
+
+.site-footer-llm-link:hover {
+  color: var(--bronze-bright, #e0b45a);
 }
 
 .page {
@@ -402,7 +445,7 @@ h2 {
   background: linear-gradient(180deg, rgba(58, 44, 30, 0.95), rgba(28, 20, 14, 0.96));
   box-shadow:
     0 6px 16px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 236, 196, 0.14),
+    inset 0 1px 0 rgba(224, 180, 90, 0.08),
     inset 0 -1px 0 rgba(0, 0, 0, 0.28);
   cursor: pointer;
   transition:
@@ -419,8 +462,8 @@ h2 {
   border-color: rgba(240, 212, 138, 0.5);
   box-shadow:
     0 10px 22px rgba(0, 0, 0, 0.34),
-    0 0 0 1px rgba(224, 180, 90, 0.12),
-    inset 0 1px 0 rgba(255, 236, 196, 0.2),
+    0 0 0 1px rgba(224, 180, 90, 0.1),
+    inset 0 1px 0 rgba(224, 180, 90, 0.12),
     inset 0 -1px 0 rgba(0, 0, 0, 0.24);
 }
 
@@ -455,8 +498,9 @@ h2 {
 
 .btn.ghost {
   background: linear-gradient(180deg, rgba(48, 36, 26, 0.78), rgba(20, 14, 10, 0.84));
-  border-color: rgba(224, 180, 90, 0.24);
+  border-color: rgba(160, 120, 55, 0.4);
   color: rgba(244, 234, 212, 0.92);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
 }
 
 .btn.muted,

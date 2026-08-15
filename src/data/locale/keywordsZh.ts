@@ -1,5 +1,7 @@
 /**
  * Common Magic keyword → official Simplified Chinese terminology.
+ * Prefer Wizards ZH keyword glossary / printed Simplified Chinese card text.
+ * @see https://magic.wizards.com/zh-hans/keyword-glossary
  * Unknown keywords fall back to the English form.
  */
 const KEYWORD_ZH: Record<string, string> = {
@@ -48,7 +50,7 @@ const KEYWORD_ZH: Record<string, string> = {
   sunburst: '日光',
   convoke: '召集',
   delve: '掘穴',
-  exploit: '搾取',
+  exploit: '榨取',
   renown: '扬威',
   skulk: '潜行',
   afflict: '折磨',
@@ -65,14 +67,17 @@ const KEYWORD_ZH: Record<string, string> = {
   exalted: '崇敬',
   crew: '搭载',
   fabricate: '装配',
-  explore: '探查',
+  explore: '勘察',
   amass: '聚军',
-  surveil: '探查',
+  /** Official Simplified Chinese: Surveil = 刺探; Investigate = 探查; Explore = 勘察. */
+  surveil: '刺探',
+  investigate: '探查',
   ward: '守护',
   toxic: '毒性',
   backup: '后援',
   offspring: '子嗣',
   exhaust: '竭力',
+  exploit: '榨取',
 }
 
 export function localizeKeyword(keyword: string, lang?: string): string {

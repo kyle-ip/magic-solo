@@ -14,11 +14,14 @@ import {
   type DrawnCardFace,
 } from '../data/randomCard'
 import { ManaCost, ManaRichText } from './ManaCost'
+import { CardLlmAssist } from './CardLlmAssist'
 
 interface CardDetailsBodyProps {
   card: DrawnCard
   /** Pack offline fallback note — hide on deck gallery. */
   showOfflineHint?: boolean
+  /** Other unique card names when opened from a collection (optional LLM synergy). */
+  collectionPeers?: string[]
 }
 
 function FaceBlock({
@@ -62,6 +65,7 @@ function FaceBlock({
 export function CardDetailsBody({
   card,
   showOfflineHint = card.source === 'local',
+  collectionPeers,
 }: CardDetailsBodyProps) {
   const { t, i18n } = useTranslation()
   const lang = i18n.language
@@ -157,6 +161,7 @@ export function CardDetailsBody({
       {showOfflineHint ? (
         <p className="pack-draw-hint">{t('packDraw.fallbackHint')}</p>
       ) : null}
+      <CardLlmAssist card={card} collectionPeers={collectionPeers} />
     </>
   )
 }

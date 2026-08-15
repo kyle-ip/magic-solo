@@ -348,6 +348,27 @@ export function SingleDrawButton() {
                     <button
                       type="button"
                       className="references-text-btn"
+                      onClick={onDrawAgain}
+                      disabled={drawing}
+                    >
+                      {t('singleDraw.drawAgain')}
+                    </button>
+                  ) : null}
+                  {view === 'draw' && showDetails && card ? (
+                    <button
+                      type="button"
+                      className="references-text-btn"
+                      onClick={onToggleCollect}
+                    >
+                      {collected
+                        ? t('packDraw.collected')
+                        : t('packDraw.collect')}
+                    </button>
+                  ) : null}
+                  {view === 'draw' ? (
+                    <button
+                      type="button"
+                      className="references-text-btn"
                       onClick={() => setView('collection')}
                     >
                       {t('packDraw.collection')}
@@ -514,27 +535,6 @@ export function SingleDrawButton() {
                               : t('packDraw.tapToReveal')}
                         </p>
                       )}
-                    </div>
-                    <div className="pack-draw-actions">
-                      <button
-                        type="button"
-                        className="btn primary"
-                        onClick={onDrawAgain}
-                        disabled={drawing}
-                      >
-                        {t('singleDraw.drawAgain')}
-                      </button>
-                      {showDetails ? (
-                        <button
-                          type="button"
-                          className="btn ghost"
-                          onClick={onToggleCollect}
-                        >
-                          {collected
-                            ? t('packDraw.collected')
-                            : t('packDraw.collect')}
-                        </button>
-                      ) : null}
                     </div>
                   </div>
                 </div>

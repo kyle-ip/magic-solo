@@ -19,6 +19,7 @@ import {
   type DrawnCard,
 } from '../data/randomCard'
 import { preloadImage } from '../utils/imageCache'
+import { NlScryfallSearch } from '../components/NlScryfallSearch'
 import '../styles/deck.css'
 import '../styles/sets.css'
 
@@ -244,16 +245,14 @@ export function SetGalleryPage() {
         </header>
 
         <div className="set-gallery-filters">
-          <label className="sets-search">
-            <span className="visually-hidden">{t('sets.searchCards')}</span>
-            <input
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={t('sets.searchCardsPlaceholder')}
-              autoComplete="off"
-            />
-          </label>
+          <NlScryfallSearch
+            mode="gallery-cards"
+            setCode={setCode}
+            value={query}
+            onChange={setQuery}
+            placeholder={t('sets.searchCardsPlaceholder')}
+            label={t('sets.searchCards')}
+          />
           <label className="set-gallery-rarity">
             <span className="visually-hidden">{t('sets.rarityFilter')}</span>
             <select

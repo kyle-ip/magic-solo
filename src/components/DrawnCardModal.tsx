@@ -21,6 +21,8 @@ interface DrawnCardModalProps {
   quantity?: number
   onSelect?: (card: DrawnCard) => void
   onClose: () => void
+  /** Peer names for optional collection synergy (LLM, key required). */
+  collectionPeers?: string[]
 }
 
 export function DrawnCardModal({
@@ -29,6 +31,7 @@ export function DrawnCardModal({
   quantity,
   onSelect,
   onClose,
+  collectionPeers,
 }: DrawnCardModalProps) {
   if (!card) return null
   return (
@@ -38,6 +41,7 @@ export function DrawnCardModal({
       quantity={quantity}
       onSelect={onSelect}
       onClose={onClose}
+      collectionPeers={collectionPeers}
     />
   )
 }
@@ -48,12 +52,14 @@ function DrawnCardModalBody({
   quantity,
   onSelect,
   onClose,
+  collectionPeers,
 }: {
   card: DrawnCard
   cards?: DrawnCard[]
   quantity?: number
   onSelect?: (card: DrawnCard) => void
   onClose: () => void
+  collectionPeers?: string[]
 }) {
   const { t, i18n } = useTranslation()
   const titleId = useId()
@@ -228,7 +234,11 @@ function DrawnCardModalBody({
             <div className="pack-card-copy pack-inspect-copy">
               <div className="pack-card-copy-cluster">
                 <div className="pack-card-copy-body">
-                  <CardDetailsBody card={card} showOfflineHint={false} />
+                  <CardDetailsBody
+                    card={card}
+                    showOfflineHint={false}
+                    collectionPeers={collectionPeers}
+                  />
                   {quantity != null ? (
                     <p className="qty">{t('deck.quantity', { n: quantity })}</p>
                   ) : null}

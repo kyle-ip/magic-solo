@@ -31,6 +31,7 @@ import {
   type DrawnCard,
 } from '../data/randomCard'
 import { CardDetailsBody } from './CardDetailsBody'
+import { collectionPeerNames } from '../llm/context/cardBrief'
 
 const PACK_ART = assetUrl('assets/pack/booster-pack.webp')
 const TEAR_EDGE = assetUrl('assets/pack/tear-edge.png')
@@ -1158,6 +1159,30 @@ export function PackDrawButton() {
                     : t('packDraw.title')}
                 </h2>
                 <div className="pack-draw-head-actions">
+                  {view === 'pack' &&
+                  (openingPack || phase === 'revealed') ? (
+                    <button
+                      type="button"
+                      className="references-text-btn"
+                      onClick={onDrawAgain}
+                    >
+                      {t('packDraw.drawAgain')}
+                    </button>
+                  ) : null}
+                  {view === 'pack' &&
+                  phase === 'revealed' &&
+                  showDetails &&
+                  card ? (
+                    <button
+                      type="button"
+                      className="references-text-btn"
+                      onClick={onToggleCollect}
+                    >
+                      {collected
+                        ? t('packDraw.collected')
+                        : t('packDraw.collect')}
+                    </button>
+                  ) : null}
                   {view === 'pack' ? (
                     <button
                       type="button"
@@ -1417,7 +1442,15 @@ export function PackDrawButton() {
                       <div className="pack-card-copy pack-inspect-copy">
                         <div className="pack-card-copy-cluster">
                           <div className="pack-card-copy-body">
-                            <CardDetailsBody card={inspect} />
+                            <CardDetailsBody
+                              card={inspect}
+                              collectionPeers={collectionPeerNames(
+                                filteredCollection.length > 0
+                                  ? filteredCollection
+                                  : collection,
+                                inspect.id,
+                              )}
+                            />
                           </div>
                           <div className="pack-draw-actions">
                             <button
@@ -1740,18 +1773,6 @@ export function PackDrawButton() {
                     ) : null}
                   </div>
 
-                  {openingPack ? (
-                    <div className="pack-open-again-bar">
-                      <button
-                        type="button"
-                        className="btn primary"
-                        onClick={onDrawAgain}
-                      >
-                        {t('packDraw.drawAgain')}
-                      </button>
-                    </div>
-                  ) : null}
-
                   {phase === 'revealed' && cards.length > 0 ? (
                     <div
                       className={[
@@ -1770,26 +1791,6 @@ export function PackDrawButton() {
                               {t('packDraw.tapToReveal')}
                             </p>
                           )}
-                        </div>
-                        <div className="pack-draw-actions">
-                          <button
-                            type="button"
-                            className="btn primary"
-                            onClick={onDrawAgain}
-                          >
-                            {t('packDraw.drawAgain')}
-                          </button>
-                          {showDetails ? (
-                            <button
-                              type="button"
-                              className="btn ghost"
-                              onClick={onToggleCollect}
-                            >
-                              {collected
-                                ? t('packDraw.collected')
-                                : t('packDraw.collect')}
-                            </button>
-                          ) : null}
                         </div>
                       </div>
                     </div>

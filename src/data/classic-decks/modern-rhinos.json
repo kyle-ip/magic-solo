@@ -3,7 +3,7 @@
   "format": "modern",
   "name": {
     "en": "Rhinos / Cascade",
-    "zh": "犀牛 / 连瀑"
+    "zh": "犀牛 / 倾曳"
   },
   "colors": [
     "W",
@@ -17,11 +17,11 @@
   "coverCard": "Crashing Footfalls",
   "summary": {
     "en": "Cascade into Crashing Footfalls for free 4/4 rhinos. The defining free-spell midrange of early 2020s Modern.",
-    "zh": "连瀑进崩踏蹄音，免费得到 4/4 犀牛。2020 年代初近代免费咒语中速的代表。"
+    "zh": "倾曳进崩踏蹄音，免费得到 4/4 犀牛。2020 年代初近代免费咒语中速的代表。"
   },
   "howItWins": {
     "en": "Cast Violent Outburst or Shardless Agent, cascade to Footfalls, then overwhelm with rhinos and interaction.",
-    "zh": "施放猛烈爆发或无支助密探，连瀑进蹄音，再用犀牛与互动淹没对手。"
+    "zh": "施放猛烈爆发或无支助密探，倾曳进蹄音，再用犀牛与互动淹没对手。"
   },
   "keyCards": [
     "Crashing Footfalls",

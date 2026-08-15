@@ -11,6 +11,7 @@ import {
 } from '../data/setApi'
 import { SET_TYPE_FILTERS, type IncludedSetType } from '../data/setConfig'
 import { localizedSetName } from '../data/locale/setNamesZh'
+import { NlScryfallSearch } from '../components/NlScryfallSearch'
 import '../styles/sets.css'
 
 const SORT_OPTIONS: GallerySetSort[] = [
@@ -88,16 +89,13 @@ export function SetsPage() {
         </div>
 
         <div className="sets-controls">
-          <label className="sets-search">
-            <span className="visually-hidden">{t('sets.searchLabel')}</span>
-            <input
-              type="search"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder={t('sets.searchPlaceholder')}
-              autoComplete="off"
-            />
-          </label>
+          <NlScryfallSearch
+            mode="sets-filter"
+            value={q}
+            onChange={setQ}
+            placeholder={t('sets.searchPlaceholder')}
+            label={t('sets.searchLabel')}
+          />
 
           <label className="sets-select">
             <span className="visually-hidden">{t('sets.sortLabel')}</span>

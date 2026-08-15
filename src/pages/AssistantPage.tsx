@@ -26,6 +26,7 @@ import { DropZone } from '../components/assistant/DropZone'
 import { LibrarySearchModal } from '../components/assistant/LibrarySearchModal'
 import { NamedValuesEditor } from '../components/assistant/NamedValuesEditor'
 import { findDropAttr, usePointerDrag } from '../components/assistant/usePointerDrag'
+import { AssistantLlmAdvisor } from '../components/AssistantLlmAdvisor'
 import { ArenaCard } from '../components/challenge/ArenaCard'
 import { ZonePile } from '../components/challenge/ZonePile'
 import {
@@ -667,6 +668,7 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
             icon={arenaToolIcons.search}
             onClick={() => setSearchOpen(true)}
           />
+          <AssistantLlmAdvisor state={state} />
           <LanguageSwitch compact />
         </div>
       </header>
