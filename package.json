@@ -15,11 +15,13 @@
     "fetch:classic-decks": "node scripts/fetch-classic-from-spicerack.mjs",
     "generate:classic-decks": "node scripts/generate-classic-decks.mjs",
     "fetch:mana-symbols": "node scripts/fetch-mana-symbols.mjs",
-    "generate:card-image-map": "node scripts/generate-card-image-map.mjs"
+    "generate:card-image-map": "node scripts/generate-card-image-map.mjs",
+    "build:player-deck": "node scripts/build-player-deck.mjs"
   },
   "dependencies": {
     "i18next": "^25.3.2",
     "marked": "^18.0.9",
+    "pdf-lib": "^1.17.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-i18next": "^15.6.0",

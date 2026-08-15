@@ -25,13 +25,18 @@ import {
 import {
   defaultCardBackUrl,
   drawWeightedPack,
+  dualFaceImageUrl,
   enrichDrawnCardZh,
+  hasDualFaceArt,
   hasZhPrint,
   wantsZh,
   type DrawnCard,
 } from '../data/randomCard'
 import { CardDetailsBody } from './CardDetailsBody'
+import { PackHeadIconButton } from './PackHeadIconButton'
+import { PrintAssistantModal } from './PrintAssistantModal'
 import { collectionPeerNames } from '../llm/context/cardBrief'
+import { printItemsFromDrawn } from '../print/printCards'
 
 const PACK_ART = assetUrl('assets/pack/booster-pack.webp')
 const TEAR_EDGE = assetUrl('assets/pack/tear-edge.png')
@@ -463,6 +468,7 @@ export function PackDrawButton() {
   const [activeFlipMs, setActiveFlipMs] = useState(FLIP_MS)
   const [importMessage, setImportMessage] = useState<string | null>(null)
   const [clearConfirmOpen, setClearConfirmOpen] = useState(false)
+  const [printOpen, setPrintOpen] = useState(false)
   const enrichGen = useRef(0)
   const openGen = useRef(0)
   const openingLock = useRef(false)
@@ -1115,8 +1121,12 @@ export function PackDrawButton() {
 
   const packBackSrc = defaultCardBackUrl()
   const card = cards[activeIdx] ?? null
-  const activeRevealed = (flipTurns[activeIdx] ?? 0) >= 1
+  const activeTurns = flipTurns[activeIdx] ?? 0
+  const activeRevealed = activeTurns >= 1
+  const activeFaceUp = isShowingCardFront(activeTurns)
   const showDetails = !!card && activeRevealed
+  const showingOtherFace =
+    !!card && activeRevealed && !activeFaceUp && hasDualFaceArt(card)
   const openingPack =
     phase === 'tearing' || phase === 'parting' || phase === 'pull'
 
@@ -1161,59 +1171,52 @@ export function PackDrawButton() {
                 <div className="pack-draw-head-actions">
                   {view === 'pack' &&
                   (openingPack || phase === 'revealed') ? (
-                    <button
-                      type="button"
-                      className="references-text-btn"
+                    <PackHeadIconButton
+                      icon="redraw"
+                      label={t('packDraw.drawAgain')}
                       onClick={onDrawAgain}
-                    >
-                      {t('packDraw.drawAgain')}
-                    </button>
+                    />
                   ) : null}
                   {view === 'pack' &&
                   phase === 'revealed' &&
                   showDetails &&
                   card ? (
-                    <button
-                      type="button"
-                      className="references-text-btn"
+                    <PackHeadIconButton
+                      icon={collected ? 'collected' : 'collect'}
+                      label={
+                        collected
+                          ? t('packDraw.collected')
+                          : t('packDraw.collect')
+                      }
+                      className={collected ? 'is-active' : ''}
                       onClick={onToggleCollect}
-                    >
-                      {collected
-                        ? t('packDraw.collected')
-                        : t('packDraw.collect')}
-                    </button>
+                    />
                   ) : null}
                   {view === 'pack' ? (
-                    <button
-                      type="button"
-                      className="references-text-btn"
+                    <PackHeadIconButton
+                      icon="cabinet"
+                      label={t('packDraw.collection')}
                       onClick={() => {
                         setCollection(listCollected())
                         setView('collection')
                       }}
-                    >
-                      {t('packDraw.collection')}
-                    </button>
+                    />
                   ) : (
-                    <button
-                      type="button"
-                      className="references-text-btn"
+                    <PackHeadIconButton
+                      icon="back"
+                      label={t('packDraw.backToPack')}
                       onClick={() => {
                         setInspect(null)
                         setInspectFlipTurns(0)
                         setView('pack')
                       }}
-                    >
-                      {t('packDraw.backToPack')}
-                    </button>
+                    />
                   )}
-                  <button
-                    type="button"
-                    className="references-text-btn"
+                  <PackHeadIconButton
+                    icon="close"
+                    label={t('deck.close')}
                     onClick={() => setOpen(false)}
-                  >
-                    {t('deck.close')}
-                  </button>
+                  />
                 </div>
               </header>
 
@@ -1286,6 +1289,14 @@ export function PackDrawButton() {
                             <button
                               type="button"
                               className="btn ghost"
+                              disabled={collection.length === 0}
+                              onClick={() => setPrintOpen(true)}
+                            >
+                              {t('printAssistant.open')}
+                            </button>
+                            <button
+                              type="button"
+                              className="btn ghost"
                               onClick={() => importInputRef.current?.click()}
                             >
                               {t('packDraw.import')}
@@ -1349,6 +1360,12 @@ export function PackDrawButton() {
                           (inspectGlowing || inspectFading) &&
                           (inspectFx === 'pack-fx-rare' ||
                             inspectFx === 'pack-fx-mythic')
+                        const inspectShowingBack =
+                          inspectFlipTurns % 2 === 1 && hasDualFaceArt(inspect)
+                        const inspectReverseSrc =
+                          dualFaceImageUrl(inspect) ||
+                          inspect.backImageUrl ||
+                          packBackSrc
                         const flipInspect = () => {
                           const nextTurns = inspectFlipTurns + 1
                           setInspectFlipping(true)
@@ -1364,6 +1381,7 @@ export function PackDrawButton() {
                           }, FLIP_MS)
                         }
                         return (
+                          <>
                       <div
                         className="pack-inspect-stage"
                         {...(artZoomed ? panBind : inspectSwipe.bind)}
@@ -1428,8 +1446,12 @@ export function PackDrawButton() {
                           </span>
                           <span className="card-face back">
                             <img
-                              src={inspect.backImageUrl || packBackSrc}
-                              alt={t('deck.backHint')}
+                              src={inspectReverseSrc}
+                              alt={
+                                inspectShowingBack
+                                  ? inspect.otherFaces[0]?.name || inspect.name
+                                  : t('deck.backHint')
+                              }
                               draggable={false}
                             />
                           </span>
@@ -1437,13 +1459,12 @@ export function PackDrawButton() {
                       </div>
                       </div>
                       </div>
-                        )
-                      })()}
                       <div className="pack-card-copy pack-inspect-copy">
                         <div className="pack-card-copy-cluster">
                           <div className="pack-card-copy-body">
                             <CardDetailsBody
                               card={inspect}
+                              faceSide={inspectShowingBack ? 'back' : 'front'}
                               collectionPeers={collectionPeerNames(
                                 filteredCollection.length > 0
                                   ? filteredCollection
@@ -1463,6 +1484,9 @@ export function PackDrawButton() {
                           </div>
                         </div>
                       </div>
+                          </>
+                        )
+                      })()}
                     </div>
                   ) : null}
                 </div>
@@ -1539,8 +1563,15 @@ export function PackDrawButton() {
                           role="list"
                         >
                           {slots.map((slot, index) => {
-                            const backSrc = slot?.backImageUrl || packBackSrc
-                            const frontSrc = slot?.frontImageUrl || packBackSrc
+                            const cardRevealed = (flipTurns[index] ?? 0) >= 1
+                            const otherArt = slot
+                              ? dualFaceImageUrl(slot)
+                              : undefined
+                            const backSrc = !cardRevealed
+                              ? packBackSrc
+                              : otherArt || slot?.backImageUrl || packBackSrc
+                            const frontSrc =
+                              slot?.frontImageUrl || packBackSrc
                             const fxClass = rarityFxClass(slot)
                             const isActive = activeIdx === index
                             const glowing = slot ? fxIds.includes(slot.id) : false
@@ -1548,7 +1579,6 @@ export function PackDrawButton() {
                             const deckSettled =
                               phase === 'flip' || phase === 'revealed'
                             const faceUp = isShowingCardFront(flipTurns[index] ?? 0)
-                            const cardRevealed = (flipTurns[index] ?? 0) >= 1
                             const awaitingFlip = deckSettled && !cardRevealed
                             // Right-hand peeks follow deck order: 1 = next card, …
                             const n = slots.length
@@ -1785,7 +1815,10 @@ export function PackDrawButton() {
                       <div className="pack-card-copy-cluster">
                         <div className="pack-card-copy-body">
                           {showDetails && card ? (
-                            <CardDetailsBody card={card} />
+                            <CardDetailsBody
+                              card={card}
+                              faceSide={showingOtherFace ? 'back' : 'front'}
+                            />
                           ) : (
                             <p className="pack-draw-hint pack-tap-hint" role="status">
                               {t('packDraw.tapToReveal')}
@@ -1852,6 +1885,12 @@ export function PackDrawButton() {
         {t('packDraw.open')}
       </button>
       {dialog}
+      <PrintAssistantModal
+        open={printOpen}
+        onClose={() => setPrintOpen(false)}
+        sourceSlug="collection"
+        cards={printItemsFromDrawn(collection)}
+      />
     </>
   )
 }

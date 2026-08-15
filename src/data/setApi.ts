@@ -339,6 +339,38 @@ export async function fetchSetCardsPage(
   return page
 }
 
+/** All cards in a gallery set (follows Scryfall pagination). */
+export async function fetchAllSetCards(
+  code: string,
+  options?: {
+    searchUri?: string
+    signal?: AbortSignal
+    onPage?: (loaded: number, total: number) => void
+  },
+): Promise<DrawnCard[]> {
+  const meta = await getGallerySet(code)
+  const cards: DrawnCard[] = []
+  let pageUrl: string | null | undefined = undefined
+  let searchUri = options?.searchUri ?? meta?.searchUri
+  let guard = 0
+
+  for (;;) {
+    if (options?.signal?.aborted) {
+      throw new DOMException('Aborted', 'AbortError')
+    }
+    const page = await fetchSetCardsPage(code, { searchUri, pageUrl })
+    cards.push(...page.cards)
+    options?.onPage?.(cards.length, page.totalCards || cards.length)
+    if (!page.hasMore || !page.nextPage) break
+    pageUrl = page.nextPage
+    searchUri = undefined
+    guard++
+    if (guard > 80) break
+  }
+
+  return cards
+}
+
 /** Prefer rare/mythic art for hero; else first card with an image. */
 export function pickHeroCard(cards: DrawnCard[]): DrawnCard | null {
   if (cards.length === 0) return null

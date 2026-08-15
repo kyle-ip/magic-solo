@@ -3,11 +3,14 @@ import { Link, Navigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { CardModal } from '../components/CardModal'
 import { CardTile } from '../components/CardTile'
+import { ChallengeSwitcher } from '../components/ChallengeSwitcher'
+import { PrintAssistantModal } from '../components/PrintAssistantModal'
 import { RulesPanel } from '../components/RulesPanel'
 import { getDeckRules } from '../data/deckRegistry'
 import { getDeck } from '../data/deckStore'
 import { deckMetaEn, deckMetaZh } from '../data/locale/deckMeta'
 import { CardImage, useResolvedCardImageUrl } from '../hooks/useCardImageSrc'
+import { printItemsFromDeckCards } from '../print/printCards'
 import type { DeckCard } from '../types'
 import '../styles/deck.css'
 
@@ -17,6 +20,7 @@ export function DeckPage() {
   const deck = getDeck(setCode)
   const rules = getDeckRules(setCode, i18n.language)
   const [selected, setSelected] = useState<DeckCard | null>(null)
+  const [printOpen, setPrintOpen] = useState(false)
   const metaTable = i18n.language.startsWith('zh') ? deckMetaZh : deckMetaEn
   const meta = metaTable[setCode]
 
@@ -71,7 +75,15 @@ export function DeckPage() {
               <Link className="btn ghost" to={`/assistant/${deck.code}`}>
                 {t('deck.startAssistant')}
               </Link>
+              <button
+                type="button"
+                className="btn ghost"
+                onClick={() => setPrintOpen(true)}
+              >
+                {t('printAssistant.open')}
+              </button>
             </div>
+            <ChallengeSwitcher currentCode={deck.code} mode="deck" />
           </div>
           <div className="deck-hero-card">
             <CardImage
@@ -119,6 +131,13 @@ export function DeckPage() {
         deckCode={deck.code}
         setCode={deck.setCode}
         onClose={() => setSelected(null)}
+      />
+
+      <PrintAssistantModal
+        open={printOpen}
+        onClose={() => setPrintOpen(false)}
+        sourceSlug={deck.code}
+        cards={printItemsFromDeckCards(deck.cards)}
       />
     </main>
   )

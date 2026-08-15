@@ -16,8 +16,10 @@ import {
   wantsZh,
 } from '../data/randomCard'
 import { collectionPeerNames } from '../llm/context/cardBrief'
+import { printItemsFromDrawn } from '../print/printCards'
 import { CollectionLlmAdvisor } from './CollectionLlmAdvisor'
 import { DrawnCardModal } from './DrawnCardModal'
+import { PrintAssistantModal } from './PrintAssistantModal'
 import '../styles/pack.css'
 import '../styles/deck.css'
 
@@ -41,6 +43,7 @@ export function PackCollectionCabinet({
   const [inspect, setInspect] = useState<CollectedCard | null>(null)
   const [importMessage, setImportMessage] = useState<string | null>(null)
   const [clearConfirmOpen, setClearConfirmOpen] = useState(false)
+  const [printOpen, setPrintOpen] = useState(false)
 
   useEffect(() => {
     setCollection(listCollected())
@@ -203,6 +206,14 @@ export function PackCollectionCabinet({
                   <button
                     type="button"
                     className="btn ghost"
+                    disabled={collection.length === 0}
+                    onClick={() => setPrintOpen(true)}
+                  >
+                    {t('printAssistant.open')}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn ghost"
                     onClick={() => importInputRef.current?.click()}
                   >
                     {t('packDraw.import')}
@@ -265,6 +276,10 @@ export function PackCollectionCabinet({
             if (found) openInspect(found)
           }}
           onClose={() => setInspect(null)}
+          onCollectChange={(stillIn, items) => {
+            setCollection(items)
+            if (!stillIn) setInspect(null)
+          }}
         />
       ) : null}
 
@@ -307,6 +322,13 @@ export function PackCollectionCabinet({
           </div>
         </div>
       ) : null}
+
+      <PrintAssistantModal
+        open={printOpen}
+        onClose={() => setPrintOpen(false)}
+        sourceSlug="collection"
+        cards={printItemsFromDrawn(collection)}
+      />
     </>
   )
 }

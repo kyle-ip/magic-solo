@@ -1,0 +1,255 @@
+.print-assistant-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgba(6, 4, 3, 0.78);
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  backdrop-filter: blur(4px);
+  animation: print-assistant-fade-in 220ms ease-out both;
+}
+
+.print-assistant-shell {
+  width: min(980px, 96vw);
+  max-height: min(96dvh, 96vh);
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  background: linear-gradient(180deg, #2a221a, #17120e);
+  border: 1px solid rgba(184, 137, 58, 0.4);
+  padding: 1.25rem 1.5rem 1.35rem;
+  position: relative;
+  box-shadow: var(--shadow);
+  color: var(--parchment);
+  animation: print-assistant-shell-in 280ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+@keyframes print-assistant-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes print-assistant-shell-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes print-assistant-stage-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .print-assistant-backdrop,
+  .print-assistant-shell,
+  .print-assistant-stage-ready {
+    animation: none;
+  }
+}
+
+.print-assistant-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.print-assistant-head h2 {
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+
+.print-assistant-head-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.print-assistant-lead {
+  margin: 0;
+  opacity: 0.85;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.print-assistant-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 1.25rem;
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+.print-assistant-paper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.print-assistant-paper > span {
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
+.print-assistant-paper .btn.is-active {
+  border-color: rgba(184, 137, 58, 0.85);
+  background: rgba(184, 137, 58, 0.18);
+}
+
+.print-assistant-progress {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.print-assistant-progress--overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 0.55rem;
+  padding: 1.25rem;
+  text-align: center;
+  background: rgba(12, 9, 7, 0.42);
+  backdrop-filter: blur(1.5px);
+}
+
+.print-assistant-progress--overlay p {
+  margin: 0;
+  font-size: 0.9rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+.print-assistant-progress--overlay .print-assistant-progress-bar {
+  width: min(220px, 70vw);
+  margin-inline: auto;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.print-assistant-progress-bar {
+  height: 0.45rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.print-assistant-progress-bar > span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #b8893a, #e2c17a);
+  transition: width 160ms ease;
+}
+
+.print-assistant-stage {
+  display: grid;
+  justify-items: center;
+  min-height: 12rem;
+}
+
+.print-assistant-stage-loading {
+  position: relative;
+  width: min(100%, 560px);
+}
+
+.print-assistant-stage-ready {
+  width: 100%;
+  animation: print-assistant-stage-in 260ms ease-out both;
+}
+
+.print-assistant-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  align-items: center;
+  margin-top: 0.15rem;
+}
+
+.print-assistant-error {
+  margin: 0;
+  color: #f0a8a0;
+  font-size: 0.88rem;
+}
+
+.print-assistant-warn {
+  margin: 0;
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+.print-preview {
+  display: grid;
+  gap: 0.65rem;
+  justify-items: center;
+  flex: 1;
+  min-height: 0;
+}
+
+.print-preview-sheet {
+  position: relative;
+  width: min(100%, 560px);
+  background: #f4f1ea;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.print-preview-sheet--placeholder {
+  width: 100%;
+  background:
+    linear-gradient(180deg, rgba(244, 241, 234, 0.92), rgba(228, 220, 205, 0.88));
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28);
+}
+
+.print-preview-card {
+  position: absolute;
+  object-fit: fill;
+  display: block;
+  pointer-events: none;
+  user-select: none;
+}
+
+.print-preview-marks {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.print-preview-pager {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 720px) {
+  .print-assistant-shell {
+    width: min(100%, 96vw);
+    padding: 1rem 1.05rem 1.15rem;
+  }
+
+  .print-preview-sheet,
+  .print-assistant-stage-loading {
+    width: min(100%, 100%);
+  }
+}

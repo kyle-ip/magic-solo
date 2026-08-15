@@ -31,11 +31,12 @@ export type ScryfallFaceSize =
 
 export function scryfallCardFaceUrl(
   cardId: string,
-  size: 'small' | 'normal' | 'large' | 'art_crop',
+  size: Exclude<ScryfallFaceSize, 'border_crop'>,
   face: 'front' | 'back' = 'front',
 ): string {
   const id = cardId.toLowerCase()
-  return `https://cards.scryfall.io/${size}/${face}/${id[0]}/${id[1]}/${id}.jpg`
+  const ext = size === 'png' ? 'png' : 'jpg'
+  return `https://cards.scryfall.io/${size}/${face}/${id[0]}/${id[1]}/${id}.${ext}`
 }
 
 /** Swap Scryfall CDN face size in an existing cards.scryfall.io URL. */
@@ -43,10 +44,28 @@ export function scryfallResizeFaceUrl(
   url: string,
   size: ScryfallFaceSize,
 ): string {
-  return url.replace(
+  const resized = url.replace(
     /\/(small|normal|large|png|art_crop|border_crop)\//,
     `/${size}/`,
   )
+  if (size === 'png') {
+    return resized.replace(/\.jpe?g(\?|$)/i, '.png$1')
+  }
+  // Switching away from a png path: restore jpg extension.
+  if (/\/png\//.test(url)) {
+    return resized.replace(/\.png(\?|$)/i, '.jpg$1')
+  }
+  return resized
+}
+
+/** Full-card print face — Scryfall `png` (~745×1040). */
+export function pngUrlFromFaceUrl(frontImageUrl: string): string {
+  if (/cards\.scryfall\.io\//i.test(frontImageUrl)) {
+    return scryfallResizeFaceUrl(frontImageUrl, 'png')
+  }
+  const id = extractCardUuid(frontImageUrl)
+  if (id) return scryfallCardFaceUrl(id, 'png')
+  return frontImageUrl
 }
 
 export function scryfallCardBackUrl(backId: string): string {

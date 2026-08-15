@@ -2,8 +2,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { DrawnCardModal } from '../components/DrawnCardModal'
+import { PrintAssistantModal } from '../components/PrintAssistantModal'
 import {
   artCropUrlFromDrawn,
+  fetchAllSetCards,
   fetchSetCardsPage,
   getGallerySet,
   pickHeroCard,
@@ -19,14 +21,22 @@ import {
   type DrawnCard,
 } from '../data/randomCard'
 import { preloadImage } from '../utils/imageCache'
-import { NlScryfallSearch } from '../components/NlScryfallSearch'
+import {
+  NlAiFilterChip,
+  NlScryfallSearch,
+} from '../components/NlScryfallSearch'
+import { useHasLlmApiKey } from '../hooks/useLlmSettings'
+import { printItemsFromDrawn } from '../print/printCards'
 import '../styles/deck.css'
 import '../styles/sets.css'
+
+const GALLERY_RARITIES = ['mythic', 'rare', 'uncommon', 'common'] as const
 
 export function SetGalleryPage() {
   const { code = '' } = useParams()
   const setCode = code.toLowerCase()
   const { t, i18n } = useTranslation()
+  const hasLlmKey = useHasLlmApiKey()
 
   const [setMeta, setSetMeta] = useState<GallerySet | null | undefined>(
     undefined,
@@ -40,7 +50,19 @@ export function SetGalleryPage() {
   const [error, setError] = useState<string | null>(null)
   const [selected, setSelected] = useState<DrawnCard | null>(null)
   const [query, setQuery] = useState('')
-  const [rarity, setRarity] = useState<string>('all')
+  const [rarities, setRarities] = useState<Set<string>>(() => new Set())
+  const [useAi, setUseAi] = useState(false)
+  const onUseAiChange = useCallback((on: boolean) => setUseAi(on), [])
+  const [printOpen, setPrintOpen] = useState(false)
+
+  const toggleRarity = (value: string) => {
+    setRarities((prev) => {
+      const next = new Set(prev)
+      if (next.has(value)) next.delete(value)
+      else next.add(value)
+      return next
+    })
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -53,7 +75,8 @@ export function SetGalleryPage() {
     setLoading(true)
     setSelected(null)
     setQuery('')
-    setRarity('all')
+    setRarities(new Set())
+    setUseAi(false)
 
     void (async () => {
       try {
@@ -141,7 +164,7 @@ export function SetGalleryPage() {
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
     return cards.filter((c) => {
-      if (rarity !== 'all' && c.rarity !== rarity) return false
+      if (rarities.size > 0 && !rarities.has(c.rarity)) return false
       if (!q) return true
       const name = displayName(c, i18n.language).toLowerCase()
       return (
@@ -150,7 +173,7 @@ export function SetGalleryPage() {
         c.collectorNumber.toLowerCase().includes(q)
       )
     })
-  }, [cards, query, rarity, i18n.language])
+  }, [cards, query, rarities, i18n.language])
 
   const browseLarge = useMemo(
     () => filtered.map(withLargeFace),
@@ -215,6 +238,16 @@ export function SetGalleryPage() {
                   })
                 : t('sets.loading')}
             </p>
+            <div className="cta-row">
+              <button
+                type="button"
+                className="btn ghost"
+                disabled={!setMeta || loading}
+                onClick={() => setPrintOpen(true)}
+              >
+                {t('printAssistant.open')}
+              </button>
+            </div>
           </div>
           <div className="deck-hero-card">
             {hero && heroLarge ? (
@@ -244,7 +277,15 @@ export function SetGalleryPage() {
           </h2>
         </header>
 
-        <div className="set-gallery-filters">
+        <div
+          className={`set-gallery-filters${useAi ? ' is-ai-search' : ''}`}
+        >
+          {hasLlmKey ? (
+            <NlAiFilterChip
+              active={useAi}
+              onToggle={() => setUseAi((v) => !v)}
+            />
+          ) : null}
           <NlScryfallSearch
             mode="gallery-cards"
             setCode={setCode}
@@ -252,20 +293,35 @@ export function SetGalleryPage() {
             onChange={setQuery}
             placeholder={t('sets.searchCardsPlaceholder')}
             label={t('sets.searchCards')}
+            useAi={useAi}
+            onUseAiChange={onUseAiChange}
           />
-          <label className="set-gallery-rarity">
-            <span className="visually-hidden">{t('sets.rarityFilter')}</span>
-            <select
-              value={rarity}
-              onChange={(e) => setRarity(e.target.value)}
+        </div>
+
+        <div
+          className="sets-type-filters set-gallery-rarity-filters"
+          role="group"
+          aria-label={t('sets.rarityFilter')}
+        >
+          <button
+            type="button"
+            className={`sets-type-chip${rarities.size === 0 ? ' is-active' : ''}`}
+            aria-pressed={rarities.size === 0}
+            onClick={() => setRarities(new Set())}
+          >
+            {t('sets.rarity.all')}
+          </button>
+          {GALLERY_RARITIES.map((r) => (
+            <button
+              key={r}
+              type="button"
+              className={`sets-type-chip${rarities.has(r) ? ' is-active' : ''}`}
+              aria-pressed={rarities.has(r)}
+              onClick={() => toggleRarity(r)}
             >
-              <option value="all">{t('sets.rarity.all')}</option>
-              <option value="mythic">{t('sets.rarity.mythic')}</option>
-              <option value="rare">{t('sets.rarity.rare')}</option>
-              <option value="uncommon">{t('sets.rarity.uncommon')}</option>
-              <option value="common">{t('sets.rarity.common')}</option>
-            </select>
-          </label>
+              {t(`sets.rarity.${r}`)}
+            </button>
+          ))}
         </div>
 
         {loading ? <p className="sets-status">{t('sets.loadingCards')}</p> : null}
@@ -337,6 +393,20 @@ export function SetGalleryPage() {
         cards={browseLarge}
         onSelect={(c) => void openCard(c)}
         onClose={() => setSelected(null)}
+      />
+
+      <PrintAssistantModal
+        open={printOpen}
+        onClose={() => setPrintOpen(false)}
+        sourceSlug={setCode || 'set'}
+        cards={[]}
+        resolveCards={async (signal) => {
+          const all = await fetchAllSetCards(setCode, {
+            searchUri: setMeta?.searchUri,
+            signal,
+          })
+          return printItemsFromDrawn(all)
+        }}
       />
     </main>
   )

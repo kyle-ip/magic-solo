@@ -17,8 +17,9 @@ Fan site for the three *Magic: The Gathering* **Challenge Decks** from Theros-bl
 5. [Classic decks](#5-classic-decks)
 6. [Set gallery](#6-set-gallery)
 7. [Pack open, single draw & collection](#7-pack-open-single-draw--collection)
-8. [AI Assistant](#8-ai-assistant)
-9. [Notes & attribution](#9-notes--attribution)
+8. [Print assistant](#8-print-assistant)
+9. [AI Assistant](#9-ai-assistant)
+10. [Notes & attribution](#10-notes--attribution)
 
 ---
 
@@ -58,6 +59,7 @@ Overview of Challenge Decks and three paths into each deck.
 - Rules summary (expandable sections)
 - Full card gallery (open a card for art, oracle text, quantity)
 - Links to **Challenge Experience** and **Game Assistant**
+- **Print assistant** for the deck’s unique card faces (see [§8](#8-print-assistant))
 
 ---
 
@@ -130,6 +132,8 @@ Routes: `/sets`, `/sets/:code`
 
 Browse Magic sets from Scryfall (filter by type, year, search), then open a set’s card gallery (search / rarity filters). Card data is fetched live from Scryfall. With AI configured, tick **AI** on the search field to turn natural language into a filter or Scryfall query.
 
+**Print assistant** on a set page exports **all** cards in that set as a PDF (see [§8](#8-print-assistant)).
+
 ---
 
 ## 7. Pack open, single draw & collection
@@ -140,13 +144,38 @@ Header shortcuts:
 | --- | --- |
 | **Pack open** | Weighted 3-card “booster” reveal; after details show, use header **Collect** (left of Collection) |
 | **Single draw** | One random card flip; same header text link to collect |
-| **Collection cabinet** | Save cards locally, filter/sort, import / export JSON, clear; **Collection advice** when AI is on |
+| **Collection cabinet** | Save cards locally, filter/sort, import / export JSON, clear; **Print assistant**; **Collection advice** when AI is on |
 
 Collection is stored in **this browser only** (`localStorage`). It is not synced across devices.
 
 ---
 
-## 8. AI Assistant
+## 8. Print assistant
+
+Client-side PDF export for cutting physical-size proxies. Opens from:
+
+| Where | What gets printed |
+| --- | --- |
+| Challenge deck page (`/decks/:code`) | All unique cards in that challenge catalog (one face each; quantity is not expanded) |
+| Set gallery (`/sets/:code`) | Every card in the set (paginates Scryfall until complete) |
+| Collection cabinet | Every card currently saved in the local collection |
+
+### Paper & layout
+
+| Option | Page size | Cards per page |
+| --- | --- | --- |
+| **A4 · 3×3** | 210×297 mm | 9 |
+| **6″ photo · 1/page** | 102×152 mm (4R) | 1 |
+
+Each face is drawn at about **63×88 mm** (standard card size) with **cut marks**. Front faces only (no automatic backs / double-faced backs).
+
+Images prefer Scryfall **png** (~745×1040). The modal loads faces with a progress overlay, shows a live preview (same layout as the PDF), then **Export PDF** downloads a file such as `magic-solo-print-tdag-a4-2026-08-15.pdf`.
+
+Large sets take longer (especially 6″ mode, one page per card). Work stays in the browser; nothing is uploaded to a print server.
+
+---
+
+## 9. AI Assistant
 
 Optional. The site never ships a shared API key. You bring your own OpenAI-compatible endpoint.
 
@@ -189,7 +218,7 @@ Stable answers (card text, rules, archetypes, same question, etc.) are **cached 
 
 ---
 
-## 9. Notes & attribution
+## 10. Notes & attribution
 
 - Card data and images © Wizards of the Coast; served via [Scryfall](https://scryfall.com).
 - Challenge rules adapted from [MTG Wiki — Challenge Deck](https://mtg.wiki/page/Challenge_Deck) and official Game Day materials.

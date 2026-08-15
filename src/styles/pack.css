@@ -112,8 +112,72 @@
 .pack-draw-head-actions {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.35rem;
   flex-shrink: 0;
+  margin-right: -0.15rem;
+}
+
+.pack-head-icon-btn {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  margin: 0;
+  padding: 0;
+  border: 1px solid rgba(184, 137, 58, 0.28);
+  border-radius: 8px;
+  background: rgba(28, 22, 16, 0.55);
+  color: rgba(231, 215, 184, 0.92);
+  cursor: pointer;
+  transition:
+    color 140ms ease,
+    border-color 140ms ease,
+    background 140ms ease;
+}
+
+.pack-head-icon-btn svg {
+  width: 1.2rem;
+  height: 1.2rem;
+  display: block;
+}
+
+.pack-head-icon-btn:hover:not(:disabled) {
+  color: #f0d48a;
+  border-color: rgba(240, 212, 138, 0.45);
+  background: rgba(42, 34, 26, 0.85);
+}
+
+.pack-head-icon-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pack-head-icon-btn.is-active {
+  color: #1a140e;
+  border-color: transparent;
+  background: linear-gradient(180deg, #e8c878, #c9a04a);
+}
+
+.pack-card-qty-badge {
+  position: absolute;
+  left: 0.35rem;
+  bottom: 0.35rem;
+  z-index: 4;
+  min-width: 1.55rem;
+  padding: 0.18rem 0.42rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  color: #1a140e;
+  background: linear-gradient(180deg, #e8c878, #c9a04a);
+  border: 1px solid rgba(255, 236, 196, 0.35);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
 }
 
 .pack-draw-stage {
@@ -468,6 +532,14 @@
   margin-top: 0.85rem;
 }
 
+.pack-face-side-label {
+  margin: 0 0 0.35rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(240, 212, 138, 0.72);
+}
+
 .pack-other-face-name {
   margin: 0.15rem 0 0.35rem;
   font-family: var(--font-display);
@@ -697,12 +769,16 @@
   filter: drop-shadow(0 18px 26px rgba(0, 0, 0, 0.5));
 }
 
-/* Waiting mid-tear — breathe + charge aura along the rip */
+/* Waiting mid-tear — scale breathe only; light flashes on tap */
 .pack-shell.is-tearing.is-charging {
   animation: pack-charge-breathe 2.2s ease-in-out infinite;
 }
 
-.pack-shell.is-tearing.is-charging::before {
+.pack-shell.is-tearing.is-tap-react {
+  animation: pack-tear-tap 0.42s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.pack-shell.is-tearing.is-charging.is-tap-react::before {
   content: '';
   position: absolute;
   inset: -8% -10%;
@@ -712,14 +788,14 @@
   background:
     radial-gradient(
       ellipse 55% 42% at 50% 48%,
-      rgba(232, 188, 96, 0.28) 0%,
-      rgba(180, 120, 40, 0.1) 42%,
+      rgba(232, 188, 96, 0.42) 0%,
+      rgba(180, 120, 40, 0.14) 42%,
       transparent 72%
     );
-  animation: pack-charge-halo 2.2s ease-in-out infinite;
+  animation: pack-tap-halo 0.42s ease-out both;
 }
 
-.pack-shell.is-tearing.is-charging::after {
+.pack-shell.is-tearing.is-charging.is-tap-react::after {
   content: '';
   position: absolute;
   inset: 18% 6%;
@@ -730,31 +806,18 @@
     105deg,
     transparent 0%,
     rgba(255, 230, 160, 0) 38%,
-    rgba(255, 220, 140, 0.35) 50%,
+    rgba(255, 220, 140, 0.55) 50%,
     rgba(255, 230, 160, 0) 62%,
     transparent 100%
   );
   background-size: 220% 100%;
   mix-blend-mode: soft-light;
-  opacity: 0.55;
-  animation: pack-charge-scan 2.4s ease-in-out infinite;
+  animation: pack-tap-scan 0.42s ease-out both;
 }
 
-.pack-shell.is-tearing.is-charging .pack-tear-edge-tex {
-  mix-blend-mode: screen;
-  filter: contrast(1.05) saturate(1.25) brightness(1.35);
-  animation: pack-charge-seam 2.2s ease-in-out infinite;
-}
-
-.pack-shell.is-tearing.is-charging.is-tap-react,
-.pack-shell.is-tearing.is-charging.is-tap-react::before,
-.pack-shell.is-tearing.is-charging.is-tap-react::after,
 .pack-shell.is-tearing.is-charging.is-tap-react .pack-tear-edge-tex {
-  animation: none;
-}
-
-.pack-shell.is-tearing.is-tap-react {
-  animation: pack-tear-tap 0.42s cubic-bezier(0.22, 0.61, 0.36, 1);
+  mix-blend-mode: screen;
+  animation: pack-tap-seam 0.42s ease-out both;
 }
 
 @keyframes pack-tear-tap {
@@ -763,7 +826,7 @@
     transform: scale(1);
   }
   40% {
-    filter: drop-shadow(0 22px 34px rgba(212, 168, 75, 0.4));
+    filter: drop-shadow(0 22px 34px rgba(212, 168, 75, 0.45));
     transform: scale(0.985);
   }
   100% {
@@ -775,90 +838,86 @@
 @keyframes pack-charge-breathe {
   0%,
   100% {
-    filter: drop-shadow(0 18px 26px rgba(0, 0, 0, 0.5))
-      drop-shadow(0 0 10px rgba(212, 168, 75, 0.18));
+    filter: drop-shadow(0 18px 26px rgba(0, 0, 0, 0.5));
     transform: scale(1);
   }
   50% {
-    filter: drop-shadow(0 22px 34px rgba(0, 0, 0, 0.45))
-      drop-shadow(0 0 22px rgba(232, 188, 96, 0.48));
+    filter: drop-shadow(0 22px 34px rgba(0, 0, 0, 0.45));
     transform: scale(1.012);
   }
 }
 
-@keyframes pack-charge-halo {
-  0%,
-  100% {
-    opacity: 0.45;
-    transform: scale(0.96);
+@keyframes pack-tap-halo {
+  0% {
+    opacity: 0;
+    transform: scale(0.94);
   }
-  50% {
+  35% {
     opacity: 1;
-    transform: scale(1.04);
+    transform: scale(1.05);
   }
-}
-
-@keyframes pack-charge-scan {
-  0%,
   100% {
-    background-position: 120% 50%;
-    opacity: 0.25;
-  }
-  50% {
-    background-position: -20% 50%;
-    opacity: 0.7;
+    opacity: 0;
+    transform: scale(1.08);
   }
 }
 
-@keyframes pack-charge-seam {
-  0%,
+@keyframes pack-tap-scan {
+  0% {
+    background-position: 130% 50%;
+    opacity: 0;
+  }
+  40% {
+    opacity: 0.85;
+  }
+  100% {
+    background-position: -30% 50%;
+    opacity: 0;
+  }
+}
+
+@keyframes pack-tap-seam {
+  0% {
+    opacity: 0.35;
+    filter: contrast(1.05) saturate(1.1) brightness(1.15);
+  }
+  40% {
+    opacity: 1;
+    filter: contrast(1.1) saturate(1.5) brightness(1.65);
+  }
   100% {
     opacity: 0.35;
     filter: contrast(1.05) saturate(1.1) brightness(1.15);
   }
-  50% {
-    opacity: 0.95;
-    filter: contrast(1.08) saturate(1.45) brightness(1.55);
-  }
 }
 
-/* Cards under the ripping pack — soft charge pulse while waiting */
+/* Cards under the ripping pack — float while waiting (no idle light pulse) */
 .pack-reveal-stack.is-in-tear.is-charging .pack-card-wrap.is-in-pack {
-  animation-name: pack-under-float-0, pack-under-charge;
-  animation-duration: 2.4s, 2.2s;
-  animation-timing-function: ease-in-out, ease-in-out;
-  animation-iteration-count: infinite, infinite;
+  animation-name: pack-under-float-0;
+  animation-duration: 2.4s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
 }
 
 .pack-reveal-stack.is-in-tear.is-charging .pack-card-wrap.stack-0 {
-  animation-name: pack-under-float-0, pack-under-charge;
-  animation-delay: 0s, 0s;
+  animation-name: pack-under-float-0;
+  animation-delay: 0s;
 }
 
 .pack-reveal-stack.is-in-tear.is-charging .pack-card-wrap.stack-1 {
-  animation-name: pack-under-float-1, pack-under-charge;
-  animation-delay: 0.12s, 0.15s;
+  animation-name: pack-under-float-1;
+  animation-delay: 0.12s;
 }
 
 .pack-reveal-stack.is-in-tear.is-charging .pack-card-wrap.stack-2 {
-  animation-name: pack-under-float-2, pack-under-charge;
-  animation-delay: 0.24s, 0.3s;
+  animation-name: pack-under-float-2;
+  animation-delay: 0.24s;
 }
 
 .pack-reveal-stack.is-in-tear.is-charging .pack-card-wrap.is-in-pack .card-face {
   box-shadow:
     0 10px 20px rgba(0, 0, 0, 0.35),
-    0 0 0 1px rgba(224, 180, 90, 0.2);
-}
-
-@keyframes pack-under-charge {
-  0%,
-  100% {
-    filter: brightness(1);
-  }
-  50% {
-    filter: brightness(1.08);
-  }
+    0 0 0 1px rgba(224, 180, 90, 0.14);
 }
 
 .pack-shell:disabled {
@@ -1113,22 +1172,22 @@
   .pack-reveal-stack.is-in-tear.is-charging .pack-card-wrap.stack-2,
   .pack-shell.is-tearing.is-tap-react,
   .pack-shell.is-tearing.is-charging,
-  .pack-shell.is-tearing.is-charging::before,
-  .pack-shell.is-tearing.is-charging::after,
-  .pack-shell.is-tearing.is-charging .pack-tear-edge-tex {
+  .pack-shell.is-tearing.is-charging.is-tap-react::before,
+  .pack-shell.is-tearing.is-charging.is-tap-react::after,
+  .pack-shell.is-tearing.is-charging.is-tap-react .pack-tear-edge-tex {
     animation: none;
   }
 
-  .pack-shell.is-tearing.is-charging::before {
+  .pack-shell.is-tearing.is-charging.is-tap-react::before {
     opacity: 0.55;
   }
 
-  .pack-shell.is-tearing.is-charging::after {
+  .pack-shell.is-tearing.is-charging.is-tap-react::after {
     opacity: 0.35;
     background-position: 50% 50%;
   }
 
-  .pack-shell.is-tearing.is-charging .pack-tear-edge-tex {
+  .pack-shell.is-tearing.is-charging.is-tap-react .pack-tear-edge-tex {
     opacity: 0.65;
     filter: contrast(1.06) saturate(1.2) brightness(1.3);
   }
@@ -1177,6 +1236,13 @@
 
 .pack-card-wrap.is-expanded.is-active.is-holding.is-drag-next .card-flip {
   --pack-tremor-x: -3.5px;
+}
+
+/* Single-draw: stronger tremor once release will redraw */
+.pack-card-wrap.is-expanded.is-active.is-holding.is-shake-armed .card-flip {
+  animation: pack-browse-tremor 0.16s ease-in-out infinite;
+  --pack-tremor-x: 5.5px;
+  filter: brightness(1.06);
 }
 
 @keyframes pack-browse-tremor {
@@ -2422,7 +2488,9 @@
 }
 
 .pack-inspect.is-art-zoomed .pack-inspect-flip .card-face,
-.pack-inspect.is-art-zoomed .pack-inspect-flip .card-face img {
+.pack-inspect.is-art-zoomed .pack-inspect-flip .card-face img,
+.pack-inspect.is-art-zoomed .pack-inspect-flip .card-face .card-art,
+.pack-inspect.is-art-zoomed .pack-inspect-flip .card-face .card-art img {
   width: 100%;
   height: 100%;
   object-fit: contain;
@@ -2430,7 +2498,9 @@
 
 /* Full art edges while zoomed — default face imgs are slightly overscaled */
 .pack-inspect.is-art-zoomed .card-face img,
-.pack-draw-stage.is-art-zoomed .card-face img {
+.pack-inspect.is-art-zoomed .card-face .card-art img,
+.pack-draw-stage.is-art-zoomed .card-face img,
+.pack-draw-stage.is-art-zoomed .card-face .card-art img {
   transform: translateZ(0) scale(1);
 }
 
@@ -2533,6 +2603,7 @@
 
 .pack-inspect-wrap.pack-card-wrap {
   /* Height budget from modal; width follows card aspect so nothing clips */
+  position: relative;
   width: min(450px, 100%, calc(var(--pack-inspect-card-max-h) * 744 / 1040));
   max-width: 100%;
   height: auto;
@@ -2717,9 +2788,29 @@
     box-shadow: none;
     padding:
       max(0.75rem, var(--safe-top))
-      max(0.85rem, var(--safe-right))
+      max(1rem, var(--safe-right))
       max(0.75rem, var(--safe-bottom))
-      max(0.85rem, var(--safe-left));
+      max(1rem, var(--safe-left));
+  }
+
+  .pack-draw-head {
+    gap: 0.55rem;
+    margin-bottom: 0.65rem;
+  }
+
+  .pack-draw-head h2 {
+    font-size: clamp(1.15rem, 5vw, 1.45rem);
+    min-width: 0;
+  }
+
+  .pack-draw-head-actions {
+    gap: 0.3rem;
+    margin-right: 0;
+  }
+
+  .pack-head-icon-btn {
+    width: 2.5rem;
+    height: 2.5rem;
   }
 
   .pack-draw-modal:not(.is-collection) {

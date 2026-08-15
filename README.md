@@ -1,6 +1,6 @@
 # Magic Solo — Challenge Decks
 
-Solo fan site for the three *Magic: The Gathering* **Challenge Decks** from Theros-block Game Days (Face the Hydra, Battle the Horde, Defeat a God), with a simplified PvE **Challenge Experience**, a paper-play **Game Assistant**, classic archetypes, Scryfall set gallery, and local pack/collection toys.
+Solo fan site for the three *Magic: The Gathering* **Challenge Decks** from Theros-block Game Days (Face the Hydra, Battle the Horde, Defeat a God), with a simplified PvE **Challenge Experience**, a paper-play **Game Assistant**, classic archetypes, Scryfall set gallery, local pack/collection toys, and a **Print assistant** for A4 / 6″ proxy PDFs.
 
 **Live:** [https://kyle-ip.github.io/magic-solo/](https://kyle-ip.github.io/magic-solo/)
 
@@ -10,13 +10,14 @@ Solo fan site for the three *Magic: The Gathering* **Challenge Decks** from Ther
 
 | Area | Routes | Summary |
 | --- | --- | --- |
-| Challenge Decks | `/`, `/decks/:code` | Rules + card gallery |
+| Challenge Decks | `/`, `/decks/:code` | Rules + card gallery + print PDF |
 | Challenge Experience | `/challenge/:code` | Automated solo PvE (simplified engine) |
 | Game Assistant | `/assistant/:code` | Manual challenge half-board for paper decks |
 | Classic decks | `/classic-decks` | Curated archetypes + sample lists |
-| Set gallery | `/sets` | Live Scryfall browsing |
-| Pack / collection | Header | Weighted pack, single draw, local collection |
-| AI Assistant | Optional | User-supplied API key; see [user guide § AI](docs/USER_GUIDE.en.md#8-ai-assistant) |
+| Set gallery | `/sets` | Live Scryfall browsing + print PDF |
+| Pack / collection | Header | Weighted pack, single draw, local collection + print PDF |
+| Print assistant | Modal | Full-face proxies at 63×88 mm; A4 3×3 or 6″ photo; preview then PDF |
+| AI Assistant | Optional | User-supplied API key; see [user guide § AI](docs/USER_GUIDE.en.md#9-ai-assistant) |
 
 UI: English + 中文. Without an AI key, gameplay and layout match the non-AI site.
 
@@ -32,7 +33,7 @@ Experience follows official challenge loops where implemented, but is **not** a 
 
 ## Stack
 
-Vite 5 · React 19 · TypeScript · React Router 7 · i18next · GitHub Pages
+Vite 5 · React 19 · TypeScript · React Router 7 · i18next · pdf-lib · GitHub Pages
 
 ## Develop
 
@@ -65,6 +66,7 @@ High-res card PNG/`*-display.jpg` under `public/assets/cards/` are gitignored; C
 src/pages/        Routes (home, decks, challenge, assistant, sets, classic)
 src/game/         Challenge Experience engine
 src/assistant/    Game Assistant state
+src/print/        Print assistant layout + PDF export
 src/llm/          Optional browser LLM client + cache
 src/data/         Cards, rules, classic decks, Scryfall helpers
 docs/             User guides (EN / ZH)
