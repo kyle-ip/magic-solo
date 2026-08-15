@@ -42,7 +42,7 @@
     "footerConfigured": "AI 助手 ✓",
     "needKey": "请通过页脚「AI 助手」链接设置密钥后再使用。",
     "rulesTitle": "规则问答",
-    "rulesLead": "可选：基于本挑战规则文本的 LLM 说明。",
+    "rulesLead": "",
     "rulesExplain": "30 秒讲清",
     "rulesAskPlaceholder": "提问规则问题…",
     "rulesAsk": "提问",

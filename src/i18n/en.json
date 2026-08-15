@@ -42,7 +42,7 @@
     "footerConfigured": "AI Assistant ✓",
     "needKey": "Set an API key via the footer AI Assistant link to enable this.",
     "rulesTitle": "Ask the rules",
-    "rulesLead": "Optional LLM help grounded in this challenge’s rules text.",
+    "rulesLead": "",
     "rulesExplain": "Explain in 30 seconds",
     "rulesAskPlaceholder": "Ask a rules question…",
     "rulesAsk": "Ask",
