@@ -14,7 +14,7 @@ html:has(.app-shell.is-arena) {
 /* Board tokens available to portaled hover preview on document.body */
 html.is-arena-playing {
   /* Large fixed card scale — page scrolls; hand+chrome viewport-fixed */
-  --play-card-h: clamp(5.75rem, 14vh, 8.25rem);
+  --play-card-h: clamp(7.3rem, 17.7vh, 10.45rem);
   --bf-card-h: var(--play-card-h);
   --hand-full: var(--play-card-h);
   --hand-peek: calc(var(--hand-full) * 0.5);
@@ -98,7 +98,7 @@ html.is-arena-playing body {
 .arena-root.is-playing {
   /* Fixed card scale; board grows with content and the page scrolls */
   --arena-gap: clamp(0.2rem, 0.55dvh, 0.45rem);
-  --play-card-h: clamp(5.75rem, 14vh, 8.25rem);
+  --play-card-h: clamp(7.3rem, 17.7vh, 10.45rem);
   --bf-card-h: var(--play-card-h);
   --hand-full: var(--play-card-h);
   --hand-peek: calc(var(--hand-full) * 0.5);
@@ -164,7 +164,7 @@ html.is-arena-playing body {
   .arena-root.is-playing,
   html.is-arena-playing {
     --arena-gap: 0.12rem;
-    --play-card-h: clamp(4.75rem, 21vh, 6.75rem);
+    --play-card-h: clamp(6.05rem, 26.6vh, 8.5rem);
     --bf-card-h: var(--play-card-h);
     --hand-full: var(--play-card-h);
     --hand-peek: calc(var(--hand-full) * 0.5);
@@ -420,13 +420,13 @@ html.is-arena-playing body {
     --preview-top-clear: max(3.4rem, calc(var(--safe-top, 0px) + 3rem));
     --preview-bottom-clear: calc(var(--hand-dock-h, 10rem) + 0.35rem);
     --preview-art-h: max(
-      9rem,
+      11.4rem,
       calc(
         100dvh - var(--preview-top-clear) - var(--preview-bottom-clear) -
           var(--preview-copy-budget) - var(--preview-frame)
       )
     );
-    width: min(240px, 24vw, calc(var(--preview-art-h) * 744 / 1040));
+    width: min(304px, 30.4vw, calc(var(--preview-art-h) * 744 / 1040));
     max-height: calc(100dvh - var(--preview-top-clear) - var(--preview-bottom-clear));
     gap: 0;
     padding: 0.3rem 0.3rem 0.35rem;
@@ -2437,13 +2437,13 @@ button.arena-card {
   /* Prefer larger face art; copy keeps a modest reserved band */
   --preview-copy-budget: min(8.5rem, 22dvh);
   --preview-art-h: max(
-    12rem,
+    15.2rem,
     calc(
       100dvh - var(--preview-top-clear) - var(--preview-bottom-clear) -
         var(--preview-copy-budget) - var(--preview-frame)
     )
   );
-  width: min(288px, 26vw, calc(var(--preview-art-h) * 744 / 1040));
+  width: min(364px, 33vw, calc(var(--preview-art-h) * 744 / 1040));
   max-height: calc(100dvh - var(--preview-top-clear) - var(--preview-bottom-clear));
   pointer-events: none;
   display: flex;
@@ -3095,7 +3095,7 @@ button.arena-card {
 @media (max-height: 780px) {
   .arena-root.is-playing,
   html.is-arena-playing {
-    --play-card-h: clamp(4.625rem, 18vh, 6.5rem);
+    --play-card-h: clamp(5.85rem, 22.8vh, 8.25rem);
     --bf-card-h: var(--play-card-h);
     --hand-full: var(--play-card-h);
     --hand-peek: calc(var(--hand-full) * 0.5);
@@ -3110,13 +3110,13 @@ button.arena-card {
     --preview-frame: 0.65rem;
     --preview-bottom-clear: calc(var(--hand-dock-h, 10rem) + 0.35rem);
     --preview-art-h: max(
-      9.5rem,
+      12rem,
       calc(
         100dvh - var(--preview-top-clear, 4.5rem) - var(--preview-bottom-clear) -
           var(--preview-copy-budget) - var(--preview-frame)
       )
     );
-    width: min(250px, 24vw, calc(var(--preview-art-h) * 744 / 1040));
+    width: min(317px, 30.4vw, calc(var(--preview-art-h) * 744 / 1040));
     max-height: calc(
       100dvh - var(--preview-top-clear, 4.5rem) - var(--preview-bottom-clear)
     );
