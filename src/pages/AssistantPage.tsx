@@ -34,6 +34,7 @@ import {
   arenaToolIcons,
 } from '../components/ArenaToolButton'
 import { LanguageSwitch } from '../components/LanguageSwitch'
+import { ChallengeSwitcher } from '../components/ChallengeSwitcher'
 import { getDeck } from '../data/deckStore'
 import { getCardZh } from '../data/locale/cardsZh'
 import { deckMetaEn, deckMetaZh } from '../data/locale/deckMeta'
@@ -369,6 +370,7 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
           <Link to={`/decks/${code}`} className="back-link">
             ← {t('assistant.backDeck')}
           </Link>
+          <ChallengeSwitcher currentCode={code} mode="assistant" />
           <p className="eyebrow">{t('assistant.eyebrow')}</p>
           <h1>{meta?.name ?? deck.name}</h1>
           <p className="lede">{t('assistant.setupLead')}</p>

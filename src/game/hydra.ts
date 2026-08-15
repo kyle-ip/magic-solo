@@ -10,7 +10,7 @@ import {
   isIndestructible,
 } from './helpers'
 import { pushLog } from './log'
-import type { CardDef, CardInstance, GameState, SetupConfig } from './types'
+import type { CardDef, CardInstance, GameState, PlayerCreature, SetupConfig } from './types'
 import { expandLibrary, resetIdSeq } from './buildDeck'
 import { baseState } from './helpers'
 import { resetLogSeq } from './log'
@@ -382,6 +382,10 @@ export function resolveStrikeHead(state: GameState, headId: string): GameState {
 function exilePlayerCreature(state: GameState, id: string): GameState {
   const creature = state.player.creatures.find((c) => c.instanceId === id)
   if (!creature) return state
+  // Ward {2}: challenge side has no mana — ability is countered for this target.
+  if (creature.keywords.some((k) => /ward/i.test(k))) {
+    return pushLog(state, 'wardBlocked', 'good', { name: creature.name })
+  }
   let next: GameState = {
     ...state,
     player: {
@@ -551,7 +555,9 @@ export function maybeReturnSwallow(state: GameState): GameState {
     player: {
       ...state.player,
       creatures: [
-        ...state.player.exile.map((c) => ({
+        ...state.player.exile
+          .filter((c): c is PlayerCreature => 'markedDamage' in c)
+          .map((c) => ({
           ...c,
           summoningSickness: true,
           tapped: false,
@@ -559,7 +565,7 @@ export function maybeReturnSwallow(state: GameState): GameState {
         })),
         ...state.player.creatures,
       ],
-      exile: [],
+      exile: state.player.exile.filter((c) => !('markedDamage' in c)),
     },
     flags: { ...state.flags, swallowExileActive: false },
   }

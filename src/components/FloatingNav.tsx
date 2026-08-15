@@ -1,8 +1,10 @@
 ﻿import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { useHasLlmApiKey } from '../hooks/useLlmSettings'
+import { CARD_EDITOR_ENABLED } from '../features'
+import { useHasLlmApiKey, useLlmReady } from '../hooks/useLlmSettings'
 import { requestOpenLlmSettings } from '../llm/openSettings'
+import { requestOpenPageChat } from '../llm/openPageChat'
 import '../styles/llm.css'
 
 interface FloatingNavProps {
@@ -15,13 +17,15 @@ export function FloatingNav({ arenaMode = false }: FloatingNavProps) {
   const { pathname } = useLocation()
   const [showTop, setShowTop] = useState(false)
   const hasKey = useHasLlmApiKey()
+  const llmReady = useLlmReady()
   const isChallengeDeck = pathname.startsWith('/decks/')
   const isClassicDeck =
     pathname === '/classic-decks' || pathname.startsWith('/classic-decks/')
   const isSetGallery =
     pathname === '/sets' || pathname.startsWith('/sets/')
   const isHelp = pathname === '/help'
-  const isDeckPage = isChallengeDeck || isClassicDeck || isSetGallery || isHelp
+  const isEditor = CARD_EDITOR_ENABLED && pathname === '/editor'
+  const isDeckPage = isChallengeDeck || isClassicDeck || isSetGallery || isHelp || isEditor
   const homeTo =
     isClassicDeck && pathname !== '/classic-decks'
       ? '/classic-decks'
@@ -102,7 +106,7 @@ export function FloatingNav({ arenaMode = false }: FloatingNavProps) {
       {showLlm ? (
         <button
           type="button"
-          className="floating-nav-btn is-configured"
+          className={`floating-nav-btn${llmReady ? ' is-configured' : ''}`}
           onClick={() => requestOpenLlmSettings()}
           title={t('llm.openSettings')}
           aria-label={t('llm.openSettings')}
@@ -116,6 +120,33 @@ export function FloatingNav({ arenaMode = false }: FloatingNavProps) {
               strokeWidth="1.65"
               strokeLinecap="round"
               strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+      ) : null}
+      {showLlm ? (
+        <button
+          type="button"
+          className={`floating-nav-btn${llmReady ? ' is-configured' : ''}`}
+          onClick={() => requestOpenPageChat()}
+          title={t('llm.openChat')}
+          aria-label={t('llm.openChat')}
+          aria-haspopup="dialog"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M5.2 6.4h13.6a1.4 1.4 0 0 1 1.4 1.4v7.2a1.4 1.4 0 0 1-1.4 1.4H11l-3.6 3.2v-3.2H5.2a1.4 1.4 0 0 1-1.4-1.4V7.8a1.4 1.4 0 0 1 1.4-1.4Z"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.65"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M8.2 10.2h7.6M8.2 13h5.2"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.65"
+              strokeLinecap="round"
             />
           </svg>
         </button>

@@ -5,12 +5,15 @@ export interface LlmSettings {
   baseUrl: string
   apiKey: string
   model: string
+  /** True after a successful connection test with the current credentials. */
+  connectionOk: boolean
 }
 
 export const DEFAULT_LLM_SETTINGS: LlmSettings = {
   baseUrl: 'https://api.openai.com/v1',
   apiKey: '',
-  model: 'gpt-4o-mini',
+  model: 'qwen3.7-flash',
+  connectionOk: false,
 }
 
 type Listener = () => void
@@ -19,10 +22,12 @@ let cached: LlmSettings | null = null
 const listeners = new Set<Listener>()
 
 function normalize(raw: Partial<LlmSettings> | null | undefined): LlmSettings {
+  const apiKey = (raw?.apiKey ?? '').trim()
   return {
     baseUrl: (raw?.baseUrl ?? DEFAULT_LLM_SETTINGS.baseUrl).trim().replace(/\/+$/, ''),
-    apiKey: (raw?.apiKey ?? '').trim(),
+    apiKey,
     model: (raw?.model ?? DEFAULT_LLM_SETTINGS.model).trim() || DEFAULT_LLM_SETTINGS.model,
+    connectionOk: Boolean(raw?.connectionOk) && apiKey.length > 0,
   }
 }
 
@@ -47,7 +52,17 @@ export function readLlmSettings(): LlmSettings {
 }
 
 export function writeLlmSettings(next: Partial<LlmSettings>): LlmSettings {
-  const merged = normalize({ ...readLlmSettings(), ...next })
+  const prev = readLlmSettings()
+  const merged = normalize({ ...prev, ...next })
+  // Changing credentials invalidates a prior successful test unless explicitly re-set.
+  if (
+    next.connectionOk === undefined &&
+    (merged.apiKey !== prev.apiKey ||
+      merged.baseUrl !== prev.baseUrl ||
+      merged.model !== prev.model)
+  ) {
+    merged.connectionOk = false
+  }
   cached = merged
   try {
     localStorage.setItem(LLM_SETTINGS_KEY, JSON.stringify(merged))
@@ -59,11 +74,16 @@ export function writeLlmSettings(next: Partial<LlmSettings>): LlmSettings {
 }
 
 export function clearLlmApiKey(): LlmSettings {
-  return writeLlmSettings({ apiKey: '' })
+  return writeLlmSettings({ apiKey: '', connectionOk: false })
 }
 
 export function hasLlmApiKey(settings: LlmSettings = readLlmSettings()): boolean {
   return settings.apiKey.length > 0
+}
+
+/** API key present and last connection test succeeded for these settings. */
+export function isLlmReady(settings: LlmSettings = readLlmSettings()): boolean {
+  return hasLlmApiKey(settings) && settings.connectionOk
 }
 
 export function maskApiKey(key: string): string {

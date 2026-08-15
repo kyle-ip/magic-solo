@@ -99,16 +99,6 @@ export function RulesPanel({ rules }: RulesPanelProps) {
         <div className="llm-rules-panel">
           <h3>{t('llm.rulesTitle')}</h3>
           <p className="llm-rules-lead">{t('llm.rulesLead')}</p>
-          <div className="llm-rules-row">
-            <button
-              type="button"
-              className="btn ghost"
-              disabled={loading}
-              onClick={() => void ask(t('llm.rulesExplain'))}
-            >
-              {t('llm.rulesExplain')}
-            </button>
-          </div>
           <form
             className="llm-rules-ask"
             onSubmit={(e) => {
@@ -130,6 +120,14 @@ export function RulesPanel({ rules }: RulesPanelProps) {
               disabled={loading || !question.trim()}
             >
               {loading ? t('llm.rulesLoading') : t('llm.rulesAsk')}
+            </button>
+            <button
+              type="button"
+              className="btn ghost"
+              disabled={loading}
+              onClick={() => void ask(t('llm.rulesExplain'))}
+            >
+              {t('llm.rulesExplain')}
             </button>
           </form>
           {answer ? (

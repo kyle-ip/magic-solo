@@ -23,6 +23,8 @@ export interface DrawnCardFace {
   manaCost: string
   power: string | null
   toughness: string | null
+  /** Per-face art (transform / MDFC). Absent on adventure / split. */
+  imageUrl?: string
   nameZh?: string
   typeLineZh?: string
   oracleTextZh?: string
@@ -148,6 +150,16 @@ export function hasZhPrint(card: DrawnCard): boolean {
   return Boolean(card.nameZh || card.typeLineZh || card.oracleTextZh || card.flavorTextZh)
 }
 
+/** Second-face art for transform / MDFC (not adventure / split). */
+export function dualFaceImageUrl(card: DrawnCard): string | undefined {
+  const url = card.otherFaces?.[0]?.imageUrl?.trim()
+  return url || undefined
+}
+
+export function hasDualFaceArt(card: DrawnCard): boolean {
+  return Boolean(dualFaceImageUrl(card))
+}
+
 function normalizeRarity(raw: string | undefined): CardRarity {
   const r = (raw || 'common').toLowerCase()
   return r
@@ -213,6 +225,7 @@ function pickImage(uris?: ScryfallImageUris): string {
 }
 
 function mapScryfallFace(face: ScryfallCardFace): DrawnCardFace {
+  const imageUrl = pickImage(face.image_uris)
   return {
     name: face.name || '',
     typeLine: face.type_line || '',
@@ -221,6 +234,7 @@ function mapScryfallFace(face: ScryfallCardFace): DrawnCardFace {
     manaCost: face.mana_cost || '',
     power: face.power ?? null,
     toughness: face.toughness ?? null,
+    ...(imageUrl ? { imageUrl } : {}),
   }
 }
 

@@ -17,8 +17,10 @@
 }
 
 .sets-toolbar {
-  display: grid;
-  gap: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.5rem;
+  align-items: center;
   margin-bottom: 1.5rem;
 }
 
@@ -26,6 +28,42 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.45rem;
+  align-items: center;
+}
+
+.sets-type-filters-group {
+  display: contents;
+}
+
+.set-gallery-type-filters {
+  margin-top: 1rem;
+  margin-bottom: -0.35rem;
+}
+
+.set-gallery-rarity-filters {
+  margin-top: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.sets-toolbar .sets-select {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.sets-toolbar .sets-select-year {
+  min-width: 6.5rem;
+  max-width: 8.5rem;
+}
+
+.sets-toolbar .sets-select-sort {
+  min-width: 9.5rem;
+  max-width: 14rem;
+}
+
+.sets-toolbar .sets-select select {
+  padding: 0.35rem 0.7rem;
+  font-size: 0.82rem;
+  line-height: 1.25;
 }
 
 .sets-type-chip {
@@ -266,7 +304,21 @@
 .sets-controls .llm-nl-search-form.sets-search,
 .set-gallery-filters .llm-nl-search-form.sets-search {
   flex: 1 1 14rem;
-  max-width: 28rem;
+  max-width: min(28rem, 100%);
+  min-width: 0;
+}
+
+@media (max-width: 720px) {
+  .sets-controls,
+  .set-gallery-filters {
+    width: 100%;
+  }
+
+  .sets-controls .sets-select,
+  .set-gallery-rarity {
+    flex: 1 1 calc(50% - 0.4rem);
+    min-width: 0;
+  }
 }
 
 .set-gallery-rarity {

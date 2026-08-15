@@ -33,6 +33,7 @@ function normalizeFace(raw: Partial<DrawnCardFace> | undefined): DrawnCardFace |
     manaCost: raw.manaCost || '',
     power: raw.power ?? null,
     toughness: raw.toughness ?? null,
+    ...(raw.imageUrl ? { imageUrl: raw.imageUrl } : {}),
     ...(raw.nameZh ? { nameZh: raw.nameZh } : {}),
     ...(raw.typeLineZh ? { typeLineZh: raw.typeLineZh } : {}),
     ...(raw.oracleTextZh ? { oracleTextZh: raw.oracleTextZh } : {}),

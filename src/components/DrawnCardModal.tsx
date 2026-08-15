@@ -2,7 +2,16 @@ import { useCallback, useEffect, useId, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import {
+  addCollected,
+  isCollected,
+  removeCollected,
+  type CollectedCard,
+} from '../data/packCollection'
+import {
+  displayFaceName,
   displayName,
+  dualFaceImageUrl,
+  hasDualFaceArt,
   wantsZh,
   type DrawnCard,
 } from '../data/randomCard'
@@ -10,8 +19,10 @@ import { useArtZoomPan } from '../hooks/useArtZoomPan'
 import { useCardHoldDrag } from '../hooks/useCardHoldDrag'
 import { useSwipeNavigate } from '../hooks/useSwipeNavigate'
 import { preloadImage } from '../utils/imageCache'
+import { CardArtImage } from './CardArtImage'
 import { CardDetailsBody } from './CardDetailsBody'
 import { CardFaceButton } from './CardFaceButton'
+import { PackHeadIconButton } from './PackHeadIconButton'
 import '../styles/pack.css'
 import '../styles/deck.css'
 
@@ -23,6 +34,10 @@ interface DrawnCardModalProps {
   onClose: () => void
   /** Peer names for optional collection synergy (LLM, key required). */
   collectionPeers?: string[]
+  /** Show collect / uncollect in the header (default true). */
+  enableCollect?: boolean
+  /** Fired after collection membership changes. */
+  onCollectChange?: (collected: boolean, items: CollectedCard[]) => void
 }
 
 export function DrawnCardModal({
@@ -32,6 +47,8 @@ export function DrawnCardModal({
   onSelect,
   onClose,
   collectionPeers,
+  enableCollect = true,
+  onCollectChange,
 }: DrawnCardModalProps) {
   if (!card) return null
   return (
@@ -42,6 +59,8 @@ export function DrawnCardModal({
       onSelect={onSelect}
       onClose={onClose}
       collectionPeers={collectionPeers}
+      enableCollect={enableCollect}
+      onCollectChange={onCollectChange}
     />
   )
 }
@@ -53,6 +72,8 @@ function DrawnCardModalBody({
   onSelect,
   onClose,
   collectionPeers,
+  enableCollect,
+  onCollectChange,
 }: {
   card: DrawnCard
   cards?: DrawnCard[]
@@ -60,12 +81,15 @@ function DrawnCardModalBody({
   onSelect?: (card: DrawnCard) => void
   onClose: () => void
   collectionPeers?: string[]
+  enableCollect: boolean
+  onCollectChange?: (collected: boolean, items: CollectedCard[]) => void
 }) {
   const { t, i18n } = useTranslation()
   const titleId = useId()
   const [flipTurns, setFlipTurns] = useState(0)
   const [flipping, setFlipping] = useState(false)
   const [artZoomed, setArtZoomed] = useState(false)
+  const [collected, setCollected] = useState(() => isCollected(card.id))
 
   const browseList = cards && cards.length > 0 ? cards : [card]
   const canBrowse = browseList.length > 1 && !!onSelect
@@ -75,11 +99,13 @@ function DrawnCardModalBody({
     setFlipTurns(0)
     setFlipping(false)
     setArtZoomed(false)
+    setCollected(isCollected(card.id))
   }, [card.id])
 
   useEffect(() => {
     void preloadImage(card.frontImageUrl).catch(() => undefined)
-    void preloadImage(card.backImageUrl).catch(() => undefined)
+    const otherArt = dualFaceImageUrl(card)
+    void preloadImage(otherArt || card.backImageUrl).catch(() => undefined)
   }, [card])
 
   useEffect(() => {
@@ -135,10 +161,30 @@ function DrawnCardModalBody({
     ? displayName(card, i18n.language)
     : card.name
 
+  const showingBackFace = flipTurns % 2 === 1 && hasDualFaceArt(card)
+  const reverseSrc = dualFaceImageUrl(card) || card.backImageUrl
+  const reverseAlt =
+    showingBackFace && card.otherFaces[0]
+      ? displayFaceName(card.otherFaces[0], i18n.language)
+      : t('deck.backHint')
+
   const flipOnce = () => {
     setFlipping(true)
     requestAnimationFrame(() => setFlipTurns((n) => n + 1))
     window.setTimeout(() => setFlipping(false), 400)
+  }
+
+  const onToggleCollect = () => {
+    if (!enableCollect) return
+    if (collected) {
+      const items = removeCollected(card.id)
+      setCollected(false)
+      onCollectChange?.(false, items)
+    } else {
+      const items = addCollected(card)
+      setCollected(true)
+      onCollectChange?.(true, items)
+    }
   }
 
   return createPortal(
@@ -153,13 +199,21 @@ function DrawnCardModalBody({
         <header className="pack-draw-head">
           <h2 id={titleId}>{t('classicDecks.cardDetails')}</h2>
           <div className="pack-draw-head-actions">
-            <button
-              type="button"
-              className="references-text-btn"
+            {enableCollect ? (
+              <PackHeadIconButton
+                icon={collected ? 'collected' : 'collect'}
+                label={
+                  collected ? t('packDraw.collected') : t('packDraw.collect')
+                }
+                className={collected ? 'is-active' : ''}
+                onClick={onToggleCollect}
+              />
+            ) : null}
+            <PackHeadIconButton
+              icon="close"
+              label={t('deck.close')}
               onClick={onClose}
-            >
-              {t('deck.close')}
-            </button>
+            />
           </div>
         </header>
 
@@ -213,21 +267,29 @@ function DrawnCardModalBody({
                     onToggleZoom={() => setArtZoomed((z) => !z)}
                   >
                     <span className="card-face front">
-                      <img
+                      <CardArtImage
                         src={card.frontImageUrl}
                         alt={displayTitle}
                         draggable={false}
                       />
                     </span>
                     <span className="card-face back">
-                      <img
-                        src={card.backImageUrl}
-                        alt={t('deck.backHint')}
+                      <CardArtImage
+                        src={reverseSrc}
+                        alt={reverseAlt}
                         draggable={false}
                       />
                     </span>
                   </CardFaceButton>
                 </div>
+                {quantity != null && quantity > 0 ? (
+                  <span
+                    className="pack-card-qty-badge"
+                    aria-label={t('deck.quantity', { n: quantity })}
+                  >
+                    ×{quantity}
+                  </span>
+                ) : null}
               </div>
             </div>
 
@@ -238,10 +300,8 @@ function DrawnCardModalBody({
                     card={card}
                     showOfflineHint={false}
                     collectionPeers={collectionPeers}
+                    faceSide={showingBackFace ? 'back' : 'front'}
                   />
-                  {quantity != null ? (
-                    <p className="qty">{t('deck.quantity', { n: quantity })}</p>
-                  ) : null}
                 </div>
               </div>
             </div>

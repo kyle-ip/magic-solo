@@ -9,8 +9,10 @@ import { useCardHoldDrag } from '../hooks/useCardHoldDrag'
 import { useCardImageSrc } from '../hooks/useCardImageSrc'
 import type { DeckCard } from '../types'
 import { preloadAssetCandidates } from '../utils/remoteAsset'
+import { CardArtImage } from './CardArtImage'
 import { CardDetailsBody } from './CardDetailsBody'
 import { CardFaceButton } from './CardFaceButton'
+import { PackHeadIconButton } from './PackHeadIconButton'
 import '../styles/pack.css'
 import '../styles/deck.css'
 
@@ -169,13 +171,11 @@ function CardModalBody({
         <header className="pack-draw-head">
           <h2 id={titleId}>{t('deck.cards')}</h2>
           <div className="pack-draw-head-actions">
-            <button
-              type="button"
-              className="references-text-btn"
+            <PackHeadIconButton
+              icon="close"
+              label={t('deck.close')}
               onClick={onClose}
-            >
-              {t('deck.close')}
-            </button>
+            />
           </div>
         </header>
 
@@ -229,25 +229,31 @@ function CardModalBody({
                     onToggleZoom={() => setArtZoomed((z) => !z)}
                   >
                     <span className="card-face front">
-                      <img
+                      <CardArtImage
                         src={front.src}
                         alt={displayTitle}
                         draggable={false}
-                        decoding="async"
                         onError={front.onError}
                       />
                     </span>
                     <span className="card-face back">
-                      <img
+                      <CardArtImage
                         src={back.src}
                         alt={t('deck.backHint')}
                         draggable={false}
-                        decoding="async"
                         onError={back.onError}
                       />
                     </span>
                   </CardFaceButton>
                 </div>
+                {card.quantity > 0 ? (
+                  <span
+                    className="pack-card-qty-badge"
+                    aria-label={t('deck.quantity', { n: card.quantity })}
+                  >
+                    ×{card.quantity}
+                  </span>
+                ) : null}
               </div>
             </div>
 
@@ -255,9 +261,6 @@ function CardModalBody({
               <div className="pack-card-copy-cluster">
                 <div className="pack-card-copy-body">
                   <CardDetailsBody card={drawn} showOfflineHint={false} />
-                  <p className="qty">
-                    {t('deck.quantity', { n: card.quantity })}
-                  </p>
                 </div>
               </div>
             </div>

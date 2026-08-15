@@ -14,7 +14,9 @@ import {
 import {
   defaultCardBackUrl,
   drawWeightedCard,
+  dualFaceImageUrl,
   enrichDrawnCardZh,
+  hasDualFaceArt,
   hasZhPrint,
   wantsZh,
   type DrawnCard,
@@ -22,6 +24,7 @@ import {
 import { useArtZoomPan } from '../hooks/useArtZoomPan'
 import { useCardHoldDrag } from '../hooks/useCardHoldDrag'
 import { PackCollectionCabinet } from './PackCollectionCabinet'
+import { PackHeadIconButton } from './PackHeadIconButton'
 
 const FLIP_MS = 220
 const FX_FADE_MS = 900
@@ -297,19 +300,30 @@ export function SingleDrawButton() {
     }
   }
 
-  const onDrawAgain = () => {
+  const onDrawAgain = useCallback(() => {
     if (drawing) return
     clearTimers()
     clearFxTimers()
     void runDraw()
-  }
+  }, [drawing, runDraw])
 
   const packBackSrc = defaultCardBackUrl()
-  const backSrc = waiting ? packBackSrc : card?.backImageUrl || packBackSrc
+  const otherArt = card ? dualFaceImageUrl(card) : undefined
+  // Before first reveal: always classic pack back. After: other face art or card back.
+  const backSrc =
+    waiting || !revealed
+      ? packBackSrc
+      : otherArt || card?.backImageUrl || packBackSrc
   const frontSrc = waiting ? packBackSrc : card?.frontImageUrl || packBackSrc
+  const showingOtherFace =
+    !!card && revealed && !faceUp && hasDualFaceArt(card)
   const showDetails = !!card && revealed
   const { panStyle, panBind } = useArtZoomPan(artZoomed)
-  const hold = useCardHoldDrag(!artZoomed)
+  const canShakeRedraw = revealed && !drawing && !artZoomed && !flipping
+  const hold = useCardHoldDrag(canShakeRedraw, {
+    axis: 'any',
+    onShakeCommit: onDrawAgain,
+  })
 
   const dialog =
     open && typeof document !== 'undefined'
@@ -345,53 +359,46 @@ export function SingleDrawButton() {
                 </h2>
                 <div className="pack-draw-head-actions">
                   {view === 'draw' ? (
-                    <button
-                      type="button"
-                      className="references-text-btn"
+                    <PackHeadIconButton
+                      icon="redraw"
+                      label={t('singleDraw.drawAgain')}
                       onClick={onDrawAgain}
                       disabled={drawing}
-                    >
-                      {t('singleDraw.drawAgain')}
-                    </button>
+                    />
                   ) : null}
                   {view === 'draw' && showDetails && card ? (
-                    <button
-                      type="button"
-                      className="references-text-btn"
+                    <PackHeadIconButton
+                      icon={collected ? 'collected' : 'collect'}
+                      label={
+                        collected
+                          ? t('packDraw.collected')
+                          : t('packDraw.collect')
+                      }
+                      className={collected ? 'is-active' : ''}
                       onClick={onToggleCollect}
-                    >
-                      {collected
-                        ? t('packDraw.collected')
-                        : t('packDraw.collect')}
-                    </button>
+                    />
                   ) : null}
                   {view === 'draw' ? (
-                    <button
-                      type="button"
-                      className="references-text-btn"
+                    <PackHeadIconButton
+                      icon="cabinet"
+                      label={t('packDraw.collection')}
                       onClick={() => setView('collection')}
-                    >
-                      {t('packDraw.collection')}
-                    </button>
+                    />
                   ) : (
-                    <button
-                      type="button"
-                      className="references-text-btn"
+                    <PackHeadIconButton
+                      icon="back"
+                      label={t('singleDraw.backToDraw')}
                       onClick={() => {
                         if (card) setCollected(isCollected(card.id))
                         setView('draw')
                       }}
-                    >
-                      {t('singleDraw.backToDraw')}
-                    </button>
+                    />
                   )}
-                  <button
-                    type="button"
-                    className="references-text-btn"
+                  <PackHeadIconButton
+                    icon="close"
+                    label={t('deck.close')}
                     onClick={() => setOpen(false)}
-                  >
-                    {t('deck.close')}
-                  </button>
+                  />
                 </div>
               </header>
 
@@ -436,6 +443,7 @@ export function SingleDrawButton() {
                           hold.dragging ? 'is-dragging' : '',
                           hold.dragHint < 0 ? 'is-drag-prev' : '',
                           hold.dragHint > 0 ? 'is-drag-next' : '',
+                          hold.shakeArmed ? 'is-shake-armed' : '',
                         ]
                           .filter(Boolean)
                           .join(' ')}
@@ -451,6 +459,11 @@ export function SingleDrawButton() {
                             ? `${hold.dragX * 0.12}deg`
                             : undefined,
                         }}
+                        title={
+                          canShakeRedraw
+                            ? t('singleDraw.shakeRedrawHint')
+                            : undefined
+                        }
                       >
                         {showFxLayer ? (
                           <span
@@ -524,8 +537,11 @@ export function SingleDrawButton() {
                 >
                   <div className="pack-card-copy-cluster">
                     <div className="pack-card-copy-body">
-                      {showDetails ? (
-                        <CardDetailsBody card={card} />
+                      {showDetails && card ? (
+                        <CardDetailsBody
+                          card={card}
+                          faceSide={showingOtherFace ? 'back' : 'front'}
+                        />
                       ) : (
                         <p className="pack-draw-hint pack-tap-hint" role="status">
                           {error

@@ -17,6 +17,7 @@ import { CastStage } from '../components/challenge/CastStage'
 import { DeckRosterModal } from '../components/challenge/DeckRosterModal'
 import { ZonePile } from '../components/challenge/ZonePile'
 import { LanguageSwitch } from '../components/LanguageSwitch'
+import { ChallengeSwitcher } from '../components/ChallengeSwitcher'
 import { getDeck } from '../data/deckStore'
 import { getCardZh } from '../data/locale/cardsZh'
 import { deckMetaEn, deckMetaZh } from '../data/locale/deckMeta'
@@ -26,13 +27,20 @@ import {
   DEFAULT_PLAYER_DECK,
   findCardDef,
   findCardDefByName,
-  getDeckCards,
+  getDeckCardCount,
+  getDeckHint,
   getPlayerDeck,
   PLAYER_DECKS,
   type PlayerDeckId,
 } from '../game/playerDecks'
+import { ManaCost, ManaSymbol } from '../components/ManaCost'
 import { canAffordCard } from '../game/playerCast'
 import { HERO_DEFS, maxHeroesFor } from '../game/heroes'
+import {
+  canActivateCreature,
+  effectivePower,
+  effectiveToughness,
+} from '../game/playerAbilities'
 import {
   createInitialSetup,
   gameReducer,
@@ -120,7 +128,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
     name: string
     text?: string
   } | null>(null)
-  const [inspect, setInspect] = useState<'graveyard' | null>(null)
+  const [inspect, setInspect] = useState<'graveyard' | 'player-graveyard' | null>(null)
   const [coachOn, setCoachOn] = useState(readCoachEnabled)
   const [logOpen, setLogOpen] = useState(readLogOpen)
   const [logVisible, setLogVisible] = useState(readLogVisible)
@@ -295,8 +303,8 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
     try {
       const text = await chatCompletion({
         signal: ac.signal,
-        maxTokens: 320,
-        temperature: 0.7,
+        maxTokens: 900,
+        temperature: 0.55,
         messages: [
           { role: 'system', content: battleReportSystemPrompt(i18n.language) },
           {
@@ -609,6 +617,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
           <Link to={`/decks/${code}`} className="back-link">
             ← {t('challenge.backDeck')}
           </Link>
+          <ChallengeSwitcher currentCode={code} mode="challenge" />
           <p className="eyebrow">{t('challenge.eyebrow')}</p>
           <h1>{meta?.name ?? deck.name}</h1>
           <p className="lede">{t('challenge.setupLead')}</p>
@@ -688,28 +697,60 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
             <div className="setup-deck-grid" role="listbox" aria-label={t('challenge.pickDeck')}>
               {PLAYER_DECKS.map((d) => {
                 const selected = playerDeckId === d.id
+                const hint = getDeckHint(d.id, code, zh)
+                const count = getDeckCardCount(d.id)
                 return (
-                  <button
+                  <div
                     key={d.id}
-                    type="button"
                     role="option"
+                    tabIndex={0}
                     aria-selected={selected}
                     className={`setup-deck-card ${selected ? 'is-selected' : ''}`}
-                    onClick={() => {
-                      setPlayerDeckId(d.id)
-                      setRosterModalId(d.id)
+                    onClick={() => setPlayerDeckId(d.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        setPlayerDeckId(d.id)
+                      }
                     }}
                   >
                     <span
                       className="setup-deck-art"
-                      style={{ backgroundImage: `url(${preferredAssetUrl(d.art, { kind: 'art_crop' })})` }}
+                      style={{
+                        backgroundImage: `url(${preferredAssetUrl(d.art, { kind: 'art_crop' })})`,
+                      }}
                     />
                     <span className="setup-deck-body">
-                      <strong>{zh ? d.nameZh : d.name}</strong>
-                      <span>{zh ? d.blurbZh : d.blurb}</span>
-                      <em>{t('challenge.viewRoster')}</em>
+                      <span className="setup-deck-title-row">
+                        <strong>{zh ? d.nameZh : d.name}</strong>
+                        <span className="setup-deck-pips" aria-label={d.colors.join('')}>
+                          {d.colors.map((c) => (
+                            <ManaSymbol key={c} code={c} className="mana-symbol setup-deck-pip" />
+                          ))}
+                        </span>
+                      </span>
+                      <span className="setup-deck-meta">
+                        <span className="setup-deck-archetype">
+                          {t(`challenge.archetype.${d.archetype}`)}
+                        </span>
+                        <span className="setup-deck-count">
+                          {t('challenge.deckCards', { count })}
+                        </span>
+                      </span>
+                      <span className="setup-deck-play-hint">{hint}</span>
+                      <button
+                        type="button"
+                        className="setup-deck-view-roster"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setPlayerDeckId(d.id)
+                          setRosterModalId(d.id)
+                        }}
+                      >
+                        {t('challenge.viewRoster')}
+                      </button>
                     </span>
-                  </button>
+                  </div>
                 )
               })}
             </div>
@@ -718,8 +759,12 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                 name: zh
                   ? getPlayerDeck(playerDeckId).nameZh
                   : getPlayerDeck(playerDeckId).name,
-                count: getDeckCards(playerDeckId).reduce((s, c) => s + c.quantity, 0 as number),
+                count: getDeckCardCount(playerDeckId),
               })}
+            </p>
+            <p className="setup-deck-selected-hint">
+              <span className="setup-deck-hint-label">{t('challenge.deckHint')}</span>
+              {getDeckHint(playerDeckId, code, zh)}
             </p>
           </div>
           <ul className="setup-notes">
@@ -729,35 +774,38 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
             <li>{t('challenge.noteHeroes')}</li>
             <li>{t('challenge.noteOfficial')}</li>
           </ul>
-          <SetupLlmAdvisor
-            code={code}
-            heads={heads}
-            hordeDelay={hordeDelay}
-            heroIds={heroIds}
-            playerDeckId={playerDeckId}
-          />
-          <button
-            type="button"
-            className="btn primary"
-            onClick={() =>
-              act({
-                type: 'START',
-                config: {
-                  code,
-                  startingHeads: heads,
-                  playerTurnsBeforeHorde: hordeDelay,
-                  playerDeckId,
-                  heroIds,
-                },
-              })
-            }
-          >
-            {t('challenge.begin')}
-          </button>
+          <div className="setup-cta-row">
+            <SetupLlmAdvisor
+              code={code}
+              heads={heads}
+              hordeDelay={hordeDelay}
+              heroIds={heroIds}
+              playerDeckId={playerDeckId}
+            />
+            <button
+              type="button"
+              className="btn primary"
+              onClick={() =>
+                act({
+                  type: 'START',
+                  config: {
+                    code,
+                    startingHeads: heads,
+                    playerTurnsBeforeHorde: hordeDelay,
+                    playerDeckId,
+                    heroIds,
+                  },
+                })
+              }
+            >
+              {t('challenge.begin')}
+            </button>
+          </div>
         </section>
         {rosterModalId ? (
           <DeckRosterModal
             deckId={rosterModalId}
+            code={code}
             zh={zh}
             onClose={() => setRosterModalId(null)}
             onSelect={setPlayerDeckId}
@@ -1169,14 +1217,18 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                       ? t('challenge.badge.ready')
                       : null
               const pop = fxFor(c.instanceId)
+              const power = effectivePower(state, c)
+              const toughness = effectiveToughness(state, c)
+              const canAct =
+                canActivateCreature(state, c.instanceId) && !pendingMine && !blocking
               return (
                 <ArenaCard
                   key={c.instanceId}
                   instanceId={c.instanceId}
                   image={c.image}
                   name={label}
-                  power={c.power}
-                  toughness={c.toughness}
+                  power={power}
+                  toughness={toughness}
                   markedDamage={c.markedDamage}
                   tapped={c.tapped}
                   selected={selected}
@@ -1191,7 +1243,20 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                       ? { kind: pop.kind, amount: pop.amount }
                       : null
                   }
-                  badge={badge}
+                  badge={
+                    canAct
+                      ? t('challenge.badge.activate')
+                      : badge
+                  }
+                  note={canAct ? t('challenge.activateHint') : null}
+                  onDoubleClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    if (over) return
+                    if (canActivateCreature(state, c.instanceId)) {
+                      act({ type: 'ACTIVATE', creatureId: c.instanceId })
+                    }
+                  }}
                   onClick={() => {
                     if (over) return
                     if (state.pendingCast?.mode === 'fight_mine' || state.pendingCast?.mode === 'pump' || state.pendingCast?.mode === 'fangs') {
@@ -1226,8 +1291,8 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                       image: c.image,
                       name: label,
                       text: tpl
-                        ? `${zh ? tpl.typeLineZh : tpl.typeLine}\n${c.power}/${c.toughness}\n${zh ? tpl.oracleTextZh : tpl.oracleText}`
-                        : `${c.power}/${c.toughness}`,
+                        ? `${zh ? tpl.typeLineZh : tpl.typeLine}\n${power}/${toughness}\n${zh ? tpl.oracleTextZh : tpl.oracleText}`
+                        : `${power}/${toughness}`,
                     })
                   }}
                   onMouseLeave={clearPreview}
@@ -1267,6 +1332,12 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
           label={t('challenge.graveyard')}
           count={state.player.graveyard.length}
           kind="graveyard"
+          onClick={() => setInspect('player-graveyard')}
+          hint={
+            state.player.graveyard.some((c) => c.flashback)
+              ? t('challenge.flashbackHint')
+              : undefined
+          }
         />
         <ZonePile
           label={t('challenge.library')}
@@ -1463,11 +1534,55 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
 
       {state.prompt ? (
         <div className="prompt-backdrop">
-          <div className="prompt-shell">
+          <div
+            className={`prompt-shell${
+              state.prompt.kind === 'scry' ? ' prompt-shell-scry' : ''
+            }`}
+          >
             <h2>{t(`challenge.prompt.${state.prompt.titleKey}`)}</h2>
-            <p>
-              {t(`challenge.prompt.${state.prompt.messageKey}`, state.prompt.messageParams)}
-            </p>
+            {state.prompt.kind === 'scry' && state.player.library[0] ? (
+              (() => {
+                const top = state.player.library[0]
+                const label = zh ? top.nameZh || top.name : top.name
+                const typeLine = zh ? top.typeLineZh || top.typeLine : top.typeLine
+                const oracle = zh ? top.oracleTextZh || top.oracleText : top.oracleText
+                return (
+                  <div className="scry-preview">
+                    <ArenaCard
+                      image={top.image}
+                      name={label}
+                      power={top.power}
+                      toughness={top.toughness}
+                    />
+                    <div className="scry-preview-copy">
+                      <p className="scry-preview-name">{label}</p>
+                      {typeLine ? (
+                        <p className="scry-preview-type">{typeLine}</p>
+                      ) : null}
+                      {top.manaCost ? (
+                        <ManaCost
+                          cost={top.manaCost}
+                          className="pack-mana-cost scry-preview-cost"
+                        />
+                      ) : null}
+                      {oracle ? (
+                        <p className="scry-preview-oracle">{oracle}</p>
+                      ) : null}
+                      <p className="scry-preview-hint">
+                        {t('challenge.prompt.scryChoose')}
+                      </p>
+                    </div>
+                  </div>
+                )
+              })()
+            ) : (
+              <p>
+                {t(
+                  `challenge.prompt.${state.prompt.messageKey}`,
+                  state.prompt.messageParams,
+                )}
+              </p>
+            )}
             {state.prompt.kind === 'choose_blockers' && state.revealed.length > 0 ? (
               <div className="block-panel">
                 <p className="eyebrow">{t('challenge.attackers')}</p>
@@ -1554,20 +1669,6 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
             </dl>
             {hasLlmKey ? (
               <div className="settlement-report">
-                <div className="settlement-report-actions">
-                  <button
-                    type="button"
-                    className="btn ghost"
-                    disabled={battleReportLoading}
-                    onClick={() => void generateBattleReport()}
-                  >
-                    {battleReportLoading
-                      ? t('llm.rulesLoading')
-                      : battleReport
-                        ? t('llm.battleReportAgain')
-                        : t('llm.battleReportGenerate')}
-                  </button>
-                </div>
                 {battleReport ? (
                   <div
                     className={`llm-battle-report ${battleReportError ? 'is-error' : ''}`}
@@ -1618,10 +1719,29 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
               >
                 {t('challenge.playAgain')}
               </button>
+              {hasLlmKey ? (
+                <button
+                  type="button"
+                  className="btn ghost"
+                  disabled={battleReportLoading}
+                  onClick={() => void generateBattleReport()}
+                >
+                  {battleReportLoading
+                    ? t('llm.rulesLoading')
+                    : battleReport
+                      ? t('llm.battleReportAgain')
+                      : t('llm.battleReportGenerate')}
+                </button>
+              ) : null}
               <Link to={`/decks/${code}`} className="btn ghost">
                 {t('challenge.backDeck')}
               </Link>
             </div>
+            <ChallengeSwitcher
+              currentCode={code}
+              mode="challenge"
+              className="settlement-switcher"
+            />
           </div>
         </div>
       ) : null}
@@ -1634,6 +1754,47 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
               {state.challenge.graveyard.map((c) => (
                 <ArenaCard key={c.instanceId} image={c.image} name={c.name} compact />
               ))}
+            </div>
+            <button type="button" className="btn ghost" onClick={() => setInspect(null)}>
+              {t('deck.close')}
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {inspect === 'player-graveyard' ? (
+        <div className="prompt-backdrop" onClick={() => setInspect(null)}>
+          <div className="prompt-shell inspect-shell" onClick={(e) => e.stopPropagation()}>
+            <h2>{t('challenge.yourGraveyard')}</h2>
+            <p className="setup-deck-hint">{t('challenge.flashbackHint')}</p>
+            <div className="inspect-grid">
+              {state.player.graveyard.map((c) => {
+                const label = zh ? c.nameZh || c.name : c.name
+                const canFb =
+                  !!c.flashback &&
+                  state.activeSide === 'player' &&
+                  state.status === 'playing' &&
+                  !state.pendingCast
+                return (
+                  <div key={c.instanceId} className="player-gy-card">
+                    <ArenaCard image={c.image} name={label} compact />
+                    {canFb ? (
+                      <button
+                        type="button"
+                        className="btn primary btn-sm"
+                        onClick={() => {
+                          act({ type: 'CAST_FLASHBACK', gyId: c.instanceId })
+                          setInspect(null)
+                        }}
+                      >
+                        {t('challenge.castFlashback', {
+                          cost: c.flashback!.manaCost,
+                        })}
+                      </button>
+                    ) : null}
+                  </div>
+                )
+              })}
             </div>
             <button type="button" className="btn ghost" onClick={() => setInspect(null)}>
               {t('deck.close')}

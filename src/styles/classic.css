@@ -354,7 +354,7 @@
 }
 
 @media (max-width: 720px) {
-  .site-header-actions {
+  .site-header-nav {
     gap: 0.55rem;
   }
 }

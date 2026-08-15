@@ -22,6 +22,7 @@ export function makePlayerCardInstance(def: ConstructedCardDef): PlayerCardInsta
     kind: def.kind,
     produces: def.produces ? [...def.produces] : undefined,
     effect: def.effect,
+    flashback: def.flashback ? { ...def.flashback } : undefined,
     image: def.image,
   }
 }

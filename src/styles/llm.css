@@ -77,6 +77,7 @@
 .llm-rules-ask input,
 .llm-card-assist-ask input,
 .llm-postgame-ask input,
+.llm-page-chat-form input,
 .llm-nl-search-form input[type='search'],
 .llm-classic-compare select {
   appearance: none;
@@ -104,6 +105,7 @@
 .llm-rules-ask input:focus,
 .llm-card-assist-ask input:focus,
 .llm-postgame-ask input:focus,
+.llm-page-chat-form input:focus,
 .llm-nl-search-form input[type='search']:focus,
 .llm-classic-compare select:focus {
   outline: none;
@@ -117,6 +119,7 @@
 .llm-rules-ask input::placeholder,
 .llm-card-assist-ask input::placeholder,
 .llm-postgame-ask input::placeholder,
+.llm-page-chat-form input::placeholder,
 .llm-nl-search-form input[type='search']::placeholder {
   color: rgba(200, 180, 140, 0.45);
 }
@@ -246,6 +249,83 @@
   box-shadow: 0 0 0 2px rgba(22, 16, 12, 0.9);
 }
 
+.llm-page-chat-shell {
+  width: min(1040px, 100%);
+  display: flex;
+  flex-direction: column;
+  max-height: min(92dvh, 92vh);
+  overflow: hidden;
+}
+
+.llm-page-chat-shell .llm-modal-lead {
+  margin-bottom: 1.1rem;
+}
+
+.llm-page-chat-thread {
+  flex: 1 1 auto;
+  min-height: 22rem;
+  max-height: min(68dvh, 44rem);
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem 0.35rem 0.75rem;
+  margin-bottom: 0.85rem;
+  border-top: 1px solid rgba(184, 137, 58, 0.22);
+  border-bottom: 1px solid rgba(184, 137, 58, 0.22);
+}
+
+.llm-page-chat-empty,
+.llm-page-chat-status,
+.llm-page-chat-need-key {
+  margin: 0.55rem 0 0;
+  font-size: 0.88rem;
+  color: rgba(232, 214, 180, 0.68);
+}
+
+.llm-page-chat-bubble {
+  max-width: 94%;
+  padding: 0.55rem 0.7rem;
+  border-radius: 0.55rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.llm-page-chat-bubble p {
+  margin: 0;
+}
+
+.llm-page-chat-bubble.is-user {
+  align-self: flex-end;
+  background: rgba(120, 90, 40, 0.38);
+  border: 1px solid rgba(184, 137, 58, 0.35);
+  color: rgba(245, 230, 200, 0.95);
+}
+
+.llm-page-chat-bubble.is-assistant {
+  align-self: flex-start;
+  background: rgba(28, 22, 16, 0.72);
+  border: 1px solid rgba(184, 137, 58, 0.22);
+  color: rgba(232, 214, 180, 0.92);
+}
+
+.llm-page-chat-bubble.is-error {
+  border-color: rgba(200, 90, 70, 0.55);
+  color: rgba(255, 190, 170, 0.95);
+}
+
+.llm-page-chat-form {
+  display: flex;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.llm-page-chat-form input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.5rem 0.65rem;
+}
+
 /* Rules Q&A */
 .llm-rules-panel {
   margin-top: 1.25rem;
@@ -264,23 +344,21 @@
   color: rgba(232, 214, 180, 0.7);
 }
 
-.llm-rules-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-  margin-bottom: 0.65rem;
-}
-
 .llm-rules-ask {
   display: flex;
   gap: 0.45rem;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .llm-rules-ask input {
-  flex: 1;
-  min-width: 12rem;
+  flex: 1 1 10rem;
+  min-width: 0;
   padding: 0.5rem 0.65rem;
+}
+
+.llm-rules-ask .btn {
+  flex: 0 0 auto;
 }
 
 .llm-rules-answer,
@@ -381,62 +459,111 @@
 }
 
 .sets-controls .llm-nl-search,
+.sets-toolbar .llm-nl-search,
 .set-gallery-filters .llm-nl-search {
   display: contents;
 }
 
 .llm-nl-search-form.sets-search {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.45rem;
   flex: 1 1 14rem;
-  max-width: 28rem;
+  max-width: min(28rem, 100%);
   width: auto;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .llm-nl-search-form.sets-search input[type='search'] {
-  flex: 1 1 auto;
+  flex: 1 1 8rem;
   min-width: 0;
   width: auto;
 }
 
-.llm-nl-ai-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.28rem;
-  flex-shrink: 0;
-  margin: 0;
-  font-size: 0.82rem;
-  letter-spacing: 0.02em;
-  color: rgba(231, 215, 184, 0.82);
-  cursor: pointer;
-  user-select: none;
-  white-space: nowrap;
-}
-
-.llm-nl-ai-toggle input {
-  width: 0.95rem;
-  height: 0.95rem;
-  margin: 0;
-  accent-color: #c9a04a;
-  cursor: pointer;
-}
-
 .llm-nl-submit {
-  flex-shrink: 0;
+  flex: 0 0 auto;
   height: 2.15rem;
   padding: 0 0.7rem;
   font-size: 0.82rem;
+  white-space: nowrap;
 }
 
-.sets-controls .llm-nl-query,
-.sets-controls .llm-nl-error,
-.sets-controls .llm-nl-results,
+/* Sets page: chips + year + sort + AI submit on one row; search below. */
+.sets-toolbar .llm-nl-search-form.sets-search {
+  order: 10;
+  flex: 1 1 100%;
+  max-width: 100%;
+  width: 100%;
+}
+
+.sets-toolbar .llm-nl-submit {
+  order: 2;
+  height: auto;
+  min-height: 2rem;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.82rem;
+}
+
+.sets-toolbar .llm-nl-query,
+.sets-toolbar .llm-nl-error,
+.sets-toolbar .llm-nl-results {
+  order: 20;
+  flex: 1 1 100%;
+}
+
+/* Gallery: AI chip + search + submit share one row. */
+.set-gallery-filters.is-ai-search .llm-nl-search-form.sets-search {
+  flex: 1 1 12rem;
+  max-width: min(28rem, 100%);
+  width: auto;
+}
+
+.set-gallery-filters.is-ai-search .llm-nl-submit {
+  flex: 0 0 auto;
+  width: auto;
+  align-self: center;
+}
+
+.set-gallery-filters .sets-type-chip {
+  flex: 0 0 auto;
+}
+
 .set-gallery-filters .llm-nl-query,
 .set-gallery-filters .llm-nl-error,
 .set-gallery-filters .llm-nl-results {
   flex: 1 1 100%;
-  order: 20;
+}
+
+@media (max-width: 720px) {
+  .sets-controls .llm-nl-search-form.sets-search {
+    flex: 1 1 100%;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  /* Keep AI chip + input + submit on one wrapping row when possible. */
+  .set-gallery-filters .llm-nl-search-form.sets-search {
+    flex: 1 1 10rem;
+    max-width: none;
+    width: auto;
+  }
+
+  .llm-nl-search-form.sets-search input[type='search'] {
+    width: 100%;
+  }
+
+  .set-gallery-filters.is-ai-search .set-gallery-rarity {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .sets-toolbar .sets-select-year,
+  .sets-toolbar .sets-select-sort {
+    flex: 1 1 auto;
+    max-width: none;
+  }
 }
 
 .llm-nl-query {
@@ -541,6 +668,24 @@
 
 .arena-setup .llm-setup-advisor {
   margin: 0.75rem 0;
+}
+
+.arena-setup .setup-cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 0.85rem;
+}
+
+.arena-setup .setup-cta-row > .btn {
+  flex: 0 0 auto;
+}
+
+.arena-setup .setup-cta-row .llm-setup-answer {
+  flex: 1 1 100%;
+  order: 10;
+  margin-top: 0.15rem;
 }
 
 /* Rendered LLM markdown */

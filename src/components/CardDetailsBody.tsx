@@ -9,6 +9,7 @@ import {
   displayName,
   displayOracle,
   displayTypeLine,
+  hasDualFaceArt,
   wantsZh,
   type DrawnCard,
   type DrawnCardFace,
@@ -22,6 +23,12 @@ interface CardDetailsBodyProps {
   showOfflineHint?: boolean
   /** Other unique card names when opened from a collection (optional LLM synergy). */
   collectionPeers?: string[]
+  /**
+   * Which printed face to emphasize.
+   * For transform / MDFC with dual art, `'back'` swaps the main block to the other face.
+   * Adventure / split (no dual art) keep stacked other-face sections.
+   */
+  faceSide?: 'front' | 'back'
 }
 
 function FaceBlock({
@@ -61,31 +68,127 @@ function FaceBlock({
   )
 }
 
+function FaceMain({
+  name,
+  enName,
+  typeLine,
+  manaCost,
+  pt,
+  oracle,
+  flavor,
+  scryfallUri,
+  zhUi,
+  openOnScryfall,
+  englishName,
+  detailsHeading,
+}: {
+  name: string
+  enName?: string
+  typeLine: string
+  manaCost: string
+  pt: string | null
+  oracle: string
+  flavor: string
+  scryfallUri?: string
+  zhUi: boolean
+  openOnScryfall: string
+  englishName: string
+  detailsHeading: string
+}) {
+  return (
+    <>
+      {scryfallUri ? (
+        <a
+          className="pack-card-name-link"
+          href={scryfallUri}
+          target="_blank"
+          rel="noreferrer"
+          title={openOnScryfall}
+        >
+          <h3>{name}</h3>
+        </a>
+      ) : (
+        <h3>{name}</h3>
+      )}
+      {zhUi && enName && enName !== name ? (
+        scryfallUri ? (
+          <a
+            className="pack-card-name-link pack-en-name-link"
+            href={scryfallUri}
+            target="_blank"
+            rel="noreferrer"
+            title={openOnScryfall}
+          >
+            <p className="pack-en-name" title={englishName}>
+              {enName}
+            </p>
+          </a>
+        ) : (
+          <p className="pack-en-name" title={englishName}>
+            {enName}
+          </p>
+        )
+      ) : null}
+      <p className="type-line">{typeLine}</p>
+      {manaCost ? <ManaCost cost={manaCost} /> : null}
+      {pt ? <p className="pt-line">{pt}</p> : null}
+      <h4>{detailsHeading}</h4>
+      <div className="pack-details-block">
+        <ManaRichText text={oracle || '—'} className="oracle-text" />
+        {flavor ? <p className="pack-flavor-text">{flavor}</p> : null}
+      </div>
+    </>
+  )
+}
+
 /** Shared card details copy used by pack open, collection, and deck modal. */
 export function CardDetailsBody({
   card,
   showOfflineHint = card.source === 'local',
   collectionPeers,
+  faceSide = 'front',
 }: CardDetailsBodyProps) {
   const { t, i18n } = useTranslation()
   const lang = i18n.language
   const zhUi = wantsZh(lang)
-  const name = displayName(card, lang)
-  const typeLine = displayTypeLine(card, lang)
-  const oracle = displayOracle(card, lang)
-  const flavor = displayFlavor(card, lang)
   const keywords = localizeKeywords(card.keywords ?? [], lang)
   const otherFaces = card.otherFaces ?? []
-  const pt =
-    card.power != null && card.toughness != null
+  const dualArt = hasDualFaceArt(card)
+  const showBackFace =
+    faceSide === 'back' && dualArt && otherFaces.length > 0
+  const backFace = showBackFace ? otherFaces[0] : null
+
+  const name = backFace
+    ? displayFaceName(backFace, lang)
+    : displayName(card, lang)
+  const enName = backFace ? backFace.name : card.name
+  const typeLine = backFace
+    ? displayFaceTypeLine(backFace, lang)
+    : displayTypeLine(card, lang)
+  const oracle = backFace
+    ? displayFaceOracle(backFace, lang)
+    : displayOracle(card, lang)
+  const flavor = backFace
+    ? displayFaceFlavor(backFace, lang)
+    : displayFlavor(card, lang)
+  const manaCost = backFace ? backFace.manaCost : card.manaCost
+  const pt = backFace
+    ? backFace.power != null && backFace.toughness != null
+      ? `${backFace.power}/${backFace.toughness}`
+      : null
+    : card.power != null && card.toughness != null
       ? `${card.power}/${card.toughness}`
       : null
+
   const setLine = card.setName
     ? `${card.setName} · ${card.setCode}${card.collectorNumber ? ` #${card.collectorNumber}` : ''}`
     : t('deck.collector', {
         set: card.setCode,
         number: card.collectorNumber,
       })
+
+  /** Adventure / split: keep stacked sections. Dual-art DFC: switch on flip. */
+  const stackedOthers = dualArt ? [] : otherFaces
 
   return (
     <>
@@ -97,53 +200,30 @@ export function CardDetailsBody({
           })}
         </span>
       </p>
-      {card.scryfallUri ? (
-        <a
-          className="pack-card-name-link"
-          href={card.scryfallUri}
-          target="_blank"
-          rel="noreferrer"
-          title={t('packDraw.openOnScryfall')}
-        >
-          <h3>{name}</h3>
-        </a>
-      ) : (
-        <h3>{name}</h3>
-      )}
-      {zhUi && card.nameZh && card.nameZh !== card.name ? (
-        card.scryfallUri ? (
-          <a
-            className="pack-card-name-link pack-en-name-link"
-            href={card.scryfallUri}
-            target="_blank"
-            rel="noreferrer"
-            title={t('packDraw.openOnScryfall')}
-          >
-            <p className="pack-en-name" title={t('packDraw.englishName')}>
-              {card.name}
-            </p>
-          </a>
-        ) : (
-          <p className="pack-en-name" title={t('packDraw.englishName')}>
-            {card.name}
-          </p>
-        )
+      {showBackFace ? (
+        <p className="pack-face-side-label">{t('packDraw.otherFace')}</p>
       ) : null}
-      <p className="type-line">{typeLine}</p>
-      {card.manaCost ? <ManaCost cost={card.manaCost} /> : null}
-      {pt ? <p className="pt-line">{pt}</p> : null}
-      <h4>{t('packDraw.details')}</h4>
-      <div className="pack-details-block">
-        <ManaRichText text={oracle || '—'} className="oracle-text" />
-        {flavor ? <p className="pack-flavor-text">{flavor}</p> : null}
-      </div>
-      {otherFaces.map((face, i) => (
+      <FaceMain
+        name={name}
+        enName={zhUi ? enName : undefined}
+        typeLine={typeLine}
+        manaCost={manaCost}
+        pt={pt}
+        oracle={oracle}
+        flavor={flavor}
+        scryfallUri={card.scryfallUri}
+        zhUi={zhUi}
+        openOnScryfall={t('packDraw.openOnScryfall')}
+        englishName={t('packDraw.englishName')}
+        detailsHeading={t('packDraw.details')}
+      />
+      {stackedOthers.map((face, i) => (
         <FaceBlock
           key={`${face.name}-${i}`}
           face={face}
           lang={lang}
           heading={
-            otherFaces.length > 1
+            stackedOthers.length > 1
               ? t('packDraw.otherFaceN', { n: i + 2 })
               : t('packDraw.otherFace')
           }

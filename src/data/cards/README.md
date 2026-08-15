@@ -12,18 +12,26 @@ Edit **this folder** when you need to change card text or image paths. The app r
 
 Each card entry has bilingual copy and asset paths under `images` (relative to `public/`). At runtime the UI prefers **remote CDN** URLs (see mapping below) and falls back to these local paths.
 
-## Player Constructed deck (Challenge Experience)
+## Player Constructed decks (Challenge Experience)
 
 | File | Deck |
 | --- | --- |
 | `player/wildfire.json` | Wildfire Host — RG midrange (60 cards) |
 | `player/terror.json` | UB Terror — Dimir Tolarian Terror (60 cards) |
+| `player/burn.json` | Challenge Burn — mono-red aggro/burn (60 cards) |
+| `player/skies.json` | Azure Skies — WU flyers + removal (60 cards) |
 
-Setup lets you pick either list for all three challenges. Each entry includes `quantity`, `manaCost`, `kind`, `effect` hooks the engine resolves, and `image`.
+Setup lets you pick any list for all three challenges. Each deck includes `colors`, `archetype`, static `hint` / `hintZh` (optional `hintByChallenge`), plus card `quantity`, `manaCost`, `kind`, `effect` hooks, and `image`.
 
-**Oracle policy:** only listed keywords and `effect` hooks resolve. Monstrosity / protection-from-white on printed Stormbreath / Ember Swallower / Polukranos are noted as omitted.
+Rebuild or refresh lists from Scryfall:
 
-Legacy muster roster files (`akroan.json`, etc.) are unused by the Experience engine.
+```bash
+node scripts/build-player-deck.mjs burn
+node scripts/build-player-deck.mjs skies
+node scripts/build-player-deck.mjs terror
+```
+
+**Oracle policy:** only listed keywords and `effect` hooks resolve. Monstrosity / protection-from-white on printed Stormbreath / Ember Swallower / Polukranos are noted as omitted. Soft counters are not used in Challenge Experience lists.
 
 ## Local ↔ remote image mapping
 

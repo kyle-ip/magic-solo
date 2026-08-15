@@ -2,9 +2,11 @@ import { lazy, Suspense, useLayoutEffect, useSyncExternalStore } from 'react'
 import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
 import { FloatingNav } from './components/FloatingNav'
 import { LlmSettingsHost } from './components/LlmSettingsHost'
+import { PageChatHost } from './components/PageChatHost'
 import { SiteFooter } from './components/SiteFooter'
 import { SiteHeader } from './components/SiteHeader'
 import { HomePage } from './pages/HomePage'
+import { CARD_EDITOR_ENABLED } from './features'
 import {
   getHideSiteChrome,
   subscribeHideSiteChrome,
@@ -39,6 +41,14 @@ const AssistantPage = lazy(() =>
 )
 const HelpPage = lazy(() =>
   import('./pages/HelpPage').then((m) => ({ default: m.HelpPage })),
+)
+const NotFoundPage = lazy(() =>
+  import('./pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })),
+)
+const CardEditorPage = lazy(() =>
+  import('./pages/CardEditorPage').then((m) => ({
+    default: m.CardEditorPage,
+  })),
 )
 
 function ScrollToTop() {
@@ -92,12 +102,19 @@ export default function App() {
           <Route path="/challenge/:setCode" element={<ChallengePage />} />
           <Route path="/assistant/:setCode" element={<AssistantPage />} />
           <Route path="/help" element={<HelpPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route
+            path="/editor"
+            element={
+              CARD_EDITOR_ENABLED ? <CardEditorPage /> : <NotFoundPage />
+            }
+          />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>
       {!hideChrome ? <SiteFooter /> : null}
       <FloatingNav arenaMode={hideChrome} />
       <LlmSettingsHost />
+      <PageChatHost />
     </div>
   )
 }

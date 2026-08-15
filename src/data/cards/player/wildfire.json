@@ -4,6 +4,20 @@
   "nameZh": "野火军团",
   "blurb": "Theros-era red-green midrange: early beasts, Fog vs Hydra breath, burn to mill the Horde and finish Xenagos.",
   "blurbZh": "Theros 时代红绿中速：前期兽群展开，用浓雾挡多头龙吐息，用直伤磨部落牌库并收尾塞纳戈斯。",
+  "colors": ["R", "G"],
+  "archetype": "midrange",
+  "hint": "Curve beasts and dorks; save Fog for lethal Hydra combat, and use burn or fight to clear key threats.",
+  "hintZh": "用秘教徒与兽群铺场；浓雾留给致命吐息，直伤或互斗清关键威胁。",
+  "hintByChallenge": {
+    "tfth": {
+      "en": "Fog the big breath turns, then finish Heads with fight, burn, and tramplers.",
+      "zh": "大吐息回合用浓雾挡下，再用互斗、直伤与践踏清掉头颅。"
+    },
+    "tbth": {
+      "en": "Lightning Strike mills the Horde; keep pressure with haste Minotaurs.",
+      "zh": "闪电击可磨部落牌库；用敏捷牛头人持续施压。"
+    }
+  },
   "art": "assets/cards/player/4979cc1b-9c1a-47e4-ae37-7c41798eb89a-art.jpg",
   "cards": [
     {
@@ -119,7 +133,7 @@
     },
     {
       "id": "e2715851-9def-42a0-bed4-0923e599e19a",
-      "quantity": 3,
+      "quantity": 2,
       "name": "Ember Swallower",
       "nameZh": "余烬吞食者",
       "typeLine": "Creature — Elemental",
@@ -137,7 +151,7 @@
     },
     {
       "id": "4979cc1b-9c1a-47e4-ae37-7c41798eb89a",
-      "quantity": 2,
+      "quantity": 1,
       "name": "Polukranos, World Eater",
       "nameZh": "吞世者波洛克拉诺斯",
       "typeLine": "Legendary Creature — Hydra",
@@ -155,7 +169,7 @@
     },
     {
       "id": "3637d9b8-87bb-478d-bfb1-59ddab7b5e4c",
-      "quantity": 3,
+      "quantity": 1,
       "name": "Stormbreath Dragon",
       "nameZh": "暴喘巨龙",
       "typeLine": "Creature — Dragon",
@@ -209,7 +223,7 @@
     },
     {
       "id": "0eb1b036-0856-4cfb-ace5-2731f13696bd",
-      "quantity": 2,
+      "quantity": 4,
       "name": "Prey Upon",
       "nameZh": "捕猎",
       "typeLine": "Sorcery",
@@ -227,7 +241,7 @@
     },
     {
       "id": "fd1f95bf-48ea-455a-8a6c-0249b11c8900",
-      "quantity": 2,
+      "quantity": 4,
       "name": "Giant Growth",
       "nameZh": "巨化术",
       "typeLine": "Instant",

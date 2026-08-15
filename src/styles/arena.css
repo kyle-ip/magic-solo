@@ -373,7 +373,7 @@
 .arena-setup {
   position: relative;
   z-index: 1;
-  max-width: 52rem;
+  max-width: min(72rem, 94vw);
   margin: 4rem auto;
   padding: 0 1rem 3rem;
 }
@@ -393,13 +393,13 @@
 .setup-deck-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.7rem;
+  gap: 0.75rem;
 }
 
 .setup-deck-card {
   display: grid;
-  grid-template-columns: 4.4rem 1fr;
-  gap: 0.7rem;
+  grid-template-rows: 7.5rem auto;
+  gap: 0;
   align-items: stretch;
   text-align: left;
   padding: 0;
@@ -435,28 +435,72 @@
 
 .setup-deck-art {
   display: block;
-  min-height: 5.2rem;
+  min-height: 7.5rem;
   background-size: cover;
-  background-position: center 20%;
-  filter: saturate(1.05) contrast(1.05);
+  background-position: center 22%;
+  filter: saturate(1.06) contrast(1.05);
+  border-bottom: 1px solid rgba(224, 180, 90, 0.16);
 }
 
 .setup-deck-body {
   display: grid;
-  gap: 0.28rem;
-  align-content: center;
-  padding: 0.65rem 0.75rem 0.65rem 0;
+  gap: 0.35rem;
+  align-content: start;
+  padding: 0.7rem 0.8rem 0.75rem;
+}
+
+.setup-deck-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
 }
 
 .setup-deck-body strong {
-  font-size: 0.95rem;
+  font-size: 0.98rem;
   color: #f3e6c8;
 }
 
-.setup-deck-body span {
+.setup-deck-pips {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.12rem;
+  flex-shrink: 0;
+}
+
+.setup-deck-pip {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.setup-deck-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.65rem;
+  font-size: 0.72rem;
+  color: rgba(231, 215, 184, 0.7);
+}
+
+.setup-deck-archetype {
+  display: inline-block;
+  padding: 0.12rem 0.45rem;
+  border-radius: 4px;
+  border: 1px solid rgba(224, 180, 90, 0.35);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(240, 212, 138, 0.95);
+  background: rgba(224, 180, 90, 0.08);
+}
+
+.setup-deck-count {
+  letter-spacing: 0.04em;
+}
+
+.setup-deck-play-hint {
   font-size: 0.78rem;
   line-height: 1.35;
-  color: rgba(231, 215, 184, 0.72);
+  color: rgba(231, 215, 184, 0.78);
 }
 
 .setup-deck-preview {
@@ -465,18 +509,50 @@
   color: rgba(224, 180, 90, 0.9);
 }
 
+.setup-deck-selected-hint {
+  margin: 0.35rem 0 0;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: rgba(231, 215, 184, 0.78);
+}
+
+.setup-deck-hint-label {
+  display: inline-block;
+  margin-right: 0.4rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(224, 180, 90, 0.85);
+}
+
 .setup-deck-hint {
   margin: -0.35rem 0 0.85rem;
   font-size: 0.82rem;
   color: rgba(231, 215, 184, 0.68);
 }
 
-.setup-deck-body em {
+.setup-deck-body em,
+.setup-deck-view-roster {
   font-style: normal;
   font-size: 0.72rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: rgba(224, 180, 90, 0.85);
+}
+
+.setup-deck-view-roster {
+  justify-self: start;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.setup-deck-view-roster:hover {
+  color: rgba(240, 212, 138, 1);
 }
 
 @media (max-width: 640px) {
@@ -485,12 +561,14 @@
   }
 }
 
-.deck-roster-shell {
-  width: min(920px, 96vw);
-  max-height: min(88vh, 860px);
+.prompt-shell.deck-roster-shell {
+  width: min(42rem, 94vw);
+  max-width: min(42rem, 94vw);
+  max-height: min(90vh, 960px);
   overflow: auto;
   display: grid;
   gap: 1rem;
+  padding: 1.25rem 1.35rem 1.15rem;
 }
 
 .deck-roster-head {
@@ -500,191 +578,221 @@
   gap: 1rem;
 }
 
+.deck-roster-head-actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.deck-roster-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+}
+
 .deck-roster-head h2 {
-  margin: 0.15rem 0 0.35rem;
+  margin: 0.15rem 0 0;
+}
+
+.deck-roster-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.75rem;
+  margin: 0.45rem 0 0.35rem;
+  font-size: 0.78rem;
+  color: rgba(231, 215, 184, 0.72);
 }
 
 .deck-roster-blurb {
   margin: 0;
-  max-width: 36rem;
+  max-width: 52rem;
   color: rgba(231, 215, 184, 0.75);
   font-size: 0.9rem;
   line-height: 1.4;
 }
 
-.deck-roster-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(240px, 0.85fr);
-  gap: 0.9rem;
-  align-items: start;
+.deck-roster-hint {
+  margin: 0.45rem 0 0;
+  font-size: 0.84rem;
+  line-height: 1.4;
+  color: rgba(240, 212, 138, 0.88);
 }
 
-.deck-roster-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
-  gap: 0.55rem;
-}
-
-.deck-roster-tile {
-  display: grid;
-  gap: 0.35rem;
-  padding: 0.35rem;
-  border: 1px solid rgba(184, 137, 58, 0.28);
-  border-radius: 8px;
-  background: rgba(0, 0, 0, 0.28);
-  color: inherit;
-  cursor: pointer;
-  text-align: left;
-  transition: border-color 160ms ease, transform 160ms ease;
-}
-
-.deck-roster-tile:hover {
-  border-color: rgba(224, 180, 90, 0.55);
-  transform: translateY(-1px);
-}
-
-.deck-roster-tile.is-selected {
-  border-color: rgba(224, 180, 90, 0.9);
-  box-shadow: 0 0 0 1px rgba(224, 180, 90, 0.3);
-}
-
-.deck-roster-tile-art {
-  position: relative;
-  display: block;
-  width: 100%;
-  aspect-ratio: 744 / 1040;
-  border-radius: var(--card-radius);
-  overflow: hidden;
-  background: var(--card-face-bg);
-  border: var(--card-border);
-  box-shadow: var(--card-shadow);
-  line-height: 0;
-  isolation: isolate;
-}
-
-.deck-roster-tile-art::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  box-shadow: inset 0 0 0 1px var(--card-face-bg);
-  z-index: 1;
-}
-
-.deck-roster-tile-art img {
-  width: 100%;
-  height: 100%;
-  aspect-ratio: 744 / 1040;
-  object-fit: cover;
-  object-position: center;
-  display: block;
-  background: var(--card-face-bg);
-  transform: scale(var(--card-img-scale));
-  transform-origin: center;
-}
-
-.deck-roster-tile-meta {
-  display: grid;
-  gap: 0.15rem;
-  min-width: 0;
-}
-
-.deck-roster-tile-meta strong {
-  font-size: 0.78rem;
-  line-height: 1.25;
-  color: #f3e6c8;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.deck-roster-tile-meta em {
-  font-style: normal;
-  font-size: 0.68rem;
-  color: rgba(231, 215, 184, 0.65);
-}
-
-.deck-roster-detail {
-  position: sticky;
-  top: 0;
-  display: grid;
-  gap: 0.7rem;
-  padding: 0.75rem;
-  border: 1px solid rgba(184, 137, 58, 0.32);
+.deck-mana-curve {
+  padding: 0.65rem 0.75rem 0.55rem;
+  border: 1px solid rgba(224, 180, 90, 0.2);
   border-radius: 10px;
-  background: rgba(10, 8, 6, 0.72);
+  background: rgba(0, 0, 0, 0.22);
 }
 
-.deck-roster-art {
-  position: relative;
-  width: 100%;
-  max-width: 280px;
-  margin: 0 auto;
-  border-radius: var(--card-radius);
-  overflow: hidden;
-  background: var(--card-face-bg);
-  border: var(--card-border);
-  line-height: 0;
-  isolation: isolate;
-  box-shadow: var(--card-shadow);
+.deck-mana-curve-label {
+  margin: 0 0 0.45rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(224, 180, 90, 0.85);
 }
 
-.deck-roster-art::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  box-shadow: inset 0 0 0 1px var(--card-face-bg);
-  z-index: 1;
+.deck-mana-curve-bars {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 0.35rem;
+  align-items: end;
+  min-height: 5.5rem;
 }
 
-.deck-roster-art img {
-  width: 100%;
-  aspect-ratio: 744 / 1040;
-  object-fit: cover;
-  object-position: center;
-  display: block;
-  background: var(--card-face-bg);
-  transform: scale(var(--card-img-scale));
-  transform-origin: center;
+.deck-mana-curve-col {
+  display: grid;
+  grid-template-rows: 1fr auto auto;
+  justify-items: center;
+  gap: 0.2rem;
+  min-height: 5.2rem;
 }
 
-.deck-roster-detail-body h3 {
-  margin: 0 0 0.25rem;
-  font-size: 1.05rem;
-  color: #f3e6c8;
+.deck-mana-curve-bar {
+  align-self: end;
+  width: 70%;
+  min-height: 2px;
+  border-radius: 3px 3px 0 0;
+  background: linear-gradient(180deg, rgba(240, 212, 138, 0.95), rgba(180, 110, 40, 0.85));
 }
 
-.deck-roster-type,
-.deck-roster-stats {
-  margin: 0 0 0.35rem;
-  font-size: 0.8rem;
+.deck-mana-curve-cmc {
+  font-size: 0.68rem;
+  color: rgba(231, 215, 184, 0.7);
+}
+
+.deck-mana-curve-count {
+  font-size: 0.68rem;
   color: rgba(224, 180, 90, 0.9);
 }
 
-.deck-roster-oracle {
+.deck-roster-featured {
   margin: 0;
-  white-space: pre-line;
-  font-size: 0.84rem;
-  line-height: 1.45;
-  color: rgba(231, 215, 184, 0.82);
+}
+
+.deck-roster-section-label {
+  margin: 0 0 0.45rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(224, 180, 90, 0.85);
+}
+
+.deck-roster-featured-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.deck-roster-featured-thumb {
+  display: block;
+  padding: 0;
+  border: 1px solid rgba(224, 180, 90, 0.28);
+  border-radius: 6px;
+  overflow: hidden;
+  background: #111;
+  cursor: pointer;
+}
+
+.deck-roster-featured-thumb img {
+  display: block;
+  width: 72px;
+  height: auto;
+}
+
+.deck-roster-list {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.deck-roster-group h3 {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 0 0 0.35rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(224, 180, 90, 0.9);
+  border-bottom: 1px solid rgba(224, 180, 90, 0.18);
+  padding-bottom: 0.25rem;
+}
+
+.deck-roster-group h3 span {
+  font-size: 0.75rem;
+  letter-spacing: 0;
+  text-transform: none;
+  color: rgba(231, 215, 184, 0.65);
+}
+
+.deck-roster-group ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.deck-roster-row {
+  display: grid;
+  grid-template-columns: 1.6rem 1fr auto;
+  gap: 0.55rem;
+  align-items: center;
+  width: 100%;
+  padding: 0.28rem 0.35rem;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.deck-roster-row:hover {
+  background: rgba(224, 180, 90, 0.1);
+}
+
+.deck-roster-qty {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.82rem;
+  color: rgba(240, 212, 138, 0.95);
+}
+
+.deck-roster-name {
+  font-size: 0.88rem;
+  color: #f3e6c8;
+}
+
+.deck-roster-cost {
+  margin: 0;
+  justify-self: end;
+}
+
+.deck-roster-land-tag {
+  font-size: 0.72rem;
+  color: rgba(231, 215, 184, 0.55);
 }
 
 .deck-roster-foot {
   display: flex;
   justify-content: flex-end;
+  padding-top: 0.25rem;
 }
 
-@media (max-width: 760px) {
-  .deck-roster-layout {
-    grid-template-columns: 1fr;
-  }
+.player-gy-card {
+  display: grid;
+  gap: 0.4rem;
+  justify-items: center;
+}
 
-  .deck-roster-detail {
-    position: static;
-  }
+.player-gy-card .btn-sm {
+  font-size: 0.72rem;
+  padding: 0.25rem 0.55rem;
 }
 
 .arena-topbar {
@@ -2258,6 +2366,11 @@ button.arena-card {
   text-decoration: none;
 }
 
+.settlement-switcher {
+  justify-content: center;
+  margin-top: 1rem;
+}
+
 @media (max-width: 520px) {
   .settlement-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2411,7 +2524,7 @@ button.arena-card {
 .assistant-setup {
   position: relative;
   z-index: 1;
-  width: min(40rem, 100%);
+  width: min(60rem, 100%);
   display: grid;
   gap: 1.1rem;
 }

@@ -156,7 +156,9 @@ export function destroyChallengePermanent(
         player: {
           ...next.player,
           creatures: [
-            ...next.player.exile.map((c) => ({
+            ...next.player.exile
+              .filter((c): c is PlayerCreature => 'markedDamage' in c)
+              .map((c) => ({
               ...c,
               summoningSickness: true,
               tapped: false,
@@ -164,7 +166,7 @@ export function destroyChallengePermanent(
             })),
             ...next.player.creatures,
           ],
-          exile: [],
+          exile: next.player.exile.filter((c) => !('markedDamage' in c)),
         },
         flags: { ...next.flags, swallowExileActive: false },
       }

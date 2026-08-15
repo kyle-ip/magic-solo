@@ -65,10 +65,11 @@ export function LlmSettingsModal({ open, onClose }: LlmSettingsModalProps) {
     baseUrl: baseUrl.trim() || DEFAULT_LLM_SETTINGS.baseUrl,
     apiKey: apiKey.trim(),
     model: model.trim() || DEFAULT_LLM_SETTINGS.model,
+    connectionOk: false,
   })
 
   const save = () => {
-    writeLlmSettings(draft())
+    writeLlmSettings({ ...draft(), connectionOk: false })
     setSavedFlash(true)
     setStatus('idle')
     setStatusMsg(t('llm.saved'))
@@ -99,10 +100,12 @@ export function LlmSettingsModal({ open, onClose }: LlmSettingsModalProps) {
     setStatusMsg(t('llm.testing'))
     try {
       await testLlmConnection(next, ac.signal)
+      writeLlmSettings({ ...next, connectionOk: true })
       setStatus('ok')
       setStatusMsg(t('llm.testOk'))
     } catch (err) {
       if (err instanceof LlmError && err.code === 'aborted') return
+      writeLlmSettings({ ...next, connectionOk: false })
       setStatus('error')
       setStatusMsg(
         err instanceof Error ? err.message : t('llm.testFail'),

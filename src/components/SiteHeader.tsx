@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { LanguageSwitch } from './LanguageSwitch'
 import { ReferencesButton } from './ReferencesButton'
+import { CARD_EDITOR_ENABLED } from '../features'
 import { assetUrl } from '../utils/assetUrl'
 
 const PackDrawButton = lazy(() =>
@@ -144,15 +145,30 @@ export function SiteHeader() {
           </span>
         </Link>
         <div className="site-header-actions">
-          <Link to="/classic-decks" className="references-text-btn">
-            {t('classicDecks.open')}
-          </Link>
-          <Link to="/sets" className="references-text-btn">
-            {t('sets.open')}
-          </Link>
-          <PackDrawSlot />
-          <SingleDrawSlot />
-          <ReferencesButton />
+          <nav className="site-header-nav">
+            <Link to="/classic-decks" className="references-text-btn">
+              {t('classicDecks.open')}
+            </Link>
+            <Link to="/sets" className="references-text-btn">
+              {t('sets.open')}
+            </Link>
+            {CARD_EDITOR_ENABLED ? (
+              <Link to="/editor" className="references-text-btn">
+                {t('cardEditor.open')}
+              </Link>
+            ) : (
+              <span
+                className="references-text-btn is-disabled"
+                aria-disabled="true"
+                title={t('cardEditor.comingSoon')}
+              >
+                {t('cardEditor.open')}
+              </span>
+            )}
+            <PackDrawSlot />
+            <SingleDrawSlot />
+            <ReferencesButton />
+          </nav>
           <LanguageSwitch />
         </div>
       </div>

@@ -1,7 +1,7 @@
 import type { DeckCard, DeckTheme } from '../types'
 import type { HeroInstance } from './heroes'
 import type { ManaPool } from './mana'
-import type { PlayerCardKind, PlayerEffect } from './playerDecks'
+import type { PlayerCardKind, PlayerEffect, FlashbackSpec } from './playerDecks'
 
 export type { HeroInstance } from './heroes'
 export type { ManaPool } from './mana'
@@ -62,6 +62,7 @@ export interface PlayerCardInstance {
   kind: PlayerCardKind
   produces?: Array<'W' | 'U' | 'B' | 'R' | 'G' | 'C'>
   effect: PlayerEffect
+  flashback?: FlashbackSpec
   image: string
 }
 
@@ -96,11 +97,19 @@ export interface PlayerLand {
 }
 
 export type PendingCast =
-  | { handInstanceId: string; mode: 'damage' | 'pump' | 'destroy' | 'fangs' | 'fight_mine' }
+  | {
+      handInstanceId: string
+      mode: 'damage' | 'pump' | 'destroy' | 'fangs' | 'fight_mine'
+      /** Cast from graveyard via flashback */
+      fromGraveyard?: boolean
+      /** Activated ability on a battlefield creature */
+      activateCreatureId?: string
+    }
   | {
       handInstanceId: string
       mode: 'fight_theirs'
       fighterId: string
+      fromGraveyard?: boolean
     }
 
 export interface PlayerTemplate {
@@ -130,6 +139,7 @@ export type PromptKind =
   | 'impulsive_destruction'
   | 'vitality_return'
   | 'confirm_continue'
+  | 'scry'
 
 export type LogTone = 'info' | 'good' | 'bad' | 'cast'
 
@@ -240,7 +250,7 @@ export interface GameState {
     lands: PlayerLand[]
     creatures: PlayerCreature[]
     graveyard: PlayerCardInstance[]
-    exile: PlayerCreature[]
+    exile: Array<PlayerCardInstance | PlayerCreature>
     heroes: HeroInstance[]
     landsPlayedThisTurn: number
     manaPool: ManaPool

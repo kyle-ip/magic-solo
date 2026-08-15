@@ -1,0 +1,222 @@
+{
+  "id": "burn",
+  "name": "Challenge Burn",
+  "nameZh": "挑战燃烧",
+  "blurb": "Low-curve red burn adapted for Challenge Experience: haste attackers and Lightning Bolt-style damage to Heads, the Horde library, or Revelers.",
+  "blurbZh": "为挑战体验精简的低曲线红色燃烧：敏捷生物配合闪电击式直伤，可打头颅、磨部落牌库或点掉狂欢者。",
+  "colors": [
+    "R"
+  ],
+  "archetype": "aggro",
+  "hint": "Aim burn at the Horde pile or troublesome creatures; haste pressures before blockers pile up.",
+  "hintZh": "直伤优先打向部落牌库或难缠生物；敏捷生物抢在挡者成型前施压。",
+  "hintByChallenge": {
+    "tbth": {
+      "en": "Best here: target the Horde with damage to mill its library.",
+      "zh": "本挑战优先：对部落造成伤害以磨牌库。"
+    },
+    "tfth": {
+      "en": "Bolt Heads and race; Fog is scarce—finish before breath chains grow.",
+      "zh": "点掉头颅并抢攻；本套少雾，赶在吐息连锁扩大前结束。"
+    }
+  },
+  "art": "assets/cards/player/3c0f5411-1940-410f-96ce-6f92513f753a-art.jpg",
+  "cards": [
+    {
+      "id": "3c0f5411-1940-410f-96ce-6f92513f753a",
+      "quantity": 4,
+      "name": "Goblin Guide",
+      "nameZh": "鬼怪向导",
+      "typeLine": "Creature — Goblin Scout",
+      "typeLineZh": "生物 ～鬼怪／斥候",
+      "oracleText": "Haste\nWhenever this creature attacks, defending player reveals the top card of their library. If it's a land card, that player puts it into their hand.",
+      "oracleTextZh": "敏捷\n每当鬼怪向导攻击时，防御牌手展示其牌库顶牌。若它是地牌，则该牌手将它置于其手上。",
+      "manaCost": "{R}",
+      "cmc": 1,
+      "power": 2,
+      "toughness": 2,
+      "keywords": [
+        "Haste"
+      ],
+      "kind": "creature",
+      "effect": {
+        "type": "attack_guide"
+      },
+      "image": "assets/cards/player/3c0f5411-1940-410f-96ce-6f92513f753a-normal.jpg"
+    },
+    {
+      "id": "d6bfa227-4309-40ed-952c-279595eab17e",
+      "quantity": 4,
+      "name": "Monastery Swiftspear",
+      "nameZh": "寺院迅矛僧",
+      "typeLine": "Creature — Human Monk",
+      "typeLineZh": "生物 ～人类／修行僧",
+      "oracleText": "Haste\nProwess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)",
+      "oracleTextZh": "敏捷\n灵技（每当你施放非生物咒语时，此生物得+1/+1直到回合结束。）",
+      "manaCost": "{R}",
+      "cmc": 1,
+      "power": 1,
+      "toughness": 2,
+      "keywords": [
+        "Haste",
+        "Prowess"
+      ],
+      "kind": "creature",
+      "effect": {
+        "type": "none"
+      },
+      "image": "assets/cards/player/d6bfa227-4309-40ed-952c-279595eab17e-normal.jpg"
+    },
+    {
+      "id": "d1296316-7781-4e98-95e6-7020648be6a5",
+      "quantity": 4,
+      "name": "Fanatical Firebrand",
+      "nameZh": "狂热惹事鬼",
+      "typeLine": "Creature — Goblin Pirate",
+      "typeLineZh": "生物 ～鬼怪／海盗",
+      "oracleText": "Haste (This creature can attack and {T} as soon as it comes under your control.)\n{T}, Sacrifice this creature: It deals 1 damage to any target.",
+      "oracleTextZh": "敏捷\n{T}，牺牲狂热惹事鬼：它对任意一个目标造成1点伤害。",
+      "manaCost": "{R}",
+      "cmc": 1,
+      "power": 1,
+      "toughness": 1,
+      "keywords": [
+        "Haste"
+      ],
+      "kind": "creature",
+      "effect": {
+        "type": "activate_sac_damage",
+        "amount": 1
+      },
+      "image": "assets/cards/player/d1296316-7781-4e98-95e6-7020648be6a5-normal.jpg"
+    },
+    {
+      "id": "7673784e-db4b-43a1-8d55-1bb9fc1e284f",
+      "quantity": 4,
+      "name": "Lightning Bolt",
+      "nameZh": "闪电击",
+      "typeLine": "Instant",
+      "typeLineZh": "瞬间",
+      "oracleText": "Lightning Bolt deals 3 damage to any target.",
+      "oracleTextZh": "闪电击对任意一个目标造成3点伤害。",
+      "manaCost": "{R}",
+      "cmc": 1,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "instant",
+      "effect": {
+        "type": "damage_any",
+        "amount": 3
+      },
+      "image": "assets/cards/player/7673784e-db4b-43a1-8d55-1bb9fc1e284f-normal.jpg"
+    },
+    {
+      "id": "79c21c1f-eaa4-454d-a1c7-b41466d0a428",
+      "quantity": 4,
+      "name": "Lava Spike",
+      "nameZh": "熔岩击",
+      "typeLine": "Sorcery — Arcane",
+      "typeLineZh": "法术 ～古咒",
+      "oracleText": "Lava Spike deals 3 damage to target player or planeswalker.",
+      "oracleTextZh": "熔岩击对目标牌手或鹏洛客造成3点伤害。",
+      "manaCost": "{R}",
+      "cmc": 1,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "sorcery",
+      "effect": {
+        "type": "damage_any",
+        "amount": 3
+      },
+      "image": "assets/cards/player/79c21c1f-eaa4-454d-a1c7-b41466d0a428-normal.jpg"
+    },
+    {
+      "id": "b23900fb-efe9-43ab-9f67-4545dd01fb9c",
+      "quantity": 4,
+      "name": "Shock",
+      "nameZh": "电震",
+      "typeLine": "Instant",
+      "typeLineZh": "瞬间",
+      "oracleText": "Shock deals 2 damage to any target.",
+      "oracleTextZh": "电震对任意一个目标造成2点伤害。",
+      "manaCost": "{R}",
+      "cmc": 1,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "instant",
+      "effect": {
+        "type": "damage_any",
+        "amount": 2
+      },
+      "image": "assets/cards/player/b23900fb-efe9-43ab-9f67-4545dd01fb9c-normal.jpg"
+    },
+    {
+      "id": "88b13bc0-da54-4c3b-917c-7c8345a329f5",
+      "quantity": 4,
+      "name": "Lightning Strike",
+      "nameZh": "闪电炼击",
+      "typeLine": "Instant",
+      "typeLineZh": "瞬间",
+      "oracleText": "Lightning Strike deals 3 damage to any target.",
+      "oracleTextZh": "闪电炼击对任意一个目标造成3点伤害。",
+      "manaCost": "{1}{R}",
+      "cmc": 2,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "instant",
+      "effect": {
+        "type": "damage_any",
+        "amount": 3
+      },
+      "image": "assets/cards/player/88b13bc0-da54-4c3b-917c-7c8345a329f5-normal.jpg"
+    },
+    {
+      "id": "44c5f884-d071-40c2-bb2c-925dc2197ea3",
+      "quantity": 4,
+      "name": "Searing Spear",
+      "nameZh": "炙热矛",
+      "typeLine": "Instant",
+      "typeLineZh": "瞬间",
+      "oracleText": "Searing Spear deals 3 damage to any target.",
+      "oracleTextZh": "炙热矛对任意一个目标造成3点伤害。",
+      "manaCost": "{1}{R}",
+      "cmc": 2,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "instant",
+      "effect": {
+        "type": "damage_any",
+        "amount": 3
+      },
+      "image": "assets/cards/player/44c5f884-d071-40c2-bb2c-925dc2197ea3-normal.jpg"
+    },
+    {
+      "id": "2a844b96-6616-4c39-8f4f-5d14a3b2bd55",
+      "quantity": 28,
+      "name": "Mountain",
+      "nameZh": "山脉",
+      "typeLine": "Basic Land — Mountain",
+      "typeLineZh": "基本地 — 山脉",
+      "oracleText": "({T}: Add {R}.)",
+      "oracleTextZh": "({T}: Add {R}.)",
+      "manaCost": "",
+      "cmc": 0,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "land",
+      "produces": [
+        "R"
+      ],
+      "effect": {
+        "type": "none"
+      },
+      "image": "assets/cards/player/2a844b96-6616-4c39-8f4f-5d14a3b2bd55-normal.jpg"
+    }
+  ]
+}

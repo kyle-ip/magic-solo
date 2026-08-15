@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
@@ -11,7 +11,10 @@ import {
 } from '../data/setApi'
 import { SET_TYPE_FILTERS, type IncludedSetType } from '../data/setConfig'
 import { localizedSetName } from '../data/locale/setNamesZh'
-import { NlScryfallSearch } from '../components/NlScryfallSearch'
+import {
+  NlAiFilterChip,
+  NlScryfallSearch,
+} from '../components/NlScryfallSearch'
 import '../styles/sets.css'
 
 const SORT_OPTIONS: GallerySetSort[] = [
@@ -30,6 +33,8 @@ export function SetsPage() {
   const [q, setQ] = useState('')
   const [sort, setSort] = useState<GallerySetSort>('release-desc')
   const [year, setYear] = useState<number | 'all'>('all')
+  const [useAi, setUseAi] = useState(false)
+  const onUseAiChange = useCallback((on: boolean) => setUseAi(on), [])
 
   const reload = () => {
     setLoading(true)
@@ -68,9 +73,9 @@ export function SetsPage() {
         <p className="lede">{t('sets.lead')}</p>
       </header>
 
-      <div className="sets-toolbar">
+      <div className={`sets-toolbar${useAi ? ' is-ai-search' : ''}`}>
         <div
-          className="sets-type-filters"
+          className="sets-type-filters-group"
           role="tablist"
           aria-label={t('sets.filterLabel')}
         >
@@ -87,50 +92,54 @@ export function SetsPage() {
             </button>
           ))}
         </div>
+        <NlAiFilterChip
+          active={useAi}
+          onToggle={() => setUseAi((v) => !v)}
+        />
 
-        <div className="sets-controls">
-          <NlScryfallSearch
-            mode="sets-filter"
-            value={q}
-            onChange={setQ}
-            placeholder={t('sets.searchPlaceholder')}
-            label={t('sets.searchLabel')}
-          />
+        <label className="sets-select sets-select-year">
+          <span className="visually-hidden">{t('sets.yearLabel')}</span>
+          <select
+            value={year === 'all' ? 'all' : String(year)}
+            onChange={(e) => {
+              const v = e.target.value
+              setYear(v === 'all' ? 'all' : Number(v))
+            }}
+            aria-label={t('sets.yearLabel')}
+          >
+            <option value="all">{t('sets.yearAll')}</option>
+            {years.map((y) => (
+              <option key={y} value={y}>
+                {t('sets.yearOption', { year: y })}
+              </option>
+            ))}
+          </select>
+        </label>
 
-          <label className="sets-select">
-            <span className="visually-hidden">{t('sets.sortLabel')}</span>
-            <select
-              value={sort}
-              onChange={(e) => setSort(e.target.value as GallerySetSort)}
-              aria-label={t('sets.sortLabel')}
-            >
-              {SORT_OPTIONS.map((opt) => (
-                <option key={opt} value={opt}>
-                  {t(`sets.sort.${opt}`)}
-                </option>
-              ))}
-            </select>
-          </label>
+        <label className="sets-select sets-select-sort">
+          <span className="visually-hidden">{t('sets.sortLabel')}</span>
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value as GallerySetSort)}
+            aria-label={t('sets.sortLabel')}
+          >
+            {SORT_OPTIONS.map((opt) => (
+              <option key={opt} value={opt}>
+                {t(`sets.sort.${opt}`)}
+              </option>
+            ))}
+          </select>
+        </label>
 
-          <label className="sets-select">
-            <span className="visually-hidden">{t('sets.yearLabel')}</span>
-            <select
-              value={year === 'all' ? 'all' : String(year)}
-              onChange={(e) => {
-                const v = e.target.value
-                setYear(v === 'all' ? 'all' : Number(v))
-              }}
-              aria-label={t('sets.yearLabel')}
-            >
-              <option value="all">{t('sets.yearAll')}</option>
-              {years.map((y) => (
-                <option key={y} value={y}>
-                  {t('sets.yearOption', { year: y })}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
+        <NlScryfallSearch
+          mode="sets-filter"
+          value={q}
+          onChange={setQ}
+          placeholder={t('sets.searchPlaceholder')}
+          label={t('sets.searchLabel')}
+          useAi={useAi}
+          onUseAiChange={onUseAiChange}
+        />
       </div>
 
       {!loading && !error && sets ? (

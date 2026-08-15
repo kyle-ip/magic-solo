@@ -2,8 +2,21 @@
   "id": "terror",
   "name": "UB Terror",
   "nameZh": "蓝黑惧兽",
-  "blurb": "Pauper Dimir Tolarian Terror: mill/filter into the yard, then land discounted Terrors and delved Anglers. Soft counters are inert in Challenge Experience.",
-  "blurbZh": "蓝黑惧兽：用洗牌与滤牌填坟，减费拍出陶拉利亚惧兽与掘坟谷尔玛钓客。点破/反击在挑战体验中无交互堆叠，暂不生效。",
+  "blurb": "Pauper Dimir Tolarian Terror: mill/filter into the yard, then land discounted Terrors and delved Anglers.",
+  "blurbZh": "蓝黑惧兽：用洗牌与滤牌填坟，减费拍出陶拉利亚惧兽与掘坟谷尔玛钓客。",
+  "colors": [
+    "U",
+    "B"
+  ],
+  "archetype": "tempo",
+  "hint": "Fill the graveyard, then drop discounted Terrors and delved Anglers. Soft counters are not in this list.",
+  "hintZh": "先填坟再减费拍惧兽与钓客。本列表不含无效软反。",
+  "hintByChallenge": {
+    "tbth": {
+      "en": "Strong vs Horde: mill yourself into threats that race the library.",
+      "zh": "对部落较强：自磨进坟后拍出威胁，与牌库赛跑。"
+    }
+  },
   "art": "assets/cards/player/2569d4f3-55ed-4f99-9592-34c7df0aab72-art.jpg",
   "cards": [
     {
@@ -76,48 +89,8 @@
       "image": "assets/cards/player/4afee6b3-55a4-44e5-b08c-85e0c813cd09-normal.jpg"
     },
     {
-      "id": "8dd4374f-0301-4b2e-bc99-2cd19568cb3b",
-      "quantity": 3,
-      "name": "Spell Pierce",
-      "nameZh": "点破咒语",
-      "typeLine": "Instant",
-      "typeLineZh": "瞬间",
-      "oracleText": "Counter target noncreature spell unless its controller pays {2}.",
-      "oracleTextZh": "除非目标非生物咒语的操控者支付{2}，否则反击之。",
-      "manaCost": "{U}",
-      "cmc": 1,
-      "power": null,
-      "toughness": null,
-      "keywords": [],
-      "kind": "instant",
-      "effect": {
-        "type": "none"
-      },
-      "image": "assets/cards/player/8dd4374f-0301-4b2e-bc99-2cd19568cb3b-normal.jpg"
-    },
-    {
-      "id": "4f616706-ec97-4923-bb1e-11a69fbaa1f8",
-      "quantity": 3,
-      "name": "Counterspell",
-      "nameZh": "反击咒语",
-      "typeLine": "Instant",
-      "typeLineZh": "瞬间",
-      "oracleText": "Counter target spell.",
-      "oracleTextZh": "反击目标咒语。",
-      "manaCost": "{U}{U}",
-      "cmc": 2,
-      "power": null,
-      "toughness": null,
-      "keywords": [],
-      "kind": "instant",
-      "effect": {
-        "type": "none"
-      },
-      "image": "assets/cards/player/4f616706-ec97-4923-bb1e-11a69fbaa1f8-normal.jpg"
-    },
-    {
       "id": "1a297bae-f259-4fc7-b76a-285f972d69e3",
-      "quantity": 2,
+      "quantity": 4,
       "name": "Deep Analysis",
       "nameZh": "深入分析",
       "typeLine": "Sorcery",
@@ -136,11 +109,15 @@
         "type": "draw",
         "amount": 2
       },
-      "image": "assets/cards/player/1a297bae-f259-4fc7-b76a-285f972d69e3-normal.jpg"
+      "image": "assets/cards/player/1a297bae-f259-4fc7-b76a-285f972d69e3-normal.jpg",
+      "flashback": {
+        "manaCost": "{1}{U}",
+        "payLife": 3
+      }
     },
     {
       "id": "aa6494ad-a35e-4b09-8623-7740f3c20b0b",
-      "quantity": 1,
+      "quantity": 3,
       "name": "Unexpected Fangs",
       "nameZh": "突生长牙",
       "typeLine": "Instant",
@@ -160,7 +137,7 @@
     },
     {
       "id": "8c204471-d908-4a08-83e4-cf38999fa80f",
-      "quantity": 1,
+      "quantity": 3,
       "name": "Chainer's Edict",
       "nameZh": "崔娜的勒令",
       "typeLine": "Sorcery",
@@ -178,7 +155,10 @@
       "effect": {
         "type": "edict"
       },
-      "image": "assets/cards/player/8c204471-d908-4a08-83e4-cf38999fa80f-normal.jpg"
+      "image": "assets/cards/player/8c204471-d908-4a08-83e4-cf38999fa80f-normal.jpg",
+      "flashback": {
+        "manaCost": "{5}{B}{B}"
+      }
     },
     {
       "id": "79563dd1-640c-4ebd-a347-0b71439b79d3",
@@ -200,7 +180,10 @@
       "effect": {
         "type": "crawl_cellar"
       },
-      "image": "assets/cards/player/79563dd1-640c-4ebd-a347-0b71439b79d3-normal.jpg"
+      "image": "assets/cards/player/79563dd1-640c-4ebd-a347-0b71439b79d3-normal.jpg",
+      "flashback": {
+        "manaCost": "{B}"
+      }
     },
     {
       "id": "aba79021-39af-4e74-beb5-f2f508c865b2",
@@ -218,7 +201,8 @@
       "keywords": [],
       "kind": "instant",
       "effect": {
-        "type": "destroy_creature"
+        "type": "destroy_creature",
+        "nonlegendary": true
       },
       "image": "assets/cards/player/aba79021-39af-4e74-beb5-f2f508c865b2-normal.jpg"
     },
@@ -375,7 +359,9 @@
       "toughness": null,
       "keywords": [],
       "kind": "land",
-      "produces": ["B"],
+      "produces": [
+        "B"
+      ],
       "effect": {
         "type": "etb_exile_opp_graveyard"
       },

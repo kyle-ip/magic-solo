@@ -8,7 +8,7 @@ import {
   resolveHordeCombat,
 } from './challengeTurn'
 import { DEFAULT_PLAYER_DECK } from './playerDecks'
-import { castFromHand } from './playerCast'
+import { castFromHand, activateCreature, castFlashback, resolveScryPrompt } from './playerCast'
 import { emptyManaPool } from './mana'
 import { defsFromDeck, type ChallengeCode, type GameState, type SetupConfig } from './types'
 import {
@@ -31,6 +31,8 @@ export type GameAction =
   | { type: 'START'; config: SetupConfig }
   | { type: 'PLAY_LAND'; handId: string }
   | { type: 'CAST'; handId: string; targetId?: string; fighterId?: string }
+  | { type: 'CAST_FLASHBACK'; gyId: string; targetId?: string; fighterId?: string }
+  | { type: 'ACTIVATE'; creatureId: string; targetId?: string }
   | { type: 'CANCEL_PENDING' }
   | { type: 'TOGGLE_ATTACKER'; id: string }
   | { type: 'ASSIGN_TARGET'; attackerId: string; targetId: string }
@@ -108,6 +110,19 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       })
     }
 
+    case 'CAST_FLASHBACK': {
+      if (state.status !== 'playing' || state.activeSide !== 'player') return state
+      return castFlashback(state, action.gyId, {
+        targetId: action.targetId,
+        fighterId: action.fighterId,
+      })
+    }
+
+    case 'ACTIVATE': {
+      if (state.status !== 'playing' || state.activeSide !== 'player') return state
+      return activateCreature(state, action.creatureId, { targetId: action.targetId })
+    }
+
     case 'CANCEL_PENDING':
       return { ...state, pendingCast: null }
 
@@ -143,14 +158,20 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case 'ASSIGN_TARGET': {
       if (state.pendingCast) {
         const p = state.pendingCast
+        if ('activateCreatureId' in p && p.activateCreatureId) {
+          return activateCreature(state, p.activateCreatureId, {
+            targetId: action.targetId,
+          })
+        }
+        const cast = 'fromGraveyard' in p && p.fromGraveyard ? castFlashback : castFromHand
         if (p.mode === 'damage' || p.mode === 'pump' || p.mode === 'destroy' || p.mode === 'fangs') {
-          return castFromHand(state, p.handInstanceId, { targetId: action.targetId })
+          return cast(state, p.handInstanceId, { targetId: action.targetId })
         }
         if (p.mode === 'fight_mine') {
-          return castFromHand(state, p.handInstanceId, { fighterId: action.targetId })
+          return cast(state, p.handInstanceId, { fighterId: action.targetId })
         }
         if (p.mode === 'fight_theirs') {
-          return castFromHand(state, p.handInstanceId, {
+          return cast(state, p.handInstanceId, {
             fighterId: p.fighterId,
             targetId: action.targetId,
           })
@@ -200,6 +221,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       if (!state.prompt) return state
       const resume = state.prompt.resume
       const kind = state.prompt.kind
+
+      if (kind === 'scry') {
+        return resolveScryPrompt(state, action.optionId)
+      }
 
       if (kind === 'vitality_return') {
         let next = returnCreatureFromGraveyard(state, action.optionId)

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { chatCompletion, LlmError } from '../llm/client'
 import { extractPlainQuery } from '../llm/extractPlainQuery'
@@ -22,6 +22,35 @@ interface NlScryfallSearchProps {
   onChange: (q: string) => void
   placeholder: string
   label: string
+  /** Controlled AI mode (chip lives outside this component). */
+  useAi: boolean
+  onUseAiChange: (on: boolean) => void
+}
+
+/** Filter-style chip to toggle AI search (render next to set-type chips). */
+export function NlAiFilterChip({
+  active,
+  disabled,
+  onToggle,
+}: {
+  active: boolean
+  disabled?: boolean
+  onToggle: () => void
+}) {
+  const { t } = useTranslation()
+  const hasKey = useHasLlmApiKey()
+  if (!hasKey) return null
+  return (
+    <button
+      type="button"
+      className={`sets-type-chip${active ? ' is-active' : ''}`}
+      aria-pressed={active}
+      disabled={disabled}
+      onClick={onToggle}
+    >
+      {t('llm.nlToggle')}
+    </button>
+  )
 }
 
 export function NlScryfallSearch({
@@ -31,10 +60,12 @@ export function NlScryfallSearch({
   onChange,
   placeholder,
   label,
+  useAi,
+  onUseAiChange,
 }: NlScryfallSearchProps) {
   const { t, i18n } = useTranslation()
   const hasKey = useHasLlmApiKey()
-  const [useAi, setUseAi] = useState(false)
+  const formId = useId()
   const [aiDraft, setAiDraft] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -46,8 +77,20 @@ export function NlScryfallSearch({
   useEffect(() => () => abortRef.current?.abort(), [])
 
   useEffect(() => {
-    if (!hasKey && useAi) setUseAi(false)
-  }, [hasKey, useAi])
+    if (!hasKey && useAi) onUseAiChange(false)
+  }, [hasKey, useAi, onUseAiChange])
+
+  useEffect(() => {
+    if (useAi) {
+      setAiDraft(value)
+      abortRef.current?.abort()
+    } else {
+      setAiDraft('')
+      setError('')
+      setGeneratedQuery('')
+      setResults([])
+    }
+  }, [useAi]) // eslint-disable-line react-hooks/exhaustive-deps -- sync draft when mode flips
 
   const aiActive = hasKey && useAi
   const inputValue = aiActive ? aiDraft : value
@@ -56,12 +99,6 @@ export function NlScryfallSearch({
       ? t('llm.nlSetsPlaceholder')
       : t('llm.nlGalleryPlaceholder')
     : placeholder
-
-  const clearAiExtras = () => {
-    setError('')
-    setGeneratedQuery('')
-    setResults([])
-  }
 
   const runAi = async () => {
     const text = aiDraft.trim()
@@ -136,6 +173,7 @@ export function NlScryfallSearch({
   return (
     <div className={`llm-nl-search${aiActive ? ' is-ai' : ''}`}>
       <form
+        id={formId}
         className="sets-search llm-nl-search-form"
         onSubmit={(e) => {
           e.preventDefault()
@@ -159,37 +197,17 @@ export function NlScryfallSearch({
           disabled={loading}
           aria-label={label}
         />
-        {hasKey ? (
-          <label className="llm-nl-ai-toggle">
-            <input
-              type="checkbox"
-              checked={useAi}
-              disabled={loading}
-              onChange={(e) => {
-                const on = e.target.checked
-                setUseAi(on)
-                clearAiExtras()
-                if (on) {
-                  setAiDraft(value)
-                  abortRef.current?.abort()
-                } else {
-                  setAiDraft('')
-                }
-              }}
-            />
-            <span>{t('llm.nlToggle')}</span>
-          </label>
-        ) : null}
-        {aiActive ? (
-          <button
-            type="submit"
-            className="btn ghost llm-nl-submit"
-            disabled={loading || !aiDraft.trim()}
-          >
-            {loading ? t('llm.rulesLoading') : t('llm.nlSearch')}
-          </button>
-        ) : null}
       </form>
+      {aiActive ? (
+        <button
+          type="submit"
+          form={formId}
+          className="btn ghost llm-nl-submit"
+          disabled={loading || !aiDraft.trim()}
+        >
+          {loading ? t('llm.rulesLoading') : t('llm.nlSearch')}
+        </button>
+      ) : null}
       {generatedQuery ? (
         <p className="llm-nl-query" role="status">
           {t('llm.nlQueryLabel', { query: generatedQuery })}

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import type { ChallengeCode } from '../game/types'
 import { getDeckRules } from '../data/deckRegistry'
 import { HERO_DEFS, maxHeroesFor } from '../game/heroes'
-import { getPlayerDeck, type PlayerDeckId } from '../game/playerDecks'
+import { getDeckHint, getPlayerDeck, type PlayerDeckId } from '../game/playerDecks'
 import { chatCompletion, LlmError } from '../llm/client'
 import { rulesBrief } from '../llm/context/rulesBrief'
 import { setupAdviceSystemPrompt } from '../llm/prompts'
@@ -59,6 +59,10 @@ export function SetupLlmAdvisor({
         maxHeroes: maxHeroesFor(code),
         selectedHeroes: heroes,
         playerDeck: zh ? deck.nameZh : deck.name,
+        playerDeckId: deck.id,
+        colors: deck.colors,
+        archetype: deck.archetype,
+        deckHint: getDeckHint(playerDeckId, code, zh),
       }
       const brief = rules ? rulesBrief(rules, 4) : null
       const text = await chatCompletion({
@@ -93,7 +97,7 @@ export function SetupLlmAdvisor({
   }
 
   return (
-    <div className="llm-setup-advisor">
+    <>
       <button
         type="button"
         className="btn ghost"
@@ -110,6 +114,6 @@ export function SetupLlmAdvisor({
           <LlmRichText text={answer} />
         </div>
       ) : null}
-    </div>
+    </>
   )
 }

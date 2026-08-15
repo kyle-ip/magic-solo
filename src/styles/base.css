@@ -47,6 +47,18 @@
 html {
   scroll-behavior: auto;
   height: 100%;
+  /* Desktop-app feel: UI copy is not selectable */
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Keep typing fields selectable / editable */
+input,
+textarea,
+select,
+[contenteditable='true'] {
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 /* Firefox: hide until `.is-scrolling` (see scrollReveal.ts) */
@@ -197,10 +209,15 @@ select {
 
 .site-footer,
 .page {
-  /* ~3/4 viewport on desktop */
+  /* ~3/4 viewport on desktop — footer bar is full-bleed; inner is constrained */
   width: min(75vw, 1680px);
   margin-inline: auto;
   padding-inline: 0;
+}
+
+.app-shell > .site-footer {
+  width: 100%;
+  margin-inline: 0;
 }
 
 .site-header {
@@ -230,9 +247,39 @@ select {
 .site-header-actions {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
-  flex-shrink: 0;
+  gap: 0.65rem;
+  flex: 1 1 auto;
+  min-width: 0;
   justify-content: flex-end;
+}
+
+.site-header-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  scrollbar-width: none;
+}
+
+.site-header-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.site-header-nav > * {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.site-header-actions > .lang-switch {
+  flex: 0 0 auto;
 }
 
 .references-text-btn {
@@ -260,6 +307,47 @@ select {
 a.references-text-btn:visited {
   color: rgba(231, 215, 184, 0.78);
   text-decoration: none;
+}
+
+.references-text-btn.is-disabled {
+  color: rgba(231, 215, 184, 0.32);
+  cursor: not-allowed;
+  border-bottom-color: transparent;
+  user-select: none;
+}
+
+.references-text-btn.is-disabled:hover {
+  color: rgba(231, 215, 184, 0.32);
+  border-bottom-color: transparent;
+}
+
+.not-found-page {
+  width: min(40rem, calc(100% - 2rem));
+  margin: 3.5rem auto 4rem;
+  text-align: center;
+}
+
+.not-found-code {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 10vw, 5rem);
+  letter-spacing: 0.08em;
+  color: rgba(184, 137, 58, 0.45);
+  line-height: 1;
+}
+
+.not-found-page h1 {
+  margin: 0.6rem 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 3vw, 1.85rem);
+  color: #f3e6c8;
+}
+
+.not-found-lead {
+  margin: 0.75rem auto 1.4rem;
+  max-width: 28rem;
+  color: rgba(231, 215, 184, 0.72);
+  line-height: 1.45;
 }
 
 .brand-lockup {
@@ -357,14 +445,35 @@ a.references-text-btn:visited {
 
 .site-footer {
   margin-top: auto;
-  padding: 2.5rem 0 2rem;
+  width: 100%;
+  flex-shrink: 0;
+  padding: 0;
   color: rgba(231, 215, 184, 0.65);
-  font-size: 0.9rem;
-  border-top: 1px solid rgba(184, 137, 58, 0.25);
+  font-size: 0.88rem;
+  background: rgba(18, 14, 10, 0.58);
+  backdrop-filter: blur(14px) saturate(1.05);
+  -webkit-backdrop-filter: blur(14px) saturate(1.05);
+  border-top: 1px solid rgba(184, 137, 58, 0.22);
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.18);
 }
 
-.site-footer p {
-  margin: 0.35rem 0;
+.site-footer-inner {
+  width: min(75vw, 1680px);
+  margin-inline: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 1rem;
+  padding: 0.85rem 0;
+}
+
+.site-footer-links,
+.site-footer-note {
+  margin: 0;
+}
+
+.site-footer-note {
+  opacity: 0.85;
 }
 
 .site-footer-llm-link {
@@ -387,6 +496,15 @@ a.site-footer-llm-link {
 
 .site-footer-llm-link:hover {
   color: var(--bronze-bright, #e0b45a);
+}
+
+.site-footer-llm-link.is-ready {
+  color: #6fbf7a;
+  opacity: 1;
+}
+
+.site-footer-llm-link.is-ready:hover {
+  color: #8fd498;
 }
 
 .page {
@@ -571,6 +689,7 @@ h2 {
 .home-page {
   position: relative;
   z-index: 1;
+  padding-bottom: 1.5rem;
 }
 
 .home-hero {
@@ -600,7 +719,7 @@ h2 {
 
 .orbit-card {
   position: absolute;
-  width: min(58%, 320px);
+  width: min(62%, 360px);
   aspect-ratio: 744 / 1040;
   border-radius: 4.75% / 3.5%;
   overflow: hidden;
@@ -646,7 +765,7 @@ h2 {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: clamp(0.75rem, 1.4vw, 1.1rem);
-  margin: 2rem 0 3.5rem;
+  margin: 2rem 0 1.25rem;
 }
 
 @media (max-width: 1100px) and (min-width: 901px) {
@@ -945,6 +1064,11 @@ h2 {
   .site-header-actions {
     gap: 0.38rem;
     flex-wrap: nowrap;
+    min-width: 0;
+  }
+
+  .site-header-nav {
+    gap: 0.38rem;
   }
 
   .references-text-btn {
@@ -963,12 +1087,32 @@ h2 {
     margin-inline: auto;
   }
 
+  .app-shell > .site-footer {
+    width: 100%;
+    margin-inline: 0;
+  }
+
+  .site-footer-inner {
+    width: calc(100% - 2 * var(--page-gutter));
+    padding: 0.6rem 0;
+    padding-bottom: calc(0.6rem + var(--safe-bottom));
+  }
+
   .page {
     padding-bottom: calc(4.5rem + var(--safe-bottom));
   }
 
-  .site-footer {
-    padding-bottom: calc(1.25rem + var(--safe-bottom));
+  .home-page.page,
+  .page.home-page {
+    padding-bottom: calc(1.75rem + var(--safe-bottom));
+  }
+
+  .home-page .challenge-paths {
+    margin-bottom: 0.85rem;
+  }
+
+  .home-page .shared-rules {
+    padding-bottom: 1.35rem;
   }
 
   .home-hero {
@@ -986,8 +1130,8 @@ h2 {
   }
 
   .orbit-card {
-    width: min(41%, 9.4rem);
-    margin-inline: -0.75rem;
+    width: min(48%, 11.5rem);
+    margin-inline: -1.15rem;
   }
 
   .shared-rules,
@@ -1285,10 +1429,15 @@ h2 {
   }
 
   .prompt-shell,
-  .inspect-shell,
-  .deck-roster-shell {
+  .inspect-shell {
     width: min(100%, 96vw);
     max-height: min(86dvh, 920px);
+  }
+
+  .prompt-shell.deck-roster-shell {
+    width: min(100%, 96vw);
+    max-width: min(100%, 96vw);
+    max-height: min(90dvh, 960px);
   }
 }
 
@@ -1306,8 +1455,8 @@ h2 {
   }
 
   .orbit-card {
-    width: min(33%, 8.4rem);
-    margin-inline: -1.45rem;
+    width: min(46%, 12rem);
+    margin-inline: -1.75rem;
   }
 
   .deck-hero-card {
@@ -1370,6 +1519,61 @@ h2 {
 .floating-nav-btn:focus-visible {
   outline: 2px solid rgba(224, 180, 90, 0.7);
   outline-offset: 2px;
+}
+
+/* Jump between challenge decks without returning to home. */
+.challenge-switcher {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.75rem;
+  margin: 0.85rem 0 0.35rem;
+}
+
+.challenge-switcher-label {
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.72;
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 35%, transparent);
+  transition: opacity 0.15s ease, border-color 0.15s ease;
+}
+
+.challenge-switcher-label:hover {
+  opacity: 1;
+  border-bottom-color: color-mix(in srgb, currentColor 70%, transparent);
+}
+
+.challenge-switcher-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.challenge-switcher-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.28rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, currentColor 28%, transparent);
+  background: color-mix(in srgb, #0b1210 35%, transparent);
+  color: inherit;
+  text-decoration: none;
+  font-size: 0.86rem;
+  font-weight: 600;
+  line-height: 1.2;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.challenge-switcher-chip:hover {
+  background: color-mix(in srgb, currentColor 14%, transparent);
+  border-color: color-mix(in srgb, currentColor 48%, transparent);
+}
+
+.deck-hero-copy .challenge-switcher {
+  margin-top: 1rem;
 }
 
 @media (max-width: 900px) {

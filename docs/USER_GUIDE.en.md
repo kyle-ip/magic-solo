@@ -1,6 +1,6 @@
 # Magic Solo — User Guide
 
-Fan site for the three *Magic: The Gathering* **Challenge Decks** from Theros-block Game Days, plus browsing tools and an optional AI assistant.
+Fan site for the three *Magic: The Gathering* **Challenge Decks** from Theros-block Game Days, plus browsing tools, a print assistant, and an optional AI assistant.
 
 **Live site:** [https://kyle-ip.github.io/magic-solo/](https://kyle-ip.github.io/magic-solo/)
 
@@ -34,10 +34,16 @@ Use the header language switch for **English** or **中文**. Challenge Deck car
 
 | Control | Where | What it does |
 | --- | --- | --- |
-| Header links | Top | Home, Sets, Classic decks, Card editor (disabled while in development), language, pack / single draw |
-| Floating buttons | Right gutter | Up one level (some pages), back to top; AI settings after a key is saved |
-| Footer **Help** | Bottom | Open this user guide |
+| Brand / logo | Header | Home (`/`) |
+| Classic decks / Sets | Header | Browse archetypes and Scryfall sets |
+| Card editor | Header | Grayed out while in development (see [§9](#9-card-editor)) |
+| Pack open / Single draw | Header | Local pack and random-card toys; collect from those flows |
+| References | Header | Official-source / rules reference modal |
+| Language | Header | English ↔ 中文 |
+| Floating buttons | Right gutter | Up one level (some pages), back to top; after an AI key: settings + **Page chat** |
+| Footer **Help** | Bottom | Open this guide in-app (`/help`; follows UI language) |
 | Footer **AI Assistant** | Bottom | Open optional AI API settings |
+| Footer **Chat** | Bottom | **Page chat** (only after a key is saved) |
 
 Without an AI API key, the site works fully; AI entry points stay hidden except the small footer link used to configure a key.
 
@@ -53,7 +59,7 @@ Without an AI API key, the site works fully; AI entry points stay hidden except 
 
 ### Home (`/`)
 
-Overview of Challenge Decks and three paths into each deck.
+Overview of the three Challenge Decks; links go to each deck hub.
 
 ### Deck page (`/decks/:setCode`)
 
@@ -61,6 +67,7 @@ Overview of Challenge Decks and three paths into each deck.
 - Full card gallery (open a card for art, oracle text, quantity)
 - Links to **Challenge Experience** and **Game Assistant**
 - **Print assistant** for the deck catalog, expanding each card by its quantity (see [§8](#8-print-assistant))
+- **Challenge switcher** to jump to a sibling challenge without returning home
 
 ---
 
@@ -72,10 +79,24 @@ A simplified solo PvE board (Arena-inspired), not a full Comprehensive Rules eng
 
 ### Setup
 
-1. Difficulty options (e.g. starting Hydra Heads, Horde delay)
-2. Optional **Hero’s Path** heroes (up to 2 vs Hydra, 3 vs Horde/God)
-3. Choose a curated player Constructed list (e.g. Wildfire Host / Terror)
-4. Preview the roster, then begin
+1. **Difficulty**
+   - Hydra: starting Heads **1–4**
+   - Horde: delay **2–4** turns before the Horde advances
+   - God: no difficulty slider
+2. Optional **Hero’s Path** heroes (up to **2** vs Hydra, **3** vs Horde/God): Protector, Warrior, Hunter, Avenger, Slayer, Provider, Vanquisher, Champion
+3. Choose a curated player Constructed list (see below)
+4. Preview the roster, then begin (optional setup AI advice when configured)
+
+### Player decks
+
+| Id | Name | Colors / role |
+| --- | --- | --- |
+| `wildfire` | Wildfire Host | RG midrange |
+| `terror` | UB Terror | UB tempo (delve / Terror-style removal) |
+| `burn` | Challenge Burn | R aggro / burn |
+| `skies` | Azure Skies | WU flyers + removal |
+
+Only **implemented** abilities fire (evergreen keywords plus selected effects such as Fog, fight, burn-to-any, mill/draw, flashback, delve discount, prowess, flyer anthem, attack-reveal triggers, and some activated abilities). Many printed cards are approximated or simplified.
 
 ### During play
 
@@ -83,13 +104,14 @@ A simplified solo PvE board (Arena-inspired), not a full Comprehensive Rules eng
 - Challenge reveals/casts cards one by one
 - Declare attackers, assign targets (where applicable), resolve combat
 - Toggle **coach tips** and a floating **battle log**
-- Win / loss **settlement** with match stats
+- Win / loss **settlement** with match stats (and optional AI battle report)
+- Challenge switcher available from setup / related surfaces
 
 ### Experience vs official Challenge Decks
 
 | Official | This Experience |
 | --- | --- |
-| Any Constructed deck | Curated lists; only implemented abilities fire |
+| Any Constructed deck | Four curated lists; only implemented abilities fire |
 | Full stack / priority | Spells resolve immediately (Fog still stops breath / combat damage) |
 | All Theros mechanics | Evergreen + selected effects; monstrosity / bestow omitted |
 | Multiplayer variants | Solo only |
@@ -102,7 +124,7 @@ For an arbitrary paper deck, use the [Game Assistant](#4-game-assistant) instead
 
 Route: `/assistant/:setCode`
 
-Digital **challenge half-board** while you play a physical deck offline. No turn automation.
+Digital **challenge half-board** while you play a physical deck offline. No turn automation. Header/footer chrome is hidden on the play surface.
 
 ### Setup
 
@@ -116,6 +138,8 @@ Digital **challenge half-board** while you play a physical deck offline. No turn
 - Right-click: tap, notes, library placement
 - Double-click library: search / reorder / play
 - Named **player values** (e.g. life)
+- Challenge switcher between the three challenge modes
+- With AI configured: **Suggest next step** from the board + challenge rules
 
 ---
 
@@ -123,7 +147,7 @@ Digital **challenge half-board** while you play a physical deck offline. No turn
 
 Routes: `/classic-decks`, `/classic-decks/:id`
 
-Curated constructed archetypes with bilingual summary, how-it-wins text, sample list, and Scryfall-backed card art. Open cards from the list for details. On a deck detail page, **Print assistant** exports the full sample list (main + side) with each row’s **qty** expanded into separate faces (see [§8](#8-print-assistant)).
+Curated constructed archetypes (dozens of lists across formats) with bilingual summary, how-it-wins text, sample list, and Scryfall-backed card art. Open cards from the list for details. On a deck detail page, **Print assistant** exports the full sample list (main + side) with each row’s **qty** expanded into separate faces (see [§8](#8-print-assistant)). With AI configured, use the classic-deck assist for deeper overview or comparisons.
 
 ---
 
@@ -145,7 +169,7 @@ Header shortcuts:
 | --- | --- |
 | **Pack open** | Weighted 3-card “booster” reveal; after details show, use header **Collect** (left of Collection) |
 | **Single draw** | One random card flip; same header text link to collect |
-| **Collection cabinet** | Save cards locally, filter/sort, import / export JSON, clear; **Print assistant**; **Collection advice** when AI is on |
+| **Collection cabinet** | Opened from pack / single-draw flows: save cards locally, filter/sort, import / export JSON, clear; **Print assistant**; **Collection advice** when AI is on |
 
 Collection is stored in **this browser only** (`localStorage`). It is not synced across devices.
 
@@ -166,13 +190,13 @@ Client-side PDF export for cutting physical-size proxies. Opens from:
 
 | Option | Page size | Cards per page |
 | --- | --- | --- |
-| **A4 · 3×3** | 210×297 mm | 9 |
-| **A3 · 4×4** | 297×420 mm | 16 |
-| **6″ photo · 1/page** | 102×152 mm (4R) | 1 |
+| **A4** | 210×297 mm | 3×3 (9) |
+| **A3** | 297×420 mm | 4×4 (16) |
+| **6″ photo** | 102×152 mm (4R) | 1 |
 
 Each face is drawn at about **63×88 mm** (standard card size) with **cut marks**. Front faces only (no automatic backs / double-faced backs).
 
-Images prefer Scryfall **png** (~745×1040). The modal loads faces with a progress overlay, shows a live preview (same layout as the PDF), then **Export PDF** downloads a file such as `magic-solo-print-tdag-a4-2026-08-15.pdf`.
+Images prefer Scryfall **png** (~745×1040). The modal loads faces with a progress overlay, shows a live preview (same layout as the PDF), then **Export PDF** downloads a file such as `magic-solo-print-tdag-a4-2026-08-15.pdf`. Cancel / close stay available while export runs; only Export shows busy state.
 
 Large sets take longer (especially 6″ mode, one page per card). Work stays in the browser; nothing is uploaded to a print server.
 
@@ -182,7 +206,7 @@ Large sets take longer (especially 6″ mode, one page per card). Work stays in 
 
 Route: `/editor`
 
-A visual Magic-style card face compositor (frames, art, bilingual text, PNG / JSON export, print hand-off) is **under development**.
+A visual Magic-style card face compositor (frames, art, bilingual text, PNG / JSON export, print hand-off, Scryfall import) is **under development**.
 
 **Current status:** unavailable in the live UI.
 
@@ -213,6 +237,7 @@ With no key configured, layouts and gameplay match the non-AI site (AI feature c
 
 | Area | Capabilities |
 | --- | --- |
+| **Page chat** | Route-aware Q&A from footer **Chat** or floating nav; uses a short page brief + visible cards |
 | **Card details** (decks, sets, pack, collection) | Plain explanation, keywords, ask a question, terminology (ZH UI), collection synergy |
 | **Deck rules** | “Explain in 30 seconds”, free-form rules Q&A |
 | **Challenge setup** | Advice for difficulty / heroes / deck choice |
@@ -230,7 +255,7 @@ Stable answers (card text, rules, archetypes, same question, etc.) are **cached 
 ### Limits
 
 - AI does **not** replace the game rules engine or auto-play turns.
-- Answers are grounded in data the site sends (card JSON, rules JSON, board snapshot) plus a short official keyword gloss when relevant. Challenge Experience rules override full Comprehensive Rules when they conflict. Answers can still be wrong—prefer [Wizards Rules](https://magic.wizards.com/en/rules) / printed oracle when it matters.
+- Answers are grounded in data the site sends (card JSON, rules JSON, board snapshot, page brief) plus a short official keyword gloss when relevant. Challenge Experience rules override full Comprehensive Rules when they conflict. Answers can still be wrong—prefer [Wizards Rules](https://magic.wizards.com/en/rules) / printed oracle when it matters.
 - You pay your provider for usage; caching reduces repeat cost.
 
 ---

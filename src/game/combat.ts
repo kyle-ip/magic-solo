@@ -5,10 +5,11 @@ import {
   millHorde,
 } from './helpers'
 import { pushLog } from './log'
+import { applyAttackTriggers, effectivePower } from './playerAbilities'
 import type { AttackLink, GameState, PlayerCreature } from './types'
 
-function attackPower(creature: PlayerCreature): number {
-  let power = creature.power
+function attackPower(state: GameState, creature: PlayerCreature): number {
+  let power = effectivePower(state, creature)
   if (creature.keywords.some((k) => /double strike/i.test(k))) power *= 2
   return power
 }
@@ -24,6 +25,8 @@ export function resolvePlayerCombat(state: GameState): GameState {
     return pushLog(next, 'noAttackers', 'info')
   }
 
+  next = applyAttackTriggers(next, attackers)
+
   const links: AttackLink[] = []
   if (next.code === 'tbth') {
     for (const a of attackers) {
@@ -36,7 +39,7 @@ export function resolvePlayerCombat(state: GameState): GameState {
     }
   }
 
-  const powers = attackers.map((a) => attackPower(a))
+  const powers = attackers.map((a) => attackPower(next, a))
   next = setFx(next, 'attack', {
     amount: powers.reduce((s, p) => s + p, 0),
     pops: attackers.map((a, i) => ({
@@ -64,7 +67,7 @@ export function resolvePlayerCombat(state: GameState): GameState {
     const total = powers.reduce((s, p) => s + p, 0)
     const lifeGain = attackers
       .filter((a) => a.keywords.some((k) => /lifelink/i.test(k)))
-      .reduce((s, a) => s + attackPower(a), 0)
+      .reduce((s, a) => s + attackPower(next, a), 0)
     next = millHorde(next, total)
     if (lifeGain > 0) {
       next = {
@@ -137,6 +140,5 @@ export function resolvePlayerCombat(state: GameState): GameState {
     attackAssignments: {},
     phase: 'main',
   }
-
   return next
 }

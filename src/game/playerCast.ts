@@ -26,6 +26,7 @@ import {
   checkWinLoss,
 } from './helpers'
 import { addFxPop, FX_HORDE, FX_PLAYER_LIFE } from './fx'
+import { applyProwessPumps, effectivePower } from './playerAbilities'
 
 function cardToGy(card: PlayerCardInstance | PlayerCreature | PlayerLand): PlayerCardInstance {
   if ('kind' in card && card.kind) {
@@ -321,6 +322,10 @@ function resolveEffect(
     case 'mana_dork':
     case 'terror_discount':
     case 'delve':
+    case 'activate_sac_damage':
+    case 'activate_draw':
+    case 'anthem_other_flyers':
+    case 'attack_guide':
       return next
     case 'etb_self_pump': {
       if (!opts.selfId) return next
@@ -391,7 +396,7 @@ function resolveEffect(
       const enemy = next.challenge.battlefield.find((c) => c.instanceId === opts.targetId)
       if (!fighter || !enemy) return pushLog(next, 'invalidTarget', 'info')
       next = pushLog(next, 'fight', 'info', { a: fighter.name, b: enemy.name })
-      next = applyDamageAny(next, fighter.power, enemy.instanceId)
+      next = applyDamageAny(next, effectivePower(next, fighter), enemy.instanceId)
       const enemyPower = enemy.power ?? 0
       if (enemyPower > 0) {
         next = applyDamageAny(next, enemyPower, fighter.instanceId)
@@ -433,10 +438,35 @@ function resolveEffect(
       next = drawCards(next, effect.amount)
       return pushLog(next, 'drawCards', 'good', { n: effect.amount })
     }
+    case 'scry_draw': {
+      if (effect.scry > 0 && next.player.library.length > 0) {
+        const top = next.player.library[0]
+        return {
+          ...next,
+          prompt: {
+            id: `scry-${Date.now()}`,
+            kind: 'scry',
+            titleKey: 'scryTitle',
+            messageKey: 'scryMsg',
+            messageParams: { name: top.name, n: effect.scry },
+            resume: `scry_draw:${effect.draw}`,
+            options: [
+              { id: 'top', labelKey: 'scryKeepTop', name: top.name },
+              { id: 'bottom', labelKey: 'scryBottom', name: top.name },
+            ],
+          },
+        }
+      }
+      next = drawCards(next, effect.draw)
+      return pushLog(next, 'drawCards', 'good', { n: effect.draw })
+    }
     case 'destroy_creature': {
       if (!opts.targetId) return pushLog(next, 'needTarget', 'info')
       const enemy = next.challenge.battlefield.find((c) => c.instanceId === opts.targetId)
       if (!enemy || enemy.isGod) return pushLog(next, 'invalidTarget', 'info')
+      if (effect.nonlegendary && /legendary/i.test(enemy.typeLine)) {
+        return pushLog(next, 'castDownLegendary', 'info', { name: enemy.name })
+      }
       next = destroyChallengePermanent(next, opts.targetId)
       return checkWinLoss(next)
     }
@@ -476,38 +506,50 @@ function resolveEffect(
       return pushLog(next, 'fangs', 'good', { name: mine.name })
     }
     case 'crawl_cellar': {
+      // Return highest-CMC creature card from GY to hand (auto-pick).
       const creatures = next.player.graveyard
         .filter((c) => c.kind === 'creature')
         .slice()
         .sort((a, b) => b.cmc - a.cmc)
       const card = creatures[0]
       if (!card) return pushLog(next, 'crawlEmpty', 'info')
-      const hasHaste = card.keywords.some((k) => /haste/i.test(k))
-      const creature = applyHeroCreatureMods(next, {
-        instanceId: card.instanceId,
-        defId: card.defId,
-        templateId: card.defId,
-        name: card.name,
-        power: (card.power ?? 0) + 1,
-        toughness: (card.toughness ?? 0) + 1,
-        markedDamage: 0,
-        tapped: false,
-        summoningSickness: !hasHaste,
-        keywords: [...card.keywords],
-        image: card.image,
-        produces: card.produces ? [...card.produces] : undefined,
-        tempPower: 0,
-        tempToughness: 0,
-      })
       next = {
         ...next,
         player: {
           ...next.player,
           graveyard: next.player.graveyard.filter((c) => c.instanceId !== card.instanceId),
-          creatures: [...next.player.creatures, creature],
+          hand: [...next.player.hand, card],
         },
       }
-      return pushLog(next, 'crawlReturn', 'good', { name: card.name })
+      next = pushLog(next, 'crawlToHand', 'good', { name: card.name })
+      // Optional +1/+1 on a Zombie you control — pick first Zombie if any.
+      const zombie = next.player.creatures.find((c) =>
+        /zombie/i.test(findCardDef(c.defId, next.playerDeckId)?.typeLine ?? ''),
+      )
+      if (zombie) {
+        next = {
+          ...next,
+          player: {
+            ...next.player,
+            creatures: next.player.creatures.map((c) =>
+              c.instanceId === zombie.instanceId
+                ? { ...c, power: c.power + 1, toughness: c.toughness + 1 }
+                : c,
+            ),
+          },
+        }
+        next = pushLog(next, 'crawlZombiePump', 'good', { name: zombie.name })
+      }
+      return next
+    }
+    case 'etb_miscreant_draw': {
+      if (!opts.selfId) return next
+      const others = next.player.creatures.filter(
+        (c) => c.instanceId !== opts.selfId && c.name === 'Faerie Miscreant',
+      )
+      if (others.length === 0) return next
+      next = drawCards(next, 1)
+      return pushLog(next, 'miscreantDraw', 'good')
     }
     case 'etb_mill_loot': {
       if (!opts.selfId) return next
@@ -566,11 +608,15 @@ export function castFromHand(
     return playLand(state, handId)
   }
 
+  const hasFlash = card.keywords.some((k) => /flash/i.test(k))
   if (card.kind === 'sorcery' && state.playerPhase !== 'main') {
     return pushLog(state, 'sorceryMainOnly', 'info')
   }
+  if (card.kind === 'creature' && !hasFlash && state.playerPhase !== 'main') {
+    return pushLog(state, 'sorceryMainOnly', 'info')
+  }
   if (
-    (card.kind === 'instant' || card.kind === 'creature') &&
+    (card.kind === 'instant' || (card.kind === 'creature' && hasFlash)) &&
     state.playerPhase !== 'main' &&
     state.playerPhase !== 'combat'
   ) {
@@ -653,13 +699,31 @@ export function castFromHand(
       name: card.name,
       pt: `${creature.power}/${creature.toughness}`,
     })
-    if (effect.type === 'etb_self_pump' || effect.type === 'etb_mill_loot') {
+    if (
+      effect.type === 'etb_self_pump' ||
+      effect.type === 'etb_mill_loot' ||
+      effect.type === 'etb_miscreant_draw'
+    ) {
       next = resolveEffect(next, effect, { selfId: creature.instanceId })
     }
     return next
   }
 
   next = resolveEffect(next, effect, opts)
+  // Spell may have opened a scry prompt — still put card in GY / finish later draws
+  if (next.prompt?.kind === 'scry') {
+    next = {
+      ...next,
+      pendingCast: null,
+      player: {
+        ...next.player,
+        graveyard: [card, ...next.player.graveyard],
+      },
+    }
+    next = pushLog(next, 'castSpell', 'good', { name: card.name })
+    next = applyProwessPumps(next)
+    return next
+  }
   next = {
     ...next,
     player: {
@@ -668,6 +732,214 @@ export function castFromHand(
     },
   }
   next = pushLog(next, 'castSpell', 'good', { name: card.name })
+  next = applyProwessPumps(next)
+  return checkWinLoss(next)
+}
+
+export function resolveScryPrompt(
+  state: GameState,
+  optionId: string,
+): GameState {
+  if (!state.prompt || state.prompt.kind !== 'scry') return state
+  const resume = state.prompt.resume
+  const drawMatch = /^scry_draw:(\d+)$/.exec(resume)
+  const drawN = drawMatch ? Number(drawMatch[1]) : 1
+  let next: GameState = { ...state, prompt: null }
+  if (optionId === 'bottom' && next.player.library.length > 0) {
+    const [top, ...rest] = next.player.library
+    next = {
+      ...next,
+      player: {
+        ...next.player,
+        library: [...rest, top],
+      },
+    }
+    next = pushLog(next, 'scryBottom', 'info', { name: top.name })
+  } else if (next.player.library[0]) {
+    next = pushLog(next, 'scryKeep', 'info', { name: next.player.library[0].name })
+  }
+  next = drawCards(next, drawN)
+  if (next.status === 'playing') {
+    next = pushLog(next, 'drawCards', 'good', { n: drawN })
+  }
+  return checkWinLoss(next)
+}
+
+/** Double-click / activate a battlefield creature ability. */
+export function activateCreature(
+  state: GameState,
+  creatureId: string,
+  opts: { targetId?: string } = {},
+): GameState {
+  if (state.status !== 'playing' || state.activeSide !== 'player') return state
+  const creature = state.player.creatures.find((c) => c.instanceId === creatureId)
+  if (!creature || creature.tapped || creature.summoningSickness) {
+    return pushLog(state, 'cannotActivate', 'info')
+  }
+  const def = findCardDef(creature.defId, state.playerDeckId)
+  const effect = def?.effect
+  if (!effect) return state
+
+  if (effect.type === 'activate_sac_damage') {
+    if (!opts.targetId) {
+      return {
+        ...state,
+        pendingCast: {
+          handInstanceId: creatureId,
+          mode: 'damage',
+          activateCreatureId: creatureId,
+        },
+      }
+    }
+    let next = applyDamageAny(state, effect.amount, opts.targetId)
+    next = {
+      ...next,
+      pendingCast: null,
+      player: {
+        ...next.player,
+        creatures: next.player.creatures.filter((c) => c.instanceId !== creatureId),
+        graveyard: [cardToGy(creature), ...next.player.graveyard],
+      },
+    }
+    next = pushLog(next, 'activateSacDamage', 'good', {
+      name: creature.name,
+      n: effect.amount,
+    })
+    return checkWinLoss(next)
+  }
+
+  if (effect.type === 'activate_draw') {
+    const paid = autoTapForCost(state, effect.manaCost)
+    if (!paid) return pushLog(state, 'notEnoughMana', 'info')
+    let next: GameState = {
+      ...paid,
+      player: {
+        ...paid.player,
+        creatures: paid.player.creatures.map((c) =>
+          c.instanceId === creatureId ? { ...c, tapped: true } : c,
+        ),
+      },
+    }
+    next = drawCards(next, effect.amount)
+    next = pushLog(next, 'activateDraw', 'good', {
+      name: creature.name,
+      n: effect.amount,
+    })
+    return checkWinLoss(next)
+  }
+
+  return pushLog(state, 'cannotActivate', 'info')
+}
+
+/** Cast a flashback card from the graveyard. */
+export function castFlashback(
+  state: GameState,
+  gyId: string,
+  opts: { targetId?: string; fighterId?: string } = {},
+): GameState {
+  if (state.status !== 'playing' || state.activeSide !== 'player') return state
+  if (state.flags.cannotCastSpells && state.code === 'tfth') {
+    return pushLog(state, 'cannotCastUntilHydra', 'bad')
+  }
+  const card = state.player.graveyard.find((c) => c.instanceId === gyId)
+  if (!card?.flashback) return pushLog(state, 'noFlashback', 'info')
+
+  if (card.kind === 'sorcery' && state.playerPhase !== 'main') {
+    return pushLog(state, 'sorceryMainOnly', 'info')
+  }
+  if (
+    card.kind === 'instant' &&
+    state.playerPhase !== 'main' &&
+    state.playerPhase !== 'combat'
+  ) {
+    return pushLog(state, 'castMainOrCombat', 'info')
+  }
+
+  const effect = card.effect
+  if (effect.type === 'damage_any' && !opts.targetId) {
+    return {
+      ...state,
+      pendingCast: { handInstanceId: gyId, mode: 'damage', fromGraveyard: true },
+    }
+  }
+  if ((effect.type === 'pump_target' || effect.type === 'fangs') && !opts.targetId) {
+    return {
+      ...state,
+      pendingCast: {
+        handInstanceId: gyId,
+        mode: effect.type === 'fangs' ? 'fangs' : 'pump',
+        fromGraveyard: true,
+      },
+    }
+  }
+  if (effect.type === 'destroy_creature' && !opts.targetId) {
+    return {
+      ...state,
+      pendingCast: { handInstanceId: gyId, mode: 'destroy', fromGraveyard: true },
+    }
+  }
+  if (effect.type === 'fight') {
+    if (!opts.fighterId) {
+      return {
+        ...state,
+        pendingCast: { handInstanceId: gyId, mode: 'fight_mine', fromGraveyard: true },
+      }
+    }
+    if (!opts.targetId) {
+      return {
+        ...state,
+        pendingCast: {
+          handInstanceId: gyId,
+          mode: 'fight_theirs',
+          fighterId: opts.fighterId,
+          fromGraveyard: true,
+        },
+      }
+    }
+  }
+
+  const fb = card.flashback
+  if (fb.payLife && state.player.life <= fb.payLife) {
+    return pushLog(state, 'notEnoughLife', 'info')
+  }
+  const paid = autoTapForCost(state, fb.manaCost)
+  if (!paid) return pushLog(state, 'notEnoughMana', 'info')
+
+  let next: GameState = {
+    ...paid,
+    pendingCast: null,
+    player: {
+      ...paid.player,
+      life: fb.payLife ? paid.player.life - fb.payLife : paid.player.life,
+      graveyard: paid.player.graveyard.filter((c) => c.instanceId !== gyId),
+    },
+  }
+  if (fb.payLife) {
+    next = pushLog(next, 'flashbackLife', 'info', { n: fb.payLife })
+  }
+
+  next = resolveEffect(next, effect, opts)
+  if (next.prompt?.kind === 'scry') {
+    next = {
+      ...next,
+      player: {
+        ...next.player,
+        exile: [card, ...next.player.exile],
+      },
+    }
+    next = pushLog(next, 'flashbackCast', 'good', { name: card.name })
+    next = applyProwessPumps(next)
+    return next
+  }
+  next = {
+    ...next,
+    player: {
+      ...next.player,
+      exile: [card, ...next.player.exile],
+    },
+  }
+  next = pushLog(next, 'flashbackCast', 'good', { name: card.name })
+  next = applyProwessPumps(next)
   return checkWinLoss(next)
 }
 

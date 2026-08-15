@@ -1,0 +1,301 @@
+{
+  "id": "skies",
+  "name": "Azure Skies",
+  "nameZh": "苍穹飞攻",
+  "blurb": "White-blue flyers with hard removal: clear Revelers or Heads, then attack in the air.",
+  "blurbZh": "白蓝飞行生物配合硬性清除：先清狂欢者或头颅，再从空中施压。",
+  "colors": [
+    "W",
+    "U"
+  ],
+  "archetype": "midrange",
+  "hint": "Prioritize destroy spells on must-answer threats, then swing with flyers.",
+  "hintZh": "先用清除解决必须回答的威胁，再用飞行生物进攻。",
+  "hintByChallenge": {
+    "tdag": {
+      "en": "Destroy Revelers first so Xenagos can take lethal damage.",
+      "zh": "先消灭狂欢者，泽纳加思才能被致命伤害击中。"
+    },
+    "tfth": {
+      "en": "Removal and flyers carve Heads; chump or race breath carefully.",
+      "zh": "清除与飞行切掉头颅；注意吐息，必要时挡一下或抢速。"
+    },
+    "tbth": {
+      "en": "Flyers race the Horde; removal buys time but burn decks mill faster.",
+      "zh": "飞行可与部落赛跑；清除换时间，但燃烧磨库往往更快。"
+    }
+  },
+  "art": "assets/cards/player/b8c5e74c-96e7-4a1f-93b7-14d776fe4b2d-art.jpg",
+  "cards": [
+    {
+      "id": "069cfaa5-bba4-4503-b54e-b98fa9f0a0fc",
+      "quantity": 4,
+      "name": "Healer's Hawk",
+      "nameZh": "治疗师翔鹰",
+      "typeLine": "Creature — Bird",
+      "typeLineZh": "生物 ～鸟",
+      "oracleText": "Flying\nLifelink (Damage dealt by this creature also causes you to gain that much life.)",
+      "oracleTextZh": "飞行，系命",
+      "manaCost": "{W}",
+      "cmc": 1,
+      "power": 1,
+      "toughness": 1,
+      "keywords": [
+        "Flying",
+        "Lifelink"
+      ],
+      "kind": "creature",
+      "effect": {
+        "type": "none"
+      },
+      "image": "assets/cards/player/069cfaa5-bba4-4503-b54e-b98fa9f0a0fc-normal.jpg"
+    },
+    {
+      "id": "28aa0337-94bd-4274-b2ee-6f43747c77b3",
+      "quantity": 4,
+      "name": "Faerie Miscreant",
+      "nameZh": "仙灵恶徒",
+      "typeLine": "Creature — Faerie Rogue",
+      "typeLineZh": "生物 ～仙灵／浪客",
+      "oracleText": "Flying\nWhen this creature enters, if you control another creature named Faerie Miscreant, draw a card.",
+      "oracleTextZh": "飞行\n当此生物进战场时，若你操控另一个名称为劣迹仙灵的生物，则抓一张牌。",
+      "manaCost": "{U}",
+      "cmc": 1,
+      "power": 1,
+      "toughness": 1,
+      "keywords": [
+        "Flying"
+      ],
+      "kind": "creature",
+      "effect": {
+        "type": "etb_miscreant_draw"
+      },
+      "image": "assets/cards/player/28aa0337-94bd-4274-b2ee-6f43747c77b3-normal.jpg"
+    },
+    {
+      "id": "5ef30b6c-0806-4bf6-9a84-c2aea8d84cf1",
+      "quantity": 4,
+      "name": "Spectral Sailor",
+      "nameZh": "魂魅船员",
+      "typeLine": "Creature — Spirit Pirate",
+      "typeLineZh": "生物 ～精怪／海盗",
+      "oracleText": "Flash (You may cast this spell any time you could cast an instant.)\nFlying\n{3}{U}: Draw a card.",
+      "oracleTextZh": "闪现\n飞行\n{3}{U}：抓一张牌。",
+      "manaCost": "{U}",
+      "cmc": 1,
+      "power": 1,
+      "toughness": 1,
+      "keywords": [
+        "Flash",
+        "Flying"
+      ],
+      "kind": "creature",
+      "effect": {
+        "type": "activate_draw",
+        "manaCost": "{3}{U}",
+        "amount": 1
+      },
+      "image": "assets/cards/player/5ef30b6c-0806-4bf6-9a84-c2aea8d84cf1-normal.jpg"
+    },
+    {
+      "id": "ef46580c-a204-4b0b-8526-2310b1ca32b4",
+      "quantity": 4,
+      "name": "Snapping Drake",
+      "nameZh": "闪光龙兽",
+      "typeLine": "Creature — Drake",
+      "typeLineZh": "生物 ～龙兽",
+      "oracleText": "Flying (This creature can't be blocked except by creatures with flying or reach.)",
+      "oracleTextZh": "飞行（此生物只能被具飞行或延势异能的生物阻挡。）",
+      "manaCost": "{3}{U}",
+      "cmc": 4,
+      "power": 3,
+      "toughness": 2,
+      "keywords": [
+        "Flying"
+      ],
+      "kind": "creature",
+      "effect": {
+        "type": "none"
+      },
+      "image": "assets/cards/player/ef46580c-a204-4b0b-8526-2310b1ca32b4-normal.jpg"
+    },
+    {
+      "id": "b8c5e74c-96e7-4a1f-93b7-14d776fe4b2d",
+      "quantity": 3,
+      "name": "Serra Angel",
+      "nameZh": "撒拉天使",
+      "typeLine": "Creature — Angel",
+      "typeLineZh": "生物 ～天使",
+      "oracleText": "Flying\nVigilance (Attacking doesn't cause this creature to tap.)",
+      "oracleTextZh": "飞行，警戒",
+      "manaCost": "{3}{W}{W}",
+      "cmc": 5,
+      "power": 4,
+      "toughness": 4,
+      "keywords": [
+        "Flying",
+        "Vigilance"
+      ],
+      "kind": "creature",
+      "effect": {
+        "type": "none"
+      },
+      "image": "assets/cards/player/b8c5e74c-96e7-4a1f-93b7-14d776fe4b2d-normal.jpg"
+    },
+    {
+      "id": "577e99a7-4a55-4314-8f08-2ae0c33b85c7",
+      "quantity": 3,
+      "name": "Empyrean Eagle",
+      "nameZh": "苍穹灵鹰",
+      "typeLine": "Creature — Bird Spirit",
+      "typeLineZh": "生物 ～鸟／精怪",
+      "oracleText": "Flying\nOther creatures you control with flying get +1/+1.",
+      "oracleTextZh": "飞行\n由你操控的其他具飞行异能的生物得+1/+1。",
+      "manaCost": "{1}{W}{U}",
+      "cmc": 3,
+      "power": 2,
+      "toughness": 3,
+      "keywords": [
+        "Flying"
+      ],
+      "kind": "creature",
+      "effect": {
+        "type": "anthem_other_flyers",
+        "power": 1,
+        "toughness": 1
+      },
+      "image": "assets/cards/player/577e99a7-4a55-4314-8f08-2ae0c33b85c7-normal.jpg"
+    },
+    {
+      "id": "aba79021-39af-4e74-beb5-f2f508c865b2",
+      "quantity": 4,
+      "name": "Cast Down",
+      "nameZh": "湮灭",
+      "typeLine": "Instant",
+      "typeLineZh": "瞬间",
+      "oracleText": "Destroy target nonlegendary creature.",
+      "oracleTextZh": "消灭目标非传奇的生物。",
+      "manaCost": "{1}{B}",
+      "cmc": 2,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "instant",
+      "effect": {
+        "type": "destroy_creature",
+        "nonlegendary": true
+      },
+      "image": "assets/cards/player/aba79021-39af-4e74-beb5-f2f508c865b2-normal.jpg"
+    },
+    {
+      "id": "2c249609-9cf7-46f1-b94c-9329add966bb",
+      "quantity": 4,
+      "name": "Murder",
+      "nameZh": "谋杀",
+      "typeLine": "Instant",
+      "typeLineZh": "瞬间",
+      "oracleText": "Destroy target creature.",
+      "oracleTextZh": "消灭目标生物。",
+      "manaCost": "{1}{B}{B}",
+      "cmc": 3,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "instant",
+      "effect": {
+        "type": "destroy_creature"
+      },
+      "image": "assets/cards/player/2c249609-9cf7-46f1-b94c-9329add966bb-normal.jpg"
+    },
+    {
+      "id": "bbc99a51-1501-4525-a3cc-f48249b64bed",
+      "quantity": 4,
+      "name": "Opt",
+      "nameZh": "抉择",
+      "typeLine": "Instant",
+      "typeLineZh": "瞬间",
+      "oracleText": "Scry 1. (Look at the top card of your library. You may put that card on the bottom.)\nDraw a card.",
+      "oracleTextZh": "占卜1。（检视你牌库顶的牌。你可以将该牌置于你的牌库底。）\n抓一张牌。",
+      "manaCost": "{U}",
+      "cmc": 1,
+      "power": null,
+      "toughness": null,
+      "keywords": [
+        "Scry"
+      ],
+      "kind": "instant",
+      "effect": {
+        "type": "scry_draw",
+        "scry": 1,
+        "draw": 1
+      },
+      "image": "assets/cards/player/bbc99a51-1501-4525-a3cc-f48249b64bed-normal.jpg"
+    },
+    {
+      "id": "b5545882-6963-4729-b2c6-fb4bdc75ffcc",
+      "quantity": 2,
+      "name": "Brainstorm",
+      "nameZh": "脑力激荡",
+      "typeLine": "Instant",
+      "typeLineZh": "瞬间",
+      "oracleText": "Draw three cards, then put two cards from your hand on top of your library in any order.",
+      "oracleTextZh": "抓三张牌，然后将两张牌从你手上以任意顺序置于你的牌库顶。",
+      "manaCost": "{U}",
+      "cmc": 1,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "instant",
+      "effect": {
+        "type": "brainstorm"
+      },
+      "image": "assets/cards/player/b5545882-6963-4729-b2c6-fb4bdc75ffcc-normal.jpg"
+    },
+    {
+      "id": "8ab0f4c0-b331-4c57-b68f-2e24bb5ba06c",
+      "quantity": 12,
+      "name": "Plains",
+      "nameZh": "平原",
+      "typeLine": "Basic Land — Plains",
+      "typeLineZh": "基本地 — 平原",
+      "oracleText": "({T}: Add {W}.)",
+      "oracleTextZh": "({T}: Add {W}.)",
+      "manaCost": "",
+      "cmc": 0,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "land",
+      "produces": [
+        "W"
+      ],
+      "effect": {
+        "type": "none"
+      },
+      "image": "assets/cards/player/8ab0f4c0-b331-4c57-b68f-2e24bb5ba06c-normal.jpg"
+    },
+    {
+      "id": "f3cc07cd-cc79-4745-b0b7-eade60175cc3",
+      "quantity": 12,
+      "name": "Island",
+      "nameZh": "海岛",
+      "typeLine": "Basic Land — Island",
+      "typeLineZh": "基本地 — 海岛",
+      "oracleText": "({T}: Add {U}.)",
+      "oracleTextZh": "({T}: Add {U}.)",
+      "manaCost": "",
+      "cmc": 0,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "land",
+      "produces": [
+        "U"
+      ],
+      "effect": {
+        "type": "none"
+      },
+      "image": "assets/cards/player/f3cc07cd-cc79-4745-b0b7-eade60175cc3-normal.jpg"
+    }
+  ]
+}
