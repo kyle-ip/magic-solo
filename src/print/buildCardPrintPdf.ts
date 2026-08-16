@@ -1,15 +1,23 @@
 import { PDFDocument, rgb } from 'pdf-lib'
 import {
+  cardBleedRectMm,
   cardRectMm,
   cutMarkLines,
-  getPaperLayout,
+  emptySlotIndicesOnPage,
   indicesOnPage,
   mmToPoints,
   pageCount,
-  type PaperSizeId,
-  type PrintLayoutOptions,
+  type PrintLayout,
 } from './cardPrintLayout'
 import type { FetchedPrintImage } from './fetchPrintImages'
+
+export type BuildPdfOptions = {
+  layout: PrintLayout
+  /** Expand image beyond cut edge (mm). Cut marks stay on nominal card edge. */
+  bleedMm?: number
+  /** Draw empty outlines for unused slots on each page (default true). */
+  fillEmpty?: boolean
+}
 
 async function embedImage(
   doc: PDFDocument,
@@ -29,36 +37,63 @@ async function embedImage(
  */
 export async function buildCardPrintPdf(
   images: FetchedPrintImage[],
-  paper: PaperSizeId,
-  options: PrintLayoutOptions = {},
+  options: BuildPdfOptions,
 ): Promise<Uint8Array> {
   if (images.length === 0) {
     throw new Error('No images to print')
   }
 
-  const layout = getPaperLayout(paper, options)
+  const { layout } = options
+  const bleedMm = Math.max(0, options.bleedMm ?? 0)
+  const fillEmpty = options.fillEmpty !== false
   const pageW = mmToPoints(layout.pageW)
   const pageH = mmToPoints(layout.pageH)
   const doc = await PDFDocument.create()
-  const pages = pageCount(images.length, paper)
-  const marks = cutMarkLines(paper, options)
+  const pages = pageCount(images.length, layout)
+  const marks = cutMarkLines(layout)
   const markColor = rgb(0.55, 0.55, 0.55)
   const markWidth = 0.4
+  const emptyStroke = rgb(0.72, 0.72, 0.72)
+
+  // Cache embeds by object URL / shared bytes identity
+  const embedCache = new Map<string, Awaited<ReturnType<typeof embedImage>>>()
 
   for (let p = 0; p < pages; p++) {
     const page = doc.addPage([pageW, pageH])
-    const idxs = indicesOnPage(p, images.length, paper)
+    const idxs = indicesOnPage(p, images.length, layout)
 
     for (const globalIndex of idxs) {
       const image = images[globalIndex]!
-      const rect = cardRectMm(globalIndex, paper, options)
-      const embedded = await embedImage(doc, image)
-      // PDF y origin is bottom-left; layout y is top-left
+      const cacheKey = image.objectUrl || image.id
+      let embedded = embedCache.get(cacheKey)
+      if (!embedded) {
+        embedded = await embedImage(doc, image)
+        embedCache.set(cacheKey, embedded)
+      }
+      const rect = cardBleedRectMm(globalIndex, layout, bleedMm)
       const x = mmToPoints(rect.x)
       const y = pageH - mmToPoints(rect.y + rect.h)
       const w = mmToPoints(rect.w)
       const h = mmToPoints(rect.h)
       page.drawImage(embedded, { x, y, width: w, height: h })
+    }
+
+    if (fillEmpty) {
+      for (const emptyIndex of emptySlotIndicesOnPage(
+        p,
+        images.length,
+        layout,
+      )) {
+        const rect = cardRectMm(emptyIndex, layout)
+        page.drawRectangle({
+          x: mmToPoints(rect.x),
+          y: pageH - mmToPoints(rect.y + rect.h),
+          width: mmToPoints(rect.w),
+          height: mmToPoints(rect.h),
+          borderColor: emptyStroke,
+          borderWidth: 0.35,
+        })
+      }
     }
 
     for (const line of marks) {

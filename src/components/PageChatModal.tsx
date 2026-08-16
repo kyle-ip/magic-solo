@@ -7,6 +7,7 @@ import { buildPageBrief } from '../llm/context/pageBrief'
 import { pageChatSystemPrompt } from '../llm/prompts'
 import { useHasLlmApiKey } from '../hooks/useLlmSettings'
 import { LlmRichText } from './LlmRichText'
+import { PackHeadIconButton } from './PackHeadIconButton'
 import '../styles/llm.css'
 
 type Turn = { role: 'user' | 'assistant'; content: string }
@@ -138,14 +139,12 @@ export function PageChatModal({ open, onClose }: PageChatModalProps) {
         aria-labelledby={titleId}
         onClick={(e) => e.stopPropagation()}
       >
-        <button
-          type="button"
+        <PackHeadIconButton
           className="llm-modal-close"
+          icon="close"
+          label={t('llm.close')}
           onClick={onClose}
-          aria-label={t('llm.close')}
-        >
-          ×
-        </button>
+        />
         <header className="llm-modal-head">
           <p className="eyebrow">{t('llm.chatEyebrow')}</p>
           <h2 id={titleId}>{t('llm.chatTitle')}</h2>

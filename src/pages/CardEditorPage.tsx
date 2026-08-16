@@ -20,7 +20,7 @@ import {
 } from '../editor/scryfallImport'
 import type { EditorCardDocument } from '../editor/types'
 import { downloadBlob } from '../print/downloadBlob'
-import type { PrintCardItem } from '../print/printCards'
+import type { PrintListEntry } from '../print/printCards'
 
 function safeFilename(name: string): string {
   return name.replace(/[^\w\u4e00-\u9fff-]+/g, '_').slice(0, 64) || 'card'
@@ -36,7 +36,7 @@ export function CardEditorPage() {
   const [scryfallQuery, setScryfallQuery] = useState('')
   const [hits, setHits] = useState<ScryfallSearchHit[]>([])
   const [printOpen, setPrintOpen] = useState(false)
-  const [printCards, setPrintCards] = useState<PrintCardItem[]>([])
+  const [printCards, setPrintCards] = useState<PrintListEntry[]>([])
   const blobArtRef = useRef<string | null>(null)
   const printBlobRef = useRef<string | null>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -131,7 +131,7 @@ export function CardEditorPage() {
       if (printBlobRef.current) URL.revokeObjectURL(printBlobRef.current)
       const url = URL.createObjectURL(blob)
       printBlobRef.current = url
-      setPrintCards([{ id: doc.id, name: doc.name, imageUrl: url }])
+      setPrintCards([{ id: doc.id, name: doc.name, imageUrl: url, quantity: 1 }])
       setPrintOpen(true)
       setStatus(t('cardEditor.statusPrint'))
     } catch (e) {

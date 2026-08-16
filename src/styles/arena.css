@@ -3793,6 +3793,16 @@ button.arena-card {
   margin-left: auto;
 }
 
+.named-values-actions .named-values-close {
+  width: 1.85rem;
+  height: 1.85rem;
+}
+
+.named-values-actions .named-values-close svg {
+  width: 1rem;
+  height: 1rem;
+}
+
 .named-values-restore {
   position: fixed;
   left: clamp(0.65rem, 1.8vw, 1.35rem);

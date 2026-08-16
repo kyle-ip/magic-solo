@@ -1,24 +1,7 @@
-import {
-  cardRectMm,
-  cutMarkLines,
-  getPaperLayout,
-  indicesOnPage,
-  pageCount,
-  type PaperSizeId,
-} from '../print/cardPrintLayout'
-import type { FetchedPrintImage } from '../print/fetchPrintImages'
-
-type PrintPreviewProps = {
-  paper: PaperSizeId
-  images: FetchedPrintImage[]
-  pageIndex: number
-  pageLabel: string
-  keepEdgeMargin?: boolean
-}
+import { memo, useEffect, useMemo, useState } from 'react'
 
 type PrintPagerProps = {
-  paper: PaperSizeId
-  imageCount: number
+  pageCount: number
   pageIndex: number
   onPageChange: (page: number) => void
   prevLabel: string
@@ -26,90 +9,29 @@ type PrintPagerProps = {
   pageLabel: string
 }
 
-/**
- * Screen preview sheet using the same mm layout as the PDF export.
- */
-export function PrintPreview({
-  paper,
-  images,
-  pageIndex,
-  pageLabel,
-  keepEdgeMargin = false,
-}: PrintPreviewProps) {
-  const layoutOpts = { keepEdgeMargin }
-  const layout = getPaperLayout(paper, layoutOpts)
-  const pages = pageCount(images.length, paper)
-  const safePage = Math.min(Math.max(0, pageIndex), Math.max(0, pages - 1))
-  const idxs = indicesOnPage(safePage, images.length, paper)
-  const marks = cutMarkLines(paper, layoutOpts)
-  const aspect = `${layout.pageW} / ${layout.pageH}`
-  // Width-first sizing (definite dvh/px). Avoid height:100% — parent height is indefinite and collapses.
-  const sheetStyle = {
-    aspectRatio: aspect,
-    width: `min(100%, 560px, calc(min(68dvh, 720px) * ${layout.pageW} / ${layout.pageH}))`,
-    height: 'auto',
-  }
-
-  return (
-    <div className="print-preview">
-      <div
-        className="print-preview-sheet"
-        style={sheetStyle}
-        role="img"
-        aria-label={pageLabel}
-      >
-        {idxs.map((globalIndex) => {
-          const rect = cardRectMm(globalIndex, paper, layoutOpts)
-          const img = images[globalIndex]!
-          return (
-            <img
-              key={`${img.id}-${globalIndex}`}
-              className="print-preview-card"
-              src={img.objectUrl}
-              alt={img.name}
-              style={{
-                left: `${(rect.x / layout.pageW) * 100}%`,
-                top: `${(rect.y / layout.pageH) * 100}%`,
-                width: `${(rect.w / layout.pageW) * 100}%`,
-                height: `${(rect.h / layout.pageH) * 100}%`,
-              }}
-              draggable={false}
-            />
-          )
-        })}
-        <svg
-          className="print-preview-marks"
-          viewBox={`0 0 ${layout.pageW} ${layout.pageH}`}
-          aria-hidden="true"
-        >
-          {marks.map((line, i) => (
-            <line
-              key={i}
-              x1={line.x1}
-              y1={line.y1}
-              x2={line.x2}
-              y2={line.y2}
-              stroke="rgba(80,80,80,0.85)"
-              strokeWidth={0.35}
-            />
-          ))}
-        </svg>
-      </div>
-    </div>
-  )
+type PrintPreviewPanelProps = {
+  /** Pre-baked page bitmap URLs (one JPEG/PNG per sheet). */
+  pageUrls: string[]
+  pageW: number
+  pageH: number
+  pending?: boolean
+  building?: boolean
+  buildDone?: number
+  buildTotal?: number
+  buildingLabel?: string
+  prevLabel: string
+  nextLabel: string
+  formatPageOf: (current: number, total: number) => string
 }
 
-/** Page controls sit outside the preview stage so they are never clipped. */
-export function PrintPager({
-  paper,
-  imageCount,
+export const PrintPager = memo(function PrintPager({
+  pageCount: pages,
   pageIndex,
   onPageChange,
   prevLabel,
   nextLabel,
   pageLabel,
 }: PrintPagerProps) {
-  const pages = pageCount(imageCount, paper)
   if (pages <= 1) return null
   const safePage = Math.min(Math.max(0, pageIndex), pages - 1)
 
@@ -134,4 +56,105 @@ export function PrintPager({
       </button>
     </div>
   )
-}
+})
+
+/**
+ * Shows pre-baked page bitmaps. Flipping pages only swaps the visible image.
+ */
+export const PrintPreviewPanel = memo(function PrintPreviewPanel({
+  pageUrls,
+  pageW,
+  pageH,
+  pending = false,
+  building = false,
+  buildDone = 0,
+  buildTotal = 0,
+  buildingLabel,
+  prevLabel,
+  nextLabel,
+  formatPageOf,
+}: PrintPreviewPanelProps) {
+  const [pageIndex, setPageIndex] = useState(0)
+  const pages = pageUrls.length
+
+  useEffect(() => {
+    setPageIndex(0)
+  }, [pageUrls])
+
+  useEffect(() => {
+    const maxPage = Math.max(0, pages - 1)
+    if (pageIndex > maxPage) setPageIndex(maxPage)
+  }, [pages, pageIndex])
+
+  const safePage = Math.min(Math.max(0, pageIndex), Math.max(0, pages - 1))
+  const pageLabel = formatPageOf(
+    Math.min(safePage + 1, Math.max(pages, 1)),
+    Math.max(pages, 1),
+  )
+
+  const sheetStyle = useMemo(
+    () => ({
+      aspectRatio: `${pageW} / ${pageH}`,
+      width: `min(100%, 560px, calc(min(68dvh, 720px) * ${pageW} / ${pageH}))`,
+      height: 'auto' as const,
+    }),
+    [pageW, pageH],
+  )
+
+  const buildPct =
+    buildTotal > 0 ? Math.round((buildDone / buildTotal) * 100) : 0
+
+  return (
+    <div className="print-preview-panel">
+      <div
+        className={`print-preview${pending ? ' is-pending' : ''}${building ? ' is-building' : ''}`}
+      >
+        <div
+          className="print-preview-sheet print-preview-sheet--bitmap"
+          style={sheetStyle}
+          role="img"
+          aria-label={pageLabel}
+        >
+          {pages > 0 && pageUrls[safePage] ? (
+            <img
+              className="print-preview-page-bitmap"
+              src={pageUrls[safePage]}
+              alt={pageLabel}
+              draggable={false}
+              decoding="sync"
+            />
+          ) : (
+            <div
+              className="print-preview-sheet--placeholder"
+              aria-hidden="true"
+            />
+          )}
+          {building ? (
+            <div
+              className="print-assistant-progress print-assistant-progress--overlay"
+              role="status"
+            >
+              <p>
+                {buildingLabel ||
+                  `Building preview ${buildDone} / ${buildTotal}…`}
+              </p>
+              <div className="print-assistant-progress-bar">
+                <span style={{ width: `${buildPct}%` }} />
+              </div>
+            </div>
+          ) : null}
+        </div>
+      </div>
+      {!building ? (
+        <PrintPager
+          pageCount={pages}
+          pageIndex={safePage}
+          onPageChange={setPageIndex}
+          prevLabel={prevLabel}
+          nextLabel={nextLabel}
+          pageLabel={pageLabel}
+        />
+      ) : null}
+    </div>
+  )
+})

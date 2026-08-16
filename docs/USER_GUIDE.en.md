@@ -188,19 +188,21 @@ Client-side PDF export for cutting physical-size proxies. Opens from:
 
 ### Paper & layout
 
-| Option | Page size | Cards per page |
+| Option | Page size (portrait base) | Layout |
 | --- | --- | --- |
-| **A4** | 210×297 mm | 3×3 (9) |
-| **A3** | 297×420 mm | 4×4 (16) |
-| **6″ photo** | 102×152 mm (4R) | 1 |
+| **A4** | 210×297 mm | Auto cols/rows from margins, spacing, and card size; picks portrait or landscape |
+| **A3** | 297×420 mm | Same |
+| **B4** | 257×364 mm | Same |
+| **Letter** | 215.9×279.4 mm | Same |
+| **6″ photo** | 102×152 mm (4R) | Same (usually one card per page) |
 
-Each face is drawn at **64×88 mm** with **cut marks**. By default the grid is **flush top-left** so leftover paper sits on the right and bottom for easier strip cutting. Tick **Edge margins** to center the grid with equal white borders. Front faces only (no automatic backs / double-faced backs).
+Default card size is standard MTG **63×88 mm** with **1 mm bleed** (art extends slightly past cut marks for easier trimming). Advanced settings expose width/height (defaulting to 63×88), margins, spacing, bleed, fill empty slots, and **flush cut**. Default **7 mm** paper margins and **0** card gap, centered grid, with **cut marks**. In the modal you can edit quantities, remove cards, and reorder. Front faces only (no automatic backs / double-faced backs).
 
-When printing the PDF, use **Actual size / 100%** — **Fit to page** shrinks every card (often to ~61–62 mm wide). Some printers clip a few mm at the page edge when margins are off; enable **Edge margins** if that happens.
+When printing, use **Actual size / 100%** — **Fit to page** shrinks every card. After export you can **Print** in the browser, **Save** the PDF, or **Share** when the OS supports it.
 
-Images prefer Scryfall **png** (~745×1040). The modal loads faces with a progress overlay, shows a live preview (same layout as the PDF), then **Export PDF** downloads a file such as `magic-solo-print-tdag-a4-2026-08-15.pdf`. Cancel / close stay available while export runs; only Export shows busy state.
+Images for on-screen preview use Scryfall **normal** (~488×680 JPEG); the exported PDF embeds Scryfall **png** (~745×1040). The modal shows load progress and a live preview of the sheet layout. Paper/layout prefs persist locally; the card list does not.
 
-Large sets take longer (especially 6″ mode, one page per card). Work stays in the browser; nothing is uploaded to a print server.
+Large sets take longer (especially 6″ mode). Work stays in the browser; nothing is uploaded to a print server.
 
 ---
 

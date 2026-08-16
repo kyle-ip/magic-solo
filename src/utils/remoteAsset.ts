@@ -63,9 +63,26 @@ export function pngUrlFromFaceUrl(frontImageUrl: string): string {
   if (/cards\.scryfall\.io\//i.test(frontImageUrl)) {
     return scryfallResizeFaceUrl(frontImageUrl, 'png')
   }
+  if (/backs\.scryfall\.io\//i.test(frontImageUrl)) {
+    return scryfallResizeFaceUrl(frontImageUrl, 'png')
+  }
   const id = extractCardUuid(frontImageUrl)
   if (id) return scryfallCardFaceUrl(id, 'png')
   return frontImageUrl
+}
+
+/**
+ * Print-assistant on-screen preview — Scryfall `normal` JPEG (~488×680).
+ * Non-Scryfall URLs (local assets, blobs) are returned unchanged.
+ */
+export function previewUrlFromPrintUrl(printImageUrl: string): string {
+  if (
+    /cards\.scryfall\.io\//i.test(printImageUrl) ||
+    /backs\.scryfall\.io\//i.test(printImageUrl)
+  ) {
+    return scryfallResizeFaceUrl(printImageUrl, 'normal')
+  }
+  return printImageUrl
 }
 
 export function scryfallCardBackUrl(backId: string): string {

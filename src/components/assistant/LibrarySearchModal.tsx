@@ -3,6 +3,7 @@ import type { AssistantCard } from '../../assistant/types'
 import type { DragPayload } from '../../assistant/dnd'
 import { ArenaCard } from '../challenge/ArenaCard'
 import { CardImage } from '../../hooks/useCardImageSrc'
+import { PackHeadIconButton } from '../PackHeadIconButton'
 
 type Props = {
   library: AssistantCard[]
@@ -42,9 +43,11 @@ export function LibrarySearchModal({
             <h2 id="assistant-search-title">{t('assistant.searchTitle')}</h2>
             <p>{t('assistant.searchHint')}</p>
           </div>
-          <button type="button" className="btn ghost" onClick={onClose}>
-            {t('assistant.closeSearch')}
-          </button>
+          <PackHeadIconButton
+            icon="close"
+            label={t('assistant.closeSearch')}
+            onClick={onClose}
+          />
         </header>
         <div className="assistant-search-grid">
           {library.length === 0 ? (

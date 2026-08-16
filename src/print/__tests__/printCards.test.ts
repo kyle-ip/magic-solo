@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   expandPrintCopies,
+  expandPrintList,
   printItemsFromDeckCards,
 } from '../printCards'
 import type { DeckCard } from '../../types'
@@ -21,8 +22,20 @@ describe('expandPrintCopies', () => {
   })
 })
 
+describe('expandPrintList', () => {
+  it('expands quantities and skips zero', () => {
+    const slots = expandPrintList([
+      { id: 'a', name: 'A', imageUrl: 'https://x/a.png', quantity: 2 },
+      { id: 'b', name: 'B', imageUrl: 'https://x/b.png', quantity: 0 },
+      { id: 'c', name: 'C', imageUrl: 'https://x/c.png', quantity: 1 },
+    ])
+    expect(slots).toHaveLength(3)
+    expect(slots.map((s) => s.name)).toEqual(['A', 'A', 'C'])
+  })
+})
+
 describe('printItemsFromDeckCards', () => {
-  it('expands challenge deck quantity', () => {
+  it('keeps challenge deck quantity on list entries', () => {
     const cards = [
       {
         id: '11111111-1111-1111-1111-111111111111',
@@ -47,8 +60,9 @@ describe('printItemsFromDeckCards', () => {
     ] as DeckCard[]
 
     const items = printItemsFromDeckCards(cards)
-    expect(items).toHaveLength(5)
-    expect(items.filter((i) => i.name === 'Hydra Head')).toHaveLength(4)
-    expect(items.filter((i) => i.name === 'Nylea')).toHaveLength(1)
+    expect(items).toHaveLength(2)
+    expect(items.find((i) => i.name === 'Hydra Head')?.quantity).toBe(4)
+    expect(items.find((i) => i.name === 'Nylea')?.quantity).toBe(1)
+    expect(expandPrintList(items)).toHaveLength(5)
   })
 })

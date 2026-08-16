@@ -7,6 +7,7 @@ import {
 } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { NamedValue } from '../../assistant/types'
+import { PackHeadIconButton } from '../PackHeadIconButton'
 
 type Props = {
   title: string
@@ -220,18 +221,15 @@ export function NamedValuesEditor({
               >
                 {collapsed ? '▢' : '–'}
               </button>
-              <button
-                type="button"
-                className="btn ghost tiny is-danger"
+              <PackHeadIconButton
+                className="named-values-close"
+                icon="close"
+                label={t('assistant.closePanel')}
                 onClick={() => {
                   setClosed(true)
                   persist({ collapsed, closed: true, pos })
                 }}
-                aria-label={t('assistant.closePanel')}
-                title={t('assistant.closePanel')}
-              >
-                ×
-              </button>
+              />
             </>
           ) : null}
         </div>

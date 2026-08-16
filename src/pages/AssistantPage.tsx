@@ -25,6 +25,7 @@ import { ContextMenu, type ContextMenuItem } from '../components/assistant/Conte
 import { DropZone } from '../components/assistant/DropZone'
 import { LibrarySearchModal } from '../components/assistant/LibrarySearchModal'
 import { NamedValuesEditor } from '../components/assistant/NamedValuesEditor'
+import { PackHeadIconButton } from '../components/PackHeadIconButton'
 import { findDropAttr, usePointerDrag } from '../components/assistant/usePointerDrag'
 import { AssistantLlmAdvisor } from '../components/AssistantLlmAdvisor'
 import { ArenaCard } from '../components/challenge/ArenaCard'
@@ -986,9 +987,11 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
                   ? t('assistant.inspectGraveyard')
                   : t('assistant.inspectExile')}
               </h2>
-              <button type="button" className="btn ghost" onClick={() => setInspect(null)}>
-                {t('assistant.closeSearch')}
-              </button>
+              <PackHeadIconButton
+                icon="close"
+                label={t('assistant.closeSearch')}
+                onClick={() => setInspect(null)}
+              />
             </header>
             <div className="assistant-inspect-grid">
               {(inspect === 'graveyard' ? state.graveyard : state.exile).length === 0 ? (
@@ -1038,13 +1041,11 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
               <h2>
                 {t('assistant.note')} · {localizeName(noteCard.name)}
               </h2>
-              <button
-                type="button"
-                className="btn ghost"
+              <PackHeadIconButton
+                icon="close"
+                label={t('assistant.closeSearch')}
                 onClick={() => setNoteEditId(null)}
-              >
-                {t('assistant.closeSearch')}
-              </button>
+              />
             </header>
             <label className="assistant-note-field">
               <span className="sr-only">{t('assistant.note')}</span>

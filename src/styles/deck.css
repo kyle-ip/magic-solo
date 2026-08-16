@@ -2,6 +2,8 @@
 .deck-page {
   position: relative;
   isolation: isolate;
+  /* Shared gutter so hero titles and section heads share one vertical edge */
+  --deck-content-inline: clamp(0.5rem, 2.5vw, 1.75rem);
 }
 
 .deck-atmosphere {
@@ -70,7 +72,7 @@
   grid-template-columns: minmax(0, 1.05fr) minmax(240px, 0.95fr);
   gap: clamp(1.25rem, 3vw, 2.5rem);
   align-items: center;
-  padding-inline: clamp(0.5rem, 2.5vw, 1.75rem);
+  padding-inline: var(--deck-content-inline);
 }
 
 .deck-hero-copy,
@@ -137,7 +139,7 @@
 .deck-section {
   position: relative;
   z-index: 1;
-  padding: 1.25rem 0 1rem;
+  padding: 1.25rem var(--deck-content-inline) 1rem;
 }
 
 .deck-section + .deck-section {
@@ -999,9 +1001,12 @@
     min-height: auto;
   }
 
+  .deck-page {
+    --deck-content-inline: 0;
+  }
+
   .deck-hero-inner {
     align-items: start;
-    padding-inline: 0;
   }
 
   .deck-hero-card {

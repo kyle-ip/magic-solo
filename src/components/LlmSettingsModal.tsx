@@ -11,6 +11,7 @@ import {
   type LlmSettings,
 } from '../llm/settings'
 import { useLlmSettings } from '../hooks/useLlmSettings'
+import { PackHeadIconButton } from './PackHeadIconButton'
 import '../styles/llm.css'
 
 interface LlmSettingsModalProps {
@@ -126,14 +127,12 @@ export function LlmSettingsModal({ open, onClose }: LlmSettingsModalProps) {
         aria-labelledby={titleId}
         onClick={(e) => e.stopPropagation()}
       >
-        <button
-          type="button"
+        <PackHeadIconButton
           className="llm-modal-close"
+          icon="close"
+          label={t('llm.close')}
           onClick={onClose}
-          aria-label={t('llm.close')}
-        >
-          ×
-        </button>
+        />
         <header className="llm-modal-head">
           <p className="eyebrow">{t('llm.eyebrow')}</p>
           <h2 id={titleId}>{t('llm.title')}</h2>

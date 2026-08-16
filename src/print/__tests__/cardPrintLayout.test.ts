@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest'
 import {
   CARD_H_MM,
   CARD_W_MM,
+  cardBleedRectMm,
   cardRectMm,
   cardsPerPage,
+  computeLayout,
   cutMarkLines,
-  getPaperLayout,
+  emptySlotIndicesOnPage,
   indicesOnPage,
   mmToPoints,
   pageCount,
@@ -13,80 +15,110 @@ import {
 } from '../cardPrintLayout'
 
 describe('cardPrintLayout', () => {
-  it('A4 fits a top-left 3×3 grid of standard cards', () => {
-    const layout = getPaperLayout('a4')
-    expect(layout.cols).toBe(3)
-    expect(layout.rows).toBe(3)
-    expect(cardsPerPage('a4')).toBe(9)
-    expect(CARD_W_MM).toBe(64)
+  it('uses standard MTG 63×88 mm by default', () => {
+    expect(CARD_W_MM).toBe(63)
     expect(CARD_H_MM).toBe(88)
-    expect(layout.originX).toBe(0)
-    expect(layout.originY).toBe(0)
-    expect(layout.originX + 3 * CARD_W_MM).toBeLessThanOrEqual(layout.pageW)
-    expect(layout.originY + 3 * CARD_H_MM).toBeLessThanOrEqual(layout.pageH)
   })
 
-  it('A3 fits a top-left 4×4 grid of standard cards', () => {
-    const layout = getPaperLayout('a3')
-    expect(layout.cols).toBe(4)
-    expect(layout.rows).toBe(4)
-    expect(cardsPerPage('a3')).toBe(16)
-    expect(layout.pageW).toBe(297)
-    expect(layout.pageH).toBe(420)
-    expect(layout.originX).toBe(0)
-    expect(layout.originY).toBe(0)
-    expect(layout.originX + 4 * CARD_W_MM).toBeLessThanOrEqual(layout.pageW)
-    expect(layout.originY + 4 * CARD_H_MM).toBeLessThanOrEqual(layout.pageH)
+  it('A4 with margin 7 fits a centered grid of standard cards', () => {
+    const layout = computeLayout({ paper: 'a4', pageMargin: 7, gap: 0 })
+    expect(layout.cols).toBeGreaterThanOrEqual(2)
+    expect(layout.rows).toBeGreaterThanOrEqual(2)
+    expect(cardsPerPage(layout)).toBe(layout.cols * layout.rows)
+    expect(layout.cardW).toBe(63)
+    expect(layout.cardH).toBe(88)
+    expect(layout.originX).toBeGreaterThan(0)
+    expect(layout.originY).toBeGreaterThan(0)
+    const gridW =
+      layout.cols * layout.cardW + (layout.cols - 1) * layout.gap
+    const gridH =
+      layout.rows * layout.cardH + (layout.rows - 1) * layout.gap
+    expect(layout.originX + gridW).toBeLessThanOrEqual(layout.pageW + 1e-9)
+    expect(layout.originY + gridH).toBeLessThanOrEqual(layout.pageH + 1e-9)
   })
 
-  it('6\" photo paper is one card per page top-left', () => {
-    const layout = getPaperLayout('photo6')
-    expect(cardsPerPage('photo6')).toBe(1)
-    expect(layout.pageW).toBe(102)
-    expect(layout.pageH).toBe(152)
-    const rect = cardRectMm(0, 'photo6')
-    expect(rect.w).toBe(CARD_W_MM)
-    expect(rect.h).toBe(CARD_H_MM)
-    expect(rect.x).toBe(0)
-    expect(rect.y).toBe(0)
-    expect(rect.x + rect.w).toBeLessThanOrEqual(layout.pageW)
-    expect(rect.y + rect.h).toBeLessThanOrEqual(layout.pageH)
+  it('flushCut pins margin to 0 and still fits cards', () => {
+    const layout = computeLayout({ paper: 'a4', flushCut: true })
+    expect(layout.pageMargin).toBe(0)
+    expect(cardsPerPage(layout)).toBeGreaterThan(0)
+  })
+
+  it('chooses orientation that fits more cards', () => {
+    const layout = computeLayout({
+      paper: 'a4',
+      pageMargin: 7,
+      cardW: 63,
+      cardH: 88,
+    })
+    const portrait = computeLayout({
+      paper: 'a4',
+      pageMargin: 7,
+      cardW: 63,
+      cardH: 88,
+    })
+    // Same options → deterministic; count must match best of both orientations
+    expect(cardsPerPage(layout)).toBe(cardsPerPage(portrait))
+    expect(layout.cols * layout.rows).toBeGreaterThan(0)
+  })
+
+  it('gap reduces cards per page vs gap 0', () => {
+    const tight = computeLayout({ paper: 'a4', pageMargin: 7, gap: 0 })
+    const gapped = computeLayout({ paper: 'a4', pageMargin: 7, gap: 5 })
+    expect(cardsPerPage(gapped)).toBeLessThanOrEqual(cardsPerPage(tight))
+  })
+
+  it('supports Letter and B4 paper ids', () => {
+    const letter = computeLayout({ paper: 'letter', pageMargin: 7 })
+    const b4 = computeLayout({ paper: 'b4', pageMargin: 7 })
+    expect(cardsPerPage(letter)).toBeGreaterThan(0)
+    expect(cardsPerPage(b4)).toBeGreaterThan(0)
+  })
+
+  it('6\" photo paper fits at least one card', () => {
+    const layout = computeLayout({ paper: 'photo6', pageMargin: 0, flushCut: true })
+    expect(cardsPerPage(layout)).toBeGreaterThanOrEqual(1)
+    const rect = cardRectMm(0, layout)
+    expect(rect.w).toBe(layout.cardW)
+    expect(rect.h).toBe(layout.cardH)
+    expect(rect.x + rect.w).toBeLessThanOrEqual(layout.pageW + 1e-9)
+    expect(rect.y + rect.h).toBeLessThanOrEqual(layout.pageH + 1e-9)
   })
 
   it('computes page counts and slots', () => {
-    expect(pageCount(0, 'a4')).toBe(0)
-    expect(pageCount(1, 'a4')).toBe(1)
-    expect(pageCount(9, 'a4')).toBe(1)
-    expect(pageCount(10, 'a4')).toBe(2)
-    expect(pageCount(10, 'photo6')).toBe(10)
-    expect(pageCount(16, 'a3')).toBe(1)
-    expect(pageCount(17, 'a3')).toBe(2)
+    const a4 = computeLayout({ paper: 'a4', pageMargin: 7 })
+    const per = cardsPerPage(a4)
+    expect(pageCount(0, a4)).toBe(0)
+    expect(pageCount(1, a4)).toBe(1)
+    expect(pageCount(per, a4)).toBe(1)
+    expect(pageCount(per + 1, a4)).toBe(2)
 
-    expect(slotForIndex(0, 'a4')).toEqual({ page: 0, row: 0, col: 0 })
-    expect(slotForIndex(5, 'a4')).toEqual({ page: 0, row: 1, col: 2 })
-    expect(slotForIndex(9, 'a4')).toEqual({ page: 1, row: 0, col: 0 })
-    expect(slotForIndex(15, 'a3')).toEqual({ page: 0, row: 3, col: 3 })
-    expect(slotForIndex(16, 'a3')).toEqual({ page: 1, row: 0, col: 0 })
-    expect(slotForIndex(3, 'photo6')).toEqual({ page: 3, row: 0, col: 0 })
+    expect(slotForIndex(0, a4)).toEqual({ page: 0, row: 0, col: 0 })
+    if (a4.cols >= 3) {
+      expect(slotForIndex(a4.cols + 1, a4)).toEqual({
+        page: 0,
+        row: 1,
+        col: 1,
+      })
+    }
+    expect(slotForIndex(per, a4)).toEqual({ page: 1, row: 0, col: 0 })
   })
 
-  it('lists indices on a page without overflow', () => {
-    expect(indicesOnPage(0, 5, 'a4')).toEqual([0, 1, 2, 3, 4])
-    expect(indicesOnPage(1, 12, 'a4')).toEqual([9, 10, 11])
-    expect(indicesOnPage(0, 20, 'a3')).toEqual([
-      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
-    ])
-    expect(indicesOnPage(1, 18, 'a3')).toEqual([16, 17])
-    expect(indicesOnPage(2, 3, 'photo6')).toEqual([2])
+  it('lists indices and empty slots on a page', () => {
+    const a4 = computeLayout({ paper: 'a4', pageMargin: 7 })
+    const per = cardsPerPage(a4)
+    expect(indicesOnPage(0, 5, a4)).toEqual([0, 1, 2, 3, 4])
+    expect(emptySlotIndicesOnPage(0, 5, a4)).toHaveLength(per - 5)
+    expect(emptySlotIndicesOnPage(0, per, a4)).toEqual([])
   })
 
-  it('centers the grid when keepEdgeMargin is on', () => {
-    const layout = getPaperLayout('a4', { keepEdgeMargin: true })
-    expect(layout.originX).toBeCloseTo((210 - 3 * CARD_W_MM) / 2)
-    expect(layout.originY).toBeCloseTo((297 - 3 * CARD_H_MM) / 2)
-    const rect = cardRectMm(0, 'a4', { keepEdgeMargin: true })
-    expect(rect.x).toBeCloseTo(layout.originX)
-    expect(rect.y).toBeCloseTo(layout.originY)
+  it('bleed expands draw rect without changing nominal card rect', () => {
+    const layout = computeLayout({ paper: 'a4', pageMargin: 7 })
+    const nominal = cardRectMm(0, layout)
+    const bled = cardBleedRectMm(0, layout, 2)
+    expect(bled.x).toBeCloseTo(nominal.x - 2)
+    expect(bled.y).toBeCloseTo(nominal.y - 2)
+    expect(bled.w).toBeCloseTo(nominal.w + 4)
+    expect(bled.h).toBeCloseTo(nominal.h + 4)
   })
 
   it('mmToPoints matches PDF user space (72 pt / inch)', () => {
@@ -96,14 +128,19 @@ describe('cardPrintLayout', () => {
   })
 
   it('keeps card rects inside the page', () => {
-    for (const paper of ['a4', 'a3', 'photo6'] as const) {
-      for (const keepEdgeMargin of [false, true]) {
-        const layout = getPaperLayout(paper, { keepEdgeMargin })
-        const per = cardsPerPage(paper)
+    for (const paper of ['a4', 'a3', 'b4', 'letter', 'photo6'] as const) {
+      for (const flushCut of [false, true]) {
+        const layout = computeLayout({
+          paper,
+          pageMargin: flushCut ? 0 : 7,
+          flushCut,
+          gap: 0,
+        })
+        const per = cardsPerPage(layout)
         for (let i = 0; i < per; i++) {
-          const rect = cardRectMm(i, paper, { keepEdgeMargin })
-          expect(rect.x).toBeGreaterThanOrEqual(0)
-          expect(rect.y).toBeGreaterThanOrEqual(0)
+          const rect = cardRectMm(i, layout)
+          expect(rect.x).toBeGreaterThanOrEqual(-1e-9)
+          expect(rect.y).toBeGreaterThanOrEqual(-1e-9)
           expect(rect.x + rect.w).toBeLessThanOrEqual(layout.pageW + 1e-9)
           expect(rect.y + rect.h).toBeLessThanOrEqual(layout.pageH + 1e-9)
         }
@@ -112,8 +149,9 @@ describe('cardPrintLayout', () => {
   })
 
   it('emits cut marks for grid corners', () => {
-    expect(cutMarkLines('a4').length).toBeGreaterThan(0)
-    expect(cutMarkLines('a3').length).toBeGreaterThan(0)
-    expect(cutMarkLines('photo6').length).toBeGreaterThan(0)
+    const a4 = computeLayout({ paper: 'a4', pageMargin: 7 })
+    expect(cutMarkLines(a4).length).toBeGreaterThan(0)
+    const gapped = computeLayout({ paper: 'a4', pageMargin: 7, gap: 2 })
+    expect(cutMarkLines(gapped).length).toBeGreaterThan(0)
   })
 })

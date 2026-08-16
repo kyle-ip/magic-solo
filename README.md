@@ -16,7 +16,7 @@ Solo fan site for the three *Magic: The Gathering* **Challenge Decks** from Ther
 | Classic decks | `/classic-decks` | Curated archetypes + sample lists + print PDF |
 | Set gallery | `/sets` | Live Scryfall browsing + print PDF |
 | Pack / collection | Header | Weighted pack, single draw, local collection + print PDF |
-| Print assistant | Modal | Full-face proxies (64×88 mm); A4 3×3, A3 4×4, or 6″ photo; expands deck qty |
+| Print assistant | Modal | Standard 63×88 mm proxies; auto grid on A4/A3/B4/Letter/6″; editable qty |
 | Help | `/help` | In-app copy of the user guide (follows UI language) |
 | Card editor | `/editor` | **In development** — nav disabled; URL shows 404 until `CARD_EDITOR_ENABLED` |
 | AI Assistant | Optional | User API key: card/rules/coach assists + **Page chat** |
