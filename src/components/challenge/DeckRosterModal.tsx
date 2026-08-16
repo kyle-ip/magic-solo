@@ -150,7 +150,7 @@ export function DeckRosterModal({
                 {zh ? deck.blurbZh : deck.blurb}
               </p>
               <p className="deck-roster-hint">
-                <span className="setup-deck-hint-label">{t('challenge.deckHint')}</span>
+                <span className="section-meta-label">{t('challenge.deckHint')}:</span>
                 {hint}
               </p>
             </div>

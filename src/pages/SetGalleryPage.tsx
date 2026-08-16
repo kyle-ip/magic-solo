@@ -269,14 +269,14 @@ export function SetGalleryPage() {
 
       <section id="cards" className="deck-section">
         <header className="section-head">
-          <p className="eyebrow">{t('sets.cards')}</p>
-          <h2>
+          <h2>{t('sets.cards')}</h2>
+          <p className="section-meta">
             {t('sets.cardsLabel', {
               shown: filtered.length,
               loaded: cards.length,
               total: totalCards || setMeta?.cardCount || 0,
             })}
-          </h2>
+          </p>
         </header>
 
         <div

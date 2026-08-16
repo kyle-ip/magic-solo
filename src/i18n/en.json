@@ -328,6 +328,7 @@
     "noteMana": "One land drop per turn; untapped lands and mana creatures auto-pay costs.",
     "noteOfficial": "Challenge-side rules follow official Challenge Decks; the player half implements only what this list needs (not full CR).",
     "noteHeroes": "Optional Hero’s Path heroes (up to 2 vs Hydra, 3 vs Horde/God) start on your side.",
+    "notesTitle": "How this works",
     "pickHeroes": "Heroes (optional)",
     "pickHeroesHint": "Pick up to {{max}} different heroes. You don’t need any to play.",
     "heroSelected": "{{n}} / {{max}} selected",

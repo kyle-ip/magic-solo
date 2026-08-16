@@ -170,6 +170,10 @@
   margin-top: 0.4rem;
 }
 
+.section-head .section-meta {
+  margin-top: 0.35rem;
+}
+
 .battle-history-list {
   list-style: none;
   margin: 0;
@@ -1221,7 +1225,7 @@
   grid-template-columns: 1fr auto;
   gap: 0.5rem 1rem;
   align-items: center;
-  margin: 1.5rem 0;
+  margin: 0.55rem 0 0;
   padding: 1rem 1.1rem;
   background: rgba(0, 0, 0, 0.28);
   border: 1px solid rgba(184, 137, 58, 0.28);
@@ -1236,7 +1240,7 @@
 }
 
 .setup-notes {
-  margin: 1rem 0 1.5rem;
+  margin: 0.65rem 0 1.5rem;
   padding-left: 1.1rem;
   color: rgba(231, 215, 184, 0.78);
   display: grid;

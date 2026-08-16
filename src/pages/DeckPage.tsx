@@ -149,13 +149,13 @@ export function DeckPage() {
 
       <section id="cards" className="deck-section">
         <header className="section-head">
-          <p className="eyebrow">{t('deck.cards')}</p>
-          <h2>
+          <h2>{t('deck.cards')}</h2>
+          <p className="section-meta">
             {t('home.cardsLabel', {
               count: deck.totalUniqueCards,
               total: deck.totalDeckSize,
             })}
-          </h2>
+          </p>
         </header>
         <div className="card-grid">
           {deck.cards.map((card, index) => (
@@ -172,7 +172,6 @@ export function DeckPage() {
 
       <section id="history" className="deck-section">
         <header className="section-head">
-          <p className="eyebrow">{t('deck.history')}</p>
           <h2>{t('deck.history')}</h2>
           <p className="lede">{t('deck.historyLead')}</p>
         </header>

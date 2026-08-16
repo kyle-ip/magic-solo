@@ -29,6 +29,31 @@ html.is-arena-playing {
   scrollbar-gutter: stable;
 }
 
+/* Challenge fit-to-viewport: lock document scroll; UI scale from --arena-ui-scale */
+html.is-arena-playing.is-challenge-fit {
+  --arena-ui-scale: 1;
+  --bf-density: 1;
+  --play-card-h: calc(148px * var(--arena-ui-scale));
+  --bf-card-h: calc(var(--play-card-h) * var(--bf-density));
+  --hand-full: var(--play-card-h);
+  --hand-peek: calc(var(--hand-full) * 0.72);
+  --hand-edge: calc(0.35rem * var(--arena-ui-scale));
+  --hand-dock-h: calc(var(--hand-peek) + var(--hand-edge) + var(--safe-bottom, 0px) + 0.45rem);
+  --preview-h: min(58dvh, calc(100dvh - 7rem - var(--hand-dock-h)));
+  --arena-gap: calc(0.35rem * var(--arena-ui-scale));
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  scrollbar-gutter: auto;
+}
+
+html.is-arena-playing.is-challenge-fit body,
+html.is-arena-playing.is-challenge-fit .app-shell.is-arena {
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+}
+
 html.is-arena-playing body {
   height: auto;
   min-height: 100%;
@@ -580,16 +605,68 @@ html.is-arena-playing body {
   transition: width 120ms ease-out;
 }
 
+.setup-param {
+  margin: 1.5rem 0 0.5rem;
+}
+
+.setup-section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.35rem 1rem;
+  margin: 0 0 0.35rem;
+}
+
+.setup-section-title {
+  margin: 0 0 0.55rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.15rem, 2.2vw, 1.45rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  text-transform: none;
+  color: #f3e6c8;
+}
+
+.setup-section-head .setup-section-title {
+  margin-bottom: 0;
+}
+
+.setup-section-meta {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: rgba(231, 215, 184, 0.68);
+}
+
+.setup-selection-summary {
+  margin: 0.85rem 0 0;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: rgba(231, 215, 184, 0.78);
+}
+
+.setup-notes-block {
+  margin: 1.75rem 0 0.5rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid rgba(184, 137, 58, 0.22);
+}
+
 .setup-decks {
   margin: 1.5rem 0 0.5rem;
 }
 
+/* Legacy alias — prefer .setup-section-title */
 .setup-decks-label {
   margin: 0 0 0.75rem;
-  font-size: 0.78rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgba(224, 180, 90, 0.88);
+  font-family: var(--font-display);
+  font-size: clamp(1.15rem, 2.2vw, 1.45rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: #f3e6c8;
 }
 
 .setup-deck-grid {
@@ -712,24 +789,26 @@ html.is-arena-playing body {
 
 .setup-deck-preview {
   margin: 0.7rem 0 0;
-  font-size: 0.82rem;
-  color: rgba(224, 180, 90, 0.9);
+  font-size: 0.92rem;
+  color: rgba(231, 215, 184, 0.68);
 }
 
 .setup-deck-selected-hint {
   margin: 0.35rem 0 0;
-  font-size: 0.82rem;
+  font-size: 0.88rem;
   line-height: 1.4;
   color: rgba(231, 215, 184, 0.78);
 }
 
-.setup-deck-hint-label {
-  display: inline-block;
-  margin-right: 0.4rem;
-  font-size: 0.68rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: rgba(224, 180, 90, 0.85);
+.setup-deck-hint-label,
+.section-meta-label {
+  display: inline;
+  margin-right: 0.35rem;
+  font-size: inherit;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: rgba(231, 215, 184, 0.68);
 }
 
 .setup-deck-hint {
@@ -4681,9 +4760,10 @@ html.is-arena-playing,
   z-index: 3;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 0.4rem;
+  align-items: stretch;
+  gap: 0.45rem;
   pointer-events: auto;
+  width: calc(8.25rem * var(--arena-ui-scale, 1));
   max-width: min(14rem, 42vw);
 }
 
@@ -4691,12 +4771,22 @@ html.is-arena-playing,
   pointer-events: auto;
 }
 
-.arena-play-actions .btn {
+/* Shared dock action chrome — primary & secondary same size / shape */
+.arena-play-actions .btn,
+.arena-play-actions .arena-primary-action,
+.arena-play-actions .arena-secondary-action {
   box-sizing: border-box;
-  min-height: 2.15rem;
-  padding: 0.45rem 0.9rem;
-  font-size: 0.8rem;
+  width: 100%;
+  min-width: 0;
+  min-height: calc(2.55rem * var(--arena-ui-scale, 1));
+  padding: 0.5rem 1rem;
+  font-size: calc(0.88rem * var(--arena-ui-scale, 1));
+  font-weight: 700;
+  letter-spacing: 0.02em;
   white-space: nowrap;
+  border-radius: 999px;
+  text-align: center;
+  justify-content: center;
 }
 
 .arena-play-actions .btn.is-end-turn {
@@ -4706,6 +4796,301 @@ html.is-arena-playing,
   box-shadow:
     0 4px 12px rgba(120, 40, 20, 0.28),
     inset 0 1px 0 rgba(255, 220, 200, 0.28);
+}
+
+/* ---- Challenge fit-to-viewport shell (does not affect Assistant) ---- */
+.arena-root.is-playing.is-challenge-fit {
+  --arena-ui-scale: 1;
+  --bf-density: 1;
+  --arena-gap: calc(0.28rem * var(--arena-ui-scale));
+  --play-card-h: calc(148px * var(--arena-ui-scale));
+  --bf-card-h: calc(var(--play-card-h) * var(--bf-density));
+  --hand-full: var(--play-card-h);
+  --hand-peek: calc(var(--hand-full) * 0.72);
+  --hand-edge: calc(0.35rem * var(--arena-ui-scale));
+  --hand-dock-h: calc(var(--hand-peek) + var(--hand-edge) + var(--safe-bottom, 0px) + 0.45rem);
+  --preview-h: min(52dvh, calc(100dvh - 6rem - var(--hand-dock-h)));
+  --bf-card-max: var(--bf-card-h);
+
+  display: flex;
+  flex-direction: column;
+  align-content: stretch;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+  min-height: 0;
+  padding: calc(0.35rem * var(--arena-ui-scale) + var(--safe-top))
+    calc(0.65rem * var(--arena-ui-scale) + var(--safe-right))
+    0
+    calc(0.65rem * var(--arena-ui-scale) + var(--safe-left));
+  gap: var(--arena-gap);
+  overflow: hidden;
+}
+
+.arena-root.is-playing.is-challenge-fit .arena-battlefield {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: var(--arena-gap);
+}
+
+.arena-root.is-playing.is-challenge-fit .player-dock {
+  position: relative;
+  left: auto;
+  right: auto;
+  bottom: auto;
+  width: 100%;
+  min-height: var(--hand-dock-h);
+  flex: 0 0 auto;
+  margin-top: auto;
+}
+
+.arena-root.is-playing.is-challenge-fit .bf-row {
+  min-height: 0;
+  flex: 1 1 0;
+}
+
+.arena-root.is-playing.is-challenge-fit .bf-board {
+  min-height: 0;
+  height: 100%;
+}
+
+.arena-root.is-playing.is-challenge-fit .bf-creatures,
+.arena-root.is-playing.is-challenge-fit .bf-lands,
+.arena-root.is-playing.is-challenge-fit .bf-others {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  gap: calc(0.35rem * var(--arena-ui-scale) * var(--bf-density));
+}
+
+.arena-root.is-playing.is-challenge-fit .bf-creatures.is-dense,
+.arena-root.is-playing.is-challenge-fit .bf-lands.is-dense {
+  gap: calc(0.15rem * var(--arena-ui-scale));
+}
+
+.arena-root.is-playing.is-challenge-fit .bf-creatures.is-crowded,
+.arena-root.is-playing.is-challenge-fit .bf-lands.is-crowded {
+  gap: 0;
+}
+
+/* Only direct board cards (not LandStack children) get negative-margin overlap */
+.arena-root.is-playing.is-challenge-fit .bf-creatures.is-crowded > .arena-card.is-board,
+.arena-root.is-playing.is-challenge-fit .bf-lands.is-crowded > .arena-card.is-board {
+  margin-inline-end: calc(-0.35rem * var(--arena-ui-scale));
+}
+
+.arena-root.is-playing.is-challenge-fit .phase-strip {
+  display: flex;
+  justify-content: center;
+  gap: calc(0.35rem * var(--arena-ui-scale));
+  padding: calc(0.2rem * var(--arena-ui-scale)) calc(0.55rem * var(--arena-ui-scale));
+  border-radius: 999px;
+  background: rgba(8, 10, 14, 0.55);
+  border: 1px solid rgba(120, 180, 255, 0.22);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.arena-root.is-playing.is-challenge-fit .phase-chip {
+  min-width: calc(3.6rem * var(--arena-ui-scale));
+  font-size: calc(0.72rem * var(--arena-ui-scale));
+}
+
+.arena-root.is-playing.is-challenge-fit .phase-chip.is-active {
+  background: linear-gradient(180deg, rgba(255, 170, 90, 0.35), rgba(220, 100, 40, 0.28));
+  border-color: rgba(255, 180, 120, 0.55);
+  box-shadow: 0 0 12px rgba(255, 140, 60, 0.25);
+}
+
+.arena-root.is-playing.is-challenge-fit .life-orb {
+  width: calc(4.2rem * var(--arena-ui-scale));
+  height: calc(4.2rem * var(--arena-ui-scale));
+  font-size: calc(1.35rem * var(--arena-ui-scale));
+}
+
+.arena-root.is-playing.is-challenge-fit .life-orb.is-you {
+  box-shadow:
+    0 0 0 2px rgba(255, 160, 80, 0.35),
+    0 0 22px rgba(255, 120, 40, 0.28),
+    inset 0 1px 0 rgba(255, 230, 200, 0.2);
+}
+
+/* Land stacks — reserve the same tapped footprint as board cards (width 0.75h +
+   margin-inline 0.125h×2 = 1h) so stacks do not paint over neighbors. */
+.land-stack {
+  position: relative;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  /* Match .arena-card.is-board outer footprint; +6px for stack-sheet peek */
+  width: calc(var(--bf-card-h) + 6px);
+  height: var(--bf-card-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+
+.land-stack .arena-card {
+  position: relative;
+  z-index: 2;
+  /* Footprint already paid by .land-stack width; keep board margins for tap parity */
+}
+
+.land-stack-count {
+  position: absolute;
+  top: -0.2rem;
+  right: 0.1rem;
+  z-index: 4;
+  min-width: 1.35rem;
+  padding: 0.1rem 0.28rem;
+  border-radius: 999px;
+  background: rgba(12, 16, 22, 0.92);
+  border: 1px solid rgba(120, 180, 255, 0.45);
+  color: #e8f2ff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-align: center;
+  pointer-events: none;
+}
+
+.land-stack-tapped {
+  position: absolute;
+  left: 0.15rem;
+  bottom: -0.15rem;
+  z-index: 4;
+  padding: 0.05rem 0.25rem;
+  border-radius: 999px;
+  background: rgba(30, 28, 24, 0.9);
+  border: 1px solid rgba(200, 180, 120, 0.35);
+  color: rgba(240, 220, 170, 0.9);
+  font-size: 0.58rem;
+  pointer-events: none;
+}
+
+.land-stack-sheets {
+  position: absolute;
+  /* Inset to the upright card box (inside the margin footprint) */
+  top: 0;
+  bottom: 0;
+  left: calc(var(--bf-card-h) * 0.125);
+  width: calc(var(--bf-card-h) * 0.75);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.land-stack-sheet {
+  position: absolute;
+  inset: 0;
+  border-radius: 4px;
+  background: linear-gradient(145deg, #2a3428 0%, #121810 100%);
+  border: 1px solid rgba(140, 180, 120, 0.28);
+  transform: translate(
+    calc(var(--sheet-i, 0) * 3px),
+    calc(var(--sheet-i, 0) * -3px)
+  );
+}
+
+.land-stack.is-all-tapped .arena-card {
+  opacity: 0.78;
+}
+
+/* Mana pool HUD */
+.mana-pool-hud {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+  max-width: 7.5rem;
+  padding: 0.2rem 0.35rem;
+  border-radius: 8px;
+  background: rgba(10, 14, 18, 0.72);
+  border: 1px solid rgba(120, 180, 255, 0.22);
+}
+
+.mana-pool-hud.is-empty {
+  opacity: 0.45;
+}
+
+.mana-pool-hud-label {
+  font-size: 0.7rem;
+  color: rgba(200, 220, 240, 0.7);
+}
+
+.mana-pool-pip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.12rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #f2f6ff;
+}
+
+.mana-pool-sym {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.player-dock .mana-pool-hud {
+  pointer-events: auto;
+  margin-left: 0.35rem;
+}
+
+/* Primary Arena-style action button */
+.arena-play-actions .arena-primary-action {
+  background: linear-gradient(180deg, #ff9a4a 0%, #e06a28 45%, #b04318 100%);
+  border: 1px solid rgba(255, 210, 160, 0.55);
+  color: #fff8f0;
+  box-shadow:
+    0 6px 18px rgba(160, 60, 20, 0.35),
+    inset 0 1px 0 rgba(255, 230, 200, 0.35);
+}
+
+.arena-play-actions .arena-primary-action.is-combat {
+  background: linear-gradient(180deg, #ffb060 0%, #e87830 48%, #c44b18 100%);
+}
+
+.arena-play-actions .arena-primary-action.is-advance {
+  background: linear-gradient(180deg, #6ec8ff 0%, #3a8fd4 50%, #1f5f9a 100%);
+  border-color: rgba(180, 220, 255, 0.5);
+}
+
+.arena-play-actions .arena-primary-action:disabled {
+  opacity: 0.45;
+  filter: grayscale(0.25);
+}
+
+.arena-play-actions .arena-secondary-action {
+  background: linear-gradient(180deg, rgba(48, 40, 32, 0.96), rgba(22, 18, 14, 0.98));
+  border: 1px solid rgba(224, 180, 90, 0.38);
+  color: rgba(245, 232, 210, 0.95);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 236, 196, 0.1);
+}
+
+.arena-play-actions .arena-secondary-action:hover {
+  border-color: rgba(224, 180, 90, 0.55);
+  color: #fff8ec;
+}
+
+/* Minimal setup landmarks kept for CSS contract / CTA alignment */
+.setup-hero-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+  gap: 0.55rem;
+}
+
+.setup-cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
 }
 
 .assistant-card-slot .arena-card:not(.is-board) {

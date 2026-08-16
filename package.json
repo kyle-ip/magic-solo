@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:challenge": "vitest run src/challenge",
     "fetch:cards": "node scripts/fetch-scryfall.mjs",
     "fetch:display": "node scripts/fetch-display-and-covers.mjs",
     "fetch:local": "node scripts/fetch-local-assets.mjs",

@@ -15,9 +15,17 @@ import '../styles/llm.css'
 import { ArenaCard } from '../components/challenge/ArenaCard'
 import { AttackArrows } from '../components/challenge/AttackArrows'
 import { CastStage } from '../components/challenge/CastStage'
+import { ChallengePlayShell } from '../components/challenge/ChallengePlayShell'
+import { ChallengeSetupView } from '../components/challenge/ChallengeSetupView'
 import { DeckRosterModal } from '../components/challenge/DeckRosterModal'
 import { CoachTipPanel } from '../components/challenge/CoachTipPanel'
+import { LandStack } from '../components/challenge/LandStack'
+import { ManaPoolHud } from '../components/challenge/ManaPoolHud'
+import { PrimaryActionBar } from '../components/challenge/PrimaryActionBar'
 import { ZonePile } from '../components/challenge/ZonePile'
+import { computeBoardDensity } from '../challenge/boardDensity'
+import { groupLandStacks } from '../challenge/landStacks'
+import { resolvePrimaryAction } from '../challenge/primaryAction'
 import { LanguageSwitch } from '../components/LanguageSwitch'
 import { PackHeadIconButton } from '../components/PackHeadIconButton'
 import { ChallengeSwitcher } from '../components/ChallengeSwitcher'
@@ -30,13 +38,10 @@ import {
   DEFAULT_PLAYER_DECK,
   findCardDef,
   findCardDefByName,
-  getDeckCardCount,
-  getDeckHint,
   getPlayerDeck,
-  PLAYER_DECKS,
   type PlayerDeckId,
 } from '../game/playerDecks'
-import { ManaCost, ManaSymbol } from '../components/ManaCost'
+import { ManaCost } from '../components/ManaCost'
 import { canAffordCard } from '../game/playerCast'
 import { HERO_DEFS, maxHeroesFor } from '../game/heroes'
 import {
@@ -75,6 +80,7 @@ import {
   postGameAskSystemPrompt,
 } from '../llm/prompts'
 import { CardImage, RemoteArtBackground } from '../hooks/useCardImageSrc'
+import { useArenaScale } from '../hooks/useArenaScale'
 import { useHasLlmApiKey } from '../hooks/useLlmSettings'
 import {
   preloadChallengeImages,
@@ -84,7 +90,6 @@ import {
   useBoardExitGhosts,
   type BoardExitGhost,
 } from '../hooks/useBoardExitGhosts'
-import { SetupLlmAdvisor } from '../components/SetupLlmAdvisor'
 import { LlmRichText } from '../components/LlmRichText'
 import { preferredAssetUrl } from '../utils/remoteAsset'
 import { setHideSiteChrome } from '../utils/siteChrome'
@@ -247,17 +252,20 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
   const postAskAbortRef = useRef<AbortController | null>(null)
   const settlementIdRef = useRef<string | null>(null)
   const arenaRef = useRef<HTMLElement | null>(null)
+  const playing = state.status !== 'setup'
+  useArenaScale(arenaRef, playing)
 
   useEffect(() => {
     // Keep SiteHeader on setup; hide chrome only while the board is active.
-    const playing = state.status !== 'setup'
     setHideSiteChrome(playing)
     document.documentElement.classList.toggle('is-arena-playing', playing)
+    document.documentElement.classList.toggle('is-challenge-fit', playing)
     return () => {
       setHideSiteChrome(false)
       document.documentElement.classList.remove('is-arena-playing')
+      document.documentElement.classList.remove('is-challenge-fit')
     }
-  }, [state.status])
+  }, [playing])
 
   const act = useCallback((action: GameAction) => dispatch(action), [])
 
@@ -861,6 +869,46 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
   const attackables = state.player.creatures.filter(
     (c) => !c.tapped && !c.summoningSickness,
   )
+  const landStacks = groupLandStacks(state.player.lands)
+  const boardDensity = computeBoardDensity({
+    creatureCount: state.player.creatures.length,
+    landCount: state.player.lands.length,
+    landStackCount: landStacks.length,
+    opponentCount: state.challenge.battlefield.length,
+  })
+  const allAttackersAimed =
+    state.code === 'tbth' ||
+    state.selectedAttackers.every((id) => Boolean(state.attackAssignments[id]))
+  const primaryAction = resolvePrimaryAction({
+    activeSide: state.activeSide,
+    over,
+    awaitingAdvance: state.awaitingAdvance,
+    playerPhase: state.playerPhase,
+    attackableCount: attackables.length,
+    selectedAttackerCount: state.selectedAttackers.length,
+    allAttackersAimed,
+    code: state.code,
+    pendingCast: Boolean(state.pendingCast),
+  })
+  const onPrimaryAction = () => {
+    switch (primaryAction.kind) {
+      case 'advance':
+        advance()
+        break
+      case 'enter_combat':
+        enterCombat()
+        break
+      case 'resolve_combat':
+        act({ type: 'RESOLVE_ATTACKS' })
+        break
+      case 'end_turn':
+        setFocusAttacker(null)
+        act({ type: 'END_TURN' })
+        break
+      default:
+        break
+    }
+  }
   const combatStep: 'pick' | 'aim' | 'resolve' =
     state.selectedAttackers.length === 0
       ? 'pick'
@@ -870,218 +918,45 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
         : 'resolve'
 
   if (state.status === 'setup') {
-    const preloadPct =
-      assetProgress.total > 0
-        ? Math.round((assetProgress.done / assetProgress.total) * 100)
-        : 0
     return (
-      <main className={`arena-root theme-${deck.theme}`}>
-        <RemoteArtBackground className="arena-bg" localPath={heroArt} kind="art_crop" />
-        <div className="arena-bg-veil" />
-        <section className={`arena-setup${assetLoading ? ' is-preloading' : ''}`}>
-          {assetLoading ? (
-            <div className="setup-preload" role="status" aria-live="polite">
-              <p>
-                {t('challenge.loadingAssets', {
-                  done: assetProgress.done,
-                  total: assetProgress.total || '…',
-                })}
-              </p>
-              <div className="setup-preload-bar" aria-hidden="true">
-                <span style={{ width: `${preloadPct}%` }} />
-              </div>
-            </div>
-          ) : null}
-          <div className="page-top-nav">
-            <Link to={`/decks/${code}`} className="back-link">
-              ← {t('challenge.backDeck')}
-            </Link>
-            <ChallengeSwitcher currentCode={code} mode="challenge" />
-          </div>
-          <p className="eyebrow">{t('challenge.eyebrow')}</p>
-          <h1>{meta?.name ?? deck.name}</h1>
-          <p className="lede">{t('challenge.setupLead')}</p>
-          {code === 'tfth' ? (
-            <label className="setup-field">
-              <span>{t('challenge.startingHeads')}</span>
-              <input
-                type="range"
-                min={1}
-                max={4}
-                value={heads}
-                onChange={(e) => setHeads(Number(e.target.value))}
-              />
-              <strong>{heads}</strong>
-            </label>
-          ) : null}
-          {code === 'tbth' ? (
-            <label className="setup-field">
-              <span>{t('challenge.hordeDelay')}</span>
-              <input
-                type="range"
-                min={2}
-                max={4}
-                value={hordeDelay}
-                onChange={(e) => setHordeDelay(Number(e.target.value))}
-              />
-              <strong>{hordeDelay}</strong>
-            </label>
-          ) : null}
-          <div className="setup-heroes">
-            <p className="setup-decks-label">{t('challenge.pickHeroes')}</p>
-            <p className="setup-deck-hint">
-              {t('challenge.pickHeroesHint', { max: maxHeroesFor(code) })}
-            </p>
-            <p className="setup-deck-preview">
-              {t('challenge.heroSelected', {
-                n: heroIds.length,
-                max: maxHeroesFor(code),
-              })}
-            </p>
-            <div className="setup-hero-grid" role="listbox" aria-multiselectable="true">
-              {HERO_DEFS.map((hero) => {
-                const selected = heroIds.includes(hero.id)
-                const atCap = heroIds.length >= maxHeroesFor(code) && !selected
-                return (
-                  <button
-                    key={hero.id}
-                    type="button"
-                    role="option"
-                    aria-selected={selected}
-                    disabled={atCap}
-                    className={`setup-hero-card ${selected ? 'is-selected' : ''}`}
-                    onClick={() => {
-                      setHeroIds((prev) => {
-                        if (prev.includes(hero.id)) return prev.filter((id) => id !== hero.id)
-                        if (prev.length >= maxHeroesFor(code)) return prev
-                        return [...prev, hero.id]
-                      })
-                    }}
-                  >
-                    <span
-                      className="setup-hero-art"
-                      style={{
-                        backgroundImage: `url(${preferredAssetUrl(hero.art || hero.image, { kind: 'art_crop' })})`,
-                      }}
-                    />
-                    <strong>{zh ? hero.nameZh : hero.name}</strong>
-                    <span>{zh ? hero.oracleTextZh : hero.oracleText}</span>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-          <div className="setup-decks">
-            <p className="setup-decks-label">{t('challenge.pickDeck')}</p>
-            <p className="setup-deck-hint">{t('challenge.pickDeckHint')}</p>
-            <div className="setup-deck-grid" role="listbox" aria-label={t('challenge.pickDeck')}>
-              {PLAYER_DECKS.map((d) => {
-                const selected = playerDeckId === d.id
-                const hint = getDeckHint(d.id, code, zh)
-                const count = getDeckCardCount(d.id)
-                return (
-                  <div
-                    key={d.id}
-                    role="option"
-                    tabIndex={0}
-                    aria-selected={selected}
-                    className={`setup-deck-card ${selected ? 'is-selected' : ''}`}
-                    onClick={() => setPlayerDeckId(d.id)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault()
-                        setPlayerDeckId(d.id)
-                      }
-                    }}
-                  >
-                    <span
-                      className="setup-deck-art"
-                      style={{
-                        backgroundImage: `url(${preferredAssetUrl(d.art, { kind: 'art_crop' })})`,
-                      }}
-                    />
-                    <span className="setup-deck-body">
-                      <span className="setup-deck-title-row">
-                        <strong>{zh ? d.nameZh : d.name}</strong>
-                        <span className="setup-deck-pips" aria-label={d.colors.join('')}>
-                          {d.colors.map((c) => (
-                            <ManaSymbol key={c} code={c} className="mana-symbol setup-deck-pip" />
-                          ))}
-                        </span>
-                      </span>
-                      <span className="setup-deck-meta">
-                        <span className="setup-deck-archetype">
-                          {t(`challenge.archetype.${d.archetype}`)}
-                        </span>
-                        <span className="setup-deck-count">
-                          {t('challenge.deckCards', { count })}
-                        </span>
-                      </span>
-                      <span className="setup-deck-play-hint">{hint}</span>
-                      <button
-                        type="button"
-                        className="setup-deck-view-roster"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setPlayerDeckId(d.id)
-                          setRosterModalId(d.id)
-                        }}
-                      >
-                        {t('challenge.viewRoster')}
-                      </button>
-                    </span>
-                  </div>
-                )
-              })}
-            </div>
-            <p className="setup-deck-preview">
-              {t('challenge.deckRoster', {
-                name: zh
-                  ? getPlayerDeck(playerDeckId).nameZh
-                  : getPlayerDeck(playerDeckId).name,
-                count: getDeckCardCount(playerDeckId),
-              })}
-            </p>
-            <p className="setup-deck-selected-hint">
-              <span className="setup-deck-hint-label">{t('challenge.deckHint')}</span>
-              {getDeckHint(playerDeckId, code, zh)}
-            </p>
-          </div>
-          <ul className="setup-notes">
-            <li>{t('challenge.noteConstructed')}</li>
-            <li>{t('challenge.noteCombat')}</li>
-            <li>{t('challenge.noteMana')}</li>
-            <li>{t('challenge.noteHeroes')}</li>
-            <li>{t('challenge.noteOfficial')}</li>
-          </ul>
-          <div className="setup-cta-row">
-            <SetupLlmAdvisor
+      <ChallengeSetupView
+        code={code}
+        theme={deck.theme}
+        title={meta?.name ?? deck.name}
+        zh={zh}
+        assetLoading={assetLoading}
+        assetProgress={assetProgress}
+        heads={heads}
+        hordeDelay={hordeDelay}
+        heroIds={heroIds}
+        playerDeckId={playerDeckId}
+        background={
+          <RemoteArtBackground className="arena-bg" localPath={heroArt} kind="art_crop" />
+        }
+        onHeads={setHeads}
+        onHordeDelay={setHordeDelay}
+        onToggleHero={(id) => {
+          setHeroIds((prev) => {
+            if (prev.includes(id)) return prev.filter((x) => x !== id)
+            if (prev.length >= maxHeroesFor(code)) return prev
+            return [...prev, id]
+          })
+        }}
+        onPickDeck={setPlayerDeckId}
+        onViewRoster={setRosterModalId}
+        onBegin={() => void beginChallenge()}
+        rosterModal={
+          rosterModalId ? (
+            <DeckRosterModal
+              deckId={rosterModalId}
               code={code}
-              heads={heads}
-              hordeDelay={hordeDelay}
-              heroIds={heroIds}
-              playerDeckId={playerDeckId}
+              zh={zh}
+              onClose={() => setRosterModalId(null)}
+              onSelect={setPlayerDeckId}
             />
-            <button
-              type="button"
-              className={`btn primary${assetLoading ? ' is-busy' : ''}`}
-              disabled={assetLoading}
-              onClick={() => void beginChallenge()}
-            >
-              {assetLoading ? t('challenge.beginLoading') : t('challenge.begin')}
-            </button>
-          </div>
-        </section>
-        {rosterModalId ? (
-          <DeckRosterModal
-            deckId={rosterModalId}
-            code={code}
-            zh={zh}
-            onClose={() => setRosterModalId(null)}
-            onSelect={setPlayerDeckId}
-          />
-        ) : null}
-      </main>
+          ) : null
+        }
+      />
     )
   }
 
@@ -1091,7 +966,11 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
   const challengeName = meta?.name ?? deck.name
 
   return (
-    <main ref={arenaRef} className={`arena-root is-playing theme-${deck.theme}`}>
+    <ChallengePlayShell
+      theme={deck.theme}
+      rootRef={arenaRef}
+      style={{ '--bf-density': String(boardDensity.density) } as CSSProperties}
+    >
       <div
         className="arena-rotate-gate"
         role="dialog"
@@ -1487,17 +1366,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
             </div>
           ) : null}
           <div className="bf-board">
-          <div
-            className={`bf-creatures${
-              state.player.creatures.length + state.player.lands.length > 6
-                ? ' is-dense'
-                : ''
-            }${
-              state.player.creatures.length + state.player.lands.length > 10
-                ? ' is-crowded'
-                : ''
-            }`}
-          >
+          <div className={`bf-creatures${boardDensity.creatureClass}`}>
             {state.player.creatures.map((c) => {
               const selected = state.selectedAttackers.includes(c.instanceId)
               const aimed = Boolean(state.attackAssignments[c.instanceId])
@@ -1670,36 +1539,18 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                 />
               ))}
           </div>
-            <div
-              className={`bf-lands${
-                state.player.lands.length > 6 ? ' is-dense' : ''
-              }${state.player.lands.length > 10 ? ' is-crowded' : ''}`}
-            >
-              {state.player.lands.map((land) => {
+            <div className={`bf-lands${boardDensity.landClass}`}>
+              {landStacks.map((stack) => {
                 const label = zh
-                  ? (findCardDef(land.defId, state.playerDeckId)?.nameZh ?? land.name)
-                  : land.name
+                  ? (findCardDef(stack.defId, state.playerDeckId)?.nameZh ?? stack.name)
+                  : stack.name
                 return (
-                  <ArenaCard
-                    key={land.instanceId}
-                    variant="board"
-                    instanceId={land.instanceId}
-                    image={land.image}
-                    name={label}
-                    colors={land.produces}
-                    tapped={land.tapped}
-                    dimmed={land.tapped}
-                    onMouseEnter={(e) =>
-                      placePreview(
-                        {
-                          image: land.image,
-                          name: label,
-                          text: land.typeLine,
-                        },
-                        e,
-                      )
-                    }
-                    onMouseLeave={clearPreview}
+                  <LandStack
+                    key={stack.key}
+                    stack={stack}
+                    label={label}
+                    onPreview={placePreview}
+                    onClearPreview={clearPreview}
                   />
                 )
               })}
@@ -1767,6 +1618,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
               kind="library"
             />
           </div>
+          <ManaPoolHud pool={state.player.manaPool} />
         </div>
 
         <div className="hand-dock">
@@ -1836,65 +1688,16 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
           </div>
         </div>
 
-        <div className="arena-play-actions">
-          {state.activeSide === 'player' && !over ? (
-            <>
-              {state.playerPhase === 'main' && attackables.length > 0 ? (
-                <button type="button" className="btn ghost" onClick={enterCombat}>
-                  {t('challenge.enterCombat')}
-                </button>
-              ) : null}
-              {state.playerPhase === 'combat' ? (
-                <>
-                  <button type="button" className="btn ghost" onClick={cancelCombat}>
-                    {t('challenge.cancelCombat')}
-                  </button>
-                  <button
-                    type="button"
-                    className="btn ghost"
-                    disabled={
-                      state.selectedAttackers.length === 0 ||
-                      (state.code !== 'tbth' &&
-                        state.selectedAttackers.some((id) => !state.attackAssignments[id]))
-                    }
-                    onClick={() => act({ type: 'RESOLVE_ATTACKS' })}
-                  >
-                    {state.code === 'tbth'
-                      ? t('challenge.attackHorde')
-                      : t('challenge.resolveCombat')}
-                  </button>
-                </>
-              ) : null}
-              {state.pendingCast ? (
-                <button
-                  type="button"
-                  className="btn ghost"
-                  onClick={() => act({ type: 'CANCEL_PENDING' })}
-                >
-                  {t('challenge.cancelTarget')}
-                </button>
-              ) : null}
-              <button
-                type="button"
-                className="btn ghost is-end-turn"
-                onClick={() => {
-                  setFocusAttacker(null)
-                  act({ type: 'END_TURN' })
-                }}
-              >
-                {t('challenge.endTurn')}
-              </button>
-            </>
-          ) : state.pendingCast ? (
-            <button
-              type="button"
-              className="btn ghost"
-              onClick={() => act({ type: 'CANCEL_PENDING' })}
-            >
-              {t('challenge.cancelTarget')}
-            </button>
-          ) : null}
-        </div>
+        <PrimaryActionBar
+          action={primaryAction}
+          onPrimary={onPrimaryAction}
+          onCancelCombat={cancelCombat}
+          onCancelTarget={() => act({ type: 'CANCEL_PENDING' })}
+          onEndTurn={() => {
+            setFocusAttacker(null)
+            act({ type: 'END_TURN' })
+          }}
+        />
       </div>
 
       {preview
@@ -2343,6 +2146,6 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
           </div>
         </div>
       ) : null}
-    </main>
+    </ChallengePlayShell>
   )
 }

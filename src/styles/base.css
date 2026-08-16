@@ -566,6 +566,20 @@ h2 {
   color: rgba(231, 215, 184, 0.88);
 }
 
+/* Section count / status — always subordinate to the section h2 */
+.section-meta {
+  margin: 0.25rem 0 0;
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  color: rgba(231, 215, 184, 0.68);
+}
+
+.section-head .section-meta {
+  max-width: 36rem;
+}
+
 .btn {
   display: inline-flex;
   align-items: center;
