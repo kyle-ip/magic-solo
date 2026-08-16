@@ -62,7 +62,12 @@ export function ChallengePlayLandmarkTree({ theme = 'hydra' }: { theme?: string 
             <div className="player-phase-mark is-active" />
             <div className="life-orb is-you" />
           </div>
-          <div className="hand-dock" />
+          <div className="hand-dock-shell">
+            <div className="hand-dock-hotzone" aria-hidden="true" />
+            <div className="hand-dock">
+              <button type="button" className="hand-pin-btn" />
+            </div>
+          </div>
           <div className="mana-pool-hud" />
           <div className="arena-play-actions">
             <p className="arena-action-hint">Hint</p>

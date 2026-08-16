@@ -249,6 +249,10 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
   const [postAskAnswer, setPostAskAnswer] = useState('')
   const [postAskError, setPostAskError] = useState(false)
   const [postAskLoading, setPostAskLoading] = useState(false)
+  const [handOpen, setHandOpen] = useState(false)
+  const [handPinned, setHandPinned] = useState(false)
+  const [touchHandUi, setTouchHandUi] = useState(false)
+  const handShellRef = useRef<HTMLDivElement | null>(null)
   const coachAbortRef = useRef<AbortController | null>(null)
   const reportAbortRef = useRef<AbortController | null>(null)
   const postAskAbortRef = useRef<AbortController | null>(null)
@@ -286,6 +290,55 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
       document.documentElement.classList.remove('is-challenge-fit')
     }
   }, [playing])
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return
+    const mq = window.matchMedia('(hover: none), (pointer: coarse)')
+    const sync = () => setTouchHandUi(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
+
+  useEffect(() => {
+    if (!playing) {
+      setHandOpen(false)
+      setHandPinned(false)
+    }
+  }, [playing])
+
+  useEffect(() => {
+    if (!handOpen && !handPinned) return
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setHandOpen(false)
+        setHandPinned(false)
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [handOpen, handPinned])
+
+  useEffect(() => {
+    if (!handOpen || handPinned || !touchHandUi) return
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as Node | null
+      if (target && handShellRef.current?.contains(target)) return
+      setHandOpen(false)
+    }
+    document.addEventListener('pointerdown', onPointerDown, true)
+    return () => document.removeEventListener('pointerdown', onPointerDown, true)
+  }, [handOpen, handPinned, touchHandUi])
+
+  const toggleHandPin = useCallback(() => {
+    if (handPinned) {
+      setHandPinned(false)
+      setHandOpen(false)
+      return
+    }
+    // Pin alone keeps the hand visible; do not set handOpen or it sticks after unpin.
+    setHandPinned(true)
+  }, [handPinned])
 
   const act = useCallback((action: GameAction) => dispatch(action), [])
 
@@ -1671,72 +1724,119 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
           <ManaPoolHud pool={state.player.manaPool} />
         </div>
 
-        <div className="hand-dock">
-          <div
-            className="hand-fan"
-            style={
-              {
-                '--hand-mid': Math.max(0, (state.player.hand.length - 1) / 2),
-              } as CSSProperties
+        <div
+          ref={handShellRef}
+          className={`hand-dock-shell${handOpen ? ' is-hand-open' : ''}${
+            handPinned ? ' is-hand-pinned' : ''
+          }`}
+        >
+          <button
+            type="button"
+            className="hand-dock-hotzone"
+            aria-label={
+              handOpen || handPinned ? t('challenge.handHide') : t('challenge.handReveal')
             }
-          >
-            {state.player.hand.map((card, i) => {
-              const unaffordable =
-                !canAffordCard(state, card) ||
-                state.flags.cannotCastSpells ||
-                state.activeSide !== 'player' ||
-                over ||
-                (card.kind === 'sorcery' && state.playerPhase !== 'main') ||
-                (card.kind === 'land' &&
-                  (state.playerPhase !== 'main' || state.player.landsPlayedThisTurn >= 1)) ||
-                (card.kind !== 'instant' &&
-                  card.kind !== 'land' &&
-                  state.playerPhase !== 'main' &&
-                  state.playerPhase !== 'combat')
-              const pending = state.pendingCast?.handInstanceId === card.instanceId
-              return (
-                <button
-                  key={card.instanceId}
-                  type="button"
-                  className={`hand-card${unaffordable ? ' is-disabled' : ' is-playable'}${pending ? ' is-pending' : ''}`}
-                  style={{ '--i': i } as CSSProperties}
-                  aria-disabled={unaffordable && !pending ? true : undefined}
-                  onClick={() => {
-                    if (pending) {
-                      act({ type: 'CANCEL_PENDING' })
-                      return
+            aria-expanded={handOpen || handPinned}
+            tabIndex={touchHandUi ? 0 : -1}
+            onClick={() => {
+              if (!touchHandUi) return
+              if (handPinned) {
+                setHandPinned(false)
+                setHandOpen(false)
+                return
+              }
+              setHandOpen((open) => !open)
+            }}
+          />
+          <div className="hand-dock">
+            <div
+              className="hand-fan"
+              style={
+                {
+                  '--hand-mid': Math.max(0, (state.player.hand.length - 1) / 2),
+                } as CSSProperties
+              }
+            >
+              {state.player.hand.map((card, i) => {
+                const unaffordable =
+                  !canAffordCard(state, card) ||
+                  state.flags.cannotCastSpells ||
+                  state.activeSide !== 'player' ||
+                  over ||
+                  (card.kind === 'sorcery' && state.playerPhase !== 'main') ||
+                  (card.kind === 'land' &&
+                    (state.playerPhase !== 'main' || state.player.landsPlayedThisTurn >= 1)) ||
+                  (card.kind !== 'instant' &&
+                    card.kind !== 'land' &&
+                    state.playerPhase !== 'main' &&
+                    state.playerPhase !== 'combat')
+                const pending = state.pendingCast?.handInstanceId === card.instanceId
+                return (
+                  <button
+                    key={card.instanceId}
+                    type="button"
+                    className={`hand-card${unaffordable ? ' is-disabled' : ' is-playable'}${pending ? ' is-pending' : ''}`}
+                    style={{ '--i': i } as CSSProperties}
+                    aria-disabled={unaffordable && !pending ? true : undefined}
+                    onClick={() => {
+                      if (pending) {
+                        act({ type: 'CANCEL_PENDING' })
+                        return
+                      }
+                      if (unaffordable) return
+                      act({ type: 'CAST', handId: card.instanceId })
+                    }}
+                    onMouseEnter={(e) =>
+                      placePreview(
+                        {
+                          image: card.image,
+                          name: zh ? card.nameZh : card.name,
+                          text: [
+                            zh ? card.typeLineZh : card.typeLine,
+                            card.kind === 'land'
+                              ? t('challenge.land')
+                              : card.power != null
+                                ? `${card.power}/${card.toughness} · ${card.manaCost}`
+                                : card.manaCost,
+                            zh ? card.oracleTextZh : card.oracleText,
+                          ]
+                            .filter(Boolean)
+                            .join('\n'),
+                        },
+                        e,
+                      )
                     }
-                    if (unaffordable) return
-                    act({ type: 'CAST', handId: card.instanceId })
-                  }}
-                  onMouseEnter={(e) =>
-                    placePreview(
-                      {
-                        image: card.image,
-                        name: zh ? card.nameZh : card.name,
-                        text: [
-                          zh ? card.typeLineZh : card.typeLine,
-                          card.kind === 'land'
-                            ? t('challenge.land')
-                            : card.power != null
-                              ? `${card.power}/${card.toughness} · ${card.manaCost}`
-                              : card.manaCost,
-                          zh ? card.oracleTextZh : card.oracleText,
-                        ]
-                          .filter(Boolean)
-                          .join('\n'),
-                      },
-                      e,
-                    )
-                  }
-                  onMouseLeave={clearPreview}
-                >
-                  <span className="hand-card-face">
-                    <CardImage localPath={card.image} kind="normal" alt="" draggable={false} />
-                  </span>
-                </button>
-              )
-            })}
+                    onMouseLeave={clearPreview}
+                  >
+                    <span className="hand-card-face">
+                      <CardImage localPath={card.image} kind="normal" alt="" draggable={false} />
+                    </span>
+                  </button>
+                )
+              })}
+              <button
+                type="button"
+                className={`hand-pin-btn${handPinned ? ' is-pinned' : ''}`}
+                aria-pressed={handPinned}
+                aria-label={handPinned ? t('challenge.handUnpin') : t('challenge.handPin')}
+                title={handPinned ? t('challenge.handUnpin') : t('challenge.handPin')}
+                onClick={toggleHandPin}
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  {handPinned ? (
+                    <path
+                      fill="currentColor"
+                      d="M16 4v4.3l2.4 2.4c.4.4.6.9.6 1.4V14h-4.2l-.3 6h-1l-.3-6H9v-1.9c0-.5.2-1 .6-1.4L12 8.3V4h4zm-1 1h-2v3.7l-2.6 2.6c-.1.1-.2.3-.2.4V13h7.6v-.3c0-.1-.1-.3-.2-.4L15 8.7V5z"
+                    />
+                  ) : (
+                    <path
+                      fill="currentColor"
+                      d="M15.5 3.5 14 5v4.2l2.6 2.6c.5.5.8 1.2.8 1.9V15h-4.1L13 21h-2l-.3-6H7v-1.3c0-.7.3-1.4.8-1.9L10.5 9.2V5L9 3.5 10.5 2h5l1.5 1.5z"
+                    />
+                  )}
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
 

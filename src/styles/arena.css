@@ -4956,10 +4956,16 @@ html.is-challenge-fit .card-preview-pane.is-follow {
   --hand-peek: calc(var(--hand-full) * 0.75);
   --hand-edge: calc(0.35rem * var(--arena-chrome-scale));
   --hand-lift: calc(0.55rem * var(--arena-chrome-scale));
-  --hand-dock-h: calc(
-    var(--hand-peek) + var(--hand-edge) + var(--safe-bottom, 0px) + 0.45rem +
+  /* Collapsed by default — hotzone only; expands when hand shell is open/hovered */
+  --hand-dock-h-collapsed: max(
+    1.75rem,
+    calc(var(--safe-bottom, 0px) + 1.15rem)
+  );
+  --hand-dock-h-open: calc(
+    var(--hand-full) + var(--hand-edge) + var(--safe-bottom, 0px) + 0.55rem +
       var(--hand-lift)
   );
+  --hand-dock-h: var(--hand-dock-h-collapsed);
   --preview-h: min(52dvh, calc(100dvh - 6rem - var(--hand-dock-h)));
   --bf-card-max: var(--bf-card-h);
 
@@ -4998,9 +5004,10 @@ html.is-challenge-fit .card-preview-pane.is-follow {
   flex-direction: column;
   justify-content: center;
   align-items: stretch;
+  /* Stable bottom clear — hand overlays must not reflow the board */
   padding: calc(4.5rem * var(--arena-chrome-scale))
     calc(0.85rem * var(--arena-ui-scale))
-    calc(var(--hand-dock-h) + 1.25rem)
+    calc(var(--hand-dock-h-collapsed) + 1.25rem)
     calc(0.85rem * var(--arena-ui-scale));
   box-sizing: border-box;
   will-change: transform;
@@ -5100,7 +5107,7 @@ html.is-challenge-fit .card-preview-pane.is-follow {
   right: 0;
   bottom: 0;
   width: 100%;
-  min-height: var(--hand-dock-h);
+  min-height: var(--hand-dock-h-collapsed);
   flex: none;
   margin-top: 0;
   z-index: 20;
@@ -5108,27 +5115,186 @@ html.is-challenge-fit .card-preview-pane.is-follow {
   pointer-events: none;
 }
 
-.arena-root.is-playing.is-challenge-fit .hand-dock {
-  overflow: visible;
+/* Hand: hidden until bottom-center third hover (desktop) or tap toggle (touch) */
+.hand-dock-shell {
+  display: block;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 0;
   z-index: 21;
-  /* Keep a clear gap under a fully lifted hand card */
-  padding-bottom: var(--hand-lift, 0.55rem);
+  overflow: visible;
   pointer-events: none;
 }
 
+.hand-dock-hotzone {
+  appearance: none;
+  display: block;
+  position: absolute;
+  left: 33.333%;
+  width: 33.334%;
+  bottom: 0;
+  height: max(1.75rem, calc(var(--safe-bottom, 0px) + 1.15rem));
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+  /* Above collapsed strip; stays in padding under cards when open so toggle still works */
+  z-index: 5;
+}
+
+.arena-root.is-playing.is-challenge-fit .hand-dock {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: calc(var(--hand-full) + var(--hand-lift, 0.55rem));
+  min-height: calc(var(--hand-full) + var(--hand-lift, 0.55rem));
+  box-sizing: border-box;
+  padding: 0 clamp(0.65rem, 1.8vw, 1.5rem);
+  padding-right: calc(clamp(0.65rem, 1.8vw, 1.5rem) + var(--safe-right, 0px));
+  padding-left: calc(clamp(0.65rem, 1.8vw, 1.5rem) + var(--safe-left, 0px));
+  padding-bottom: var(--hand-lift, 0.55rem);
+  overflow: visible;
+  z-index: 2;
+  pointer-events: none;
+  transform: translateY(calc(100% + 0.85rem));
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    transform 240ms ease,
+    opacity 180ms ease,
+    visibility 0s linear 240ms;
+}
+
 .arena-root.is-playing.is-challenge-fit .hand-dock .hand-fan,
-.arena-root.is-playing.is-challenge-fit .hand-dock .hand-card {
+.arena-root.is-playing.is-challenge-fit .hand-dock .hand-card,
+.arena-root.is-playing.is-challenge-fit .hand-dock .hand-pin-btn {
   pointer-events: auto;
 }
 
-.arena-root.is-playing.is-challenge-fit .arena-play-actions {
-  z-index: 70;
+.arena-root.is-playing.is-challenge-fit .hand-dock-shell.is-hand-open .hand-dock,
+.arena-root.is-playing.is-challenge-fit .hand-dock-shell.is-hand-pinned .hand-dock {
+  transform: translateY(0);
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition:
+    transform 240ms ease,
+    opacity 180ms ease,
+    visibility 0s linear 0s;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .arena-root.is-playing.is-challenge-fit .hand-dock-shell:hover .hand-dock {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition:
+      transform 240ms ease,
+      opacity 180ms ease,
+      visibility 0s linear 0s;
+  }
 }
 
 .arena-root.is-playing.is-challenge-fit .hand-fan {
   overflow: visible;
-  height: var(--hand-peek, 4rem);
-  min-height: var(--hand-peek, 4rem);
+  height: 100%;
+  min-height: var(--hand-full);
+  align-items: flex-end;
+}
+
+.hand-pin-btn {
+  appearance: none;
+  flex: 0 0 auto;
+  align-self: flex-end;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(2.55rem * var(--arena-chrome-scale, 1));
+  height: calc(2.55rem * var(--arena-chrome-scale, 1));
+  margin: 0 0 calc(0.35rem * var(--arena-chrome-scale, 1))
+    calc(0.4rem * var(--arena-chrome-scale, 1));
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid rgba(224, 180, 90, 0.42);
+  background: rgba(28, 22, 16, 0.82);
+  color: #f3e2c0;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
+}
+
+.hand-pin-btn svg {
+  width: 1.05rem;
+  height: 1.05rem;
+  display: block;
+}
+
+.hand-pin-btn:hover,
+.hand-pin-btn:focus-visible {
+  border-color: rgba(255, 210, 120, 0.85);
+  background: rgba(42, 32, 20, 0.92);
+  color: #fff4e0;
+}
+
+.hand-pin-btn.is-pinned {
+  border-color: rgba(255, 196, 96, 0.9);
+  background: rgba(120, 78, 24, 0.88);
+  color: #fff6e4;
+  box-shadow:
+    0 6px 16px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(255, 210, 120, 0.25);
+}
+
+/* Full row visible when revealed (no 3/4 tuck) */
+.arena-root.is-playing.is-challenge-fit .hand-dock-shell.is-hand-open .hand-card,
+.arena-root.is-playing.is-challenge-fit .hand-dock-shell.is-hand-pinned .hand-card {
+  transform: translateY(
+    calc((var(--i) - var(--hand-mid, 2.5)) * (var(--i) - var(--hand-mid, 2.5)) * 0.55%)
+  )
+  rotate(calc((var(--i) - var(--hand-mid, 2.5)) * 2.6deg));
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .arena-root.is-playing.is-challenge-fit .hand-dock-shell:hover .hand-card {
+    transform: translateY(
+      calc((var(--i) - var(--hand-mid, 2.5)) * (var(--i) - var(--hand-mid, 2.5)) * 0.55%)
+    )
+    rotate(calc((var(--i) - var(--hand-mid, 2.5)) * 2.6deg));
+  }
+}
+
+.arena-root.is-playing.is-challenge-fit .hand-dock-shell.is-hand-open .hand-card:hover,
+.arena-root.is-playing.is-challenge-fit .hand-dock-shell.is-hand-open .hand-card:focus-visible,
+.arena-root.is-playing.is-challenge-fit .hand-dock-shell.is-hand-open .hand-card.is-pending,
+.arena-root.is-playing.is-challenge-fit .hand-dock-shell.is-hand-pinned .hand-card:hover,
+.arena-root.is-playing.is-challenge-fit .hand-dock-shell.is-hand-pinned .hand-card:focus-visible,
+.arena-root.is-playing.is-challenge-fit .hand-dock-shell.is-hand-pinned .hand-card.is-pending {
+  transform: translateY(calc(-1 * var(--hand-lift, 0.55rem))) rotate(0deg);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .arena-root.is-playing.is-challenge-fit .hand-dock-shell:hover .hand-card:hover,
+  .arena-root.is-playing.is-challenge-fit .hand-dock-shell:hover .hand-card:focus-visible,
+  .arena-root.is-playing.is-challenge-fit .hand-dock-shell:hover .hand-card.is-pending {
+    transform: translateY(calc(-1 * var(--hand-lift, 0.55rem))) rotate(0deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arena-root.is-playing.is-challenge-fit .hand-dock {
+    transition: none;
+  }
+}
+
+.arena-root.is-playing.is-challenge-fit .arena-play-actions {
+  z-index: 70;
 }
 
 .arena-root.is-playing.is-challenge-fit .player-phase-mark {

@@ -30,7 +30,7 @@ Two layers inside `arena-root.is-playing` (+ `is-challenge-fit` or `is-assistant
 | Fit class | `is-challenge-fit` | `is-assistant-fit` |
 | Board | Opponent half + player half | **Assistant/opponent board only** (slots) — no player BF half / hand dock |
 | Phase UI | Player-side `PlayerPhaseMark` (no center phase-strip) | N/A |
-| Chrome | Opponent rail + player dock (life/hand/actions) | Topbar + zone rail + `NamedValuesEditor` |
+| Chrome | Opponent rail + player dock (life/actions); **hand** overlays without board reflow — bottom-center ⅓ hover/tap + pin | Topbar + zone rail + `NamedValuesEditor` |
 
 Shared hooks: `useArenaScale`, `useBoardPan`. Shared scale math: `src/challenge/arenaScale.ts` (`ARENA_VIEW_ZOOM` multiplies CSS tokens only).
 
@@ -38,5 +38,6 @@ Shared hooks: `useArenaScale`, `useBoardPan`. Shared scale math: `src/challenge/
 
 - Restore midline `phase-strip` as the primary phase control.
 - Vertically fit-shrink board cards to clear chrome.
+- Change board pan padding / `--hand-dock-h` when the hand overlays open or close.
 - Apply document `zoom` to fake browser zoom for arena density.
 - Copy Challenge dual-half / hand dock into Assistant.
