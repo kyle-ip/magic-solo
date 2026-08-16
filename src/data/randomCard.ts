@@ -337,7 +337,7 @@ export function deckCardToDrawn(
     scryfallUri: card.scryfallUri,
     frontImageUrl: preferredAssetUrl(card.images.display || card.images.front, {
       id: card.id,
-      kind: 'large',
+      kind: 'png',
     }),
     backImageUrl: options?.useDeckBack
       ? preferredAssetUrl(card.images.back, { kind: 'card_back' })

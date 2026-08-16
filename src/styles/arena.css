@@ -795,6 +795,7 @@ html.is-arena-playing body {
   display: grid;
   gap: 1rem;
   padding: 1.25rem 1.45rem 1.15rem;
+  border-radius: var(--modal-shell-radius);
 }
 
 .deck-roster-head {
@@ -2611,9 +2612,9 @@ button.arena-card {
   justify-content: center;
   padding: max(1rem, var(--safe-top)) max(1rem, var(--safe-right))
     max(1rem, var(--safe-bottom)) max(1rem, var(--safe-left));
-  background: rgba(8, 6, 4, 0.62);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: var(--modal-backdrop-bg);
+  backdrop-filter: blur(var(--modal-backdrop-blur));
+  -webkit-backdrop-filter: blur(var(--modal-backdrop-blur));
   animation: settlement-in 240ms ease both;
 }
 
@@ -2624,11 +2625,11 @@ button.arena-card {
   flex-direction: column;
   gap: 0.75rem;
   padding: 1.25rem 1.35rem 1.15rem;
-  border-radius: 12px;
-  border: 1px solid rgba(184, 137, 58, 0.42);
-  background:
-    linear-gradient(180deg, rgba(36, 28, 18, 0.97), rgba(12, 10, 8, 0.97));
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
+  border-radius: var(--modal-shell-radius);
+  border: var(--modal-shell-border);
+  background: var(--modal-shell-bg);
+  box-shadow: var(--modal-shell-shadow);
+  color: var(--parchment);
   animation: settlement-panel-in 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
@@ -2645,12 +2646,6 @@ button.arena-card {
   font-family: var(--font-display);
   font-size: clamp(1.25rem, 2.4vw, 1.65rem);
   color: #f6ebd0;
-}
-
-.arena-log-modal-head .btn {
-  min-width: 2.4rem;
-  font-size: 1.25rem;
-  line-height: 1;
 }
 
 .arena-log-modal-list {
@@ -2986,11 +2981,11 @@ button.arena-card {
   flex: 0 0 auto;
   max-height: none;
   padding: 1.6rem 1.5rem 1.4rem;
-  border-radius: 12px;
-  border: 1px solid rgba(184, 137, 58, 0.42);
-  background:
-    linear-gradient(180deg, rgba(36, 28, 18, 0.96), rgba(12, 10, 8, 0.96));
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
+  border-radius: var(--modal-shell-radius);
+  border: var(--modal-shell-border);
+  background: var(--modal-shell-bg);
+  box-shadow: var(--modal-shell-shadow);
+  color: var(--parchment);
   text-align: center;
   animation: settlement-panel-in 380ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
@@ -3112,12 +3107,12 @@ button.arena-card {
 }
 
 .prompt-shell.inspect-shell {
-  /* Beat .prompt-shell?s 440px ? match settlement panel width */
+  /* Beat .prompt-shell’s 440px — match settlement panel width */
   width: min(68rem, 98vw);
   max-width: min(68rem, 98vw);
   max-height: min(85vh, 52rem);
   overflow: auto;
-  border-radius: 12px;
+  border-radius: var(--modal-shell-radius);
   padding: 1.35rem 1.4rem 1.3rem;
 }
 
@@ -4108,8 +4103,9 @@ button.arena-card {
   display: grid;
   place-items: center;
   padding: 1rem;
-  background: rgba(10, 8, 6, 0.55);
-  backdrop-filter: blur(4px);
+  background: var(--modal-backdrop-bg);
+  backdrop-filter: blur(var(--modal-backdrop-blur));
+  -webkit-backdrop-filter: blur(var(--modal-backdrop-blur));
 }
 
 .assistant-modal {
@@ -4117,9 +4113,11 @@ button.arena-card {
   max-height: min(88dvh, 900px);
   overflow: auto;
   padding: 1rem 1.15rem 1.25rem;
-  border: 1px solid rgba(184, 137, 58, 0.4);
-  background: linear-gradient(180deg, #32281e, #221a14);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+  border: var(--modal-shell-border);
+  border-radius: var(--modal-shell-radius);
+  background: var(--modal-shell-bg);
+  box-shadow: var(--modal-shell-shadow);
+  color: var(--parchment);
 }
 
 .assistant-modal.is-narrow {
@@ -4158,7 +4156,7 @@ button.arena-card {
 
 .assistant-modal-head h2 {
   margin: 0 0 0.25rem;
-  font-family: Cinzel, serif;
+  font-family: var(--font-display);
   font-size: 1.25rem;
   letter-spacing: 0.04em;
 }

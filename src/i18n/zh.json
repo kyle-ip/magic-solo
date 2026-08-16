@@ -633,7 +633,6 @@
     "exportMobilePrintWarn": "手机浏览器直接打印容易缩放不准，建议先「保存」再用 PDF 应用打印。",
     "exportPrintFailed": "无法打开打印对话框。请先「保存」再打印 PDF 文件。",
     "exportShareFailed": "无法打开分享。",
-    "cancel": "取消",
     "close": "关闭",
     "prevPage": "上一页",
     "nextPage": "下一页",

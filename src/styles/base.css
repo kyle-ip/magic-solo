@@ -18,6 +18,13 @@
   --btn-radius: 10px;
   --btn-radius-sm: 8px;
   --shadow: 0 24px 60px rgba(0, 0, 0, 0.38);
+  /* Shared modal / dialog chrome (style only — sizes stay per-dialog) */
+  --modal-backdrop-bg: rgba(8, 6, 4, 0.78);
+  --modal-backdrop-blur: 6px;
+  --modal-shell-bg: linear-gradient(180deg, #2a221a, #17120e);
+  --modal-shell-border: 1px solid rgba(184, 137, 58, 0.4);
+  --modal-shell-radius: var(--btn-radius, 12px);
+  --modal-shell-shadow: var(--shadow, 0 24px 60px rgba(0, 0, 0, 0.55));
   /* Shared card chrome — match deck gallery `.card-tile-frame` */
   --card-radius: 4.75% / 3.5%;
   --card-border: 1px solid rgba(224, 180, 90, 0.28);
@@ -1010,9 +1017,9 @@ h2 {
   display: grid;
   place-items: center;
   padding: 1.25rem;
-  background: rgba(8, 6, 4, 0.72);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: var(--modal-backdrop-bg);
+  backdrop-filter: blur(var(--modal-backdrop-blur));
+  -webkit-backdrop-filter: blur(var(--modal-backdrop-blur));
 }
 
 .references-modal {
@@ -1020,11 +1027,11 @@ h2 {
   max-height: min(80vh, 40rem);
   overflow: auto;
   padding: 1.35rem 1.4rem 1.5rem;
-  border-radius: var(--btn-radius, 12px);
-  border: 1px solid rgba(184, 137, 58, 0.35);
-  background:
-    linear-gradient(165deg, rgba(42, 32, 22, 0.96), rgba(22, 16, 12, 0.98));
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  border-radius: var(--modal-shell-radius);
+  border: var(--modal-shell-border);
+  background: var(--modal-shell-bg);
+  box-shadow: var(--modal-shell-shadow);
+  color: var(--parchment);
 }
 
 .references-modal-head {

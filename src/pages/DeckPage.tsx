@@ -135,7 +135,7 @@ export function DeckPage() {
             <CardImage
               localPath={heroFront}
               cardId={hero?.id}
-              kind="large"
+              kind="png"
               alt={challengeName}
               fetchPriority="high"
             />

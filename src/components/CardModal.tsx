@@ -94,7 +94,7 @@ function CardModalBody({
     const facePath = card.images.display || card.images.front
     void preloadAssetCandidates(facePath, {
       id: card.id,
-      kind: 'large',
+      kind: 'png',
     }).catch(() => undefined)
     void preloadAssetCandidates(card.images.back, {
       id: card.id,
@@ -144,7 +144,7 @@ function CardModalBody({
   }, [artZoomed, canBrowse, onClose, stepCard])
 
   const facePath = card.images.display || card.images.front
-  const front = useCardImageSrc(facePath, { id: card.id, kind: 'large' })
+  const front = useCardImageSrc(facePath, { id: card.id, kind: 'png' })
   const back = useCardImageSrc(card.images.back, {
     id: card.id,
     kind: 'card_back',

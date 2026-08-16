@@ -270,13 +270,12 @@
   margin: 1.5rem auto;
   width: min(68rem, 98vw);
   padding: 1.6rem 1.5rem 1.4rem;
-  border-radius: 12px;
-  border: 1px solid rgba(184, 137, 58, 0.42);
-  background:
-    linear-gradient(180deg, rgba(36, 28, 18, 0.96), rgba(12, 10, 8, 0.96));
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
+  border-radius: var(--modal-shell-radius);
+  border: var(--modal-shell-border);
+  background: var(--modal-shell-bg);
+  box-shadow: var(--modal-shell-shadow);
   text-align: left;
-  color: #e7d7b8;
+  color: var(--parchment);
 }
 
 .battle-history-panel .settlement-eyebrow {
@@ -588,11 +587,12 @@
   position: fixed;
   inset: 0;
   z-index: 40;
-  background: rgba(6, 4, 3, 0.78);
+  background: var(--modal-backdrop-bg);
   display: grid;
   place-items: center;
   padding: 1.25rem;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(var(--modal-backdrop-blur));
+  -webkit-backdrop-filter: blur(var(--modal-backdrop-blur));
 }
 
 .modal-shell {
@@ -604,12 +604,13 @@
   grid-template-columns: auto minmax(0, 1fr);
   align-items: stretch;
   gap: 1.75rem;
-  background:
-    linear-gradient(180deg, #2a221a, #17120e);
-  border: 1px solid rgba(184, 137, 58, 0.4);
+  background: var(--modal-shell-bg);
+  border: var(--modal-shell-border);
+  border-radius: var(--modal-shell-radius);
   padding: 1.5rem 1.6rem 1.4rem;
   position: relative;
-  box-shadow: var(--shadow);
+  box-shadow: var(--modal-shell-shadow);
+  color: var(--parchment);
 }
 
 .modal-close {
@@ -617,15 +618,6 @@
   top: 0.9rem;
   right: 0.9rem;
   z-index: 2;
-  border: 1px solid rgba(184, 137, 58, 0.45);
-  background: rgba(0, 0, 0, 0.35);
-  color: var(--parchment);
-  padding: 0.35rem 0.7rem;
-  cursor: pointer;
-  font-family: var(--font-display);
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
 
 .card-flip {
@@ -1071,7 +1063,6 @@
   .modal-close {
     top: 0.65rem;
     right: 0.65rem;
-    background: rgba(12, 9, 6, 0.82);
   }
 
   .card-flip {
@@ -1596,7 +1587,9 @@
   position: fixed;
   inset: 0;
   z-index: 50;
-  background: rgba(6, 4, 3, 0.72);
+  background: var(--modal-backdrop-bg);
+  backdrop-filter: blur(var(--modal-backdrop-blur));
+  -webkit-backdrop-filter: blur(var(--modal-backdrop-blur));
   display: grid;
   place-items: center;
   padding: 1rem;
@@ -1604,10 +1597,12 @@
 
 .prompt-shell {
   width: min(440px, 100%);
-  background: linear-gradient(180deg, #2a221a, #17120e);
-  border: 1px solid rgba(184, 137, 58, 0.45);
+  background: var(--modal-shell-bg);
+  border: var(--modal-shell-border);
+  border-radius: var(--modal-shell-radius);
   padding: 1.4rem 1.35rem 1.25rem;
-  box-shadow: var(--shadow);
+  box-shadow: var(--modal-shell-shadow);
+  color: var(--parchment);
 }
 
 .prompt-actions {

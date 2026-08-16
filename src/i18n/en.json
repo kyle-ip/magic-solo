@@ -633,7 +633,6 @@
     "exportMobilePrintWarn": "Direct web printing on phones can scale incorrectly. Prefer Save, then print from a PDF app.",
     "exportPrintFailed": "Could not open the print dialog. Use Save, then print the PDF file.",
     "exportShareFailed": "Could not open Share.",
-    "cancel": "Cancel",
     "close": "Close",
     "prevPage": "Previous",
     "nextPage": "Next",

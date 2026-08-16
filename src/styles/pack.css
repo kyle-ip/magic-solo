@@ -15,9 +15,9 @@
     max(1rem, var(--safe-right, 0px))
     max(1rem, var(--safe-bottom, 0px))
     max(1rem, var(--safe-left, 0px));
-  background: rgba(8, 6, 4, 0.78);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: var(--modal-backdrop-bg);
+  backdrop-filter: blur(var(--modal-backdrop-blur));
+  -webkit-backdrop-filter: blur(var(--modal-backdrop-blur));
 }
 
 .pack-draw-modal {
@@ -28,10 +28,10 @@
   margin-block: auto;
   box-sizing: border-box;
   padding: 1.35rem 1.5rem 1.35rem;
-  border-radius: var(--btn-radius, 12px);
-  border: 1px solid rgba(184, 137, 58, 0.28);
+  border-radius: var(--modal-shell-radius);
+  border: var(--modal-shell-border);
   background: #000;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  box-shadow: var(--modal-shell-shadow);
 }
 
 /* Pack open: fixed frame so sealed / tear / reveal share one modal size */
@@ -464,18 +464,19 @@
   align-items: center;
   justify-content: center;
   padding: 1.25rem;
-  background: rgba(8, 6, 4, 0.72);
-  backdrop-filter: blur(2px);
+  background: var(--modal-backdrop-bg);
+  backdrop-filter: blur(var(--modal-backdrop-blur));
+  -webkit-backdrop-filter: blur(var(--modal-backdrop-blur));
 }
 
 .pack-confirm-dialog {
   width: min(100%, 22rem);
   padding: 1.25rem 1.35rem 1.2rem;
-  border-radius: var(--btn-radius, 12px);
-  border: 1px solid rgba(184, 137, 58, 0.4);
-  background:
-    linear-gradient(165deg, rgba(42, 32, 22, 0.98), rgba(22, 16, 12, 0.99));
-  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.55);
+  border-radius: var(--modal-shell-radius);
+  border: var(--modal-shell-border);
+  background: var(--modal-shell-bg);
+  box-shadow: var(--modal-shell-shadow);
+  color: var(--parchment);
 }
 
 .pack-confirm-dialog h3 {

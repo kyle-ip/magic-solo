@@ -11,6 +11,7 @@ const shared = (url: string): SharedPrintImage => ({
   bytes: new Uint8Array([1]),
   contentType: 'image/png',
   objectUrl: url,
+  fetchedUrl: url,
 })
 
 describe('countPrintableSlots / materializePageImages', () => {
@@ -78,6 +79,53 @@ describe('fetchPrintImageStore resolveFetchUrl', () => {
     expect(fetched[0]).toContain('/normal/')
     expect(store.has(entries[0]!.imageUrl)).toBe(true)
     expect(store.get(entries[0]!.imageUrl)?.contentType).toBe('image/jpeg')
+    expect(store.get(entries[0]!.imageUrl)?.fetchedUrl).toContain('/normal/')
+
+    vi.unstubAllGlobals()
+  })
+
+  it('does not reuse preview normal bytes when exporting png', async () => {
+    const printUrl =
+      'https://cards.scryfall.io/png/front/a/b/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee.png'
+    const normalUrl = printUrl
+      .replace('/png/', '/normal/')
+      .replace(/\.png$/i, '.jpg')
+    const previewStore = new Map<string, SharedPrintImage>([
+      [
+        printUrl,
+        {
+          bytes: new Uint8Array([9]),
+          contentType: 'image/jpeg',
+          objectUrl: 'blob:normal',
+          fetchedUrl: normalUrl,
+        },
+      ],
+    ])
+    const fetched: string[] = []
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) => {
+        fetched.push(String(url))
+        return {
+          ok: true,
+          headers: { get: () => 'image/png' },
+          arrayBuffer: async () => new Uint8Array([7, 7, 7]).buffer,
+        }
+      }),
+    )
+    vi.stubGlobal('URL', {
+      createObjectURL: () => 'blob:png',
+      revokeObjectURL: () => undefined,
+    })
+
+    const { store } = await fetchPrintImageStore(
+      [{ id: 'a', name: 'A', imageUrl: printUrl, quantity: 1 }],
+      { reuseFrom: previewStore },
+    )
+    expect(fetched).toEqual([printUrl])
+    expect(store.get(printUrl)?.fetchedUrl).toBe(printUrl)
+    expect(store.get(printUrl)?.contentType).toBe('image/png')
+    expect(store.get(printUrl)?.bytes).toEqual(new Uint8Array([7, 7, 7]))
 
     vi.unstubAllGlobals()
   })

@@ -127,17 +127,20 @@ export function LlmSettingsModal({ open, onClose }: LlmSettingsModalProps) {
         aria-labelledby={titleId}
         onClick={(e) => e.stopPropagation()}
       >
-        <PackHeadIconButton
-          className="llm-modal-close"
-          icon="close"
-          label={t('llm.close')}
-          onClick={onClose}
-        />
         <header className="llm-modal-head">
-          <p className="eyebrow">{t('llm.eyebrow')}</p>
-          <h2 id={titleId}>{t('llm.title')}</h2>
-          <p className="llm-modal-lead">{t('llm.lead')}</p>
+          <div className="llm-modal-head-copy">
+            <p className="eyebrow">{t('llm.eyebrow')}</p>
+            <h2 id={titleId}>{t('llm.title')}</h2>
+          </div>
+          <div className="llm-modal-head-actions">
+            <PackHeadIconButton
+              icon="close"
+              label={t('llm.close')}
+              onClick={onClose}
+            />
+          </div>
         </header>
+        <p className="llm-modal-lead">{t('llm.lead')}</p>
 
         <form
           className="llm-form"

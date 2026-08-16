@@ -10,7 +10,7 @@ import {
   getGallerySet,
   pickHeroCard,
   thumbUrlFromDrawn,
-  withLargeFace,
+  withPngFace,
   type GallerySet,
 } from '../data/setApi'
 import { localizedSetName } from '../data/locale/setNamesZh'
@@ -137,12 +137,12 @@ export function SetGalleryPage() {
 
   const openCard = useCallback(
     async (card: DrawnCard) => {
-      const large = withLargeFace(card)
-      setSelected(large)
-      void preloadImage(large.frontImageUrl).catch(() => undefined)
+      const png = withPngFace(card)
+      setSelected(png)
+      void preloadImage(png.frontImageUrl).catch(() => undefined)
       if (!wantsZh(i18n.language)) return
       const enriched = await enrichDrawnCardZh(card)
-      const enrichedLarge = withLargeFace(enriched)
+      const enrichedLarge = withPngFace(enriched)
       setSelected((cur) =>
         cur && cur.id === enrichedLarge.id ? enrichedLarge : cur,
       )
@@ -155,7 +155,7 @@ export function SetGalleryPage() {
 
   const hero = useMemo(() => pickHeroCard(cards), [cards])
   const heroArt = hero ? artCropUrlFromDrawn(hero) : null
-  const heroLarge = hero ? withLargeFace(hero).frontImageUrl : null
+  const heroLarge = hero ? withPngFace(hero).frontImageUrl : null
 
   useEffect(() => {
     if (!heroLarge) return
@@ -178,7 +178,7 @@ export function SetGalleryPage() {
   }, [cards, query, rarities, i18n.language])
 
   const browseLarge = useMemo(
-    () => filtered.map(withLargeFace),
+    () => filtered.map(withPngFace),
     [filtered],
   )
 
@@ -337,7 +337,7 @@ export function SetGalleryPage() {
           <div className="card-grid">
             {filtered.map((card, index) => {
               const thumb = thumbUrlFromDrawn(card)
-              const large = withLargeFace(card).frontImageUrl
+              const large = withPngFace(card).frontImageUrl
               return (
                 <button
                   key={card.id}

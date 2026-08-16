@@ -961,9 +961,6 @@ export function PrintAssistantModal({
                   ? t('printAssistant.exporting')
                   : t('printAssistant.export')}
               </button>
-              <button type="button" className="btn ghost" onClick={close}>
-                {t('printAssistant.cancel')}
-              </button>
             </div>
           </div>
         </div>

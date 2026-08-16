@@ -17,6 +17,8 @@ export type SharedPrintImage = {
   bytes: Uint8Array
   contentType: string
   objectUrl: string
+  /** URL that was actually downloaded (may differ from the store key). */
+  fetchedUrl: string
 }
 
 export type FetchImagesProgress = {
@@ -43,7 +45,7 @@ async function fetchOne(
   const objectUrl = URL.createObjectURL(
     new Blob([bytes], { type: contentType }),
   )
-  return { bytes, contentType, objectUrl }
+  return { bytes, contentType, objectUrl, fetchedUrl: imageUrl }
 }
 
 /** Unique image URLs from list entries with quantity > 0. */
@@ -144,8 +146,8 @@ export type FetchPrintImageStoreOptions = {
    */
   resolveFetchUrl?: (printImageUrl: string) => string
   /**
-   * When the resolved fetch URL equals the print URL, reuse an existing
-   * shared image instead of re-downloading (local / blob faces).
+   * Reuse an existing shared image only when it was downloaded from the same
+   * URL we would fetch now (so preview `normal` is never reused for print `png`).
    */
   reuseFrom?: Map<string, SharedPrintImage>
 }
@@ -183,10 +185,12 @@ export async function fetchPrintImageStore(
       const item = unique[index]!
       try {
         const fetchUrl = resolveFetchUrl(item.imageUrl)
-        const reusable =
-          fetchUrl === item.imageUrl ? reuseFrom?.get(item.imageUrl) : undefined
-        if (reusable) {
-          store.set(item.imageUrl, reusable)
+        const existing = reuseFrom?.get(item.imageUrl)
+        // Only reuse when the cached bytes came from this exact fetch URL.
+        // Preview stores Scryfall `normal` under the print `png` key — that
+        // must not be reused for PDF export.
+        if (existing && existing.fetchedUrl === fetchUrl) {
+          store.set(item.imageUrl, existing)
         } else {
           const shared = await fetchOne(fetchUrl, signal)
           store.set(item.imageUrl, shared)

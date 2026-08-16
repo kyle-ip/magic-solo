@@ -139,17 +139,20 @@ export function PageChatModal({ open, onClose }: PageChatModalProps) {
         aria-labelledby={titleId}
         onClick={(e) => e.stopPropagation()}
       >
-        <PackHeadIconButton
-          className="llm-modal-close"
-          icon="close"
-          label={t('llm.close')}
-          onClick={onClose}
-        />
         <header className="llm-modal-head">
-          <p className="eyebrow">{t('llm.chatEyebrow')}</p>
-          <h2 id={titleId}>{t('llm.chatTitle')}</h2>
-          <p className="llm-modal-lead">{t('llm.chatLead')}</p>
+          <div className="llm-modal-head-copy">
+            <p className="eyebrow">{t('llm.chatEyebrow')}</p>
+            <h2 id={titleId}>{t('llm.chatTitle')}</h2>
+          </div>
+          <div className="llm-modal-head-actions">
+            <PackHeadIconButton
+              icon="close"
+              label={t('llm.close')}
+              onClick={onClose}
+            />
+          </div>
         </header>
+        <p className="llm-modal-lead">{t('llm.chatLead')}</p>
 
         <div className="llm-page-chat-thread" ref={listRef} role="log">
           {turns.length === 0 && !loading ? (

@@ -16,20 +16,20 @@ import {
   type ScryfallCard,
 } from './randomCard'
 import {
-  largeUrlFromFaceUrl,
+  pngUrlFromFaceUrl,
   scryfallResizeFaceUrl,
   thumbUrlFromFaceUrl,
-  withLargeFace,
+  withPngFace,
 } from '../utils/remoteAsset'
 
-export { withLargeFace }
+export { withPngFace, withPngFace as withLargeFace }
 
 export function thumbUrlFromDrawn(card: DrawnCard): string {
   return thumbUrlFromFaceUrl(card.frontImageUrl)
 }
 
-export function largeFaceUrlFromDrawn(card: DrawnCard): string {
-  return largeUrlFromFaceUrl(card.frontImageUrl)
+export function pngFaceUrlFromDrawn(card: DrawnCard): string {
+  return pngUrlFromFaceUrl(card.frontImageUrl)
 }
 
 const SETS_URL = 'https://api.scryfall.com/sets'

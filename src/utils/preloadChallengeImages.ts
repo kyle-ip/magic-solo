@@ -22,8 +22,8 @@ type PreloadJob = {
 }
 
 const CONCURRENCY = 8
-const KINDS_PLAY: CardImageKind[] = ['art_crop', 'normal', 'large']
-const KINDS_DECK_WARM: CardImageKind[] = ['art_crop', 'normal', 'large']
+const KINDS_PLAY: CardImageKind[] = ['art_crop', 'normal', 'png']
+const KINDS_DECK_WARM: CardImageKind[] = ['art_crop', 'normal', 'png']
 
 function pushJob(
   jobs: PreloadJob[],
@@ -78,7 +78,7 @@ export function collectChallengeImageJobs(opts: {
     const hero = HERO_DEFS.find((h) => h.id === id)
     if (!hero) continue
     pushJob(jobs, seen, hero.image, 'normal')
-    pushJob(jobs, seen, hero.image, 'large')
+    pushJob(jobs, seen, hero.image, 'png')
     pushJob(jobs, seen, hero.art || hero.image, 'art_crop')
   }
 

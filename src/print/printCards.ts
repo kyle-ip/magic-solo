@@ -85,7 +85,7 @@ export function printItemsFromDeckCards(cards: DeckCard[]): PrintListEntry[] {
     if (uuid) {
       imageUrl = scryfallCardFaceUrl(uuid, 'png')
     } else if (local) {
-      imageUrl = preferredAssetUrl(local, { id: card.id, kind: 'large' })
+      imageUrl = preferredAssetUrl(local, { id: card.id, kind: 'png' })
       if (!/^https?:\/\//i.test(imageUrl)) {
         imageUrl = assetUrl(local)
       }

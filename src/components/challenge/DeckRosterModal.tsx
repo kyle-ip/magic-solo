@@ -51,7 +51,7 @@ function constructedToDrawn(card: ConstructedCardDef): DrawnCard {
     scryfallUri: `https://scryfall.com/card/${card.id}`,
     frontImageUrl: preferredAssetUrl(card.image, {
       id: card.id,
-      kind: 'large',
+      kind: 'png',
     }),
     backImageUrl: defaultCardBackUrl(),
     source: 'scryfall',

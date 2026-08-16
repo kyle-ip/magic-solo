@@ -93,7 +93,7 @@ export function LibrarySearchModal({
         </div>
         {library[0] ? (
           <div className="assistant-search-preview" aria-hidden="true">
-            <CardImage localPath={library[0].image} kind="large" alt="" />
+            <CardImage localPath={library[0].image} kind="png" alt="" />
           </div>
         ) : null}
       </div>

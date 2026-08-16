@@ -166,6 +166,7 @@ function deriveRemote(
         kind === 'small' ||
         kind === 'normal' ||
         kind === 'large' ||
+        kind === 'png' ||
         kind === 'art_crop'
       ) {
         return scryfallCardFaceUrl(id, kind)
@@ -179,6 +180,7 @@ function deriveRemote(
     kind === 'small' ||
     kind === 'normal' ||
     kind === 'large' ||
+    kind === 'png' ||
     kind === 'art_crop'
   ) {
     const fromMap = lookupByCardId(id, kind)
@@ -236,15 +238,20 @@ export function thumbUrlFromFaceUrl(frontImageUrl: string): string {
   return scryfallResizeFaceUrl(frontImageUrl, 'small')
 }
 
-/** Detail-modal face — Scryfall `large` (672×936). */
+/** Detail-modal / hi-res face — Scryfall `png` (~745×1040). */
 export function largeUrlFromFaceUrl(frontImageUrl: string): string {
-  return scryfallResizeFaceUrl(frontImageUrl, 'large')
+  return pngUrlFromFaceUrl(frontImageUrl)
 }
 
+/** @deprecated Prefer withPngFace — kept as alias for call-site migration. */
 export function withLargeFace<T extends { frontImageUrl: string }>(card: T): T {
+  return withPngFace(card)
+}
+
+export function withPngFace<T extends { frontImageUrl: string }>(card: T): T {
   return {
     ...card,
-    frontImageUrl: largeUrlFromFaceUrl(card.frontImageUrl),
+    frontImageUrl: pngUrlFromFaceUrl(card.frontImageUrl),
   }
 }
 

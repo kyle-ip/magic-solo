@@ -927,7 +927,7 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
                 } as CSSProperties)
           }
         >
-          <CardImage localPath={preview.image} kind="large" alt={preview.name} />
+          <CardImage localPath={preview.image} kind="png" alt={preview.name} />
           <div className="card-preview-copy">
             <p className="card-preview-name">{preview.name}</p>
             <p className="card-preview-text">{preview.text}</p>

@@ -8,6 +8,7 @@ export type CardImageKind =
   | 'small'
   | 'normal'
   | 'large'
+  | 'png'
   | 'art_crop'
   | 'card_back'
   | 'cover'

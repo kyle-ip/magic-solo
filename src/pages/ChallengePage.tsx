@@ -1917,7 +1917,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                   <div className="card-preview-art">
                     <CardImage
                       localPath={preview.image}
-                      kind="large"
+                      kind="png"
                       alt={preview.name}
                     />
                   </div>

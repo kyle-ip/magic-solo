@@ -23,7 +23,7 @@ import {
 } from '../utils/preloadChallengeImages'
 import {
   thumbUrlFromFaceUrl,
-  withLargeFace,
+  withPngFace,
 } from '../utils/remoteAsset'
 import { rarityFrameClass } from '../utils/rarityFrame'
 import type { ClassicDeckListEntry } from '../types'
@@ -81,7 +81,7 @@ export function ClassicDeckDetailPage() {
       const card = resolved.get(row.name)
       if (card && !seen.has(card.id)) {
         seen.add(card.id)
-        list.push(withLargeFace(card))
+        list.push(withPngFace(card))
       }
     }
     return list
@@ -147,7 +147,7 @@ export function ClassicDeckDetailPage() {
   const openCard = (name: string) => {
     const card = resolved.get(name)
     if (!card) return
-    const large = withLargeFace(card)
+    const large = withPngFace(card)
     setInspect(large)
     void preloadImage(large.frontImageUrl).catch(() => undefined)
   }
@@ -342,7 +342,7 @@ function CardGallery({
                 className={`classic-key-thumb ${rarityFrameClass(card.rarity)}`}
                 onClick={() => onOpen(row.name)}
                 onPointerEnter={() => {
-                  void preloadImage(withLargeFace(card).frontImageUrl).catch(
+                  void preloadImage(withPngFace(card).frontImageUrl).catch(
                     () => undefined,
                   )
                 }}

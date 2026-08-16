@@ -29,6 +29,7 @@ function artUrlFromDrawn(card: DrawnCard): string {
   const face = card.frontImageUrl
   if (/\/normal\//.test(face)) return face.replace('/normal/', '/art_crop/')
   if (/\/large\//.test(face)) return face.replace('/large/', '/art_crop/')
+  if (/\/png\//.test(face)) return face.replace('/png/', '/art_crop/').replace(/\.png(\?|$)/i, '.jpg$1')
   if (/\/small\//.test(face)) return face.replace('/small/', '/art_crop/')
   return face
 }
