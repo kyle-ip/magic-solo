@@ -40,7 +40,7 @@
   background-color: #211a14;
   background-size: cover;
   background-position: center 22%;
-  filter: blur(14px) saturate(1.02) contrast(1.02) brightness(0.88);
+  filter: blur(14px) saturate(1.05) contrast(1.02) brightness(1.08);
   transform: scale(1.12);
   transform-origin: center center;
 }
@@ -49,13 +49,13 @@
   background:
     linear-gradient(
       180deg,
-      rgba(22, 17, 12, 0.12) 0%,
-      rgba(22, 17, 12, 0.28) 28%,
-      rgba(22, 17, 12, 0.46) 62%,
-      rgba(22, 17, 12, 0.62) 100%
+      rgba(22, 17, 12, 0.08) 0%,
+      rgba(22, 17, 12, 0.16) 28%,
+      rgba(22, 17, 12, 0.26) 62%,
+      rgba(22, 17, 12, 0.36) 100%
     ),
-    linear-gradient(90deg, rgba(22, 17, 12, 0.24), transparent 55%, rgba(22, 17, 12, 0.16)),
-    radial-gradient(ellipse 70% 55% at 70% 18%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 68%);
+    linear-gradient(90deg, rgba(22, 17, 12, 0.14), transparent 55%, rgba(22, 17, 12, 0.1)),
+    radial-gradient(ellipse 70% 55% at 70% 18%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 68%);
 }
 
 .deck-hero {
@@ -957,7 +957,8 @@
     flex: 0 0 auto;
   }
 
-  .lang-switch select {
+  .lang-switch select,
+  .lang-switch-trigger {
     max-width: 5rem;
     padding: 0.32rem 1.35rem 0.32rem 0.45rem;
     font-size: 0.76rem;
@@ -1227,8 +1228,9 @@
   align-items: center;
   margin: 0.55rem 0 0;
   padding: 1rem 1.1rem;
-  background: rgba(0, 0, 0, 0.28);
+  background: rgba(58, 48, 38, 0.42);
   border: 1px solid rgba(184, 137, 58, 0.28);
+  box-shadow: none;
 }
 
 .setup-field span {
@@ -1754,6 +1756,13 @@
   margin-top: 0.75rem;
   padding: 0.75rem;
   background: rgba(0, 0, 0, 0.25);
+}
+
+.block-panel-label {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: rgba(231, 215, 184, 0.78);
 }
 
 .block-panel ul {

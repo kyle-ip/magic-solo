@@ -2,6 +2,8 @@
 .classic-decks-page,
 .classic-deck-detail-page {
   padding-block: 1.5rem 3rem;
+  /* Grow so empty filter states still fill the shell (footer stays put). */
+  flex: 1 0 auto;
 }
 
 .classic-decks-hero,
@@ -40,7 +42,7 @@
 .classic-format-chip {
   appearance: none;
   border: 1px solid rgba(184, 137, 58, 0.28);
-  background: rgba(28, 22, 16, 0.55);
+  background: rgba(52, 42, 32, 0.55);
   color: rgba(231, 215, 184, 0.82);
   font: inherit;
   font-size: 0.82rem;
@@ -57,7 +59,7 @@
 }
 
 .classic-format-chip.is-active {
-  color: #1a140e;
+  color: #fff8ec;
   background: linear-gradient(180deg, #e8c878, #c9a04a);
   border-color: transparent;
 }
@@ -80,7 +82,7 @@
   text-decoration: none;
   color: inherit;
   background:
-    linear-gradient(160deg, rgba(42, 32, 22, 0.72), rgba(18, 14, 10, 0.55));
+    linear-gradient(160deg, rgba(58, 46, 34, 0.72), rgba(40, 32, 24, 0.58));
   border: 1px solid rgba(184, 137, 58, 0.22);
   border-radius: 0.35rem;
   transition:
@@ -163,10 +165,6 @@
 .classic-empty,
 .classic-loading {
   color: rgba(231, 215, 184, 0.7);
-}
-
-.classic-detail-nav {
-  margin-bottom: 1rem;
 }
 
 .classic-detail-section {

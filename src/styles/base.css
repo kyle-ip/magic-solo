@@ -1,12 +1,21 @@
 :root {
-  --ink: #2a2118;
-  --ink-soft: #564636;
+  --ink: #342820;
+  --ink-soft: #6a5644;
   --parchment: #f4ead4;
   --parchment-deep: #e0cea4;
   --bronze: #cca052;
   --bronze-bright: #f0cc78;
-  --stone: #3a3026;
-  --veil: rgba(22, 17, 12, 0.48);
+  --stone: #45382c;
+  --veil: rgba(40, 32, 24, 0.4);
+  /* Shared UI surfaces - closer to brighter page atmospheres */
+  --surface: #3a3026;
+  --surface-raised: #45382c;
+  --surface-sunken: #2e261e;
+  --chrome-bg: rgba(48, 38, 30, 0.62);
+  --chrome-bg-strong: rgba(42, 34, 26, 0.78);
+  --control-bg: linear-gradient(180deg, rgba(72, 56, 40, 0.94), rgba(46, 36, 28, 0.96));
+  --control-bg-ghost: linear-gradient(180deg, rgba(62, 48, 36, 0.72), rgba(40, 30, 24, 0.78));
+  --input-bg: #2e261e;
   /* Latin display + soft Chinese UI fonts (mainstream game-style sans for body) */
   --font-display: 'Cinzel', 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
   --font-body: 'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei UI',
@@ -17,18 +26,18 @@
   --radius: 2px;
   --btn-radius: 10px;
   --btn-radius-sm: 8px;
-  --shadow: 0 24px 60px rgba(0, 0, 0, 0.38);
+  --shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
   /* Shared modal / dialog chrome (style only — sizes stay per-dialog) */
-  --modal-backdrop-bg: rgba(8, 6, 4, 0.78);
+  --modal-backdrop-bg: rgba(22, 16, 12, 0.62);
   --modal-backdrop-blur: 6px;
-  --modal-shell-bg: linear-gradient(180deg, #2a221a, #17120e);
+  --modal-shell-bg: linear-gradient(180deg, #3a3026, #2a221a);
   --modal-shell-border: 1px solid rgba(184, 137, 58, 0.4);
   --modal-shell-radius: var(--btn-radius, 12px);
-  --modal-shell-shadow: var(--shadow, 0 24px 60px rgba(0, 0, 0, 0.55));
+  --modal-shell-shadow: var(--shadow, 0 24px 60px rgba(0, 0, 0, 0.4));
   /* Shared card chrome — match deck gallery `.card-tile-frame` */
   --card-radius: 4.75% / 3.5%;
   --card-border: 1px solid rgba(224, 180, 90, 0.28);
-  --card-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+  --card-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
   --card-face-bg: #050403;
   --card-img-scale: 1.03;
   /* Rarity frame chrome (series gallery + collection cabinet) */
@@ -141,12 +150,12 @@ body {
   min-width: 320px;
   min-height: 100vh;
   min-height: 100dvh;
-  background-color: #211a14;
+  /* Stable ground: no warm gold radials — sparse/filter empty states must
+     match dense grids (classic decks, sets, galleries). */
+  background-color: #2a221a;
   background-image:
-    radial-gradient(ellipse 90% 78% at 50% 36%, transparent 48%, rgba(18, 14, 10, 0.32) 100%),
-    radial-gradient(1000px 520px at 14% -6%, rgba(204, 160, 82, 0.2), transparent 60%),
-    radial-gradient(860px 480px at 90% 0%, rgba(120, 62, 36, 0.22), transparent 52%),
-    linear-gradient(180deg, #3a2e22 0%, #261e16 48%, #1a1510 100%);
+    radial-gradient(ellipse 90% 78% at 50% 36%, transparent 48%, rgba(28, 22, 16, 0.28) 100%),
+    linear-gradient(180deg, #3a3026 0%, #322820 48%, #2a2218 100%);
 }
 
 /* Pale sepia vellum — candlelit manuscript leaf over the dark ground. */
@@ -163,17 +172,17 @@ body::before {
   mix-blend-mode: soft-light;
 }
 
-/* Sparse foxing + faint gold dust in the margins. */
+/* Sparse foxing in the margins — keep neutral so filters don't "recolor" empty space. */
 body::after {
   content: '';
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.13;
+  opacity: 0.1;
   background:
-    radial-gradient(ellipse 42% 32% at 3% 85%, rgba(168, 118, 64, 0.55), transparent 75%),
-    radial-gradient(ellipse 34% 26% at 97% 8%, rgba(184, 137, 58, 0.28), transparent 75%);
+    radial-gradient(ellipse 42% 32% at 3% 85%, rgba(40, 32, 24, 0.55), transparent 75%),
+    radial-gradient(ellipse 34% 26% at 97% 8%, rgba(36, 28, 22, 0.4), transparent 75%);
   mix-blend-mode: soft-light;
 }
 
@@ -248,11 +257,11 @@ select {
   margin: 0;
   padding: 0;
   flex-shrink: 0;
-  background: rgba(18, 14, 10, 0.58);
+  background: var(--chrome-bg);
   backdrop-filter: blur(14px) saturate(1.05);
   -webkit-backdrop-filter: blur(14px) saturate(1.05);
   border-bottom: 1px solid rgba(184, 137, 58, 0.22);
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.14);
 }
 
 .site-header-inner {
@@ -301,6 +310,63 @@ select {
 
 .site-header-actions > .lang-switch {
   flex: 0 0 auto;
+}
+
+.site-nav-menu {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.site-header-nav .references-text-btn {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.2;
+}
+
+.site-nav-menu-panel {
+  position: fixed;
+  z-index: 80;
+  min-width: 11rem;
+  padding: 0.35rem;
+  border: 1px solid rgba(214, 186, 132, 0.32);
+  border-radius: 0.55rem;
+  background: var(--surface-sunken);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.55);
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.site-nav-menu-item {
+  display: block;
+  width: 100%;
+  padding: 0.45rem 0.65rem;
+  border: 0;
+  border-radius: 0.35rem;
+  background: transparent;
+  color: rgba(231, 215, 184, 0.9);
+  text-align: left;
+  text-decoration: none;
+  font: inherit;
+  font-size: 0.88rem;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 140ms ease, color 140ms ease;
+}
+
+.site-nav-menu-item:hover,
+.site-nav-menu-item:focus-visible {
+  background: rgba(240, 212, 138, 0.14);
+  color: #f0d48a;
+  outline: none;
+  text-decoration: none;
+}
+
+.site-nav-menu-item.is-active {
+  background: rgba(240, 212, 138, 0.18);
+  color: #f0d48a;
 }
 
 .references-text-btn {
@@ -411,6 +477,68 @@ a.references-text-btn:visited {
   font-size: 0.78rem;
 }
 
+.lang-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.lang-switch-trigger {
+  appearance: none;
+  color: var(--parchment);
+  border: 1px solid rgba(224, 180, 90, 0.28);
+  padding: 0.42rem 1.85rem 0.42rem 0.8rem;
+  border-radius: var(--btn-radius-sm);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 236, 196, 0.1);
+  cursor: pointer;
+  transition: border-color 160ms ease, box-shadow 160ms ease, filter 160ms ease;
+  background-color: var(--input-bg);
+  background-image:
+    var(--control-bg-ghost),
+    linear-gradient(45deg, transparent 50%, var(--bronze-bright) 50%),
+    linear-gradient(135deg, var(--bronze-bright) 50%, transparent 50%);
+  background-position:
+    0 0,
+    calc(100% - 14px) calc(50% - 2px),
+    calc(100% - 9px) calc(50% - 2px);
+  background-size:
+    auto,
+    5px 5px,
+    5px 5px;
+  background-repeat: no-repeat;
+  font: inherit;
+  font-size: 0.88rem;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.lang-switch-trigger:hover {
+  border-color: rgba(240, 212, 138, 0.48);
+  filter: brightness(1.05);
+}
+
+.lang-switch-trigger:focus {
+  outline: none;
+}
+
+.lang-switch-trigger:focus-visible {
+  border-color: rgba(240, 212, 138, 0.58);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 236, 196, 0.1),
+    0 0 0 1px rgba(184, 137, 58, 0.35);
+}
+
+.lang-switch.is-open .lang-switch-trigger {
+  border-color: rgba(240, 212, 138, 0.48);
+}
+
+.lang-switch-panel {
+  min-width: 6.5rem;
+}
+
 .lang-switch select {
   appearance: none;
   -webkit-appearance: none;
@@ -425,9 +553,9 @@ a.references-text-btn:visited {
     inset 0 1px 0 rgba(255, 236, 196, 0.1);
   cursor: pointer;
   transition: border-color 160ms ease, box-shadow 160ms ease, filter 160ms ease;
-  background-color: #1c1410;
+  background-color: var(--input-bg);
   background-image:
-    linear-gradient(180deg, rgba(52, 40, 28, 0.95), rgba(28, 20, 14, 0.96)),
+    var(--control-bg-ghost),
     linear-gradient(45deg, transparent 50%, var(--bronze-bright) 50%),
     linear-gradient(135deg, var(--bronze-bright) 50%, transparent 50%);
   background-position:
@@ -453,14 +581,14 @@ a.references-text-btn:visited {
 .lang-switch select:focus-visible {
   border-color: rgba(240, 212, 138, 0.58);
   box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.28),
+    0 4px 12px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 236, 196, 0.1),
     0 0 0 1px rgba(184, 137, 58, 0.35);
 }
 
 .lang-switch select option {
   color-scheme: dark;
-  background-color: #1c1410;
+  background-color: var(--surface-sunken);
   color: var(--parchment);
 }
 
@@ -471,11 +599,11 @@ a.references-text-btn:visited {
   padding: 0;
   color: rgba(231, 215, 184, 0.65);
   font-size: 0.88rem;
-  background: rgba(18, 14, 10, 0.58);
+  background: var(--chrome-bg);
   backdrop-filter: blur(14px) saturate(1.05);
   -webkit-backdrop-filter: blur(14px) saturate(1.05);
-  border-top: 1px solid rgba(184, 137, 58, 0.22);
-  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.18);
+  border-top: 1px solid rgba(184, 137, 58, 0.16);
+  box-shadow: none;
 }
 
 .site-footer-inner {
@@ -580,6 +708,17 @@ h2 {
   max-width: 36rem;
 }
 
+.card-detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.65rem;
+  margin: 0 0 0.35rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  color: rgba(231, 215, 184, 0.72);
+}
+
 .btn {
   display: inline-flex;
   align-items: center;
@@ -595,11 +734,11 @@ h2 {
   font-size: 0.86rem;
   text-decoration: none;
   color: var(--parchment);
-  background: linear-gradient(180deg, rgba(58, 44, 30, 0.95), rgba(28, 20, 14, 0.96));
+  background: var(--control-bg);
   box-shadow:
-    0 6px 16px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(224, 180, 90, 0.08),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.28);
+    0 6px 16px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(224, 180, 90, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.18);
   cursor: pointer;
   transition:
     transform 160ms ease,
@@ -631,29 +770,30 @@ h2 {
 
 .btn.primary {
   background: linear-gradient(180deg, #ebc46a 0%, #c49a4a 48%, #8d6420 100%);
-  color: #1a1208;
+  color: #fff8ec;
   border-color: rgba(240, 212, 138, 0.55);
   font-weight: 700;
   box-shadow:
     0 8px 20px rgba(140, 90, 20, 0.34),
-    inset 0 1px 0 rgba(255, 248, 220, 0.55),
+    inset 0 1px 0 rgba(255, 248, 220, 0.35),
     inset 0 -1px 0 rgba(70, 40, 8, 0.35);
 }
 
 .btn.primary:hover {
   border-color: rgba(255, 230, 170, 0.72);
+  color: #ffffff;
   box-shadow:
     0 12px 26px rgba(160, 110, 30, 0.4),
     0 0 0 1px rgba(240, 212, 138, 0.18),
-    inset 0 1px 0 rgba(255, 248, 220, 0.65),
+    inset 0 1px 0 rgba(255, 248, 220, 0.45),
     inset 0 -1px 0 rgba(70, 40, 8, 0.3);
 }
 
 .btn.ghost {
-  background: linear-gradient(180deg, rgba(48, 36, 26, 0.78), rgba(20, 14, 10, 0.84));
+  background: var(--control-bg-ghost);
   border-color: rgba(160, 120, 55, 0.4);
   color: rgba(244, 234, 212, 0.92);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
 }
 
 .btn.muted,
@@ -701,7 +841,7 @@ h2 {
   background-color: #211a14;
   background-size: cover;
   background-position: center 32%;
-  filter: blur(22px) saturate(1.08) contrast(1.04) brightness(0.78);
+  filter: blur(22px) saturate(1.08) contrast(1.04) brightness(1.08);
   transform: scale(1.14);
   transform-origin: center center;
 }
@@ -712,13 +852,13 @@ h2 {
   background:
     linear-gradient(
       180deg,
-      rgba(28, 22, 16, 0.42) 0%,
-      rgba(24, 18, 12, 0.55) 38%,
-      rgba(20, 15, 11, 0.72) 72%,
-      rgba(16, 12, 9, 0.88) 100%
+      rgba(28, 22, 16, 0.18) 0%,
+      rgba(24, 18, 12, 0.26) 38%,
+      rgba(20, 15, 11, 0.36) 72%,
+      rgba(16, 12, 9, 0.48) 100%
     ),
-    radial-gradient(ellipse 70% 55% at 70% 20%, rgba(224, 180, 90, 0.14), transparent 68%),
-    radial-gradient(ellipse 55% 45% at 12% 78%, rgba(138, 107, 181, 0.12), transparent 70%);
+    radial-gradient(ellipse 70% 55% at 70% 20%, rgba(224, 180, 90, 0.1), transparent 68%),
+    radial-gradient(ellipse 55% 45% at 12% 78%, rgba(138, 107, 181, 0.08), transparent 70%);
 }
 
 .home-page {
@@ -895,12 +1035,7 @@ h2 {
   flex: 1 1 auto;
 }
 
-.path-copy > .eyebrow {
-  margin: 0;
-  font-size: 0.72rem;
-}
-
-.path-copy > p:not(.eyebrow) {
+.path-copy > p {
   margin: 0;
   font-size: 0.9rem;
   line-height: 1.4;
@@ -1110,7 +1245,8 @@ h2 {
     font-size: 0.72rem;
   }
 
-  .lang-switch select {
+  .lang-switch select,
+  .lang-switch-trigger {
     max-width: 4.4rem;
     padding: 0.3rem 1.25rem 0.3rem 0.4rem;
     font-size: 0.72rem;
@@ -1528,10 +1664,10 @@ h2 {
   justify-content: center;
   border: 1px solid rgba(224, 180, 90, 0.32);
   border-radius: 999px;
-  background: linear-gradient(180deg, rgba(56, 42, 28, 0.94), rgba(22, 16, 12, 0.96));
+  background: var(--control-bg);
   color: var(--bronze-bright);
   box-shadow:
-    0 10px 24px rgba(0, 0, 0, 0.4),
+    0 10px 24px rgba(0, 0, 0, 0.22),
     inset 0 1px 0 rgba(255, 236, 196, 0.14);
   cursor: pointer;
   text-decoration: none;

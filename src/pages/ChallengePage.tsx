@@ -12,6 +12,7 @@ import { Link, Navigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import '../styles/arena.css'
 import '../styles/llm.css'
+import '../styles/cursors.css'
 import { ArenaCard } from '../components/challenge/ArenaCard'
 import { AttackArrows } from '../components/challenge/AttackArrows'
 import { CastStage } from '../components/challenge/CastStage'
@@ -22,13 +23,13 @@ import { CoachTipPanel } from '../components/challenge/CoachTipPanel'
 import { LandStack } from '../components/challenge/LandStack'
 import { ManaPoolHud } from '../components/challenge/ManaPoolHud'
 import { PrimaryActionBar } from '../components/challenge/PrimaryActionBar'
+import { PlayerPhaseMark } from '../components/challenge/PlayerPhaseMark'
 import { ZonePile } from '../components/challenge/ZonePile'
 import { computeBoardDensity } from '../challenge/boardDensity'
 import { groupLandStacks } from '../challenge/landStacks'
 import { resolvePrimaryAction } from '../challenge/primaryAction'
 import { LanguageSwitch } from '../components/LanguageSwitch'
 import { PackHeadIconButton } from '../components/PackHeadIconButton'
-import { ChallengeSwitcher } from '../components/ChallengeSwitcher'
 import { getDeck } from '../data/deckStore'
 import { getCardZh } from '../data/locale/cardsZh'
 import { deckMetaEn, deckMetaZh } from '../data/locale/deckMeta'
@@ -81,6 +82,7 @@ import {
 } from '../llm/prompts'
 import { CardImage, RemoteArtBackground } from '../hooks/useCardImageSrc'
 import { useArenaScale } from '../hooks/useArenaScale'
+import { useBoardPan } from '../hooks/useBoardPan'
 import { useHasLlmApiKey } from '../hooks/useLlmSettings'
 import {
   preloadChallengeImages,
@@ -252,8 +254,26 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
   const postAskAbortRef = useRef<AbortController | null>(null)
   const settlementIdRef = useRef<string | null>(null)
   const arenaRef = useRef<HTMLElement | null>(null)
+  const boardStageRef = useRef<HTMLDivElement | null>(null)
+  const boardPanRef = useRef<HTMLDivElement | null>(null)
   const playing = state.status !== 'setup'
   useArenaScale(arenaRef, playing)
+
+  const over =
+    state.status === 'won' || state.status === 'lost'
+  const inCombat =
+    playing &&
+    state.activeSide === 'player' &&
+    state.playerPhase === 'combat' &&
+    !over
+  const landStacks = groupLandStacks(state.player.lands)
+  const boardDensity = computeBoardDensity({
+    creatureCount: state.player.creatures.length,
+    landCount: state.player.lands.length,
+    landStackCount: landStacks.length,
+    opponentCount: state.challenge.battlefield.length,
+  })
+  const boardPan = useBoardPan(boardStageRef, boardPanRef, playing)
 
   useEffect(() => {
     // Keep SiteHeader on setup; hide chrome only while the board is active.
@@ -309,6 +329,8 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
   const advance = useCallback(() => act({ type: 'ADVANCE' }), [act])
 
   const clearPreviewTimer = useRef(0)
+  const previewPaneRef = useRef<HTMLElement | null>(null)
+  const previewPointerRef = useRef({ x: 16, y: 72 })
 
   const clearPreview = useCallback(() => {
     window.clearTimeout(clearPreviewTimer.current)
@@ -324,7 +346,14 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
       window.clearTimeout(clearPreviewTimer.current)
       setPreview(next)
       if (point) {
-        setPreviewPos(clampPreviewPosition(point.clientX, point.clientY))
+        previewPointerRef.current = { x: point.clientX, y: point.clientY }
+        const el = previewPaneRef.current
+        setPreviewPos(
+          clampPreviewPosition(point.clientX, point.clientY, {
+            paneW: el?.offsetWidth || 340,
+            paneH: el?.offsetHeight || 560,
+          }),
+        )
       }
     },
     [],
@@ -691,10 +720,43 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
   useEffect(() => {
     if (!preview) return
     const onMove = (e: PointerEvent) => {
-      setPreviewPos(clampPreviewPosition(e.clientX, e.clientY))
+      previewPointerRef.current = { x: e.clientX, y: e.clientY }
+      const el = previewPaneRef.current
+      setPreviewPos(
+        clampPreviewPosition(e.clientX, e.clientY, {
+          paneW: el?.offsetWidth || 340,
+          paneH: el?.offsetHeight || 560,
+        }),
+      )
     }
     window.addEventListener('pointermove', onMove, { passive: true })
     return () => window.removeEventListener('pointermove', onMove)
+  }, [preview])
+
+  // After preview mounts / content swaps, re-clamp using measured pane size.
+  useEffect(() => {
+    if (!preview) return
+    const el = previewPaneRef.current
+    if (!el) return
+    const reclamp = () => {
+      const pt = previewPointerRef.current
+      setPreviewPos(
+        clampPreviewPosition(pt.x, pt.y, {
+          paneW: el.offsetWidth || 340,
+          paneH: el.offsetHeight || 560,
+        }),
+      )
+    }
+    const raf = requestAnimationFrame(reclamp)
+    const ro =
+      typeof ResizeObserver !== 'undefined'
+        ? new ResizeObserver(() => reclamp())
+        : null
+    ro?.observe(el)
+    return () => {
+      cancelAnimationFrame(raf)
+      ro?.disconnect()
+    }
   }, [preview])
 
   useEffect(() => {
@@ -862,23 +924,20 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
     return false
   }
 
-  const over = state.status === 'won' || state.status === 'lost'
   const heroArt = deck.heroArt
-  const inCombat =
-    state.activeSide === 'player' && state.playerPhase === 'combat' && !over
   const attackables = state.player.creatures.filter(
     (c) => !c.tapped && !c.summoningSickness,
   )
-  const landStacks = groupLandStacks(state.player.lands)
-  const boardDensity = computeBoardDensity({
-    creatureCount: state.player.creatures.length,
-    landCount: state.player.lands.length,
-    landStackCount: landStacks.length,
-    opponentCount: state.challenge.battlefield.length,
-  })
   const allAttackersAimed =
     state.code === 'tbth' ||
     state.selectedAttackers.every((id) => Boolean(state.attackAssignments[id]))
+  const combatStep: 'pick' | 'aim' | 'resolve' =
+    state.selectedAttackers.length === 0
+      ? 'pick'
+      : state.code !== 'tbth' &&
+          state.selectedAttackers.some((id) => !state.attackAssignments[id])
+        ? 'aim'
+        : 'resolve'
   const primaryAction = resolvePrimaryAction({
     activeSide: state.activeSide,
     over,
@@ -889,6 +948,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
     allAttackersAimed,
     code: state.code,
     pendingCast: Boolean(state.pendingCast),
+    combatStep: state.playerPhase === 'combat' ? combatStep : undefined,
   })
   const onPrimaryAction = () => {
     switch (primaryAction.kind) {
@@ -909,13 +969,6 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
         break
     }
   }
-  const combatStep: 'pick' | 'aim' | 'resolve' =
-    state.selectedAttackers.length === 0
-      ? 'pick'
-      : state.code !== 'tbth' &&
-          state.selectedAttackers.some((id) => !state.attackAssignments[id])
-        ? 'aim'
-        : 'resolve'
 
   if (state.status === 'setup') {
     return (
@@ -981,161 +1034,35 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
       </div>
       <RemoteArtBackground className="arena-bg" localPath={heroArt} kind="art_crop" />
       <div className="arena-bg-veil" />
-      <AttackArrows rootRef={arenaRef} links={attackLinks} />
-
-      <div className="arena-topbar-shell">
-        <div className="arena-topbar-hotzone" aria-hidden="true" />
-        <header className="arena-topbar">
-          <div className="arena-topbar-actions is-tools">
-            <button type="button" className="btn ghost" onClick={() => act({ type: 'RESET' })}>
-              {t('challenge.resign')}
-            </button>
-            <button
-              type="button"
-              className="btn ghost"
-              onClick={() => setLogModalOpen(true)}
-              aria-haspopup="dialog"
-              aria-expanded={logModalOpen}
-            >
-              {t('challenge.log')}
-            </button>
-            <button
-              type="button"
-              className={`btn ghost coach-toggle ${coachOn ? 'is-on' : ''}`}
-              onClick={toggleCoach}
-              aria-pressed={coachOn}
-            >
-              {coachOn ? t('challenge.coachOn') : t('challenge.coachOff')}
-            </button>
-            <LanguageSwitch compact asButton />
-          </div>
-          <div className="arena-title">
-            <strong>{meta?.name ?? deck.name}</strong>
-            <span className="arena-turn-meta">
-              <span className="arena-turn-count">
-                {t('challenge.turn')} {state.turnNumber}
-              </span>
-              <span
-                className={`arena-turn-side ${
-                  state.activeSide === 'player' ? 'is-you' : 'is-them'
-                }`}
-              >
-                {state.activeSide === 'player'
-                  ? t('challenge.yourTurn')
-                  : t('challenge.theirTurn')}
-              </span>
-            </span>
-          </div>
-          <div className="arena-topbar-actions is-play-spacer" aria-hidden="true" />
-        </header>
-      </div>
-
-      {/* Opponent chrome */}
-      <div className="arena-opponent-rail">
-        <div className="arena-player-chrome is-opponent challenge-zone-piles">
-          <ZonePile
-            label={t('challenge.graveyard')}
-            count={state.challenge.graveyard.length}
-            kind="graveyard"
-            onClick={() => setInspect('graveyard')}
-          />
-          <div className="zone-pile-wrap" data-instance-id={FX_HORDE}>
-            <ZonePile
-              label={t('challenge.library')}
-              count={state.challenge.library.length}
-              kind="library"
-              stackImage={
-                deck?.cards[0]?.images.back
-                  ? preferredAssetUrl(deck.cards[0].images.back, { kind: 'card_back' })
-                  : undefined
-              }
-              onClick={
-                state.code === 'tbth' && state.pendingCast?.mode === 'damage'
-                  ? () =>
-                      act({
-                        type: 'ASSIGN_TARGET',
-                        attackerId: '',
-                        targetId: FX_HORDE,
-                      })
-                  : undefined
-              }
-            />
-            {fxFor(FX_HORDE) ? (
-              <span className="combat-floater kind-mill chrome-floater">
-                −{fxFor(FX_HORDE)!.amount ?? 0}
-              </span>
-            ) : null}
-          </div>
-          <div className="life-orb is-opponent">
-            <span className="life-orb-label">
-              {state.code === 'tbth'
-                ? t('challenge.library')
-                : state.code === 'tfth'
-                  ? t('challenge.heads')
-                  : 'XP'}
-            </span>
-            <strong>
-              {state.code === 'tbth'
-                ? state.challenge.library.length
-                : state.code === 'tfth'
-                  ? challengeCreatures.filter((c) => c.isHead).length
-                  : state.challenge.battlefield.find((c) => c.isGod)
-                    ? `${state.challenge.battlefield.find((c) => c.isGod)!.power}/${Math.max(
-                        0,
-                        (state.challenge.battlefield.find((c) => c.isGod)!.toughness ?? 0) -
-                          (state.challenge.battlefield.find((c) => c.isGod)!.markedDamage ?? 0),
-                      )}`
-                    : '—'}
-            </strong>
-          </div>
-        </div>
-      </div>
-
-      {logModalOpen ? (
-        <div
-          className="arena-log-overlay"
-          role="presentation"
-          onClick={() => setLogModalOpen(false)}
-        >
-          <div
-            className="arena-log-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="arena-log-modal-title"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="arena-log-modal-head">
-              <h2 id="arena-log-modal-title">{t('challenge.log')}</h2>
-              <PackHeadIconButton
-                icon="close"
-                label={t('challenge.logClose')}
-                onClick={() => setLogModalOpen(false)}
-              />
-            </div>
-            <ul className="arena-log-modal-list">
-              {state.log.length === 0 ? (
-                <li className="tone-info">{t('challenge.logEmpty')}</li>
-              ) : (
-                state.log.map((e) => (
-                  <li key={e.id} className={`tone-${e.tone ?? 'info'}`}>
-                    {formatLog(e)}
-                  </li>
-                ))
-              )}
-            </ul>
-          </div>
-        </div>
-      ) : null}
+      <AttackArrows
+        rootRef={arenaRef}
+        links={attackLinks}
+        panOffset={boardPan.offset}
+      />
 
       <div
-        className={`arena-battlefield ${inCombat ? 'is-combat' : ''}`}
+        ref={boardStageRef}
+        className={`arena-board-stage${boardPan.dragging ? ' is-dragging' : ''}`}
+        onPointerDown={boardPan.onPointerDown}
       >
-        <section className="bf-row opponent-row">
-          <div className="bf-board is-opponent">
-            {/* Always reserve two rows so card size matches the player half */}
-            <div className="bf-lands bf-row-reserve" aria-hidden="true" />
-            <div className="bf-creatures">
-              {challengeCreatures.map((card) => {
+        <div
+          ref={boardPanRef}
+          className="arena-board-pan"
+          style={
+            {
+              transform: `translate(${boardPan.offset.x}px, ${boardPan.offset.y}px)`,
+            } as CSSProperties
+          }
+        >
+          <div
+            className={`arena-battlefield ${inCombat ? 'is-combat' : ''}`}
+          >
+            <section className="bf-half bf-half-opponent bf-row opponent-row">
+              <div className="bf-board is-opponent">
+                {/* Always reserve two rows so card size matches the player half */}
+                <div className="bf-lands bf-row-reserve" aria-hidden="true" />
+                <div className={`bf-creatures${boardDensity.opponentClass}`}>
+                  {challengeCreatures.map((card) => {
               const targeted = Object.values(state.attackAssignments).includes(
                 card.instanceId,
               )
@@ -1227,147 +1154,99 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                 />
               )
             })}
-              {exitGhosts
-                .filter((g) => g.zone === 'challenge-creatures')
-                .map((g) => (
+                  {exitGhosts
+                    .filter((g) => g.zone === 'challenge-creatures')
+                    .map((g) => (
+                      <ArenaCard
+                        key={`exit-${g.id}`}
+                        variant="board"
+                        dying
+                        image={g.image}
+                        name={g.name}
+                        keywords={g.keywords}
+                        zhLabels={zh}
+                        power={g.power}
+                        toughness={g.toughness}
+                        markedDamage={g.markedDamage}
+                        tapped={g.tapped}
+                        showPt
+                      />
+                    ))}
+                </div>
+              </div>
+              <div className="bf-others">
+                {challengeOthers.map((card) => (
                   <ArenaCard
-                    key={`exit-${g.id}`}
+                    key={card.instanceId}
                     variant="board"
-                    dying
-                    image={g.image}
-                    name={g.name}
-                    keywords={g.keywords}
-                    zhLabels={zh}
-                    power={g.power}
-                    toughness={g.toughness}
-                    markedDamage={g.markedDamage}
-                    tapped={g.tapped}
-                    showPt
+                    image={card.image}
+                    name={card.name}
+                    compact
+                    onMouseEnter={(e) => previewChallengeCard(card, e)}
+                    onMouseLeave={clearPreview}
                   />
                 ))}
-            </div>
-          </div>
-          <div className="bf-others">
-            {challengeOthers.map((card) => (
-              <ArenaCard
-                key={card.instanceId}
-                variant="board"
-                image={card.image}
-                name={card.name}
-                compact
-                onMouseEnter={(e) => previewChallengeCard(card, e)}
-                onMouseLeave={clearPreview}
-              />
-            ))}
-            {exitGhosts
-              .filter((g) => g.zone === 'challenge-others')
-              .map((g) => (
-                <ArenaCard
-                  key={`exit-${g.id}`}
-                  variant="board"
-                  dying
-                  image={g.image}
-                  name={g.name}
-                  compact
-                  tapped={g.tapped}
-                />
-              ))}
-          </div>
-        </section>
+                {exitGhosts
+                  .filter((g) => g.zone === 'challenge-others')
+                  .map((g) => (
+                    <ArenaCard
+                      key={`exit-${g.id}`}
+                      variant="board"
+                      dying
+                      image={g.image}
+                      name={g.name}
+                      compact
+                      tapped={g.tapped}
+                    />
+                  ))}
+              </div>
+            </section>
 
-        <div className="arena-midline">
-          <div className="phase-strip">
-            {(['main', 'combat', 'end'] as const).map((ph) => (
-              <button
-                key={ph}
-                type="button"
-                className={`phase-chip ${state.playerPhase === ph ? 'is-active' : ''} ${
-                  state.activeSide === 'player' ? '' : 'is-locked'
-                }`}
-                disabled={state.activeSide !== 'player' || over}
-                onClick={() => act({ type: 'SET_PHASE', phase: ph })}
-              >
-                {t(`challenge.phase.${ph}`)}
-              </button>
-            ))}
-          </div>
-          {inCombat ? (
-            <ol className="combat-steps" aria-label={t('challenge.phase.combat')}>
-              <li className={combatStep === 'pick' ? 'is-current' : 'is-done'}>
-                <em>1</em>
-                {t('challenge.combatStep.pick')}
-              </li>
-              <li
-                className={
-                  combatStep === 'aim'
-                    ? 'is-current'
-                    : combatStep === 'resolve'
-                      ? 'is-done'
-                      : ''
-                }
-              >
-                <em>2</em>
-                {state.code === 'tbth'
-                  ? t('challenge.combatStep.aimHorde')
-                  : t('challenge.combatStep.aim')}
-              </li>
-              <li className={combatStep === 'resolve' ? 'is-current' : ''}>
-                <em>3</em>
-                {t('challenge.combatStep.resolve')}
-              </li>
-            </ol>
-          ) : null}
-          {state.fx ? (
-            <div className={`fx-toast kind-${state.fx.kind}`} key={state.fx.id}>
-              {state.fx.label ?? state.fx.kind}
-              {state.fx.amount != null ? ` ${state.fx.amount}` : ''}
-            </div>
-          ) : null}
-        </div>
+            <div className="bf-half-divider" aria-hidden="true" />
 
-        <section className="bf-row player-row">
-          {state.player.heroes.length > 0 ? (
-            <div className="hero-strip" aria-label={t('challenge.heroesOnBoard')}>
-              <span className="hero-strip-label">{t('challenge.heroesOnBoard')}</span>
-              {state.player.heroes.map((h) => {
-                const def = HERO_DEFS.find((d) => d.id === h.defId)
-                return (
-                  <button
-                    key={h.instanceId}
-                    type="button"
-                    className="hero-chip"
-                    onMouseEnter={(e) =>
-                      placePreview(
-                        {
-                          image: def?.image || h.image || '',
-                          name: zh ? (def?.nameZh ?? h.name) : h.name,
-                          text: zh
-                            ? `${def?.typeLineZh ?? ''}\n${def?.oracleTextZh ?? h.oracleText}`
-                            : `${def?.typeLine ?? 'Hero'}\n${h.oracleText}`,
-                        },
-                        e,
-                      )
-                    }
-                    onMouseLeave={clearPreview}
-                  >
-                    {def?.art || def?.image || h.image ? (
-                      <CardImage
-                        className="hero-chip-art"
-                        localPath={def?.art || def?.image || h.image}
-                        kind="art_crop"
-                        alt=""
-                        draggable={false}
-                      />
-                    ) : null}
-                    <span>{zh ? (def?.nameZh ?? h.name) : h.name}</span>
-                  </button>
-                )
-              })}
-            </div>
-          ) : null}
-          <div className="bf-board">
-          <div className={`bf-creatures${boardDensity.creatureClass}`}>
-            {state.player.creatures.map((c) => {
+            <section className="bf-half bf-half-player bf-row player-row">
+              {state.player.heroes.length > 0 ? (
+                <div className="hero-strip" aria-label={t('challenge.heroesOnBoard')}>
+                  <span className="hero-strip-label">{t('challenge.heroesOnBoard')}</span>
+                  {state.player.heroes.map((h) => {
+                    const def = HERO_DEFS.find((d) => d.id === h.defId)
+                    return (
+                      <button
+                        key={h.instanceId}
+                        type="button"
+                        className="hero-chip"
+                        onMouseEnter={(e) =>
+                          placePreview(
+                            {
+                              image: def?.image || h.image || '',
+                              name: zh ? (def?.nameZh ?? h.name) : h.name,
+                              text: zh
+                                ? `${def?.typeLineZh ?? ''}\n${def?.oracleTextZh ?? h.oracleText}`
+                                : `${def?.typeLine ?? 'Hero'}\n${h.oracleText}`,
+                            },
+                            e,
+                          )
+                        }
+                        onMouseLeave={clearPreview}
+                      >
+                        {def?.art || def?.image || h.image ? (
+                          <CardImage
+                            className="hero-chip-art"
+                            localPath={def?.art || def?.image || h.image}
+                            kind="art_crop"
+                            alt=""
+                            draggable={false}
+                          />
+                        ) : null}
+                        <span>{zh ? (def?.nameZh ?? h.name) : h.name}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              ) : null}
+              <div className="bf-board">
+              <div className={`bf-creatures${boardDensity.creatureClass}`}>
+                {state.player.creatures.map((c) => {
               const selected = state.selectedAttackers.includes(c.instanceId)
               const aimed = Boolean(state.attackAssignments[c.instanceId])
               const blocking = state.prompt?.kind === 'choose_blockers'
@@ -1518,59 +1397,213 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                 />
               )
             })}
-            {exitGhosts
-              .filter((g) => g.zone === 'player-creatures')
-              .map((g) => (
-                <ArenaCard
-                  key={`exit-${g.id}`}
-                  variant="board"
-                  dying
-                  image={g.image}
-                  name={g.name}
-                  manaCost={g.manaCost}
-                  colors={g.colors}
-                  keywords={g.keywords}
-                  zhLabels={zh}
-                  power={g.power}
-                  toughness={g.toughness}
-                  markedDamage={g.markedDamage}
-                  tapped={g.tapped}
-                  showPt
-                />
-              ))}
+                {exitGhosts
+                  .filter((g) => g.zone === 'player-creatures')
+                  .map((g) => (
+                    <ArenaCard
+                      key={`exit-${g.id}`}
+                      variant="board"
+                      dying
+                      image={g.image}
+                      name={g.name}
+                      manaCost={g.manaCost}
+                      colors={g.colors}
+                      keywords={g.keywords}
+                      zhLabels={zh}
+                      power={g.power}
+                      toughness={g.toughness}
+                      markedDamage={g.markedDamage}
+                      tapped={g.tapped}
+                      showPt
+                    />
+                  ))}
+              </div>
+                <div className={`bf-lands${boardDensity.landClass}`}>
+                  {landStacks.map((stack) => {
+                    const label = zh
+                      ? (findCardDef(stack.defId, state.playerDeckId)?.nameZh ?? stack.name)
+                      : stack.name
+                    return (
+                      <LandStack
+                        key={stack.key}
+                        stack={stack}
+                        label={label}
+                        onPreview={placePreview}
+                        onClearPreview={clearPreview}
+                      />
+                    )
+                  })}
+                  {exitGhosts
+                    .filter((g) => g.zone === 'player-lands')
+                    .map((g) => (
+                      <ArenaCard
+                        key={`exit-${g.id}`}
+                        variant="board"
+                        dying
+                        image={g.image}
+                        name={g.name}
+                        colors={g.colors}
+                        tapped={g.tapped}
+                      />
+                    ))}
+                </div>
+              </div>
+            </section>
           </div>
-            <div className={`bf-lands${boardDensity.landClass}`}>
-              {landStacks.map((stack) => {
-                const label = zh
-                  ? (findCardDef(stack.defId, state.playerDeckId)?.nameZh ?? stack.name)
-                  : stack.name
-                return (
-                  <LandStack
-                    key={stack.key}
-                    stack={stack}
-                    label={label}
-                    onPreview={placePreview}
-                    onClearPreview={clearPreview}
-                  />
-                )
-              })}
-              {exitGhosts
-                .filter((g) => g.zone === 'player-lands')
-                .map((g) => (
-                  <ArenaCard
-                    key={`exit-${g.id}`}
-                    variant="board"
-                    dying
-                    image={g.image}
-                    name={g.name}
-                    colors={g.colors}
-                    tapped={g.tapped}
-                  />
-                ))}
-            </div>
-          </div>
-        </section>
+        </div>
       </div>
+
+      <div className="arena-chrome-layer">
+      <div className="arena-topbar-shell">
+        <div className="arena-topbar-hotzone" aria-hidden="true" />
+        <header className="arena-topbar">
+          <div className="arena-topbar-actions is-tools">
+            <button type="button" className="btn ghost" onClick={() => act({ type: 'RESET' })}>
+              {t('challenge.resign')}
+            </button>
+            <button
+              type="button"
+              className="btn ghost"
+              onClick={() => setLogModalOpen(true)}
+              aria-haspopup="dialog"
+              aria-expanded={logModalOpen}
+            >
+              {t('challenge.log')}
+            </button>
+            <button
+              type="button"
+              className={`btn ghost coach-toggle ${coachOn ? 'is-on' : ''}`}
+              onClick={toggleCoach}
+              aria-pressed={coachOn}
+            >
+              {coachOn ? t('challenge.coachOn') : t('challenge.coachOff')}
+            </button>
+            <LanguageSwitch compact asButton />
+          </div>
+          <div className="arena-title">
+            <strong>{meta?.name ?? deck.name}</strong>
+            <span className="arena-turn-meta">
+              <span className="arena-turn-count">
+                {t('challenge.turn')} {state.turnNumber}
+              </span>
+              <span
+                className={`arena-turn-side ${
+                  state.activeSide === 'player' ? 'is-you' : 'is-them'
+                }`}
+              >
+                {state.activeSide === 'player'
+                  ? t('challenge.yourTurn')
+                  : t('challenge.theirTurn')}
+              </span>
+            </span>
+          </div>
+          <div className="arena-topbar-actions is-play-spacer" aria-hidden="true" />
+        </header>
+      </div>
+
+      {/* Opponent chrome */}
+      <div className="arena-opponent-rail">
+        <div className="arena-player-chrome is-opponent challenge-zone-piles">
+          <ZonePile
+            label={t('challenge.graveyard')}
+            count={state.challenge.graveyard.length}
+            kind="graveyard"
+            onClick={() => setInspect('graveyard')}
+          />
+          <div className="zone-pile-wrap" data-instance-id={FX_HORDE}>
+            <ZonePile
+              label={t('challenge.library')}
+              count={state.challenge.library.length}
+              kind="library"
+              stackImage={
+                deck?.cards[0]?.images.back
+                  ? preferredAssetUrl(deck.cards[0].images.back, { kind: 'card_back' })
+                  : undefined
+              }
+              onClick={
+                state.code === 'tbth' && state.pendingCast?.mode === 'damage'
+                  ? () =>
+                      act({
+                        type: 'ASSIGN_TARGET',
+                        attackerId: '',
+                        targetId: FX_HORDE,
+                      })
+                  : undefined
+              }
+            />
+            {fxFor(FX_HORDE) ? (
+              <span className="combat-floater kind-mill chrome-floater">
+                −{fxFor(FX_HORDE)!.amount ?? 0}
+              </span>
+            ) : null}
+          </div>
+          <div className="life-orb is-opponent">
+            <span className="life-orb-label">
+              {state.code === 'tbth'
+                ? t('challenge.library')
+                : state.code === 'tfth'
+                  ? t('challenge.heads')
+                  : 'XP'}
+            </span>
+            <strong>
+              {state.code === 'tbth'
+                ? state.challenge.library.length
+                : state.code === 'tfth'
+                  ? challengeCreatures.filter((c) => c.isHead).length
+                  : state.challenge.battlefield.find((c) => c.isGod)
+                    ? `${state.challenge.battlefield.find((c) => c.isGod)!.power}/${Math.max(
+                        0,
+                        (state.challenge.battlefield.find((c) => c.isGod)!.toughness ?? 0) -
+                          (state.challenge.battlefield.find((c) => c.isGod)!.markedDamage ?? 0),
+                      )}`
+                    : '—'}
+            </strong>
+          </div>
+        </div>
+      </div>
+
+      {logModalOpen ? (
+        <div
+          className="arena-log-overlay"
+          role="presentation"
+          onClick={() => setLogModalOpen(false)}
+        >
+          <div
+            className="arena-log-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="arena-log-modal-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="arena-log-modal-head">
+              <h2 id="arena-log-modal-title">{t('challenge.log')}</h2>
+              <PackHeadIconButton
+                icon="close"
+                label={t('challenge.logClose')}
+                onClick={() => setLogModalOpen(false)}
+              />
+            </div>
+            <ul className="arena-log-modal-list">
+              {state.log.length === 0 ? (
+                <li className="tone-info">{t('challenge.logEmpty')}</li>
+              ) : (
+                state.log.map((e) => (
+                  <li key={e.id} className={`tone-${e.tone ?? 'info'}`}>
+                    {formatLog(e)}
+                  </li>
+                ))
+              )}
+            </ul>
+          </div>
+        </div>
+      ) : null}
+
+      {state.fx ? (
+        <div className={`fx-toast kind-${state.fx.kind}`} key={state.fx.id}>
+          {state.fx.label ?? state.fx.kind}
+          {state.fx.amount != null ? ` ${state.fx.amount}` : ''}
+        </div>
+      ) : null}
 
       {coachOn && state.status === 'playing' ? (
         <CoachTipPanel label={t('challenge.tipLabel')}>
@@ -1580,25 +1613,42 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
 
       <div className="player-dock">
         <div className="arena-player-chrome is-you challenge-zone-piles">
-          <div
-            className={`life-orb is-you ${
-              fxFor(FX_PLAYER_LIFE)?.kind === 'damage' ? 'is-hit' : ''
-            }`}
-            data-instance-id={FX_PLAYER_LIFE}
-          >
-            <span className="life-orb-label">{t('challenge.life')}</span>
-            <strong>{state.player.life}</strong>
-            {state.flags.preventCombatDamageThisTurn ? (
-              <span className="life-orb-sub">{t('challenge.fogActive')}</span>
-            ) : null}
-            {fxFor(FX_PLAYER_LIFE) ? (
-              <span
-                className={`combat-floater kind-${fxFor(FX_PLAYER_LIFE)!.kind} chrome-floater`}
-              >
-                {fxFor(FX_PLAYER_LIFE)!.kind === 'heal' ? '+' : '−'}
-                {fxFor(FX_PLAYER_LIFE)!.amount ?? 0}
-              </span>
-            ) : null}
+          <div className="player-life-stack">
+            <PlayerPhaseMark
+              phase={state.playerPhase}
+              active={state.activeSide === 'player' && !over}
+              combatStepLabel={
+                inCombat
+                  ? combatStep === 'pick'
+                    ? t('challenge.combatStep.pick')
+                    : combatStep === 'aim'
+                      ? state.code === 'tbth'
+                        ? t('challenge.combatStep.aimHorde')
+                        : t('challenge.combatStep.aim')
+                      : t('challenge.combatStep.resolve')
+                  : null
+              }
+            />
+            <div
+              className={`life-orb is-you ${
+                fxFor(FX_PLAYER_LIFE)?.kind === 'damage' ? 'is-hit' : ''
+              }`}
+              data-instance-id={FX_PLAYER_LIFE}
+            >
+              <span className="life-orb-label">{t('challenge.life')}</span>
+              <strong>{state.player.life}</strong>
+              {state.flags.preventCombatDamageThisTurn ? (
+                <span className="life-orb-sub">{t('challenge.fogActive')}</span>
+              ) : null}
+              {fxFor(FX_PLAYER_LIFE) ? (
+                <span
+                  className={`combat-floater kind-${fxFor(FX_PLAYER_LIFE)!.kind} chrome-floater`}
+                >
+                  {fxFor(FX_PLAYER_LIFE)!.kind === 'heal' ? '+' : '−'}
+                  {fxFor(FX_PLAYER_LIFE)!.amount ?? 0}
+                </span>
+              ) : null}
+            </div>
           </div>
           <ZonePile
             label={t('challenge.graveyard')}
@@ -1648,7 +1698,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                 <button
                   key={card.instanceId}
                   type="button"
-                  className={`hand-card ${unaffordable ? 'is-disabled' : ''} ${pending ? 'is-pending' : ''}`}
+                  className={`hand-card${unaffordable ? ' is-disabled' : ' is-playable'}${pending ? ' is-pending' : ''}`}
                   style={{ '--i': i } as CSSProperties}
                   aria-disabled={unaffordable && !pending ? true : undefined}
                   onClick={() => {
@@ -1681,7 +1731,9 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                   }
                   onMouseLeave={clearPreview}
                 >
-                  <CardImage localPath={card.image} kind="normal" alt="" draggable={false} />
+                  <span className="hand-card-face">
+                    <CardImage localPath={card.image} kind="normal" alt="" draggable={false} />
+                  </span>
                 </button>
               )
             })}
@@ -1697,12 +1749,25 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
             setFocusAttacker(null)
             act({ type: 'END_TURN' })
           }}
+          above={
+            boardPan.offCenter ? (
+              <button
+                type="button"
+                className="btn ghost arena-recenter-btn"
+                onClick={boardPan.resetPan}
+              >
+                {t('challenge.recenterBoard')}
+              </button>
+            ) : null
+          }
         />
+      </div>
       </div>
 
       {preview
         ? createPortal(
             <aside
+              ref={previewPaneRef}
               className="card-preview-pane is-follow"
               aria-hidden="true"
               style={
@@ -1828,7 +1893,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
             )}
             {state.prompt.kind === 'choose_blockers' && state.revealed.length > 0 ? (
               <div className="block-panel">
-                <p className="eyebrow">{t('challenge.attackers')}</p>
+                <p className="block-panel-label">{t('challenge.attackers')}</p>
                 <ul>
                   {state.revealed.map((a) => (
                     <li key={a.instanceId}>
@@ -2027,15 +2092,10 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                       : t('llm.battleReportGenerate')}
                 </button>
               ) : null}
-              <Link to={`/decks/${code}`} className="btn ghost">
-                {t('challenge.backDeck')}
+              <Link to="/" className="btn ghost">
+                {t('app.home')}
               </Link>
             </div>
-            <ChallengeSwitcher
-              currentCode={code}
-              mode="challenge"
-              className="settlement-switcher"
-            />
           </div>
         </div>
       ) : null}

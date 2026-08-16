@@ -7,6 +7,8 @@ export type PrimaryActionKind =
   | 'end_turn'
   | 'none'
 
+export type CombatStep = 'pick' | 'aim' | 'resolve'
+
 export interface PrimaryActionInput {
   activeSide: 'player' | 'challenge'
   over: boolean
@@ -18,6 +20,8 @@ export interface PrimaryActionInput {
   allAttackersAimed: boolean
   code: ChallengeCode
   pendingCast: boolean
+  /** Combat sub-step for dock hint (aligned with midline combat-steps) */
+  combatStep?: CombatStep
 }
 
 export interface PrimaryActionResult {
@@ -25,8 +29,22 @@ export interface PrimaryActionResult {
   /** i18n key under challenge.* */
   labelKey: string
   disabled: boolean
+  /** Short context next to the primary button (i18n key) */
+  hintKey: string | null
   /** Secondary actions shown beside/under primary */
   secondaries: Array<'cancel_combat' | 'cancel_target' | 'end_turn'>
+}
+
+function combatHintKey(
+  code: ChallengeCode,
+  step: CombatStep | undefined,
+): string | null {
+  if (step === 'pick') return 'challenge.combatStep.pick'
+  if (step === 'aim') {
+    return code === 'tbth' ? 'challenge.combatStep.aimHorde' : 'challenge.combatStep.aim'
+  }
+  if (step === 'resolve') return 'challenge.combatStep.resolve'
+  return null
 }
 
 /** Resolve the Arena-style primary dock button from simplified game state. */
@@ -39,6 +57,7 @@ export function resolvePrimaryAction(input: PrimaryActionInput): PrimaryActionRe
       kind: 'advance',
       labelKey: 'challenge.castContinue',
       disabled: false,
+      hintKey: 'challenge.actionHint.continue',
       secondaries,
     }
   }
@@ -48,6 +67,7 @@ export function resolvePrimaryAction(input: PrimaryActionInput): PrimaryActionRe
       kind: 'none',
       labelKey: 'challenge.endTurn',
       disabled: true,
+      hintKey: null,
       secondaries,
     }
   }
@@ -63,6 +83,9 @@ export function resolvePrimaryAction(input: PrimaryActionInput): PrimaryActionRe
       kind: 'resolve_combat',
       labelKey,
       disabled,
+      hintKey: input.pendingCast
+        ? 'challenge.actionHint.chooseTarget'
+        : combatHintKey(input.code, input.combatStep),
       secondaries,
     }
   }
@@ -73,6 +96,9 @@ export function resolvePrimaryAction(input: PrimaryActionInput): PrimaryActionRe
       kind: 'enter_combat',
       labelKey: 'challenge.enterCombat',
       disabled: false,
+      hintKey: input.pendingCast
+        ? 'challenge.actionHint.chooseTarget'
+        : 'challenge.actionHint.enterCombat',
       secondaries,
     }
   }
@@ -81,6 +107,7 @@ export function resolvePrimaryAction(input: PrimaryActionInput): PrimaryActionRe
     kind: 'end_turn',
     labelKey: 'challenge.endTurn',
     disabled: false,
+    hintKey: input.pendingCast ? 'challenge.actionHint.chooseTarget' : null,
     secondaries,
   }
 }

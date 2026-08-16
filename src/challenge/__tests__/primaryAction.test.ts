@@ -32,10 +32,30 @@ describe('resolvePrimaryAction', () => {
       playerPhase: 'combat',
       selectedAttackerCount: 1,
       allAttackersAimed: true,
+      combatStep: 'resolve',
     })
     expect(r.kind).toBe('resolve_combat')
     expect(r.disabled).toBe(false)
     expect(r.secondaries).toContain('cancel_combat')
+    expect(r.hintKey).toBe('challenge.combatStep.resolve')
+  })
+
+  it('hints aim step while choosing targets', () => {
+    const r = resolvePrimaryAction({
+      ...base,
+      playerPhase: 'combat',
+      selectedAttackerCount: 1,
+      allAttackersAimed: false,
+      combatStep: 'aim',
+    })
+    expect(r.hintKey).toBe('challenge.combatStep.aim')
+    expect(r.disabled).toBe(true)
+  })
+
+  it('hints choose target while pending cast', () => {
+    const r = resolvePrimaryAction({ ...base, pendingCast: true })
+    expect(r.hintKey).toBe('challenge.actionHint.chooseTarget')
+    expect(r.secondaries).toContain('cancel_target')
   })
 
   it('disables resolve when aims missing', () => {

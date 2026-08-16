@@ -77,7 +77,6 @@ export function RulesPanel({ rules }: RulesPanelProps) {
   return (
     <div className="rules-panel">
       <header className="section-head">
-        <p className="eyebrow">{t('deck.rules')}</p>
         <h2>{rules.title}</h2>
         <p className="lede">{rules.intro}</p>
       </header>

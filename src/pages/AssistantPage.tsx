@@ -10,6 +10,7 @@ import {
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import '../styles/arena.css'
+import '../styles/cursors.css'
 import type { DragPayload, DropTarget } from '../assistant/dnd'
 import { createAssistantReducer } from '../assistant/reducer'
 import { createInitialSetup } from '../assistant/setup'
@@ -35,13 +36,14 @@ import {
   arenaToolIcons,
 } from '../components/ArenaToolButton'
 import { LanguageSwitch } from '../components/LanguageSwitch'
-import { ChallengeSwitcher } from '../components/ChallengeSwitcher'
 import { getDeck } from '../data/deckStore'
 import { getCardZh } from '../data/locale/cardsZh'
 import { deckMetaEn, deckMetaZh } from '../data/locale/deckMeta'
 import type { ChallengeCode } from '../game/types'
 import { defsFromDeck } from '../game/types'
 import { CardImage, RemoteArtBackground } from '../hooks/useCardImageSrc'
+import { useArenaScale } from '../hooks/useArenaScale'
+import { useBoardPan } from '../hooks/useBoardPan'
 import { preferredAssetUrl } from '../utils/remoteAsset'
 import { clampPreviewPosition } from '../utils/previewFollow'
 import {
@@ -89,6 +91,21 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
     total: 0,
   })
   const assetLoadGenRef = useRef(0)
+  const arenaRef = useRef<HTMLElement | null>(null)
+  const boardStageRef = useRef<HTMLDivElement | null>(null)
+  const boardPanRef = useRef<HTMLDivElement | null>(null)
+  const playing = state.status === 'playing'
+  useArenaScale(arenaRef, playing)
+  const boardPan = useBoardPan(boardStageRef, boardPanRef, playing)
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('is-arena-playing', playing)
+    document.documentElement.classList.toggle('is-assistant-fit', playing)
+    return () => {
+      document.documentElement.classList.remove('is-arena-playing')
+      document.documentElement.classList.remove('is-assistant-fit')
+    }
+  }, [playing])
 
   const beginAssistant = useCallback(async () => {
     if (assetLoading) return
@@ -429,13 +446,6 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
               </div>
             </div>
           ) : null}
-          <div className="page-top-nav">
-            <Link to={`/decks/${code}`} className="back-link">
-              ← {t('assistant.backDeck')}
-            </Link>
-            <ChallengeSwitcher currentCode={code} mode="assistant" />
-          </div>
-          <p className="eyebrow">{t('assistant.eyebrow')}</p>
           <h1>{meta?.name ?? deck.name}</h1>
           <p className="lede">{t('assistant.setupLead')}</p>
 
@@ -740,37 +750,111 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
 
   return (
     <main
-      className={`arena-root assistant-root theme-${deck.theme} is-playing layout-${code} setup-${state.setupKind}${
+      ref={arenaRef}
+      className={`arena-root assistant-root theme-${deck.theme} is-playing is-assistant-fit layout-${code} setup-${state.setupKind}${
         drag ? ' is-dragging' : ''
-      }`}
+      }${boardPan.dragging ? ' is-board-panning' : ''}`}
     >
       <RemoteArtBackground className="arena-bg" localPath={heroArt} kind="art_crop" />
       <div className="arena-bg-veil" />
 
-      <header className="arena-topbar assistant-topbar">
-        <Link to={`/decks/${code}`} className="arena-link">
-          ← {t('assistant.backDeck')}
-        </Link>
-        <div className="arena-topbar-actions">
-          <ArenaToolButton
-            label={t('assistant.shuffle')}
-            icon={arenaToolIcons.shuffle}
-            onClick={() => act({ type: 'SHUFFLE_LIBRARY' })}
-          />
-          <ArenaToolButton
-            label={t('assistant.search')}
-            icon={arenaToolIcons.search}
-            onClick={() => setSearchOpen(true)}
-          />
-          <AssistantLlmAdvisor state={state} />
-          <LanguageSwitch compact asButton />
+      <div
+        ref={boardStageRef}
+        className={`arena-board-stage${boardPan.dragging ? ' is-dragging' : ''}`}
+        onPointerDown={boardPan.onPointerDown}
+      >
+        <div
+          ref={boardPanRef}
+          className="arena-board-pan"
+          style={
+            {
+              transform: `translate(${boardPan.offset.x}px, ${boardPan.offset.y}px)`,
+            } as CSSProperties
+          }
+        >
+          <DropZone
+            zone="battlefield"
+            className="arena-battlefield assistant-battlefield-half"
+          >
+            <div
+              className={`assistant-board-shell${isBlankBoard ? ' is-dynamic' : ''}`}
+              onClick={
+                canEditSlots && coarsePointer
+                  ? () => setActiveSeatId(null)
+                  : undefined
+              }
+            >
+              <section
+                className={`assistant-slot-board${isBlankBoard ? ' is-sparse' : ''}`}
+                data-rows={boardRows}
+                style={
+                  {
+                    '--assistant-row-slots': boardSlots,
+                    '--assistant-rows': boardRows,
+                    ...(isBlankBoard
+                      ? {
+                          '--assistant-grid-cols': bounds.cols,
+                          '--assistant-grid-rows': bounds.rows,
+                          '--assistant-rows': bounds.rows,
+                        }
+                      : null),
+                  } as CSSProperties
+                }
+              >
+                {isBlankBoard
+                  ? state.boardCells.map((_, i) => renderSlot(i, false))
+                  : groupCellsByRow(state.boardCells).map((row, rowIndex, rows) => {
+                      const isLower = rowIndex === rows.length - 1
+                      return (
+                        <div
+                          key={`row-${row.row}`}
+                          className={`assistant-slot-row ${isLower ? 'is-front' : 'is-back'}`}
+                          style={
+                            {
+                              '--assistant-row-slots': row.entries.length,
+                            } as CSSProperties
+                          }
+                        >
+                          {row.entries.map(({ index }) =>
+                            renderSlot(index, !isLower && rows.length > 1),
+                          )}
+                        </div>
+                      )
+                    })}
+              </section>
+            </div>
+          </DropZone>
         </div>
-      </header>
+      </div>
+
+      <div className="arena-chrome-layer">
+      <div className="arena-topbar-shell">
+        <div className="arena-topbar-hotzone" aria-hidden="true" />
+        <header className="arena-topbar assistant-topbar">
+          <Link to="/" className="arena-link">
+            ← {t('app.home')}
+          </Link>
+          <div className="arena-topbar-actions">
+            <ArenaToolButton
+              label={t('assistant.shuffle')}
+              icon={arenaToolIcons.shuffle}
+              onClick={() => act({ type: 'SHUFFLE_LIBRARY' })}
+            />
+            <ArenaToolButton
+              label={t('assistant.search')}
+              icon={arenaToolIcons.search}
+              onClick={() => setSearchOpen(true)}
+            />
+            <AssistantLlmAdvisor state={state} />
+            <LanguageSwitch compact asButton />
+          </div>
+        </header>
+      </div>
 
       <div className="arena-opponent-rail assistant-opponent-rail">
         {/* Must stay inside .arena-player-chrome: the rail itself has pointer-events:none. */}
         <div className="arena-player-chrome is-opponent assistant-zone-stack">
-          <div className="assistant-zone-piles">
+          <div className="assistant-zone-piles challenge-zone-piles">
             <ZonePile
               kind="exile"
               label={t('assistant.exile')}
@@ -842,59 +926,6 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
         </div>
       </div>
 
-      <DropZone
-        zone="battlefield"
-        className="arena-battlefield assistant-battlefield-half"
-      >
-        <div
-          className={`assistant-board-shell${isBlankBoard ? ' is-dynamic' : ''}`}
-          onClick={
-            canEditSlots && coarsePointer
-              ? () => setActiveSeatId(null)
-              : undefined
-          }
-        >
-          <section
-            className={`assistant-slot-board${isBlankBoard ? ' is-sparse' : ''}`}
-            data-rows={boardRows}
-            style={
-              {
-                '--assistant-row-slots': boardSlots,
-                '--assistant-rows': boardRows,
-                ...(isBlankBoard
-                  ? {
-                      '--assistant-grid-cols': bounds.cols,
-                      '--assistant-grid-rows': bounds.rows,
-                      '--assistant-rows': bounds.rows,
-                    }
-                  : null),
-              } as CSSProperties
-            }
-          >
-            {isBlankBoard
-              ? state.boardCells.map((_, i) => renderSlot(i, false))
-              : groupCellsByRow(state.boardCells).map((row, rowIndex, rows) => {
-                  const isLower = rowIndex === rows.length - 1
-                  return (
-                    <div
-                      key={`row-${row.row}`}
-                      className={`assistant-slot-row ${isLower ? 'is-front' : 'is-back'}`}
-                      style={
-                        {
-                          '--assistant-row-slots': row.entries.length,
-                        } as CSSProperties
-                      }
-                    >
-                      {row.entries.map(({ index }) =>
-                        renderSlot(index, !isLower && rows.length > 1),
-                      )}
-                    </div>
-                  )
-                })}
-          </section>
-        </div>
-      </DropZone>
-
       <div className="arena-player-chrome is-you assistant-player-chrome">
         <NamedValuesEditor
           title={t('assistant.playerValues')}
@@ -906,6 +937,17 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
           onUpdate={(id, patch) => act({ type: 'UPDATE_PLAYER_VALUE', id, ...patch })}
           onRemove={(id) => act({ type: 'REMOVE_PLAYER_VALUE', id })}
         />
+      </div>
+
+      {boardPan.offCenter ? (
+        <button
+          type="button"
+          className="btn ghost arena-recenter-btn"
+          onClick={boardPan.resetPan}
+        >
+          {t('challenge.recenterBoard')}
+        </button>
+      ) : null}
       </div>
 
       {preview ? (

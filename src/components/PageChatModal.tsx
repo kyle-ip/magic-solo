@@ -141,7 +141,6 @@ export function PageChatModal({ open, onClose }: PageChatModalProps) {
       >
         <header className="llm-modal-head">
           <div className="llm-modal-head-copy">
-            <p className="eyebrow">{t('llm.chatEyebrow')}</p>
             <h2 id={titleId}>{t('llm.chatTitle')}</h2>
           </div>
           <div className="llm-modal-head-actions">

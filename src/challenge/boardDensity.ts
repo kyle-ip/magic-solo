@@ -18,6 +18,7 @@ export interface BoardDensityResult {
   density: number
   creatureClass: '' | ' is-dense' | ' is-crowded'
   landClass: '' | ' is-dense' | ' is-crowded'
+  opponentClass: '' | ' is-dense' | ' is-crowded'
 }
 
 function tierForCount(n: number, denseAt: number, crowdedAt: number): BoardDensityTier {
@@ -62,5 +63,6 @@ export function computeBoardDensity(input: BoardDensityInput): BoardDensityResul
     density: densityForTier(worst),
     creatureClass: classForTier(creatureTier),
     landClass: classForTier(landTier),
+    opponentClass: classForTier(opponentTier),
   }
 }

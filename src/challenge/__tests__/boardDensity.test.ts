@@ -20,6 +20,9 @@ describe('computeBoardDensity', () => {
     expect(computeBoardDensity({ creatureCount: 2, landCount: 11 }).landClass).toBe(
       ' is-crowded',
     )
+    expect(computeBoardDensity({ creatureCount: 1, landCount: 1, opponentCount: 10 }).opponentClass).toBe(
+      ' is-crowded',
+    )
   })
 
   it('uses land stack columns when provided', () => {

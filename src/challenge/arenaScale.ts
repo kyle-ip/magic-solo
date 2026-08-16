@@ -4,6 +4,12 @@ export const ARENA_REF_HEIGHT = 1080
 export const ARENA_UI_SCALE_MIN = 0.7
 export const ARENA_UI_SCALE_MAX = 2.1
 
+/**
+ * Extra density factor on ui/chrome scale tokens (1 = design size).
+ * 0.95 ≈ everything 5% smaller without CSS zoom (fixed chrome stays docked).
+ */
+export const ARENA_VIEW_ZOOM = 0.95
+
 /** Uniform UI scale from viewport size vs 1920×1080. */
 export function computeArenaUiScale(
   width: number,

@@ -2,6 +2,7 @@
 
 .sets-page {
   padding-block: 1.5rem 3rem;
+  flex: 1 0 auto;
 }
 
 .sets-hero {
@@ -69,7 +70,7 @@
 .sets-type-chip {
   appearance: none;
   border: 1px solid rgba(184, 137, 58, 0.28);
-  background: rgba(28, 22, 16, 0.55);
+  background: rgba(52, 42, 32, 0.55);
   color: rgba(231, 215, 184, 0.82);
   font: inherit;
   font-size: 0.82rem;
@@ -86,7 +87,7 @@
 }
 
 .sets-type-chip.is-active {
-  color: #1a140e;
+  color: #fff8ec;
   background: linear-gradient(180deg, #e8c878, #c9a04a);
   border-color: transparent;
 }
@@ -117,14 +118,14 @@
   -webkit-appearance: none;
   color-scheme: dark;
   border: 1px solid rgba(160, 120, 55, 0.38);
-  background-color: #12100c;
+  background-color: var(--input-bg);
   background-image: none;
   color: #f3e6c8;
   font: inherit;
   font-size: 0.92rem;
   padding: 0.55rem 0.85rem;
   border-radius: 0.35rem;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.45);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.22);
   outline: none;
 }
 
@@ -176,7 +177,7 @@
   text-decoration: none;
   color: inherit;
   background:
-    linear-gradient(160deg, rgba(42, 32, 22, 0.72), rgba(18, 14, 10, 0.55));
+    linear-gradient(160deg, rgba(58, 46, 34, 0.72), rgba(40, 32, 24, 0.58));
   border: 1px solid rgba(184, 137, 58, 0.22);
   border-radius: 0.35rem;
   transition:
@@ -199,7 +200,7 @@
   border-radius: 0.3rem;
   background:
     radial-gradient(circle at 40% 30%, rgba(240, 212, 138, 0.18), transparent 60%),
-    rgba(10, 8, 6, 0.55);
+    rgba(36, 28, 22, 0.5);
   border: 1px solid rgba(184, 137, 58, 0.2);
 }
 
@@ -252,6 +253,7 @@
 /* Gallery page */
 .set-gallery-page {
   --accent: #c9a04a;
+  flex: 1 0 auto;
 }
 
 .set-title-link {

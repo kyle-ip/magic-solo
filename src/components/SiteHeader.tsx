@@ -1,8 +1,8 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { ChallengeNavMenu } from './ChallengeNavMenu'
 import { LanguageSwitch } from './LanguageSwitch'
-import { ReferencesButton } from './ReferencesButton'
 import { CARD_EDITOR_ENABLED } from '../features'
 import { assetUrl } from '../utils/assetUrl'
 
@@ -146,6 +146,7 @@ export function SiteHeader() {
         </Link>
         <div className="site-header-actions">
           <nav className="site-header-nav">
+            <ChallengeNavMenu />
             <Link to="/classic-decks" className="references-text-btn">
               {t('classicDecks.open')}
             </Link>
@@ -167,7 +168,6 @@ export function SiteHeader() {
             )}
             <PackDrawSlot />
             <SingleDrawSlot />
-            <ReferencesButton />
           </nav>
           <LanguageSwitch />
         </div>

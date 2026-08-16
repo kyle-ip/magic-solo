@@ -1,0 +1,42 @@
+---
+description: Challenge/Assistant arena pan-layer layout (board vs chrome)
+globs: src/pages/{Challenge,Assistant}Page.tsx,src/styles/arena.css,src/hooks/useBoardPan.ts,src/hooks/useArenaScale.ts,src/challenge/arenaScale.ts,src/components/challenge/**
+alwaysApply: false
+---
+
+# Arena pan-layer layout
+
+Canonical play layout for **Challenge** and **Game Assistant**. Prefer this over vertical card-fit / document scroll for the board.
+
+## Architecture
+
+Two layers inside `arena-root.is-playing` (+ `is-challenge-fit` or `is-assistant-fit`):
+
+1. **Bottom — board** (`.arena-board-stage` → `.arena-board-pan`)
+   - Card size stays at design tokens (`--play-card-h` / `--bf-card-h` / `--assistant-card-w` from `--arena-ui-scale`).
+   - **Never** shrink cards vertically to fit the viewport (`useBattlefieldFit` / `100cqb` fit are retired).
+   - Large free-pan canvas (~165%+); `useBoardPan` always allows XY pan; show **回到中心 / Recenter** only when off-center.
+   - Horizontal density (overlap / scroll within a row) is OK; vertical overflow → pan.
+
+2. **Top — chrome** (`.arena-chrome-layer`, `pointer-events: none` + interactive children `auto`)
+   - Life / zones / hand / actions / topbar / named-values stay viewport-fixed.
+   - Size via `--arena-chrome-scale` (gentler than raw ui-scale). Do **not** drive board card height from chrome scale.
+   - Do **not** use CSS `zoom` on `html` for density — it undocks `position: fixed` chrome.
+
+## Challenge vs Assistant
+
+| | Challenge | Assistant |
+|--|-----------|-----------|
+| Fit class | `is-challenge-fit` | `is-assistant-fit` |
+| Board | Opponent half + player half | **Assistant/opponent board only** (slots) — no player BF half / hand dock |
+| Phase UI | Player-side `PlayerPhaseMark` (no center phase-strip) | N/A |
+| Chrome | Opponent rail + player dock (life/hand/actions) | Topbar + zone rail + `NamedValuesEditor` |
+
+Shared hooks: `useArenaScale`, `useBoardPan`. Shared scale math: `src/challenge/arenaScale.ts` (`ARENA_VIEW_ZOOM` multiplies CSS tokens only).
+
+## Do not
+
+- Restore midline `phase-strip` as the primary phase control.
+- Vertically fit-shrink board cards to clear chrome.
+- Apply document `zoom` to fake browser zoom for arena density.
+- Copy Challenge dual-half / hand dock into Assistant.

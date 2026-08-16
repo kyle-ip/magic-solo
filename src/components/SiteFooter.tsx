@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { requestOpenLlmSettings } from '../llm/openSettings'
 import { requestOpenPageChat } from '../llm/openPageChat'
 import { useHasLlmApiKey, useLlmReady } from '../hooks/useLlmSettings'
+import { ReferencesButton } from './ReferencesButton'
 
 export function SiteFooter() {
   const { t } = useTranslation()
@@ -25,6 +26,8 @@ export function SiteFooter() {
           <Link to="/help" className="site-footer-llm-link">
             {t('app.help')}
           </Link>
+          {' · '}
+          <ReferencesButton className="site-footer-llm-link" />
           {' · '}
           <button
             type="button"

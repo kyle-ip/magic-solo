@@ -57,7 +57,6 @@ export function HomePage() {
       <main className="page home-page">
         <section className="home-hero">
           <div className="home-hero-copy">
-            <p className="eyebrow reveal">{t('home.eyebrow')}</p>
             <h1 className="reveal delay-1">{t('home.title')}</h1>
             <p className="lede reveal delay-2">{t('home.lead')}</p>
           </div>
@@ -77,7 +76,6 @@ export function HomePage() {
 
         <section className="shared-rules">
           <div className="section-head">
-            <p className="eyebrow">{t('home.sharedTitle')}</p>
             <h2>{shared.title}</h2>
             <p className="lede">{shared.summary}</p>
           </div>
@@ -98,15 +96,14 @@ export function HomePage() {
             >
               <PathArtBg art={deck.art} />
               <div className="path-copy">
-                <p className="eyebrow">
-                  {t('deck.challenge', { n: deck.challengeNumber })} ·{' '}
-                  {t('home.pathMeta', {
-                    expansion: deck.expansion,
-                  })}
-                </p>
                 <h2>{deck.localizedName}</h2>
                 <p>{deck.blurb}</p>
                 <span className="path-meta">
+                  {t('deck.challenge', { n: deck.challengeNumber })} ·{' '}
+                  {t('home.pathMeta', {
+                    expansion: deck.expansion,
+                  })}{' '}
+                  ·{' '}
                   {t('home.cardsLabel', {
                     count: deck.totalUniqueCards,
                     total: deck.totalDeckSize,

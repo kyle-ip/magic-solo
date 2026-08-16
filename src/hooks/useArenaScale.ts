@@ -3,11 +3,14 @@ import {
   computeArenaUiScale,
   ARENA_UI_SCALE_MAX,
   ARENA_UI_SCALE_MIN,
+  ARENA_VIEW_ZOOM,
 } from '../challenge/arenaScale'
+import { chromeScaleFromUiScale } from '../challenge/regionBudget'
 
 /**
  * Track viewport (or element) size and return Challenge UI scale vs 1920×1080.
- * Writes --arena-ui-scale onto the target element when provided.
+ * Writes --arena-ui-scale and --arena-chrome-scale onto the target element.
+ * {@link ARENA_VIEW_ZOOM} multiplies those tokens (no CSS zoom — keeps fixed chrome docked).
  */
 export function useArenaScale(
   targetRef?: RefObject<HTMLElement | null>,
@@ -25,10 +28,14 @@ export function useArenaScale(
       const el = targetRef?.current
       const w = el?.clientWidth || window.innerWidth
       const h = el?.clientHeight || window.innerHeight
-      const next = computeArenaUiScale(w, h, ARENA_UI_SCALE_MIN, ARENA_UI_SCALE_MAX)
+      const base = computeArenaUiScale(w, h, ARENA_UI_SCALE_MIN, ARENA_UI_SCALE_MAX)
+      const next = base * ARENA_VIEW_ZOOM
+      const chrome = chromeScaleFromUiScale(base) * ARENA_VIEW_ZOOM
       setScale(next)
-      if (el) el.style.setProperty('--arena-ui-scale', String(next))
-      else document.documentElement.style.setProperty('--arena-ui-scale', String(next))
+      const target = el ?? document.documentElement
+      target.style.setProperty('--arena-ui-scale', String(next))
+      target.style.setProperty('--arena-chrome-scale', String(chrome))
+      target.style.setProperty('--arena-view-zoom', String(ARENA_VIEW_ZOOM))
     }
 
     read()
@@ -45,8 +52,10 @@ export function useArenaScale(
     return () => {
       window.removeEventListener('resize', read)
       ro?.disconnect()
-      if (el) el.style.removeProperty('--arena-ui-scale')
-      else document.documentElement.style.removeProperty('--arena-ui-scale')
+      const target = el ?? document.documentElement
+      target.style.removeProperty('--arena-ui-scale')
+      target.style.removeProperty('--arena-chrome-scale')
+      target.style.removeProperty('--arena-view-zoom')
     }
   }, [targetRef, enabled])
 

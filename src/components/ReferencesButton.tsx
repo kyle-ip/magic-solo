@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { getDeckIndex, getDeckRules, getSharedRules } from '../data/deckRegistry'
 import { PackHeadIconButton } from './PackHeadIconButton'
 
-export function ReferencesButton() {
+export function ReferencesButton({ className }: { className?: string }) {
   const { t, i18n } = useTranslation()
   const [open, setOpen] = useState(false)
   const decks = getDeckIndex()
@@ -94,7 +94,7 @@ export function ReferencesButton() {
     <>
       <button
         type="button"
-        className="references-text-btn"
+        className={className ?? 'references-text-btn'}
         onClick={() => setOpen(true)}
       >
         {t('home.references')}

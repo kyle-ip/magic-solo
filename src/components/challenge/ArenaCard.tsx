@@ -31,7 +31,7 @@ interface ArenaCardProps {
   name: string
   /** Used for attack-arrow targeting */
   instanceId?: string
-  /** `full` = normal face (hand/inspect); `board` = art_crop token */
+  /** `full` = hand/inspect face; `board` = battlefield (same full-card art as hand) */
   variant?: ArenaCardVariant
   /** Mana cost string e.g. `{2}{R}{G}` — drives board color rim */
   manaCost?: string | null
@@ -243,7 +243,7 @@ function ArenaCardInner({
           : `−${floater.amount}`
       : null
 
-  const imageKind = isBoard ? 'art_crop' : 'normal'
+  const imageKind = 'normal'
 
   const inner = (
     <>

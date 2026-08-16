@@ -1,7 +1,5 @@
 import type { ReactNode } from 'react'
-import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ChallengeSwitcher } from '../ChallengeSwitcher'
 import { ManaSymbol } from '../ManaCost'
 import { SetupLlmAdvisor } from '../SetupLlmAdvisor'
 import { HERO_DEFS, maxHeroesFor } from '../../game/heroes'
@@ -80,14 +78,6 @@ export function ChallengeSetupView({
           </div>
         ) : null}
 
-        <div className="page-top-nav">
-          <Link to={`/decks/${code}`} className="back-link">
-            ← {t('challenge.backDeck')}
-          </Link>
-          <ChallengeSwitcher currentCode={code} mode="challenge" />
-        </div>
-
-        <p className="eyebrow">{t('challenge.eyebrow')}</p>
         <h1>{title}</h1>
         <p className="lede">{t('challenge.setupLead')}</p>
 

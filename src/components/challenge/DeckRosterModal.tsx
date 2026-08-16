@@ -131,7 +131,6 @@ export function DeckRosterModal({
         >
           <header className="deck-roster-head">
             <div>
-              <p className="eyebrow">{t('challenge.previewDeck')}</p>
               <div className="deck-roster-title-row">
                 <h2>{zh ? deck.nameZh : deck.name}</h2>
                 <span className="setup-deck-pips" aria-hidden>

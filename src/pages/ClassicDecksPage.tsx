@@ -10,6 +10,7 @@ import {
 } from '../data/classicDeckRegistry'
 import type { ClassicFormat } from '../types'
 import '../styles/classic.css'
+import '../styles/cursors.css'
 
 const FORMATS: Array<ClassicFormat | 'all'> = [
   'all',
@@ -69,7 +70,6 @@ export function ClassicDecksPage() {
   return (
     <main className="page classic-decks-page">
       <header className="classic-decks-hero">
-        <p className="eyebrow">{t('classicDecks.eyebrow')}</p>
         <h1>{t('classicDecks.title')}</h1>
         <p className="lede">{t('classicDecks.lead')}</p>
       </header>

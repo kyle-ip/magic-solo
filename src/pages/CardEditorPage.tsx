@@ -172,7 +172,6 @@ export function CardEditorPage() {
   return (
     <main className="card-editor-page">
       <header className="card-editor-hero">
-        <p className="card-editor-eyebrow">{t('cardEditor.eyebrow')}</p>
         <h1>{t('cardEditor.title')}</h1>
         <p className="card-editor-lead">{t('cardEditor.lead')}</p>
         <p className="card-editor-disclaimer">{t('cardEditor.disclaimer')}</p>

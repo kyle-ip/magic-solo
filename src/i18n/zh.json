@@ -162,6 +162,9 @@
       "bonus": "奖励"
     }
   },
+  "nav": {
+    "challenges": "挑战"
+  },
   "classicDecks": {
     "open": "牌组",
     "eyebrow": "构筑原型",
@@ -420,6 +423,9 @@
       "combat": "战斗",
       "end": "结束"
     },
+    "phaseMark": "阶段",
+    "recenterBoard": "回到中心",
+
     "coachOn": "提示开",
     "coachOff": "提示关",
     "tipLabel": "提示",
@@ -451,6 +457,11 @@
       "aim": "点击敌方目标",
       "aimHorde": "确认攻击部落",
       "resolve": "结算战斗"
+    },
+    "actionHint": {
+      "continue": "点击继续推进",
+      "chooseTarget": "点击敌方或合法目标",
+      "enterCombat": "可进入战斗，或结束回合"
     },
     "prompt": {
       "declareBlockers": "宣告阻挡",

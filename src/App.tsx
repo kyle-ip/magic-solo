@@ -11,6 +11,7 @@ import {
   getHideSiteChrome,
   subscribeHideSiteChrome,
 } from './utils/siteChrome'
+import './styles/cursors.css'
 
 const DeckPage = lazy(() =>
   import('./pages/DeckPage').then((m) => ({ default: m.DeckPage })),

@@ -30,26 +30,53 @@ export function ChallengePlayShell({
 export function ChallengePlayLandmarkTree({ theme = 'hydra' }: { theme?: string }) {
   return (
     <ChallengePlayShell theme={theme}>
-      <div className="arena-topbar-shell">
-        <header className="arena-topbar" />
+      <div className="arena-board-stage">
+        <div className="arena-board-pan">
+          <div className="arena-battlefield">
+            <section className="bf-half bf-half-opponent bf-row opponent-row">
+              <div className="bf-board">
+                <div className="bf-creatures is-dense is-crowded" />
+                <div className="bf-lands is-dense is-crowded" />
+                <div className="land-stack" />
+              </div>
+            </section>
+            <div className="bf-half-divider" aria-hidden="true" />
+            <section className="bf-half bf-half-player bf-row player-row">
+              <div className="bf-board">
+                <div className="bf-creatures is-dense is-crowded" />
+                <div className="bf-lands is-dense is-crowded" />
+              </div>
+            </section>
+          </div>
+        </div>
       </div>
-      <div className="arena-opponent-rail">
-        <div className="life-orb is-opponent" />
-      </div>
-      <div className="arena-battlefield">
-        <div className="phase-strip" />
-        <div className="bf-creatures is-dense is-crowded" />
-        <div className="bf-lands is-dense is-crowded" />
-        <div className="land-stack" />
-      </div>
-      <div className="player-dock">
-        <div className="life-orb is-you" />
-        <div className="hand-dock" />
-        <div className="mana-pool-hud" />
-        <div className="arena-play-actions">
-          <button type="button" className="arena-primary-action">
-            End turn
-          </button>
+      <div className="arena-chrome-layer">
+        <div className="arena-topbar-shell">
+          <header className="arena-topbar" />
+        </div>
+        <div className="arena-opponent-rail">
+          <div className="life-orb is-opponent" />
+        </div>
+        <div className="player-dock">
+          <div className="player-life-stack">
+            <div className="player-phase-mark is-active" />
+            <div className="life-orb is-you" />
+          </div>
+          <div className="hand-dock" />
+          <div className="mana-pool-hud" />
+          <div className="arena-play-actions">
+            <p className="arena-action-hint">Hint</p>
+            <button type="button" className="arena-secondary-action">
+              Cancel
+            </button>
+            <button type="button" className="arena-primary-action">
+              End turn
+            </button>
+          </div>
+          <button type="button" className="hand-card is-playable" />
+          <div className="challenge-result-overlay">
+            <div className="settlement-panel" />
+          </div>
         </div>
       </div>
     </ChallengePlayShell>

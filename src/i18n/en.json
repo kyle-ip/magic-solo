@@ -162,6 +162,9 @@
       "bonus": "Bonus"
     }
   },
+  "nav": {
+    "challenges": "Challenges"
+  },
   "classicDecks": {
     "open": "Decks",
     "eyebrow": "Archetypes",
@@ -420,6 +423,8 @@
       "combat": "Combat",
       "end": "End"
     },
+    "phaseMark": "Phase",
+    "recenterBoard": "Recenter",
     "coachOn": "Tips on",
     "coachOff": "Tips off",
     "tipLabel": "Tip",

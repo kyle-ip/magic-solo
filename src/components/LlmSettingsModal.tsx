@@ -129,7 +129,6 @@ export function LlmSettingsModal({ open, onClose }: LlmSettingsModalProps) {
       >
         <header className="llm-modal-head">
           <div className="llm-modal-head-copy">
-            <p className="eyebrow">{t('llm.eyebrow')}</p>
             <h2 id={titleId}>{t('llm.title')}</h2>
           </div>
           <div className="llm-modal-head-actions">

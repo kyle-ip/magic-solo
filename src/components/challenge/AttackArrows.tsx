@@ -10,11 +10,14 @@ interface ResolvedArrow extends AttackLink {
   key: string
   fromPt: Point
   toPt: Point
+  curve: number
 }
 
 interface AttackArrowsProps {
   rootRef: RefObject<HTMLElement | null>
   links: AttackLink[]
+  /** Remeasure when the board pan transform changes. */
+  panOffset?: { x: number; y: number }
 }
 
 function centerOf(el: Element, root: DOMRect): Point {
@@ -25,7 +28,7 @@ function centerOf(el: Element, root: DOMRect): Point {
   }
 }
 
-function shorten(from: Point, to: Point, pad = 28): { from: Point; to: Point } {
+function shorten(from: Point, to: Point, pad: number): { from: Point; to: Point } {
   const dx = to.x - from.x
   const dy = to.y - from.y
   const len = Math.hypot(dx, dy) || 1
@@ -38,7 +41,13 @@ function shorten(from: Point, to: Point, pad = 28): { from: Point; to: Point } {
   }
 }
 
-export function AttackArrows({ rootRef, links }: AttackArrowsProps) {
+function readUiScale(root: HTMLElement): number {
+  const raw = getComputedStyle(root).getPropertyValue('--arena-ui-scale').trim()
+  const n = Number.parseFloat(raw)
+  return Number.isFinite(n) && n > 0 ? n : 1
+}
+
+export function AttackArrows({ rootRef, links, panOffset }: AttackArrowsProps) {
   const [arrows, setArrows] = useState<ResolvedArrow[]>([])
   const [size, setSize] = useState({ w: 0, h: 0 })
 
@@ -51,6 +60,9 @@ export function AttackArrows({ rootRef, links }: AttackArrowsProps) {
 
     const measure = () => {
       const rr = root.getBoundingClientRect()
+      const scale = readUiScale(root)
+      const pad = 28 * scale
+      const curve = 12 * scale
       setSize({ w: rr.width, h: rr.height })
       const next: ResolvedArrow[] = []
       for (const link of links) {
@@ -59,12 +71,13 @@ export function AttackArrows({ rootRef, links }: AttackArrowsProps) {
         if (!fromEl || !toEl) continue
         const rawFrom = centerOf(fromEl, rr)
         const rawTo = centerOf(toEl, rr)
-        const { from, to } = shorten(rawFrom, rawTo)
+        const { from, to } = shorten(rawFrom, rawTo, pad)
         next.push({
           ...link,
           key: `${link.from}->${link.to}-${link.tone ?? 'player'}`,
           fromPt: from,
           toPt: to,
+          curve,
         })
       }
       setArrows(next)
@@ -73,8 +86,11 @@ export function AttackArrows({ rootRef, links }: AttackArrowsProps) {
     measure()
     const ro = new ResizeObserver(measure)
     ro.observe(root)
+    // Card rows / pan layer resize without always changing root box.
+    const board =
+      root.querySelector('.arena-board-pan') ?? root.querySelector('.arena-battlefield')
+    if (board) ro.observe(board)
     window.addEventListener('resize', measure)
-    // Remeasure once after layout/paint (tap animations) — no permanent polling.
     const raf = requestAnimationFrame(() => {
       requestAnimationFrame(measure)
     })
@@ -83,7 +99,7 @@ export function AttackArrows({ rootRef, links }: AttackArrowsProps) {
       window.removeEventListener('resize', measure)
       cancelAnimationFrame(raf)
     }
-  }, [rootRef, links])
+  }, [rootRef, links, panOffset?.x, panOffset?.y])
 
   if (arrows.length === 0 || size.w === 0) return null
 
@@ -134,13 +150,11 @@ export function AttackArrows({ rootRef, links }: AttackArrowsProps) {
         const tone = a.tone ?? 'player'
         const midX = (a.fromPt.x + a.toPt.x) / 2
         const midY = (a.fromPt.y + a.toPt.y) / 2
-        // Slight curve so parallel arrows separate
         const dx = a.toPt.x - a.fromPt.x
         const dy = a.toPt.y - a.fromPt.y
         const len = Math.hypot(dx, dy) || 1
-        const curve = 12
-        const cx = midX - (dy / len) * curve
-        const cy = midY + (dx / len) * curve
+        const cx = midX - (dy / len) * a.curve
+        const cy = midY + (dx / len) * a.curve
         return (
           <path
             key={a.key}

@@ -4,3 +4,5 @@
 @import './styles/help.css';
 @import './styles/editor.css';
 @import './styles/rarityFrame.css';
+/* Cursors last in the shared bundle */
+@import './styles/cursors.css';

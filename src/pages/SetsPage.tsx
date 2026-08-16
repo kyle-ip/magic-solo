@@ -16,6 +16,7 @@ import {
   NlScryfallSearch,
 } from '../components/NlScryfallSearch'
 import '../styles/sets.css'
+import '../styles/cursors.css'
 
 const SORT_OPTIONS: GallerySetSort[] = [
   'release-desc',
@@ -68,7 +69,6 @@ export function SetsPage() {
   return (
     <main className="page sets-page">
       <header className="sets-hero">
-        <p className="eyebrow">{t('sets.eyebrow')}</p>
         <h1>{t('sets.title')}</h1>
         <p className="lede">{t('sets.lead')}</p>
       </header>

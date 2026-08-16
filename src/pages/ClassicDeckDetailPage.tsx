@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, Navigate, useParams } from 'react-router-dom'
+import { Navigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { DrawnCardModal } from '../components/DrawnCardModal'
 import { PrintAssistantModal } from '../components/PrintAssistantModal'
@@ -29,6 +29,7 @@ import { rarityFrameClass } from '../utils/rarityFrame'
 import type { ClassicDeckListEntry } from '../types'
 import '../styles/classic.css'
 import '../styles/rarityFrame.css'
+import '../styles/cursors.css'
 
 type GalleryLoadPhase = 'resolving' | 'warming' | 'ready'
 
@@ -169,17 +170,7 @@ export function ClassicDeckDetailPage() {
 
   return (
     <main className="page classic-deck-detail-page">
-      <nav className="classic-detail-nav">
-        <Link to="/classic-decks" className="references-text-btn">
-          {t('classicDecks.backToList')}
-        </Link>
-      </nav>
-
       <header className="classic-detail-hero">
-        <p className="eyebrow">
-          {t(`classicDecks.format.${deck.format}`)} ·{' '}
-          {t(`classicDecks.playstyle.${deck.playstyle}`)} · {deck.era}
-        </p>
         {scryfallSearchUrl ? (
           <a
             className="classic-title-link"
@@ -193,6 +184,10 @@ export function ClassicDeckDetailPage() {
         ) : (
           <h1>{title}</h1>
         )}
+        <p className="section-meta">
+          {t(`classicDecks.format.${deck.format}`)} ·{' '}
+          {t(`classicDecks.playstyle.${deck.playstyle}`)} · {deck.era}
+        </p>
         <p className="lede">{summary}</p>
         <div className="cta-row">
           <button

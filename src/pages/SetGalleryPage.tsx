@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Link, Navigate, useParams } from 'react-router-dom'
+import { Navigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { DrawnCardModal } from '../components/DrawnCardModal'
 import { PrintAssistantModal } from '../components/PrintAssistantModal'
@@ -31,6 +31,7 @@ import { rarityFrameClass } from '../utils/rarityFrame'
 import '../styles/deck.css'
 import '../styles/sets.css'
 import '../styles/rarityFrame.css'
+import '../styles/cursors.css'
 
 const GALLERY_RARITIES = ['mythic', 'rare', 'uncommon', 'common'] as const
 
@@ -206,19 +207,6 @@ export function SetGalleryPage() {
       <section className="deck-hero">
         <div className="deck-hero-inner">
           <div className="deck-hero-copy">
-            <Link to="/sets" className="back-link">
-              ← {t('sets.backToList')}
-            </Link>
-            <p className="eyebrow">
-              {setMeta
-                ? t('sets.setLine', {
-                    type: t(`sets.type.${setMeta.setType}`, {
-                      defaultValue: setMeta.setType,
-                    }),
-                    code: setMeta.code.toUpperCase(),
-                  })
-                : setCode.toUpperCase()}
-            </p>
             {setMeta?.scryfallUri ? (
               <a
                 className="set-title-link"
@@ -232,6 +220,16 @@ export function SetGalleryPage() {
             ) : (
               <h1>{title}</h1>
             )}
+            <p className="section-meta">
+              {setMeta
+                ? t('sets.setLine', {
+                    type: t(`sets.type.${setMeta.setType}`, {
+                      defaultValue: setMeta.setType,
+                    }),
+                    code: setMeta.code.toUpperCase(),
+                  })
+                : setCode.toUpperCase()}
+            </p>
             <p className="lede">
               {setMeta
                 ? t('sets.overview', {

@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next'
 import { BattleHistoryModal } from '../components/BattleHistoryModal'
 import { CardModal } from '../components/CardModal'
 import { CardTile } from '../components/CardTile'
-import { ChallengeSwitcher } from '../components/ChallengeSwitcher'
 import { PrintAssistantModal } from '../components/PrintAssistantModal'
 import { RulesPanel } from '../components/RulesPanel'
 import {
@@ -24,6 +23,7 @@ import { warmDeckPageImages } from '../utils/preloadChallengeImages'
 import '../styles/deck.css'
 import '../styles/rarityFrame.css'
 import '../styles/llm.css'
+import '../styles/cursors.css'
 
 export function DeckPage() {
   const { setCode = '' } = useParams()
@@ -90,20 +90,14 @@ export function DeckPage() {
       <section className="deck-hero">
         <div className="deck-hero-inner">
           <div className="deck-hero-copy">
-            <div className="page-top-nav">
-              <Link to="/" className="back-link">
-                ← {t('app.backHome')}
-              </Link>
-              <ChallengeSwitcher currentCode={deck.code} mode="deck" />
-            </div>
-            <p className="eyebrow">
+            <h1>{challengeName}</h1>
+            <p className="section-meta">
               {t('deck.challenge', { n: deck.challengeNumber })} ·{' '}
               {t('deck.setLine', {
                 expansion: meta?.expansion ?? deck.setCode,
                 code: deck.setCode,
               })}
             </p>
-            <h1>{challengeName}</h1>
             <p className="lede">{meta?.overview}</p>
             <div className="cta-row">
               <Link

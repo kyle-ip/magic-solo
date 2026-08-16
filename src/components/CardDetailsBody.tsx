@@ -192,7 +192,7 @@ export function CardDetailsBody({
 
   return (
     <>
-      <p className="eyebrow">
+      <p className="card-detail-meta">
         {setLine}
         <span className={`pack-rarity-chip rarity-${card.rarity}`}>
           {t(`packDraw.rarity.${card.rarity}`, {

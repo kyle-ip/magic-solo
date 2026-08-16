@@ -90,11 +90,11 @@
   box-sizing: border-box;
   border: 1px solid rgba(160, 120, 55, 0.38);
   border-radius: 0.4rem;
-  background-color: #12100c;
+  background-color: var(--input-bg);
   background-image: none;
   color: #f3e6c8;
   caret-color: #f0d48a;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.45);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.22);
   font: inherit;
   outline: none;
 }
@@ -136,7 +136,7 @@
 .llm-nl-search-form input[type='search']:-webkit-autofill {
   -webkit-text-fill-color: #f3e6c8;
   caret-color: #f0d48a;
-  box-shadow: 0 0 0 1000px #12100c inset;
+  box-shadow: 0 0 0 1000px var(--input-bg) inset;
   transition: background-color 99999s ease-out;
 }
 
@@ -202,7 +202,7 @@
 .settlement-report .btn {
   border-color: rgba(160, 120, 55, 0.42);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
-  background: linear-gradient(180deg, #2c2218, #16110d);
+  background: var(--control-bg);
   color: rgba(244, 234, 212, 0.94);
 }
 
@@ -227,7 +227,7 @@
 .llm-postgame-ask .btn.primary,
 .llm-nl-search .btn.primary {
   background: linear-gradient(180deg, #d4a84e, #8a5f1c);
-  color: #1a1208;
+  color: #fff8ec;
   border-color: rgba(200, 150, 60, 0.55);
   box-shadow: 0 4px 12px rgba(100, 70, 20, 0.28);
 }
@@ -369,7 +369,7 @@
   margin-top: 0.75rem;
   padding: 0.75rem 0.85rem;
   border: 1px solid rgba(160, 120, 55, 0.32);
-  background: rgba(12, 9, 7, 0.55);
+  background: var(--chrome-bg);
   font-size: 0.92rem;
   line-height: 1.5;
   color: rgba(240, 224, 190, 0.92);
@@ -416,7 +416,7 @@
   margin-top: 0.65rem;
   padding: 0.7rem 0.8rem;
   border: 1px solid rgba(160, 120, 55, 0.32);
-  background: rgba(12, 9, 7, 0.55);
+  background: var(--chrome-bg);
   font-size: 0.9rem;
   line-height: 1.5;
   color: rgba(240, 224, 190, 0.92);
@@ -595,7 +595,7 @@
   width: 100%;
   padding: 0;
   border: 1px solid rgba(160, 120, 55, 0.32);
-  background: rgba(12, 9, 7, 0.55);
+  background: var(--chrome-bg);
   color: rgba(240, 224, 190, 0.9);
   cursor: pointer;
   font: inherit;
@@ -630,7 +630,7 @@
   margin-top: 0.55rem;
   padding: 0.7rem 0.8rem;
   border: 1px solid rgba(160, 120, 55, 0.32);
-  background: rgba(12, 9, 7, 0.55);
+  background: var(--chrome-bg);
   font-size: 0.9rem;
   line-height: 1.5;
   color: rgba(240, 224, 190, 0.92);

@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { PrimaryActionResult } from '../../challenge/primaryAction'
 
@@ -7,17 +8,26 @@ export function PrimaryActionBar({
   onCancelCombat,
   onCancelTarget,
   onEndTurn,
+  above,
 }: {
   action: PrimaryActionResult
   onPrimary: () => void
   onCancelCombat?: () => void
   onCancelTarget?: () => void
   onEndTurn?: () => void
+  /** Optional control stacked above the main action (e.g. board recenter). */
+  above?: ReactNode
 }) {
   const { t } = useTranslation()
 
   return (
     <div className="arena-play-actions">
+      {above}
+      {action.hintKey ? (
+        <p className="arena-action-hint" role="status">
+          {t(action.hintKey)}
+        </p>
+      ) : null}
       {action.secondaries.includes('cancel_combat') && onCancelCombat ? (
         <button type="button" className="btn arena-secondary-action" onClick={onCancelCombat}>
           {t('challenge.cancelCombat')}
