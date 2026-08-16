@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
 } from 'react'
 import { createPortal } from 'react-dom'
 import { Link, Navigate, useParams } from 'react-router-dom'
@@ -117,11 +118,14 @@ type PromptPickCard = {
   text: string
 }
 
+const HAND_DRAG_THRESHOLD_PX = 14
+
 function ChallengeHandCard({
   index,
   image,
   unaffordable,
   pending,
+  selected,
   touchUi,
   onCast,
   onPreview,
@@ -131,63 +135,168 @@ function ChallengeHandCard({
   image: string
   unaffordable: boolean
   pending: boolean
+  selected: boolean
   touchUi: boolean
   onCast: () => void
   onPreview: (point?: { clientX: number; clientY: number }) => void
   onClearPreview: () => void
 }) {
-  const longPressTimer = useRef(0)
-  const longPressFired = useRef(false)
+  const [ghost, setGhost] = useState<{
+    x: number
+    y: number
+    w: number
+    h: number
+  } | null>(null)
+  const suppressClickRef = useRef(false)
+  const dragRef = useRef<{
+    pointerId: number
+    startX: number
+    startY: number
+    active: boolean
+    w: number
+    h: number
+  } | null>(null)
+  const endDragListeners = useRef<(() => void) | null>(null)
 
-  useEffect(() => () => window.clearTimeout(longPressTimer.current), [])
+  useEffect(() => {
+    return () => {
+      endDragListeners.current?.()
+      document.body.classList.remove('is-hand-casting')
+    }
+  }, [])
 
-  const clearLongPress = () => {
-    window.clearTimeout(longPressTimer.current)
-    longPressTimer.current = 0
+  const cleanupDrag = () => {
+    endDragListeners.current?.()
+    endDragListeners.current = null
+    dragRef.current = null
+    setGhost(null)
+    document.body.classList.remove('is-hand-casting')
+  }
+
+  const onPointerDown = (e: ReactPointerEvent<HTMLButtonElement>) => {
+    if (!touchUi || e.button > 0) return
+    // Unaffordable: tap for detail only — no cast drag.
+    if (unaffordable && !pending) return
+    // Touch: press+drag out to cast; tap selects / shows detail.
+    e.stopPropagation()
+    const target = e.currentTarget
+    dragRef.current = {
+      pointerId: e.pointerId,
+      startX: e.clientX,
+      startY: e.clientY,
+      active: false,
+      // Layout box (not AABB) so fan rotate does not inflate the ghost
+      w: target.offsetWidth,
+      h: target.offsetHeight,
+    }
+    suppressClickRef.current = false
+
+    const onMove = (ev: PointerEvent) => {
+      const drag = dragRef.current
+      if (!drag || drag.pointerId !== ev.pointerId) return
+      const dx = ev.clientX - drag.startX
+      const dy = ev.clientY - drag.startY
+      if (!drag.active) {
+        if (dx * dx + dy * dy < HAND_DRAG_THRESHOLD_PX * HAND_DRAG_THRESHOLD_PX) {
+          return
+        }
+        drag.active = true
+        suppressClickRef.current = true
+        try {
+          target.setPointerCapture(ev.pointerId)
+        } catch {
+          /* ignore */
+        }
+        document.body.classList.add('is-hand-casting')
+        onClearPreview()
+      }
+      ev.preventDefault()
+      setGhost({ x: ev.clientX, y: ev.clientY, w: drag.w, h: drag.h })
+    }
+
+    const onUp = (ev: PointerEvent) => {
+      const drag = dragRef.current
+      if (!drag || drag.pointerId !== ev.pointerId) return
+      const wasActive = drag.active
+      const startY = drag.startY
+      const el = document.elementFromPoint(ev.clientX, ev.clientY)
+      const inHand = Boolean(el?.closest?.('.hand-dock'))
+      const draggedUp = ev.clientY < startY - 40
+      cleanupDrag()
+      try {
+        if (target.hasPointerCapture(ev.pointerId)) {
+          target.releasePointerCapture(ev.pointerId)
+        }
+      } catch {
+        /* ignore */
+      }
+      if (wasActive && (!inHand || draggedUp)) {
+        onCast()
+      }
+    }
+
+    window.addEventListener('pointermove', onMove, { passive: false })
+    window.addEventListener('pointerup', onUp)
+    window.addEventListener('pointercancel', onUp)
+    endDragListeners.current = () => {
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+      window.removeEventListener('pointercancel', onUp)
+    }
   }
 
   return (
-    <button
-      type="button"
-      className={`hand-card${unaffordable ? ' is-disabled' : ' is-playable'}${
-        pending ? ' is-pending' : ''
-      }`}
-      style={{ '--i': index } as CSSProperties}
-      aria-disabled={unaffordable && !pending ? true : undefined}
-      onPointerDown={(e) => {
-        if (!touchUi || e.button > 0) return
-        longPressFired.current = false
-        clearLongPress()
-        longPressTimer.current = window.setTimeout(() => {
-          longPressFired.current = true
-          onPreview()
-        }, 420)
-      }}
-      onPointerUp={clearLongPress}
-      onPointerCancel={clearLongPress}
-      onPointerLeave={clearLongPress}
-      onClick={() => {
-        if (longPressFired.current) {
-          longPressFired.current = false
-          return
+    <>
+      <button
+        type="button"
+        className={`hand-card${unaffordable ? ' is-disabled' : ' is-playable'}${
+          pending ? ' is-pending' : ''
+        }${selected ? ' is-selected' : ''}${ghost ? ' is-hand-drag-source' : ''}`}
+        style={{ '--i': index } as CSSProperties}
+        aria-disabled={unaffordable && !pending ? true : undefined}
+        onPointerDown={onPointerDown}
+        onClick={() => {
+          if (suppressClickRef.current) {
+            suppressClickRef.current = false
+            return
+          }
+          if (touchUi) {
+            // Tap = select + detail only (never cast).
+            onPreview()
+            return
+          }
+          if (unaffordable && !pending) return
+          onCast()
+        }}
+        onMouseEnter={
+          touchUi
+            ? undefined
+            : (e) => onPreview({ clientX: e.clientX, clientY: e.clientY })
         }
-        if (touchUi && unaffordable && !pending) {
-          onPreview()
-          return
-        }
-        onCast()
-      }}
-      onMouseEnter={
-        touchUi
-          ? undefined
-          : (e) => onPreview({ clientX: e.clientX, clientY: e.clientY })
-      }
-      onMouseLeave={touchUi ? undefined : onClearPreview}
-    >
-      <span className="hand-card-face">
-        <CardImage localPath={image} kind="normal" alt="" draggable={false} />
-      </span>
-    </button>
+        onMouseLeave={touchUi ? undefined : onClearPreview}
+      >
+        <span className="hand-card-face">
+          <CardImage localPath={image} kind="normal" alt="" draggable={false} />
+        </span>
+      </button>
+      {ghost
+        ? createPortal(
+            <div
+              className="hand-cast-ghost"
+              style={{
+                left: ghost.x,
+                top: ghost.y,
+                width: ghost.w,
+                height: ghost.h,
+              }}
+              aria-hidden
+            >
+              <CardImage localPath={image} kind="normal" alt="" draggable={false} />
+            </div>,
+            document.body,
+          )
+        : null}
+    </>
   )
 }
 
@@ -405,11 +514,13 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
     const onPointerDown = (event: PointerEvent) => {
       const target = event.target as Node | null
       if (target && handShellRef.current?.contains(target)) return
+      // Keep the hand open while the text detail pane is up
+      if (preview) return
       setHandOpen(false)
     }
     document.addEventListener('pointerdown', onPointerDown, true)
     return () => document.removeEventListener('pointerdown', onPointerDown, true)
-  }, [handOpen, handPinned, touchHandUi])
+  }, [handOpen, handPinned, touchHandUi, preview])
 
   const toggleHandPin = useCallback(() => {
     if (handPinned) {
@@ -1944,6 +2055,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                     state.playerPhase !== 'main' &&
                     state.playerPhase !== 'combat')
                 const pending = state.pendingCast?.handInstanceId === card.instanceId
+                const selected = preview?.instanceId === card.instanceId
                 const previewPayload = {
                   image: card.image,
                   name: zh ? card.nameZh : card.name,
@@ -1966,6 +2078,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                     index={i}
                     unaffordable={unaffordable}
                     pending={pending}
+                    selected={selected}
                     touchUi={touchHandUi}
                     image={card.image}
                     onCast={() => {
@@ -2028,8 +2141,15 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                 type="button"
                 className="btn ghost arena-recenter-btn"
                 onClick={boardPan.resetPan}
+                aria-label={t('challenge.recenterBoard')}
+                title={t('challenge.recenterBoard')}
               >
-                {t('challenge.recenterBoard')}
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path
+                    fill="currentColor"
+                    d="M12 2a1 1 0 0 1 1 1v1.07A8.001 8.001 0 0 1 19.93 11H21a1 1 0 1 1 0 2h-1.07A8.001 8.001 0 0 1 13 19.93V21a1 1 0 1 1-2 0v-1.07A8.001 8.001 0 0 1 4.07 13H3a1 1 0 1 1 0-2h1.07A8.001 8.001 0 0 1 11 4.07V3a1 1 0 0 1 1-1zm0 4a6 6 0 1 0 0 12A6 6 0 0 0 12 6zm0 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z"
+                  />
+                </svg>
               </button>
             ) : null
           }
@@ -2044,7 +2164,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
               className={[
                 'card-preview-pane',
                 'challenge-preview-pane',
-                touchHandUi ? '' : 'is-follow',
+                touchHandUi ? 'is-text-only' : 'is-follow',
               ]
                 .filter(Boolean)
                 .join(' ')}
@@ -2062,7 +2182,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                 className="card-preview-swap"
                 key={`${preview.image}|${preview.name}`}
               >
-                {preview.image ? (
+                {!touchHandUi && preview.image ? (
                   <div className="card-preview-art">
                     <CardImage
                       localPath={preview.image}
@@ -2070,11 +2190,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                       alt={preview.name}
                     />
                   </div>
-                ) : (
-                  <div className="preview-token">
-                    <strong>{preview.name}</strong>
-                  </div>
-                )}
+                ) : null}
                 <div className="card-preview-copy">
                   <p className="card-preview-name">{preview.name}</p>
                   {preview.text ? (

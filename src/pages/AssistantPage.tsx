@@ -944,8 +944,15 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
           type="button"
           className="btn ghost arena-recenter-btn"
           onClick={boardPan.resetPan}
+          aria-label={t('challenge.recenterBoard')}
+          title={t('challenge.recenterBoard')}
         >
-          {t('challenge.recenterBoard')}
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path
+              fill="currentColor"
+              d="M12 2a1 1 0 0 1 1 1v1.07A8.001 8.001 0 0 1 19.93 11H21a1 1 0 1 1 0 2h-1.07A8.001 8.001 0 0 1 13 19.93V21a1 1 0 1 1-2 0v-1.07A8.001 8.001 0 0 1 4.07 13H3a1 1 0 1 1 0-2h1.07A8.001 8.001 0 0 1 11 4.07V3a1 1 0 0 1 1-1zm0 4a6 6 0 1 0 0 12A6 6 0 0 0 12 6zm0 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z"
+            />
+          </svg>
         </button>
       ) : null}
       </div>

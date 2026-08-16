@@ -120,10 +120,10 @@ html.is-arena-playing body {
 
 .arena-root {
   position: relative;
-  /* Grow with setup content; document scrolls ? never nest a second scrollport */
+  /* Grow with setup content; document scrolls — never nest a second scrollport */
   flex-shrink: 0;
-  min-height: 100vh;
-  min-height: 100dvh;
+  /* Setup sizes to content; .is-playing sets its own full-viewport min-height */
+  min-height: 0;
   color: var(--parchment);
   overflow: visible;
 }
@@ -446,13 +446,15 @@ html.is-arena-playing body {
 
   .hand-card:hover,
   .hand-card:focus-visible,
-  .hand-card.is-pending {
+  .hand-card.is-pending,
+  .hand-card.is-selected {
     transform: translateY(calc(-0.4rem)) rotate(0deg);
   }
 
   .hand-card:hover::before,
   .hand-card:focus-visible::before,
-  .hand-card.is-pending::before {
+  .hand-card.is-pending::before,
+  .hand-card.is-selected::before {
     bottom: calc(-28% - 0.6rem);
     pointer-events: auto;
   }
@@ -574,8 +576,14 @@ html.is-arena-playing body {
   width: var(--page-width);
   max-width: 100%;
   box-sizing: border-box;
-  margin: 4rem auto;
-  padding: 0 clamp(0.5rem, 2.5vw, 1.75rem) 3rem;
+  /* Match top/bottom rhythm into the site footer (no full-viewport void) */
+  margin: 2.5rem auto 0;
+  padding: 0 clamp(0.5rem, 2.5vw, 1.75rem) 2.5rem;
+}
+
+/* Challenge setup shares the site footer — don't pin it with flex auto-margin */
+.app-shell:has(.arena-setup) > .site-footer {
+  margin-top: 0;
 }
 
 .arena-setup.is-preloading {
@@ -1467,6 +1475,7 @@ html.is-arena-playing body {
 
 .arena-player-chrome.is-opponent {
   justify-content: flex-end;
+  align-items: center;
 }
 
 .arena-player-chrome.is-you {
@@ -2597,7 +2606,8 @@ button.arena-card {
 
 .hand-card:hover,
 .hand-card:focus-visible,
-.hand-card.is-pending {
+.hand-card.is-pending,
+.hand-card.is-selected {
   /* Whole card (art + border) lifts clear of the dock edge — no leftover frame */
   transform: translateY(calc(-1 * var(--hand-lift, calc(0.55rem * var(--arena-ui-scale, 1))))) rotate(0deg);
   z-index: 60;
@@ -2609,7 +2619,8 @@ button.arena-card {
 
 .hand-card:hover::before,
 .hand-card:focus-visible::before,
-.hand-card.is-pending::before {
+.hand-card.is-pending::before,
+.hand-card.is-selected::before {
   /* Cover the vacated tuck zone so the cursor does not drop :hover */
   bottom: calc(-28% - 0.75rem);
   pointer-events: auto;
@@ -3007,7 +3018,7 @@ button.arena-card {
 .cast-stage {
   position: fixed;
   inset: 0;
-  z-index: 40;
+  z-index: 85;
   background: rgba(12, 9, 6, 0.48);
   display: grid;
   place-items: center;
@@ -3088,18 +3099,370 @@ button.arena-card {
 }
 
 @media (max-width: 640px) {
+  .cast-stage {
+    padding: max(0.55rem, var(--safe-top, 0px)) 0.55rem
+      max(0.65rem, var(--safe-bottom, 0px));
+    align-items: center;
+    overflow: auto;
+  }
+
   .cast-stage-panel {
     grid-template-columns: 1fr;
     justify-items: center;
     text-align: center;
+    gap: 0.45rem;
+    padding: 0.55rem 0.65rem 0.6rem;
+    max-width: min(18.5rem, 92vw);
+    max-height: min(68dvh, calc(100dvh - 2rem - var(--safe-top, 0px) - var(--safe-bottom, 0px)));
+    overflow: auto;
+    box-sizing: border-box;
   }
 
   .cast-stage-detail {
     text-align: center;
+    gap: 0.2rem;
+  }
+
+  .cast-stage-name {
+    font-size: 0.95rem;
+  }
+
+  .cast-stage-type,
+  .cast-stage-pt {
+    font-size: 0.72rem;
+  }
+
+  .cast-stage-oracle {
+    font-size: 0.72rem;
+    line-height: 1.35;
+    max-height: min(22vh, 7.5rem);
+    margin-top: 0.2rem;
   }
 
   .cast-stage-card img {
-    width: min(240px, 70vw);
+    width: min(112px, 32vw);
+  }
+
+  .cast-stage-confirm-hint {
+    margin-top: 0.3rem;
+    font-size: 0.68rem;
+  }
+}
+
+/* Phones / tablets in landscape, or any coarse pointer — keep reveal compact */
+@media (max-width: 900px), ((hover: none) and (pointer: coarse)) {
+  .cast-stage {
+    padding: max(0.5rem, var(--safe-top, 0px)) 0.55rem
+      max(0.65rem, var(--safe-bottom, 0px));
+    overflow: auto;
+    place-items: center;
+  }
+
+  .cast-stage-panel {
+    grid-template-columns: auto minmax(0, 11.5rem);
+    gap: 0.55rem 0.7rem;
+    align-items: start;
+    padding: 0.55rem 0.65rem 0.6rem;
+    max-width: min(22rem, 94vw);
+    max-height: min(
+      62dvh,
+      calc(100dvh - 2.25rem - var(--safe-top, 0px) - var(--safe-bottom, 0px))
+    );
+    overflow: auto;
+    box-sizing: border-box;
+  }
+
+  .cast-stage-card img {
+    width: min(108px, 28vw);
+  }
+
+  .cast-stage-name {
+    font-size: 0.92rem;
+  }
+
+  .cast-stage-type,
+  .cast-stage-pt {
+    font-size: 0.7rem;
+  }
+
+  .cast-stage-oracle {
+    font-size: 0.7rem;
+    line-height: 1.35;
+    max-height: min(26vh, 8rem);
+    margin-top: 0.15rem;
+  }
+
+  .cast-stage-confirm-hint {
+    margin-top: 0.28rem;
+    font-size: 0.66rem;
+  }
+
+  /*
+   * Challenge dialogs — same compact footprint as cast-stage.
+   * Settlement, prompts, battle log, deck roster, coach tip.
+   */
+  html.is-challenge-fit .challenge-result-overlay {
+    padding: max(0.5rem, var(--safe-top, 0px)) 0.55rem
+      max(0.65rem, var(--safe-bottom, 0px));
+    justify-content: center;
+  }
+
+  html.is-challenge-fit .settlement-panel,
+  .arena-root.is-playing.is-challenge-fit .settlement-panel {
+    width: min(22rem, 94vw);
+    max-width: min(22rem, 94vw);
+    max-height: min(
+      72dvh,
+      calc(100dvh - 2.25rem - var(--safe-top, 0px) - var(--safe-bottom, 0px))
+    );
+    margin: 0;
+    padding: 0.65rem 0.75rem 0.7rem;
+    overflow: auto;
+    font-size: 0.85rem;
+    box-sizing: border-box;
+  }
+
+  html.is-challenge-fit .settlement-eyebrow {
+    margin-bottom: 0.25rem;
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+  }
+
+  html.is-challenge-fit .settlement-panel h2,
+  .arena-root.is-playing.is-challenge-fit .settlement-panel h2 {
+    margin-bottom: 0.3rem;
+    font-size: 1.15rem;
+  }
+
+  html.is-challenge-fit .settlement-lead {
+    margin-bottom: 0.45rem;
+    font-size: 0.78rem;
+    line-height: 1.35;
+  }
+
+  html.is-challenge-fit .settlement-matchup {
+    margin-bottom: 0.55rem;
+    font-size: 0.74rem;
+  }
+
+  html.is-challenge-fit .settlement-stats {
+    gap: 0.35rem;
+    margin-bottom: 0.65rem;
+  }
+
+  html.is-challenge-fit .settlement-stats > div {
+    padding: 0.35rem 0.3rem;
+  }
+
+  html.is-challenge-fit .settlement-stats dt {
+    margin-bottom: 0.1rem;
+    font-size: 0.58rem;
+    letter-spacing: 0.04em;
+  }
+
+  html.is-challenge-fit .settlement-stats dd {
+    font-size: 0.95rem;
+  }
+
+  html.is-challenge-fit .settlement-actions {
+    gap: 0.4rem;
+  }
+
+  html.is-challenge-fit .settlement-actions .btn {
+    min-height: 2rem;
+    padding: 0.32rem 0.7rem;
+    font-size: 0.78rem;
+  }
+
+  html.is-challenge-fit .settlement-report {
+    margin: 0.45rem 0 0.25rem;
+  }
+
+  html.is-challenge-fit .llm-postgame-ask {
+    margin-top: 0.35rem;
+    gap: 0.3rem;
+  }
+
+  html.is-challenge-fit .llm-postgame-ask input {
+    min-width: 0;
+    padding: 0.32rem 0.45rem;
+    font-size: 0.78rem;
+  }
+
+  html.is-challenge-fit .prompt-backdrop {
+    padding: max(0.5rem, var(--safe-top, 0px)) 0.55rem
+      max(0.65rem, var(--safe-bottom, 0px));
+  }
+
+  html.is-challenge-fit .prompt-shell:not(.inspect-shell):not(.deck-roster-shell) {
+    width: min(22rem, 94vw);
+    max-width: min(22rem, 94vw);
+    max-height: min(
+      62dvh,
+      calc(100dvh - 2.25rem - var(--safe-top, 0px) - var(--safe-bottom, 0px))
+    );
+    padding: 0.55rem 0.65rem 0.65rem;
+    overflow: auto;
+    box-sizing: border-box;
+  }
+
+  html.is-challenge-fit .prompt-shell.prompt-shell-scry,
+  html.is-challenge-fit .prompt-shell.prompt-shell-cards {
+    width: min(22rem, 94vw);
+    max-width: min(22rem, 94vw);
+  }
+
+  html.is-challenge-fit .prompt-shell h2 {
+    margin: 0 0 0.35rem;
+    font-size: 1rem;
+  }
+
+  html.is-challenge-fit .prompt-shell > p {
+    margin: 0;
+    font-size: 0.78rem;
+    line-height: 1.35;
+  }
+
+  html.is-challenge-fit .prompt-actions {
+    margin-top: 0.55rem;
+    gap: 0.35rem;
+  }
+
+  html.is-challenge-fit .prompt-actions .btn {
+    min-height: 2rem;
+    padding: 0.32rem 0.65rem;
+    font-size: 0.78rem;
+  }
+
+  html.is-challenge-fit .prompt-card-picker {
+    gap: 0.4rem;
+    margin-top: 0.55rem;
+    max-height: min(36vh, 14rem);
+  }
+
+  html.is-challenge-fit .prompt-pick-card {
+    width: 4.25rem;
+  }
+
+  html.is-challenge-fit .scry-preview {
+    gap: 0.55rem;
+    margin-top: 0.35rem;
+  }
+
+  html.is-challenge-fit .scry-preview .arena-card {
+    height: 5.5rem;
+    width: calc(5.5rem * 744 / 1040);
+  }
+
+  html.is-challenge-fit .scry-preview-name {
+    font-size: 0.92rem;
+  }
+
+  html.is-challenge-fit .scry-preview-type,
+  html.is-challenge-fit .scry-preview-oracle,
+  html.is-challenge-fit .scry-preview-hint {
+    font-size: 0.72rem;
+  }
+
+  html.is-challenge-fit .block-panel {
+    margin-top: 0.45rem;
+    padding: 0.45rem 0.5rem;
+  }
+
+  html.is-challenge-fit .block-panel-label {
+    font-size: 0.74rem;
+  }
+
+  html.is-challenge-fit .arena-log-overlay {
+    padding: max(0.5rem, var(--safe-top, 0px)) 0.55rem
+      max(0.65rem, var(--safe-bottom, 0px));
+  }
+
+  html.is-challenge-fit .arena-log-modal {
+    width: min(22rem, 94vw);
+    max-width: min(22rem, 94vw);
+    max-height: min(
+      62dvh,
+      calc(100dvh - 2.25rem - var(--safe-top, 0px) - var(--safe-bottom, 0px))
+    );
+    gap: 0.45rem;
+    padding: 0.55rem 0.65rem 0.6rem;
+    box-sizing: border-box;
+  }
+
+  html.is-challenge-fit .arena-log-modal-head h2 {
+    font-size: 1rem;
+  }
+
+  html.is-challenge-fit .arena-log-modal-list {
+    gap: 0.25rem;
+  }
+
+  html.is-challenge-fit .arena-log-modal-list li {
+    padding: 0.32rem 0.45rem;
+    font-size: 0.74rem;
+    line-height: 1.35;
+  }
+
+  html.is-challenge-fit .prompt-shell.deck-roster-shell {
+    width: min(22rem, 94vw);
+    max-width: min(22rem, 94vw);
+    max-height: min(
+      72dvh,
+      calc(100dvh - 2.25rem - var(--safe-top, 0px) - var(--safe-bottom, 0px))
+    );
+    gap: 0.55rem;
+    padding: 0.55rem 0.65rem 0.65rem;
+    box-sizing: border-box;
+  }
+
+  html.is-challenge-fit .deck-roster-head h2 {
+    font-size: 1rem;
+  }
+
+  html.is-challenge-fit .deck-roster-blurb,
+  html.is-challenge-fit .deck-roster-hint {
+    font-size: 0.74rem;
+  }
+
+  html.is-challenge-fit .deck-mana-curve {
+    padding: 0.45rem 0.5rem 0.4rem;
+  }
+
+  html.is-challenge-fit .deck-mana-curve-bars {
+    min-height: 3.5rem;
+  }
+
+  html.is-challenge-fit .coach-tip-float {
+    min-width: 11.5rem;
+    min-height: 4.5rem;
+    max-width: min(18rem, calc(100vw - 1.5rem));
+  }
+
+  html.is-challenge-fit .coach-tip-float-head {
+    padding: 0.3rem 0.5rem;
+  }
+
+  html.is-challenge-fit .coach-tip-float-body {
+    padding: 0.35rem 0.5rem 0.4rem;
+  }
+
+  html.is-challenge-fit .coach-tip-float-body,
+  html.is-challenge-fit .coach-tip-float-body p {
+    font-size: 0.74rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .cast-stage-panel {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+    max-width: min(17.5rem, 92vw);
+  }
+
+  .cast-stage-detail {
+    text-align: center;
   }
 }
 
@@ -4724,14 +5087,16 @@ html.is-arena-playing,
 
 .hand-card:hover img,
 .hand-card:focus-visible img,
-.hand-card.is-pending img {
+.hand-card.is-pending img,
+.hand-card.is-selected img {
   object-position: center top;
   transform-origin: center top;
 }
 
 .hand-card:hover .hand-card-face img,
 .hand-card:focus-visible .hand-card-face img,
-.hand-card.is-pending .hand-card-face img {
+.hand-card.is-pending .hand-card-face img,
+.hand-card.is-selected .hand-card-face img {
   object-position: center top;
   transform-origin: center top;
 }
@@ -4853,8 +5218,8 @@ html.is-arena-playing,
   align-items: stretch;
   gap: 0.45rem;
   pointer-events: auto;
-  width: calc(8.25rem * var(--arena-ui-scale, 1));
-  max-width: min(14rem, 42vw);
+  width: calc(6.4rem * var(--arena-ui-scale, 1));
+  max-width: min(9.5rem, 34vw);
 }
 
 .player-dock .arena-play-actions {
@@ -4863,7 +5228,7 @@ html.is-arena-playing,
 
 .arena-action-hint {
   margin: 0 0 0.2rem;
-  max-width: 14rem;
+  max-width: 9.5rem;
   text-align: right;
   font-size: calc(0.72rem * var(--arena-chrome-scale, var(--arena-ui-scale, 1)));
   line-height: 1.35;
@@ -4874,27 +5239,39 @@ html.is-arena-playing,
 }
 
 .arena-root.is-playing.is-challenge-fit .arena-play-actions {
-  width: calc(11.5rem * var(--arena-chrome-scale));
-  gap: calc(0.4rem * var(--arena-chrome-scale));
+  width: calc(7.1rem * var(--arena-chrome-scale));
+  max-width: min(9.25rem, 32vw);
+  gap: calc(0.35rem * var(--arena-chrome-scale));
 }
 
 .arena-root.is-playing.is-challenge-fit .arena-recenter-btn {
-  width: 100%;
-  min-height: calc(2.2rem * var(--arena-chrome-scale));
-  padding: 0.35rem 0.75rem;
-  font-size: calc(0.78rem * var(--arena-chrome-scale));
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  width: calc(2.55rem * var(--arena-chrome-scale));
+  min-width: calc(2.55rem * var(--arena-chrome-scale));
+  min-height: calc(2.55rem * var(--arena-chrome-scale));
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0;
+  letter-spacing: 0;
   border-radius: 999px;
   color: #f4ead4;
   background: rgba(28, 22, 16, 0.78);
   border: 1px solid rgba(184, 137, 58, 0.45);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
+  align-self: flex-end;
+}
+
+.arena-root.is-playing.is-challenge-fit .arena-recenter-btn svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  display: block;
 }
 
 .arena-root.is-playing.is-challenge-fit .arena-recenter-btn:hover {
   border-color: rgba(224, 180, 90, 0.7);
   background: rgba(40, 32, 22, 0.88);
+  color: #fff6e4;
 }
 
 /* Follow preview must stay above the hand dock; copy scrolls inside budget */
@@ -4908,8 +5285,9 @@ html.is-challenge-fit .card-preview-pane.is-follow {
 .arena-root.is-playing.is-challenge-fit .arena-play-actions .btn,
 .arena-root.is-playing.is-challenge-fit .arena-play-actions .arena-primary-action,
 .arena-root.is-playing.is-challenge-fit .arena-play-actions .arena-secondary-action {
-  min-height: calc(2.45rem * var(--arena-chrome-scale));
-  font-size: calc(0.86rem * var(--arena-chrome-scale));
+  min-height: calc(2.2rem * var(--arena-chrome-scale));
+  font-size: calc(0.78rem * var(--arena-chrome-scale));
+  padding: 0.35rem 0.55rem;
 }
 
 /* Shared dock action chrome — primary & secondary same size / shape */
@@ -4919,12 +5297,13 @@ html.is-challenge-fit .card-preview-pane.is-follow {
   box-sizing: border-box;
   width: 100%;
   min-width: 0;
-  min-height: calc(2.55rem * var(--arena-ui-scale, 1));
-  padding: 0.5rem 1rem;
-  font-size: calc(0.88rem * var(--arena-ui-scale, 1));
+  min-height: calc(2.25rem * var(--arena-ui-scale, 1));
+  padding: 0.4rem 0.55rem;
+  font-size: calc(0.8rem * var(--arena-ui-scale, 1));
   font-weight: 700;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
+  letter-spacing: 0.01em;
+  white-space: normal;
+  line-height: 1.2;
   border-radius: 999px;
   text-align: center;
   justify-content: center;
@@ -5095,10 +5474,39 @@ html.is-challenge-fit .card-preview-pane.is-follow {
 
 .arena-root.is-playing.is-challenge-fit .arena-opponent-rail {
   position: absolute;
-  top: calc(0.35rem * var(--arena-chrome-scale) + var(--safe-top, 0px));
-  right: calc(0.65rem * var(--arena-chrome-scale) + var(--safe-right, 0px));
+  /* Mirror player chrome insets: left/bottom ↔ right/top */
+  top: calc(
+    max(var(--hand-edge, 0.35rem), var(--safe-top, 0px)) + 0.7rem
+  );
+  right: calc(clamp(0.65rem, 1.8vw, 1.5rem) + var(--safe-right, 0px));
   left: auto;
   z-index: 30;
+  padding: 0;
+  gap: 0;
+  margin: 0;
+}
+
+.arena-root.is-playing.is-challenge-fit .arena-player-chrome.is-opponent {
+  /* Top-align so the life orb sits in the corner (not centered down the taller piles) */
+  align-items: flex-start;
+  gap: calc(0.45rem * var(--arena-chrome-scale));
+  padding: 0;
+  margin: 0;
+}
+
+.arena-root.is-playing.is-challenge-fit .arena-player-chrome.is-opponent .zone-pile-wrap {
+  display: flex;
+  align-items: flex-start;
+}
+
+/* Same footprint as player life orb — flush to the top-right inset */
+.arena-root.is-playing.is-challenge-fit .arena-player-chrome.is-opponent .life-orb {
+  align-self: flex-start;
+  width: calc(4rem * var(--arena-chrome-scale));
+  height: calc(4rem * var(--arena-chrome-scale));
+  min-width: calc(4rem * var(--arena-chrome-scale));
+  margin: 0;
+  flex-shrink: 0;
 }
 
 .arena-root.is-playing.is-challenge-fit .player-dock {
@@ -5144,6 +5552,12 @@ html.is-challenge-fit .card-preview-pane.is-follow {
   pointer-events: auto;
   /* Above collapsed strip; stays in padding under cards when open so toggle still works */
   z-index: 5;
+}
+
+/* Open hand: don't let the hotzone steal long-press / taps on cards */
+.hand-dock-shell.is-hand-open .hand-dock-hotzone,
+.hand-dock-shell.is-hand-pinned .hand-dock-hotzone {
+  pointer-events: none;
 }
 
 .arena-root.is-playing.is-challenge-fit .hand-dock {
@@ -5269,7 +5683,7 @@ html.is-challenge-fit .card-preview-pane.is-follow {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
 }
 
-/* Touch / coarse: docked card details, larger hotzone, no pin */
+/* Touch / coarse: text-only details, smaller chrome, larger hotzone, no pin */
 @media (hover: none), (pointer: coarse) {
   .hand-pin-btn {
     display: none !important;
@@ -5279,35 +5693,171 @@ html.is-challenge-fit .card-preview-pane.is-follow {
     height: max(2.6rem, calc(var(--safe-bottom, 0px) + 1.75rem));
   }
 
-  .challenge-preview-pane.card-preview-pane:not(.is-follow) {
+  /*
+   * Chrome −15% (phase / life / zones / actions / opponent rail).
+   * Hand + board card tokens stay on their own mobile size — not chrome-scaled.
+   */
+  .arena-root.is-playing.is-challenge-fit {
+    --arena-chrome-scale: calc((0.78 + 0.22 * var(--arena-ui-scale)) * 0.85);
+    --play-card-h: calc(168px * var(--arena-ui-scale));
+    --bf-card-h: calc(var(--play-card-h) * var(--bf-density));
+    --hand-full: calc(168px * var(--arena-ui-scale));
+    --hand-peek: calc(var(--hand-full) * 0.75);
+  }
+
+  .arena-root.is-playing.is-challenge-fit .arena-play-actions {
+    width: calc(6.35rem * var(--arena-chrome-scale));
+    max-width: min(7.75rem, 30vw);
+  }
+
+  /* Zone piles: count-only chips — no card-back sample art */
+  .arena-root.is-playing.is-challenge-fit .challenge-zone-piles .zone-pile {
+    width: auto;
+    min-width: calc(3.15rem * var(--arena-chrome-scale));
+    max-width: calc(3.85rem * var(--arena-chrome-scale));
+    padding: calc(0.28rem * var(--arena-chrome-scale))
+      calc(0.38rem * var(--arena-chrome-scale));
+    gap: 0.06rem;
+    align-items: center;
+  }
+
+  .arena-root.is-playing.is-challenge-fit .challenge-zone-piles .zone-pile-stack {
+    display: none;
+  }
+
+  .arena-root.is-playing.is-challenge-fit .challenge-zone-piles .zone-pile-caption {
     display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.06rem;
+    line-height: 1.1;
+  }
+
+  .arena-root.is-playing.is-challenge-fit .challenge-zone-piles .zone-pile-count {
+    font-size: calc(0.92rem * var(--arena-chrome-scale));
+    order: 2;
+  }
+
+  .arena-root.is-playing.is-challenge-fit .challenge-zone-piles .zone-pile-label {
+    font-size: calc(0.52rem * var(--arena-chrome-scale));
+    letter-spacing: 0.04em;
+    order: 1;
+  }
+
+  .arena-root.is-playing.is-challenge-fit .zone-pile:not(:disabled)::before {
+    inset: calc(-0.28rem * var(--arena-chrome-scale));
+  }
+
+  /* Graveyard / inspect modal — match compact cast-stage footprint */
+  .arena-root.is-playing.is-challenge-fit ~ .prompt-backdrop .prompt-shell.inspect-shell,
+  html.is-challenge-fit .prompt-shell.inspect-shell {
+    width: min(22rem, 94vw);
+    max-width: min(22rem, 94vw);
+    max-height: min(
+      62dvh,
+      calc(100dvh - 2.25rem - var(--safe-top, 0px) - var(--safe-bottom, 0px))
+    );
+    padding: 0.55rem 0.65rem 0.65rem;
+    box-sizing: border-box;
+  }
+
+  html.is-challenge-fit .inspect-shell-head h2 {
+    font-size: 1rem;
+  }
+
+  html.is-challenge-fit .inspect-grid {
+    gap: 0.4rem;
+    margin-top: 0.55rem;
+  }
+
+  html.is-challenge-fit .inspect-grid .arena-card,
+  html.is-challenge-fit .player-gy-card .arena-card {
+    height: 4.85rem;
+    width: calc(4.85rem * 744 / 1040);
+    max-height: 4.85rem;
+    max-width: calc(4.85rem * 744 / 1040);
+    aspect-ratio: auto;
+  }
+
+  html.is-challenge-fit .player-gy-card {
+    max-width: 6.5rem;
+  }
+
+  html.is-challenge-fit .player-gy-card .btn-sm {
+    font-size: 0.68rem;
+    padding: 0.25rem 0.4rem;
+  }
+
+  .challenge-preview-pane.card-preview-pane.is-text-only {
+    display: flex;
+    flex-direction: column;
     position: fixed;
     left: 50%;
     right: auto;
-    top: auto;
-    bottom: max(5.75rem, calc(var(--safe-bottom, 0px) + 5rem));
+    top: max(0.75rem, calc(var(--safe-top, 0px) + 0.55rem));
+    bottom: auto;
     transform: translateX(-50%);
-    width: min(18.5rem, calc(100vw - 1.5rem));
-    max-height: min(58dvh, 26rem);
+    width: min(20.5rem, calc(100vw - 1.35rem));
+    max-height: min(
+      52dvh,
+      calc(
+        100dvh - var(--safe-top, 0px) - var(--safe-bottom, 0px) -
+          var(--hand-full, 10rem) - 4.5rem
+      )
+    );
     z-index: 90;
     pointer-events: none;
+    padding: 0.7rem 0.85rem 0.8rem;
+    gap: 0;
+    overflow: hidden;
   }
 
   html.is-challenge-fit:has(.hand-dock-shell.is-hand-open)
-    .challenge-preview-pane.card-preview-pane:not(.is-follow) {
-    bottom: calc(
-      var(--hand-full, 12rem) + var(--hand-lift, 0.55rem) + 1.25rem +
-        var(--safe-bottom, 0px)
+    .challenge-preview-pane.card-preview-pane.is-text-only,
+  html.is-challenge-fit:has(.hand-dock-shell.is-hand-pinned)
+    .challenge-preview-pane.card-preview-pane.is-text-only {
+    max-height: min(
+      44dvh,
+      calc(
+        100dvh - var(--safe-top, 0px) - var(--safe-bottom, 0px) -
+          var(--hand-full, 10rem) - 3.75rem
+      )
     );
   }
 
-  .challenge-preview-pane.card-preview-pane:not(.is-follow) img,
-  .challenge-preview-pane.card-preview-pane:not(.is-follow) .card-preview-art img {
-    max-height: min(38dvh, 18rem);
+  .challenge-preview-pane.is-text-only .card-preview-swap {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
   }
 
-  .challenge-preview-pane:not(.is-follow) .card-preview-copy {
-    max-height: min(9rem, 20dvh);
+  .challenge-preview-pane.is-text-only .card-preview-art,
+  .challenge-preview-pane.is-text-only .preview-token {
+    display: none;
+  }
+
+  .challenge-preview-pane.is-text-only .card-preview-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    max-height: none;
+    overflow: auto;
+    min-height: 0;
+  }
+
+  .challenge-preview-pane.is-text-only .card-preview-name {
+    font-size: 0.92rem;
+    line-height: 1.25;
+    margin: 0;
+  }
+
+  .challenge-preview-pane.is-text-only .card-preview-text {
+    font-size: 0.74rem;
+    line-height: 1.4;
+    margin: 0;
+    white-space: pre-line;
   }
 }
 
@@ -5332,16 +5882,19 @@ html.is-challenge-fit .card-preview-pane.is-follow {
 .arena-root.is-playing.is-challenge-fit .hand-dock-shell.is-hand-open .hand-card:hover,
 .arena-root.is-playing.is-challenge-fit .hand-dock-shell.is-hand-open .hand-card:focus-visible,
 .arena-root.is-playing.is-challenge-fit .hand-dock-shell.is-hand-open .hand-card.is-pending,
+.arena-root.is-playing.is-challenge-fit .hand-dock-shell.is-hand-open .hand-card.is-selected,
 .arena-root.is-playing.is-challenge-fit .hand-dock-shell.is-hand-pinned .hand-card:hover,
 .arena-root.is-playing.is-challenge-fit .hand-dock-shell.is-hand-pinned .hand-card:focus-visible,
-.arena-root.is-playing.is-challenge-fit .hand-dock-shell.is-hand-pinned .hand-card.is-pending {
+.arena-root.is-playing.is-challenge-fit .hand-dock-shell.is-hand-pinned .hand-card.is-pending,
+.arena-root.is-playing.is-challenge-fit .hand-dock-shell.is-hand-pinned .hand-card.is-selected {
   transform: translateY(calc(-1 * var(--hand-lift, 0.55rem))) rotate(0deg);
 }
 
 @media (hover: hover) and (pointer: fine) {
   .arena-root.is-playing.is-challenge-fit .hand-dock-shell:hover .hand-card:hover,
   .arena-root.is-playing.is-challenge-fit .hand-dock-shell:hover .hand-card:focus-visible,
-  .arena-root.is-playing.is-challenge-fit .hand-dock-shell:hover .hand-card.is-pending {
+  .arena-root.is-playing.is-challenge-fit .hand-dock-shell:hover .hand-card.is-pending,
+  .arena-root.is-playing.is-challenge-fit .hand-dock-shell:hover .hand-card.is-selected {
     transform: translateY(calc(-1 * var(--hand-lift, 0.55rem))) rotate(0deg);
   }
 }
@@ -5715,12 +6268,12 @@ html.is-challenge-fit .card-preview-pane.is-follow {
   align-items: center;
   justify-content: flex-end;
   gap: 0.75rem;
-  margin-top: 1.75rem;
-  margin-bottom: 0.5rem;
+  margin-top: 1.25rem;
+  margin-bottom: 0;
   /* Not sticky — avoids a hard dark slab / seam against the site footer */
   position: relative;
   z-index: 1;
-  padding: 0.35rem 0 0;
+  padding: 0;
   background: transparent;
   box-shadow: none;
   border: none;
@@ -5899,13 +6452,14 @@ html.is-challenge-fit .card-preview-pane.is-follow {
   bottom: calc(0.85rem * var(--arena-chrome-scale) + var(--safe-bottom, 0px));
   z-index: 40;
   pointer-events: auto;
-  width: auto;
-  min-width: calc(7.5rem * var(--arena-chrome-scale));
-  min-height: calc(2.2rem * var(--arena-chrome-scale));
-  padding: 0.35rem 0.85rem;
-  font-size: calc(0.78rem * var(--arena-chrome-scale));
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  width: calc(2.55rem * var(--arena-chrome-scale));
+  min-width: calc(2.55rem * var(--arena-chrome-scale));
+  min-height: calc(2.55rem * var(--arena-chrome-scale));
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0;
   border-radius: 999px;
   color: #f4ead4;
   background: rgba(28, 22, 16, 0.78);
@@ -5913,9 +6467,16 @@ html.is-challenge-fit .card-preview-pane.is-follow {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
 }
 
+.assistant-root.is-playing.is-assistant-fit .arena-recenter-btn svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  display: block;
+}
+
 .assistant-root.is-playing.is-assistant-fit .arena-recenter-btn:hover {
   border-color: rgba(224, 180, 90, 0.7);
   background: rgba(40, 32, 22, 0.88);
+  color: #fff6e4;
 }
 
 /* Drawn / staging card: under the library, sized to fit remaining viewport */

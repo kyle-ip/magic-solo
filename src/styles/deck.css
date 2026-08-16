@@ -1210,15 +1210,15 @@
 
 /* Challenge mode */
 .challenge-page {
-  padding-bottom: 3rem;
+  padding-bottom: 0;
 }
 
 .challenge-setup {
   width: var(--page-width);
   max-width: 100%;
   box-sizing: border-box;
-  margin: 2rem auto 3rem;
-  padding: 0 clamp(0.5rem, 2.5vw, 1.75rem);
+  margin: 2.5rem auto 0;
+  padding: 0 clamp(0.5rem, 2.5vw, 1.75rem) 2.5rem;
 }
 
 .setup-field {
@@ -1242,7 +1242,7 @@
 }
 
 .setup-notes {
-  margin: 0.65rem 0 1.5rem;
+  margin: 0.65rem 0 0;
   padding-left: 1.1rem;
   color: rgba(231, 215, 184, 0.78);
   display: grid;
@@ -1350,6 +1350,53 @@
 .hand-card.is-pending {
   outline: 2px solid #ffe08a;
   box-shadow: 0 0 0 3px rgba(224, 180, 90, 0.35);
+}
+
+.hand-card.is-selected {
+  z-index: 3;
+  outline: 2px solid #ffe08a;
+  box-shadow: 0 0 0 3px rgba(224, 180, 90, 0.35);
+}
+
+.hand-card.is-hand-drag-source {
+  opacity: 0.35;
+}
+
+.hand-cast-ghost {
+  position: fixed;
+  z-index: 96;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border: var(--card-border);
+  border-radius: var(--card-radius);
+  overflow: hidden;
+  pointer-events: none;
+  /* Match source hand-card box exactly — size set inline from getBoundingClientRect */
+  transform: translate(-50%, -50%);
+  box-shadow:
+    var(--card-shadow),
+    0 12px 28px rgba(0, 0, 0, 0.45);
+}
+
+.hand-cast-ghost img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+body.is-hand-casting {
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grabbing;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .arena-root.is-playing.is-challenge-fit .hand-card {
+    touch-action: none;
+  }
 }
 
 .hero-strip-label {
