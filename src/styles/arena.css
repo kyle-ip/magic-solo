@@ -3418,7 +3418,7 @@ button.arena-card {
 }
 
 @media (max-width: 900px) {
-  .card-preview-pane:not(.assistant-preview-pane) {
+  .card-preview-pane.is-follow:not(.assistant-preview-pane) {
     display: none;
   }
 
@@ -5250,6 +5250,65 @@ html.is-challenge-fit .card-preview-pane.is-follow {
   box-shadow:
     0 6px 16px rgba(0, 0, 0, 0.35),
     0 0 0 1px rgba(255, 210, 120, 0.25);
+}
+
+.hand-dock-hotzone-label {
+  position: absolute;
+  left: 50%;
+  bottom: calc(0.35rem + var(--safe-bottom, 0px));
+  transform: translateX(-50%);
+  padding: 0.22rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(224, 180, 90, 0.35);
+  background: rgba(24, 18, 12, 0.72);
+  color: rgba(245, 232, 210, 0.88);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
+}
+
+/* Touch / coarse: docked card details, larger hotzone, no pin */
+@media (hover: none), (pointer: coarse) {
+  .hand-pin-btn {
+    display: none !important;
+  }
+
+  .hand-dock-hotzone {
+    height: max(2.6rem, calc(var(--safe-bottom, 0px) + 1.75rem));
+  }
+
+  .challenge-preview-pane.card-preview-pane:not(.is-follow) {
+    display: flex;
+    position: fixed;
+    left: 50%;
+    right: auto;
+    top: auto;
+    bottom: max(5.75rem, calc(var(--safe-bottom, 0px) + 5rem));
+    transform: translateX(-50%);
+    width: min(18.5rem, calc(100vw - 1.5rem));
+    max-height: min(58dvh, 26rem);
+    z-index: 90;
+    pointer-events: none;
+  }
+
+  html.is-challenge-fit:has(.hand-dock-shell.is-hand-open)
+    .challenge-preview-pane.card-preview-pane:not(.is-follow) {
+    bottom: calc(
+      var(--hand-full, 12rem) + var(--hand-lift, 0.55rem) + 1.25rem +
+        var(--safe-bottom, 0px)
+    );
+  }
+
+  .challenge-preview-pane.card-preview-pane:not(.is-follow) img,
+  .challenge-preview-pane.card-preview-pane:not(.is-follow) .card-preview-art img {
+    max-height: min(38dvh, 18rem);
+  }
+
+  .challenge-preview-pane:not(.is-follow) .card-preview-copy {
+    max-height: min(9rem, 20dvh);
+  }
 }
 
 /* Full row visible when revealed (no 3/4 tuck) */

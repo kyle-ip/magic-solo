@@ -68,6 +68,8 @@ interface ArenaCardProps {
   /** Play destroy / leave-battlefield exit animation */
   dying?: boolean
   onClick?: () => void
+  /** Fires after ~420ms press; suppresses the following click. */
+  onLongPress?: () => void
   onDoubleClick?: MouseEventHandler<HTMLElement>
   onMouseEnter?: MouseEventHandler<HTMLElement>
   onMouseLeave?: MouseEventHandler<HTMLElement>
@@ -125,6 +127,7 @@ function ArenaCardInner({
   note,
   dying,
   onClick,
+  onLongPress,
   onDoubleClick,
   onMouseEnter,
   onMouseLeave,
@@ -141,6 +144,8 @@ function ArenaCardInner({
   const [ptFlash, setPtFlash] = useState<'up' | 'down' | null>(null)
   const [buffPop, setBuffPop] = useState(false)
   const [dmgPop, setDmgPop] = useState(false)
+  const longPressTimer = useRef(0)
+  const longPressFired = useRef(false)
   const prevPt = useRef<{ p: number | null | undefined; t: number | null | undefined }>({
     p: power,
     t: toughness,
@@ -148,6 +153,38 @@ function ArenaCardInner({
   const prevEnh = useRef(enhancement ?? null)
   const prevDmg = useRef(markedDamage)
   const mounted = useRef(false)
+
+  useEffect(() => {
+    return () => window.clearTimeout(longPressTimer.current)
+  }, [])
+
+  const clearLongPressTimer = () => {
+    window.clearTimeout(longPressTimer.current)
+    longPressTimer.current = 0
+  }
+
+  const handlePointerDown: PointerEventHandler<HTMLElement> = (e) => {
+    onPointerDown?.(e)
+    if (!onLongPress || e.button > 0) return
+    longPressFired.current = false
+    clearLongPressTimer()
+    longPressTimer.current = window.setTimeout(() => {
+      longPressFired.current = true
+      onLongPress()
+    }, 420)
+  }
+
+  const handlePointerEnd: PointerEventHandler<HTMLElement> = () => {
+    clearLongPressTimer()
+  }
+
+  const handleClick = () => {
+    if (longPressFired.current) {
+      longPressFired.current = false
+      return
+    }
+    onClick?.()
+  }
 
   useEffect(() => {
     if (!mounted.current) {
@@ -318,7 +355,7 @@ function ArenaCardInner({
 
   const dataProps = instanceId ? { 'data-instance-id': instanceId } : {}
   const interactive = Boolean(
-    onClick || onDoubleClick || onPointerDown || onContextMenu,
+    onClick || onLongPress || onDoubleClick || onPointerDown || onContextMenu,
   )
 
   const damageTitle =
@@ -332,15 +369,21 @@ function ArenaCardInner({
     const btnProps: ButtonHTMLAttributes<HTMLButtonElement> = {
       type: 'button',
       className,
-      onClick,
+      onClick: handleClick,
       onDoubleClick,
       onMouseEnter,
       onMouseLeave,
       onContextMenu,
-      onPointerDown,
+      onPointerDown: handlePointerDown,
+      onPointerUp: handlePointerEnd,
+      onPointerCancel: handlePointerEnd,
+      onPointerLeave: onLongPress ? handlePointerEnd : undefined,
       onDragStart: (e) => e.preventDefault(),
       title: damageTitle,
-      style: onPointerDown ? { touchAction: 'none', userSelect: 'none' } : undefined,
+      style:
+        onPointerDown || onLongPress
+          ? { touchAction: 'none', userSelect: 'none' }
+          : undefined,
       ...dataProps,
     }
     return <button {...btnProps}>{inner}</button>

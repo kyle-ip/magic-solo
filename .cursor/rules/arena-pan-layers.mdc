@@ -30,7 +30,7 @@ Two layers inside `arena-root.is-playing` (+ `is-challenge-fit` or `is-assistant
 | Fit class | `is-challenge-fit` | `is-assistant-fit` |
 | Board | Opponent half + player half | **Assistant/opponent board only** (slots) — no player BF half / hand dock |
 | Phase UI | Player-side `PlayerPhaseMark` (no center phase-strip) | N/A |
-| Chrome | Opponent rail + player dock (life/actions); **hand** overlays without board reflow — bottom-center ⅓ hover/tap + pin | Topbar + zone rail + `NamedValuesEditor` |
+| Chrome | Opponent rail + player dock; hand overlays (no board reflow). Desktop: bottom-center ⅓ hover + pin. Touch: tap hotzone, no pin; long-press / tap for docked card details | Topbar + zone rail + `NamedValuesEditor` |
 
 Shared hooks: `useArenaScale`, `useBoardPan`. Shared scale math: `src/challenge/arenaScale.ts` (`ARENA_VIEW_ZOOM` multiplies CSS tokens only).
 

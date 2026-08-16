@@ -117,6 +117,80 @@ type PromptPickCard = {
   text: string
 }
 
+function ChallengeHandCard({
+  index,
+  image,
+  unaffordable,
+  pending,
+  touchUi,
+  onCast,
+  onPreview,
+  onClearPreview,
+}: {
+  index: number
+  image: string
+  unaffordable: boolean
+  pending: boolean
+  touchUi: boolean
+  onCast: () => void
+  onPreview: (point?: { clientX: number; clientY: number }) => void
+  onClearPreview: () => void
+}) {
+  const longPressTimer = useRef(0)
+  const longPressFired = useRef(false)
+
+  useEffect(() => () => window.clearTimeout(longPressTimer.current), [])
+
+  const clearLongPress = () => {
+    window.clearTimeout(longPressTimer.current)
+    longPressTimer.current = 0
+  }
+
+  return (
+    <button
+      type="button"
+      className={`hand-card${unaffordable ? ' is-disabled' : ' is-playable'}${
+        pending ? ' is-pending' : ''
+      }`}
+      style={{ '--i': index } as CSSProperties}
+      aria-disabled={unaffordable && !pending ? true : undefined}
+      onPointerDown={(e) => {
+        if (!touchUi || e.button > 0) return
+        longPressFired.current = false
+        clearLongPress()
+        longPressTimer.current = window.setTimeout(() => {
+          longPressFired.current = true
+          onPreview()
+        }, 420)
+      }}
+      onPointerUp={clearLongPress}
+      onPointerCancel={clearLongPress}
+      onPointerLeave={clearLongPress}
+      onClick={() => {
+        if (longPressFired.current) {
+          longPressFired.current = false
+          return
+        }
+        if (touchUi && unaffordable && !pending) {
+          onPreview()
+          return
+        }
+        onCast()
+      }}
+      onMouseEnter={
+        touchUi
+          ? undefined
+          : (e) => onPreview({ clientX: e.clientX, clientY: e.clientY })
+      }
+      onMouseLeave={touchUi ? undefined : onClearPreview}
+    >
+      <span className="hand-card-face">
+        <CardImage localPath={image} kind="normal" alt="" draggable={false} />
+      </span>
+    </button>
+  )
+}
+
 function resolvePromptPickCard(
   state: GameState,
   kind: PromptKind,
@@ -235,6 +309,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
     image: string
     name: string
     text?: string
+    instanceId?: string
   } | null>(null)
   const [previewPos, setPreviewPos] = useState({ x: 16, y: 72 })
   const [inspect, setInspect] = useState<'graveyard' | 'player-graveyard' | null>(null)
@@ -294,7 +369,11 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
   useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return
     const mq = window.matchMedia('(hover: none), (pointer: coarse)')
-    const sync = () => setTouchHandUi(mq.matches)
+    const sync = () => {
+      const coarse = mq.matches
+      setTouchHandUi(coarse)
+      if (coarse) setHandPinned(false)
+    }
     sync()
     mq.addEventListener('change', sync)
     return () => mq.removeEventListener('change', sync)
@@ -304,20 +383,22 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
     if (!playing) {
       setHandOpen(false)
       setHandPinned(false)
+      setPreview(null)
     }
   }, [playing])
 
   useEffect(() => {
-    if (!handOpen && !handPinned) return
+    if (!handOpen && !handPinned && !preview) return
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setHandOpen(false)
         setHandPinned(false)
+        setPreview(null)
       }
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [handOpen, handPinned])
+  }, [handOpen, handPinned, preview])
 
   useEffect(() => {
     if (!handOpen || handPinned || !touchHandUi) return
@@ -391,9 +472,14 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
     clearPreviewTimer.current = window.setTimeout(() => setPreview(null), 160)
   }, [])
 
+  const dismissPreview = useCallback(() => {
+    window.clearTimeout(clearPreviewTimer.current)
+    setPreview(null)
+  }, [])
+
   const placePreview = useCallback(
     (
-      next: { image: string; name: string; text?: string },
+      next: { image: string; name: string; text?: string; instanceId?: string },
       point?: { clientX: number; clientY: number } | null,
     ) => {
       window.clearTimeout(clearPreviewTimer.current)
@@ -408,6 +494,20 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
           }),
         )
       }
+    },
+    [],
+  )
+
+  const toggleTouchPreview = useCallback(
+    (next: { image: string; name: string; text?: string; instanceId?: string }) => {
+      setPreview((prev) => {
+        window.clearTimeout(clearPreviewTimer.current)
+        if (next.instanceId && prev?.instanceId === next.instanceId) return null
+        if (!next.instanceId && prev?.image === next.image && prev?.name === next.name) {
+          return null
+        }
+        return next
+      })
     },
     [],
   )
@@ -756,22 +856,40 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
       point?: { clientX: number; clientY: number } | null,
     ) => {
       const zhCard = zh ? getCardZh(code, card.name) : null
-      placePreview(
-        {
-          image: card.image,
-          name: zhCard?.name ?? card.name,
-          text: zhCard
-            ? `${zhCard.typeLine}\n${zhCard.oracleText}`
-            : `${card.typeLine}\n${card.oracleText}`,
-        },
-        point,
-      )
+      const payload = {
+        image: card.image,
+        name: zhCard?.name ?? card.name,
+        text: zhCard
+          ? `${zhCard.typeLine}\n${zhCard.oracleText}`
+          : `${card.typeLine}\n${card.oracleText}`,
+        instanceId: card.instanceId,
+      }
+      if (touchHandUi) {
+        toggleTouchPreview(payload)
+        return
+      }
+      placePreview(payload, point)
     },
-    [zh, code, placePreview],
+    [zh, code, placePreview, toggleTouchPreview, touchHandUi],
+  )
+
+  const bindCardPreview = useCallback(
+    (card: CardInstance) =>
+      touchHandUi
+        ? {
+            onLongPress: () => previewChallengeCard(card),
+          }
+        : {
+            onMouseEnter: (
+              e: { clientX: number; clientY: number },
+            ) => previewChallengeCard(card, e),
+            onMouseLeave: clearPreview,
+          },
+    [touchHandUi, previewChallengeCard, clearPreview],
   )
 
   useEffect(() => {
-    if (!preview) return
+    if (!preview || touchHandUi) return
     const onMove = (e: PointerEvent) => {
       previewPointerRef.current = { x: e.clientX, y: e.clientY }
       const el = previewPaneRef.current
@@ -784,11 +902,27 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
     }
     window.addEventListener('pointermove', onMove, { passive: true })
     return () => window.removeEventListener('pointermove', onMove)
-  }, [preview])
+  }, [preview, touchHandUi])
+
+  useEffect(() => {
+    if (!preview || !touchHandUi) return
+    const onPointerDown = (e: PointerEvent) => {
+      const el = e.target
+      if (!(el instanceof Element)) return
+      if (el.closest('.challenge-preview-pane')) return
+      if (el.closest('.hand-card')) return
+      if (el.closest('.arena-card')) return
+      if (el.closest('.hand-dock-hotzone')) return
+      if (el.closest('.prompt-backdrop')) return
+      dismissPreview()
+    }
+    document.addEventListener('pointerdown', onPointerDown, true)
+    return () => document.removeEventListener('pointerdown', onPointerDown, true)
+  }, [preview, touchHandUi, dismissPreview])
 
   // After preview mounts / content swaps, re-clamp using measured pane size.
   useEffect(() => {
-    if (!preview) return
+    if (!preview || touchHandUi) return
     const el = previewPaneRef.current
     if (!el) return
     const reclamp = () => {
@@ -810,7 +944,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
       cancelAnimationFrame(raf)
       ro?.disconnect()
     }
-  }, [preview])
+  }, [preview, touchHandUi])
 
   useEffect(() => {
     if (!logModalOpen) return
@@ -1202,8 +1336,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                       })
                     }
                   }}
-                  onMouseEnter={(e) => previewChallengeCard(card, e)}
-                  onMouseLeave={clearPreview}
+                  {...bindCardPreview(card)}
                 />
               )
             })}
@@ -1235,8 +1368,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                     image={card.image}
                     name={card.name}
                     compact
-                    onMouseEnter={(e) => previewChallengeCard(card, e)}
-                    onMouseLeave={clearPreview}
+                    {...bindCardPreview(card)}
                   />
                 ))}
                 {exitGhosts
@@ -1268,19 +1400,36 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                         key={h.instanceId}
                         type="button"
                         className="hero-chip"
-                        onMouseEnter={(e) =>
-                          placePreview(
-                            {
-                              image: def?.image || h.image || '',
-                              name: zh ? (def?.nameZh ?? h.name) : h.name,
-                              text: zh
-                                ? `${def?.typeLineZh ?? ''}\n${def?.oracleTextZh ?? h.oracleText}`
-                                : `${def?.typeLine ?? 'Hero'}\n${h.oracleText}`,
-                            },
-                            e,
-                          )
+                        onMouseEnter={
+                          touchHandUi
+                            ? undefined
+                            : (e) =>
+                                placePreview(
+                                  {
+                                    image: def?.image || h.image || '',
+                                    name: zh ? (def?.nameZh ?? h.name) : h.name,
+                                    text: zh
+                                      ? `${def?.typeLineZh ?? ''}\n${def?.oracleTextZh ?? h.oracleText}`
+                                      : `${def?.typeLine ?? 'Hero'}\n${h.oracleText}`,
+                                    instanceId: h.instanceId,
+                                  },
+                                  e,
+                                )
                         }
-                        onMouseLeave={clearPreview}
+                        onMouseLeave={touchHandUi ? undefined : clearPreview}
+                        onClick={
+                          touchHandUi
+                            ? () =>
+                                toggleTouchPreview({
+                                  image: def?.image || h.image || '',
+                                  name: zh ? (def?.nameZh ?? h.name) : h.name,
+                                  text: zh
+                                    ? `${def?.typeLineZh ?? ''}\n${def?.oracleTextZh ?? h.oracleText}`
+                                    : `${def?.typeLine ?? 'Hero'}\n${h.oracleText}`,
+                                  instanceId: h.instanceId,
+                                })
+                            : undefined
+                        }
                       >
                         {def?.art || def?.image || h.image ? (
                           <CardImage
@@ -1431,22 +1580,44 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                     if (!canDeclare && !selected) return
                     declareOrToggleAttacker(c.instanceId)
                   }}
-                  onMouseEnter={(e) => {
-                    const tpl = findCardDef(c.defId, state.playerDeckId)
-                    placePreview(
-                      {
-                        image: c.image,
-                        name: label,
-                        text: tpl
-                          ? `${zh ? tpl.typeLineZh : tpl.typeLine}\n${power}/${toughness}${
-                              enhLabel ? ` (${enhLabel})` : ''
-                            }\n${zh ? tpl.oracleTextZh : tpl.oracleText}`
-                          : `${power}/${toughness}`,
-                      },
-                      e,
-                    )
-                  }}
-                  onMouseLeave={clearPreview}
+                  onMouseEnter={
+                    touchHandUi
+                      ? undefined
+                      : (e) => {
+                          const tpl = findCardDef(c.defId, state.playerDeckId)
+                          placePreview(
+                            {
+                              image: c.image,
+                              name: label,
+                              text: tpl
+                                ? `${zh ? tpl.typeLineZh : tpl.typeLine}\n${power}/${toughness}${
+                                    enhLabel ? ` (${enhLabel})` : ''
+                                  }\n${zh ? tpl.oracleTextZh : tpl.oracleText}`
+                                : `${power}/${toughness}`,
+                              instanceId: c.instanceId,
+                            },
+                            e,
+                          )
+                        }
+                  }
+                  onMouseLeave={touchHandUi ? undefined : clearPreview}
+                  onLongPress={
+                    touchHandUi
+                      ? () => {
+                          const tpl = findCardDef(c.defId, state.playerDeckId)
+                          toggleTouchPreview({
+                            image: c.image,
+                            name: label,
+                            text: tpl
+                              ? `${zh ? tpl.typeLineZh : tpl.typeLine}\n${power}/${toughness}${
+                                  enhLabel ? ` (${enhLabel})` : ''
+                                }\n${zh ? tpl.oracleTextZh : tpl.oracleText}`
+                              : `${power}/${toughness}`,
+                            instanceId: c.instanceId,
+                          })
+                        }
+                      : undefined
+                  }
                 />
               )
             })}
@@ -1740,14 +1911,16 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
             tabIndex={touchHandUi ? 0 : -1}
             onClick={() => {
               if (!touchHandUi) return
-              if (handPinned) {
-                setHandPinned(false)
-                setHandOpen(false)
-                return
-              }
+              if (handOpen) dismissPreview()
               setHandOpen((open) => !open)
             }}
-          />
+          >
+            {touchHandUi && !handOpen ? (
+              <span className="hand-dock-hotzone-label">
+                {t('challenge.handCount', { n: state.player.hand.length })}
+              </span>
+            ) : null}
+          </button>
           <div className="hand-dock">
             <div
               className="hand-fan"
@@ -1771,71 +1944,71 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                     state.playerPhase !== 'main' &&
                     state.playerPhase !== 'combat')
                 const pending = state.pendingCast?.handInstanceId === card.instanceId
+                const previewPayload = {
+                  image: card.image,
+                  name: zh ? card.nameZh : card.name,
+                  text: [
+                    zh ? card.typeLineZh : card.typeLine,
+                    card.kind === 'land'
+                      ? t('challenge.land')
+                      : card.power != null
+                        ? `${card.power}/${card.toughness} · ${card.manaCost}`
+                        : card.manaCost,
+                    zh ? card.oracleTextZh : card.oracleText,
+                  ]
+                    .filter(Boolean)
+                    .join('\n'),
+                  instanceId: card.instanceId,
+                }
                 return (
-                  <button
+                  <ChallengeHandCard
                     key={card.instanceId}
-                    type="button"
-                    className={`hand-card${unaffordable ? ' is-disabled' : ' is-playable'}${pending ? ' is-pending' : ''}`}
-                    style={{ '--i': i } as CSSProperties}
-                    aria-disabled={unaffordable && !pending ? true : undefined}
-                    onClick={() => {
+                    index={i}
+                    unaffordable={unaffordable}
+                    pending={pending}
+                    touchUi={touchHandUi}
+                    image={card.image}
+                    onCast={() => {
                       if (pending) {
                         act({ type: 'CANCEL_PENDING' })
                         return
                       }
                       if (unaffordable) return
+                      dismissPreview()
                       act({ type: 'CAST', handId: card.instanceId })
                     }}
-                    onMouseEnter={(e) =>
-                      placePreview(
-                        {
-                          image: card.image,
-                          name: zh ? card.nameZh : card.name,
-                          text: [
-                            zh ? card.typeLineZh : card.typeLine,
-                            card.kind === 'land'
-                              ? t('challenge.land')
-                              : card.power != null
-                                ? `${card.power}/${card.toughness} · ${card.manaCost}`
-                                : card.manaCost,
-                            zh ? card.oracleTextZh : card.oracleText,
-                          ]
-                            .filter(Boolean)
-                            .join('\n'),
-                        },
-                        e,
-                      )
-                    }
-                    onMouseLeave={clearPreview}
-                  >
-                    <span className="hand-card-face">
-                      <CardImage localPath={card.image} kind="normal" alt="" draggable={false} />
-                    </span>
-                  </button>
+                    onPreview={(point) => {
+                      if (touchHandUi) toggleTouchPreview(previewPayload)
+                      else placePreview(previewPayload, point)
+                    }}
+                    onClearPreview={clearPreview}
+                  />
                 )
               })}
-              <button
-                type="button"
-                className={`hand-pin-btn${handPinned ? ' is-pinned' : ''}`}
-                aria-pressed={handPinned}
-                aria-label={handPinned ? t('challenge.handUnpin') : t('challenge.handPin')}
-                title={handPinned ? t('challenge.handUnpin') : t('challenge.handPin')}
-                onClick={toggleHandPin}
-              >
-                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                  {handPinned ? (
-                    <path
-                      fill="currentColor"
-                      d="M16 4v4.3l2.4 2.4c.4.4.6.9.6 1.4V14h-4.2l-.3 6h-1l-.3-6H9v-1.9c0-.5.2-1 .6-1.4L12 8.3V4h4zm-1 1h-2v3.7l-2.6 2.6c-.1.1-.2.3-.2.4V13h7.6v-.3c0-.1-.1-.3-.2-.4L15 8.7V5z"
-                    />
-                  ) : (
-                    <path
-                      fill="currentColor"
-                      d="M15.5 3.5 14 5v4.2l2.6 2.6c.5.5.8 1.2.8 1.9V15h-4.1L13 21h-2l-.3-6H7v-1.3c0-.7.3-1.4.8-1.9L10.5 9.2V5L9 3.5 10.5 2h5l1.5 1.5z"
-                    />
-                  )}
-                </svg>
-              </button>
+              {!touchHandUi ? (
+                <button
+                  type="button"
+                  className={`hand-pin-btn${handPinned ? ' is-pinned' : ''}`}
+                  aria-pressed={handPinned}
+                  aria-label={handPinned ? t('challenge.handUnpin') : t('challenge.handPin')}
+                  title={handPinned ? t('challenge.handUnpin') : t('challenge.handPin')}
+                  onClick={toggleHandPin}
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    {handPinned ? (
+                      <path
+                        fill="currentColor"
+                        d="M16 4v4.3l2.4 2.4c.4.4.6.9.6 1.4V14h-4.2l-.3 6h-1l-.3-6H9v-1.9c0-.5.2-1 .6-1.4L12 8.3V4h4zm-1 1h-2v3.7l-2.6 2.6c-.1.1-.2.3-.2.4V13h7.6v-.3c0-.1-.1-.3-.2-.4L15 8.7V5z"
+                      />
+                    ) : (
+                      <path
+                        fill="currentColor"
+                        d="M15.5 3.5 14 5v4.2l2.6 2.6c.5.5.8 1.2.8 1.9V15h-4.1L13 21h-2l-.3-6H7v-1.3c0-.7.3-1.4.8-1.9L10.5 9.2V5L9 3.5 10.5 2h5l1.5 1.5z"
+                      />
+                    )}
+                  </svg>
+                </button>
+              ) : null}
             </div>
           </div>
         </div>
@@ -1868,13 +2041,21 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
         ? createPortal(
             <aside
               ref={previewPaneRef}
-              className="card-preview-pane is-follow"
+              className={[
+                'card-preview-pane',
+                'challenge-preview-pane',
+                touchHandUi ? '' : 'is-follow',
+              ]
+                .filter(Boolean)
+                .join(' ')}
               aria-hidden="true"
               style={
-                {
-                  '--preview-x': `${previewPos.x}px`,
-                  '--preview-y': `${previewPos.y}px`,
-                } as CSSProperties
+                touchHandUi
+                  ? undefined
+                  : ({
+                      '--preview-x': `${previewPos.x}px`,
+                      '--preview-y': `${previewPos.y}px`,
+                    } as CSSProperties)
               }
             >
               <div
@@ -2223,8 +2404,8 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                   key={c.instanceId}
                   image={c.image}
                   name={localizeName(c.name)}
-                  onMouseEnter={(e) => previewChallengeCard(c, e)}
-                  onMouseLeave={clearPreview}
+                  {...bindCardPreview(c)}
+                  onClick={touchHandUi ? () => previewChallengeCard(c) : undefined}
                 />
               ))}
             </div>
@@ -2266,23 +2447,44 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                     <ArenaCard
                       image={c.image}
                       name={label}
-                      onMouseEnter={(e) =>
-                        placePreview(
-                          {
-                            image: c.image,
-                            name: label,
-                            text: [
-                              zh ? c.typeLineZh || c.typeLine : c.typeLine,
-                              c.power != null ? `${c.power}/${c.toughness}` : null,
-                              zh ? c.oracleTextZh || c.oracleText : c.oracleText,
-                            ]
-                              .filter(Boolean)
-                              .join('\n'),
-                          },
-                          e,
-                        )
+                      onMouseEnter={
+                        touchHandUi
+                          ? undefined
+                          : (e) =>
+                              placePreview(
+                                {
+                                  image: c.image,
+                                  name: label,
+                                  text: [
+                                    zh ? c.typeLineZh || c.typeLine : c.typeLine,
+                                    c.power != null ? `${c.power}/${c.toughness}` : null,
+                                    zh ? c.oracleTextZh || c.oracleText : c.oracleText,
+                                  ]
+                                    .filter(Boolean)
+                                    .join('\n'),
+                                  instanceId: c.instanceId,
+                                },
+                                e,
+                              )
                       }
-                      onMouseLeave={clearPreview}
+                      onMouseLeave={touchHandUi ? undefined : clearPreview}
+                      onClick={
+                        touchHandUi
+                          ? () =>
+                              toggleTouchPreview({
+                                image: c.image,
+                                name: label,
+                                text: [
+                                  zh ? c.typeLineZh || c.typeLine : c.typeLine,
+                                  c.power != null ? `${c.power}/${c.toughness}` : null,
+                                  zh ? c.oracleTextZh || c.oracleText : c.oracleText,
+                                ]
+                                  .filter(Boolean)
+                                  .join('\n'),
+                                instanceId: c.instanceId,
+                              })
+                          : undefined
+                      }
                     />
                     {canFb ? (
                       <button
