@@ -11,6 +11,9 @@
   --font-display: 'Cinzel', 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
   --font-body: 'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei UI',
     'Microsoft YaHei', sans-serif;
+  /* High-legibility UI / combat numbers (avoid thin serif at small sizes) */
+  --font-game-ui: 'Noto Sans SC', 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei UI', 'Microsoft YaHei', system-ui, sans-serif;
   --radius: 2px;
   --btn-radius: 10px;
   --btn-radius-sm: 8px;
@@ -1533,6 +1536,23 @@ h2 {
   outline-offset: 2px;
 }
 
+/* Back link + sibling challenge chips on one row. */
+.page-top-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 1rem;
+  margin: 0 0 1rem;
+}
+
+.page-top-nav .back-link {
+  margin-bottom: 0;
+}
+
+.page-top-nav .challenge-switcher {
+  margin: 0;
+}
+
 /* Jump between challenge decks without returning to home. */
 .challenge-switcher {
   display: flex;
@@ -1540,22 +1560,6 @@ h2 {
   align-items: center;
   gap: 0.45rem 0.75rem;
   margin: 0.85rem 0 0.35rem;
-}
-
-.challenge-switcher-label {
-  font-size: 0.78rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  opacity: 0.72;
-  color: inherit;
-  text-decoration: none;
-  border-bottom: 1px solid color-mix(in srgb, currentColor 35%, transparent);
-  transition: opacity 0.15s ease, border-color 0.15s ease;
-}
-
-.challenge-switcher-label:hover {
-  opacity: 1;
-  border-bottom-color: color-mix(in srgb, currentColor 70%, transparent);
 }
 
 .challenge-switcher-links {
@@ -1582,10 +1586,6 @@ h2 {
 .challenge-switcher-chip:hover {
   background: color-mix(in srgb, currentColor 14%, transparent);
   border-color: color-mix(in srgb, currentColor 48%, transparent);
-}
-
-.deck-hero-copy .challenge-switcher {
-  margin-top: 1rem;
 }
 
 @media (max-width: 900px) {

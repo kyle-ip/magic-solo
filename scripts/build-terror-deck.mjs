@@ -219,9 +219,9 @@ async function main() {
     name: 'UB Terror',
     nameZh: '蓝黑惧兽',
     blurb:
-      'Pauper Dimir Tolarian Terror: mill/filter into the yard, then land discounted Terrors and delved Anglers. Soft counters are inert in Challenge Experience.',
+      'Pauper Dimir Tolarian Terror: mill/filter into the yard, then land discounted Terrors and delved Anglers. Soft counters are inert in Challenge.',
     blurbZh:
-      '蓝黑惧兽：用洗牌与滤牌填坟，减费拍出陶拉利亚惧兽与掘坟谷尔玛钓客。点破/反击在挑战体验中无交互堆叠，暂不生效。',
+      '蓝黑惧兽：用洗牌与滤牌填坟，减费拍出陶拉利亚惧兽与掘坟谷尔玛钓客。点破/反击在挑战中无交互堆叠，暂不生效。',
     art: `assets/cards/player/${outCards.find((c) => c.name === 'Tolarian Terror').id}-art.jpg`,
     cards: outCards,
   }

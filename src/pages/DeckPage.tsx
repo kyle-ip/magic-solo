@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { BattleHistoryModal } from '../components/BattleHistoryModal'
@@ -20,6 +20,7 @@ import { CardImage, useResolvedCardImageUrl } from '../hooks/useCardImageSrc'
 import { printItemsFromDeckCards } from '../print/printCards'
 import type { ChallengeCode } from '../game/types'
 import type { DeckCard } from '../types'
+import { warmDeckPageImages } from '../utils/preloadChallengeImages'
 import '../styles/deck.css'
 import '../styles/rarityFrame.css'
 import '../styles/llm.css'
@@ -58,11 +59,19 @@ export function DeckPage() {
     setHistoryTick((n) => n + 1)
   }, [])
 
+  useEffect(() => {
+    if (!deck) return
+    void warmDeckPageImages(deck.code as ChallengeCode)
+  }, [deck])
+
   if (!deck || !rules) {
     return <Navigate to="/" replace />
   }
 
   const challengeName = meta?.name ?? deck.name
+  const warmPlayAssets = () => {
+    void warmDeckPageImages(deck.code as ChallengeCode)
+  }
 
   return (
     <main className={`page deck-page theme-${deck.theme}`}>
@@ -81,9 +90,12 @@ export function DeckPage() {
       <section className="deck-hero">
         <div className="deck-hero-inner">
           <div className="deck-hero-copy">
-            <Link to="/" className="back-link">
-              ← {t('app.backHome')}
-            </Link>
+            <div className="page-top-nav">
+              <Link to="/" className="back-link">
+                ← {t('app.backHome')}
+              </Link>
+              <ChallengeSwitcher currentCode={deck.code} mode="deck" />
+            </div>
             <p className="eyebrow">
               {t('deck.challenge', { n: deck.challengeNumber })} ·{' '}
               {t('deck.setLine', {
@@ -94,10 +106,20 @@ export function DeckPage() {
             <h1>{challengeName}</h1>
             <p className="lede">{meta?.overview}</p>
             <div className="cta-row">
-              <Link className="btn primary" to={`/challenge/${deck.code}`}>
+              <Link
+                className="btn primary"
+                to={`/challenge/${deck.code}`}
+                onPointerEnter={warmPlayAssets}
+                onFocus={warmPlayAssets}
+              >
                 {t('deck.startExperience')}
               </Link>
-              <Link className="btn ghost" to={`/assistant/${deck.code}`}>
+              <Link
+                className="btn ghost"
+                to={`/assistant/${deck.code}`}
+                onPointerEnter={warmPlayAssets}
+                onFocus={warmPlayAssets}
+              >
                 {t('deck.startAssistant')}
               </Link>
               <button
@@ -108,7 +130,6 @@ export function DeckPage() {
                 {t('printAssistant.open')}
               </button>
             </div>
-            <ChallengeSwitcher currentCode={deck.code} mode="deck" />
           </div>
           <div className="deck-hero-card">
             <CardImage

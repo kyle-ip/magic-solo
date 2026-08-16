@@ -109,15 +109,15 @@ function deriveRemote(
   opts?: { id?: string; kind?: CardImageKind },
 ): string | null {
   const mapped = lookupByLocalPath(localPath)
-  if (mapped) return mapped.remote
-
   const kind =
     opts?.kind ??
     inferKindFromLocalPath(localPath) ??
+    mapped?.kind ??
     'normal'
   const id =
     opts?.id?.toLowerCase() ??
     extractCardUuid(localPath) ??
+    mapped?.id?.toLowerCase() ??
     extractCardUuid(opts?.id)
 
   if (kind === 'mana_symbol' && localPath) {
@@ -136,6 +136,25 @@ function deriveRemote(
 
   if (kind === 'cover') {
     return lookupByLocalPath(localPath)?.remote ?? null
+  }
+
+  // Prefer the requested kind even when the local path is a different face
+  // (e.g. board tokens ask for art_crop while assets are *-normal.jpg).
+  if (mapped) {
+    if (mapped.kind === kind) return mapped.remote
+    if (id) {
+      const byKind = lookupByCardId(id, kind)
+      if (byKind) return byKind.remote
+      if (
+        kind === 'small' ||
+        kind === 'normal' ||
+        kind === 'large' ||
+        kind === 'art_crop'
+      ) {
+        return scryfallCardFaceUrl(id, kind)
+      }
+    }
+    return mapped.remote
   }
 
   if (!id) return null

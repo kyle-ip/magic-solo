@@ -21,6 +21,32 @@ export interface UseCardImageSrcOptions {
   probe?: boolean
 }
 
+function buildImageCandidates(
+  localPath: string | null | undefined,
+  opts?: UseCardImageSrcOptions,
+): string[] {
+  const list: string[] = []
+  const push = (url: string) => {
+    if (url && !list.includes(url)) list.push(url)
+  }
+
+  if (opts?.kind === 'art_crop') {
+    const art = assetCandidates(localPath, { ...opts, kind: 'art_crop' })
+    const normal = assetCandidates(localPath, { ...opts, kind: 'normal' })
+    // Prefer remote art_crop; avoid jumping straight to a local full-face JPG.
+    if (art.remote) push(art.remote)
+    if (art.local && /(?:^|\/)[^/]*-art\./i.test(art.local)) push(art.local)
+    if (normal.remote) push(normal.remote)
+    push(normal.local || art.local)
+    return list.length ? list : ['']
+  }
+
+  const { primary, fallback } = assetCandidates(localPath, opts)
+  push(primary)
+  push(fallback)
+  return list.length ? list : ['']
+}
+
 /** Sync primary URL with onError-style fallback state for <img>. */
 export function useCardImageSrc(
   localPath: string | null | undefined,
@@ -30,18 +56,25 @@ export function useCardImageSrc(
   onError: (e?: SyntheticEvent<HTMLImageElement>) => void
   fallback: string
 } {
-  const { primary, fallback } = assetCandidates(localPath, opts)
+  const candidates = buildImageCandidates(localPath, opts)
+  const primary = candidates[0] ?? ''
+  const fallback = candidates[1] ?? primary
   const [src, setSrc] = useState(primary)
+  const [idx, setIdx] = useState(0)
 
   useEffect(() => {
     setSrc(primary)
-  }, [primary])
+    setIdx(0)
+  }, [primary, localPath, opts?.id, opts?.kind, opts?.strategy])
 
   useEffect(() => {
     if (!opts?.probe || !localPath) return
     let cancelled = false
     void resolveAssetUrl(localPath, opts).then((url) => {
-      if (!cancelled) setSrc(url)
+      if (!cancelled) {
+        setSrc(url)
+        setIdx(0)
+      }
     })
     return () => {
       cancelled = true
@@ -52,7 +85,11 @@ export function useCardImageSrc(
     src,
     fallback,
     onError: () => {
-      if (src !== fallback && fallback) setSrc(fallback)
+      const next = idx + 1
+      if (next < candidates.length && candidates[next]) {
+        setIdx(next)
+        setSrc(candidates[next]!)
+      }
     },
   }
 }

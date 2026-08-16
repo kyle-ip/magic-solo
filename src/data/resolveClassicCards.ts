@@ -9,6 +9,7 @@ import {
   type ScryfallCard,
 } from './randomCard'
 import { preloadImage } from '../utils/imageCache'
+import { thumbUrlFromFaceUrl } from '../utils/remoteAsset'
 
 const SCRYFALL_COLLECTION = 'https://api.scryfall.com/cards/collection'
 const COLLECTION_TIMEOUT_MS = 12000
@@ -129,7 +130,7 @@ async function preloadFronts(cards: Iterable<DrawnCard | null>): Promise<void> {
   const urls = [...new Set(
     [...cards]
       .filter((c): c is DrawnCard => !!c?.frontImageUrl)
-      .map((c) => c.frontImageUrl),
+      .map((c) => thumbUrlFromFaceUrl(c.frontImageUrl)),
   )]
   await Promise.all(
     urls.map((url) => preloadImage(url).catch(() => undefined)),

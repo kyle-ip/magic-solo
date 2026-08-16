@@ -18,6 +18,10 @@ import { ClassicDeckLlmAssist } from '../components/ClassicDeckLlmAssist'
 import { printItemsFromClassicList } from '../print/printCards'
 import { preloadImage } from '../utils/imageCache'
 import {
+  preloadUrlList,
+  type ImagePreloadProgress,
+} from '../utils/preloadChallengeImages'
+import {
   thumbUrlFromFaceUrl,
   withLargeFace,
 } from '../utils/remoteAsset'
@@ -25,6 +29,8 @@ import { rarityFrameClass } from '../utils/rarityFrame'
 import type { ClassicDeckListEntry } from '../types'
 import '../styles/classic.css'
 import '../styles/rarityFrame.css'
+
+type GalleryLoadPhase = 'resolving' | 'warming' | 'ready'
 
 export function ClassicDeckDetailPage() {
   const { id = '' } = useParams()
@@ -35,7 +41,11 @@ export function ClassicDeckDetailPage() {
   const [resolved, setResolved] = useState<Map<string, DrawnCard | null>>(
     () => new Map(),
   )
-  const [loading, setLoading] = useState(true)
+  const [loadPhase, setLoadPhase] = useState<GalleryLoadPhase>('resolving')
+  const [thumbProgress, setThumbProgress] = useState<ImagePreloadProgress>({
+    done: 0,
+    total: 0,
+  })
   const [inspect, setInspect] = useState<DrawnCard | null>(null)
   const [printOpen, setPrintOpen] = useState(false)
 
@@ -80,17 +90,38 @@ export function ClassicDeckDetailPage() {
   useEffect(() => {
     if (!deck) return
     let cancelled = false
-    setLoading(true)
-    void resolveCardsByNameProgressive(allNames, {
-      enrichZh: i18n.language.startsWith('zh'),
-      onProgress: ({ cards }) => {
+    setLoadPhase('resolving')
+    setThumbProgress({ done: 0, total: 0 })
+    void (async () => {
+      try {
+        const cards = await resolveCardsByNameProgressive(allNames, {
+          enrichZh: i18n.language.startsWith('zh'),
+          onProgress: ({ cards: partial }) => {
+            if (cancelled) return
+            setResolved(new Map(partial))
+          },
+        })
         if (cancelled) return
         setResolved(new Map(cards))
-        setLoading(false)
-      },
-    }).catch(() => {
-      if (!cancelled) setLoading(false)
-    })
+
+        const thumbs = [
+          ...new Set(
+            [...cards.values()]
+              .filter((c): c is DrawnCard => !!c?.frontImageUrl)
+              .map((c) => thumbUrlFromFaceUrl(c.frontImageUrl)),
+          ),
+        ]
+        setLoadPhase('warming')
+        await preloadUrlList(thumbs, (progress) => {
+          if (cancelled) return
+          setThumbProgress(progress)
+        })
+      } catch {
+        /* show whatever we have */
+      } finally {
+        if (!cancelled) setLoadPhase('ready')
+      }
+    })()
     return () => {
       cancelled = true
     }
@@ -108,6 +139,7 @@ export function ClassicDeckDetailPage() {
   const summary = getClassicDeckText(deck.summary, i18n.language)
   const howItWins = getClassicDeckText(deck.howItWins, i18n.language)
   const keySet = new Set(deck.keyCards.map((n) => n.toLowerCase()))
+  const galleryBusy = loadPhase !== 'ready'
 
   const mainboard = deck.sampleList.filter((r) => r.board === 'main')
   const sideboard = deck.sampleList.filter((r) => r.board === 'side')
@@ -166,7 +198,7 @@ export function ClassicDeckDetailPage() {
           <button
             type="button"
             className="btn ghost"
-            disabled={loading || deck.sampleList.length === 0}
+            disabled={galleryBusy || deck.sampleList.length === 0}
             onClick={() => setPrintOpen(true)}
           >
             {t('printAssistant.open')}
@@ -182,30 +214,39 @@ export function ClassicDeckDetailPage() {
 
       <section className="classic-detail-section classic-detail-gallery-section">
         <h2>{t('classicDecks.fullList')}</h2>
-        {loading ? (
-          <p className="classic-loading">{t('classicDecks.loadingCards')}</p>
-        ) : null}
-
-        <CardGallery
-          title={t('classicDecks.mainboard')}
-          rows={mainboard}
-          resolved={resolved}
-          lang={i18n.language}
-          keySet={keySet}
-          keyBadge={t('classicDecks.keyBadge')}
-          unresolvedLabel={t('classicDecks.unresolved')}
-          onOpen={openCard}
-        />
-        <CardGallery
-          title={t('classicDecks.sideboard')}
-          rows={sideboard}
-          resolved={resolved}
-          lang={i18n.language}
-          keySet={keySet}
-          keyBadge={t('classicDecks.keyBadge')}
-          unresolvedLabel={t('classicDecks.unresolved')}
-          onOpen={openCard}
-        />
+        {galleryBusy ? (
+          <p className="classic-loading" role="status" aria-live="polite">
+            {loadPhase === 'warming'
+              ? t('classicDecks.loadingThumbs', {
+                  done: thumbProgress.done,
+                  total: thumbProgress.total || '…',
+                })
+              : t('classicDecks.loadingCards')}
+          </p>
+        ) : (
+          <>
+            <CardGallery
+              title={t('classicDecks.mainboard')}
+              rows={mainboard}
+              resolved={resolved}
+              lang={i18n.language}
+              keySet={keySet}
+              keyBadge={t('classicDecks.keyBadge')}
+              unresolvedLabel={t('classicDecks.unresolved')}
+              onOpen={openCard}
+            />
+            <CardGallery
+              title={t('classicDecks.sideboard')}
+              rows={sideboard}
+              resolved={resolved}
+              lang={i18n.language}
+              keySet={keySet}
+              keyBadge={t('classicDecks.keyBadge')}
+              unresolvedLabel={t('classicDecks.unresolved')}
+              onOpen={openCard}
+            />
+          </>
+        )}
       </section>
 
       {deck.links?.wiki ? (
@@ -312,7 +353,7 @@ function CardGallery({
                   alt={label}
                   width={146}
                   height={204}
-                  loading="lazy"
+                  loading="eager"
                   decoding="async"
                   draggable={false}
                 />

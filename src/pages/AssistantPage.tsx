@@ -42,6 +42,11 @@ import type { ChallengeCode } from '../game/types'
 import { defsFromDeck } from '../game/types'
 import { CardImage, RemoteArtBackground } from '../hooks/useCardImageSrc'
 import { preferredAssetUrl } from '../utils/remoteAsset'
+import { clampPreviewPosition } from '../utils/previewFollow'
+import {
+  preloadAssistantImages,
+  type ImagePreloadProgress,
+} from '../utils/preloadChallengeImages'
 
 const CODES: ChallengeCode[] = ['tfth', 'tbth', 'tdag']
 
@@ -77,6 +82,31 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
 
   const act = useCallback((action: AssistantAction) => dispatch(action), [])
 
+  const [assetLoading, setAssetLoading] = useState(false)
+  const [assetProgress, setAssetProgress] = useState<ImagePreloadProgress>({
+    done: 0,
+    total: 0,
+  })
+  const assetLoadGenRef = useRef(0)
+
+  const beginAssistant = useCallback(async () => {
+    if (assetLoading) return
+    const gen = ++assetLoadGenRef.current
+    setAssetLoading(true)
+    setAssetProgress({ done: 0, total: 0 })
+    try {
+      await preloadAssistantImages(code, (progress) => {
+        if (gen !== assetLoadGenRef.current) return
+        setAssetProgress(progress)
+      })
+    } finally {
+      if (gen !== assetLoadGenRef.current) return
+      setAssetLoading(false)
+      act({ type: 'START' })
+    }
+  }, [act, assetLoading, code])
+
+  const [previewPos, setPreviewPos] = useState({ x: 16, y: 72 })
   const localizeName = useCallback(
     (name: string) => {
       if (!zh) return name
@@ -125,18 +155,32 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
   }, [])
 
   const previewCard = useCallback(
-    (card: AssistantCard) => {
+    (
+      card: AssistantCard,
+      point?: { clientX: number; clientY: number } | null,
+    ) => {
       setPreview({
         image: card.image,
         name: localizeName(card.name),
         text: localizeCardText(card),
         instanceId: card.instanceId,
       })
+      if (point) {
+        setPreviewPos(clampPreviewPosition(point.clientX, point.clientY))
+      }
     },
     [localizeName, localizeCardText],
   )
   const clearPreview = useCallback(() => setPreview(null), [])
 
+  useEffect(() => {
+    if (!preview || coarsePointer) return
+    const onMove = (e: PointerEvent) => {
+      setPreviewPos(clampPreviewPosition(e.clientX, e.clientY))
+    }
+    window.addEventListener('pointermove', onMove, { passive: true })
+    return () => window.removeEventListener('pointermove', onMove)
+  }, [preview, coarsePointer])
   const toggleTouchPreview = useCallback(
     (card: AssistantCard) => {
       setPreview((prev) =>
@@ -362,15 +406,34 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
   if (!deck) return <Navigate to="/" replace />
 
   if (state.status === 'setup') {
+    const preloadPct =
+      assetProgress.total > 0
+        ? Math.round((assetProgress.done / assetProgress.total) * 100)
+        : 0
     return (
       <main className={`arena-root assistant-root theme-${deck.theme} is-setup`}>
         <RemoteArtBackground className="arena-bg" localPath={heroArt} kind="art_crop" />
         <div className="arena-bg-veil" />
-        <div className="assistant-setup arena-setup">
-          <Link to={`/decks/${code}`} className="back-link">
-            ← {t('assistant.backDeck')}
-          </Link>
-          <ChallengeSwitcher currentCode={code} mode="assistant" />
+        <div className={`assistant-setup arena-setup${assetLoading ? ' is-preloading' : ''}`}>
+          {assetLoading ? (
+            <div className="setup-preload" role="status" aria-live="polite">
+              <p>
+                {t('assistant.loadingAssets', {
+                  done: assetProgress.done,
+                  total: assetProgress.total || '…',
+                })}
+              </p>
+              <div className="setup-preload-bar" aria-hidden="true">
+                <span style={{ width: `${preloadPct}%` }} />
+              </div>
+            </div>
+          ) : null}
+          <div className="page-top-nav">
+            <Link to={`/decks/${code}`} className="back-link">
+              ← {t('assistant.backDeck')}
+            </Link>
+            <ChallengeSwitcher currentCode={code} mode="assistant" />
+          </div>
           <p className="eyebrow">{t('assistant.eyebrow')}</p>
           <h1>{meta?.name ?? deck.name}</h1>
           <p className="lede">{t('assistant.setupLead')}</p>
@@ -379,6 +442,7 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
             <button
               type="button"
               className={`assistant-setup-card ${state.setupKind === 'blank' ? 'is-selected' : ''}`}
+              disabled={assetLoading}
               onClick={() => act({ type: 'SET_SETUP_KIND', kind: 'blank' })}
             >
               <strong>{t('assistant.setupBlank')}</strong>
@@ -387,6 +451,7 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
             <button
               type="button"
               className={`assistant-setup-card ${state.setupKind === 'rules' ? 'is-selected' : ''}`}
+              disabled={assetLoading}
               onClick={() => act({ type: 'SET_SETUP_KIND', kind: 'rules' })}
             >
               <strong>{t('assistant.setupRules')}</strong>
@@ -404,6 +469,7 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
                 min={1}
                 max={4}
                 value={state.startingHeads}
+                disabled={assetLoading}
                 onChange={(e) =>
                   act({ type: 'SET_STARTING_HEADS', n: Number(e.target.value) })
                 }
@@ -411,8 +477,13 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
             </label>
           ) : null}
 
-          <button type="button" className="btn primary" onClick={() => act({ type: 'START' })}>
-            {t('assistant.begin')}
+          <button
+            type="button"
+            className={`btn primary${assetLoading ? ' is-busy' : ''}`}
+            disabled={assetLoading}
+            onClick={() => void beginAssistant()}
+          >
+            {assetLoading ? t('assistant.beginLoading') : t('assistant.begin')}
           </button>
         </div>
       </main>
@@ -557,6 +628,7 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
       >
         {card ? (
           <ArenaCard
+            variant="board"
             image={card.image}
             name={localizeName(card.name)}
             instanceId={card.instanceId}
@@ -564,9 +636,28 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
             toughness={card.toughness}
             markedDamage={card.markedDamage}
             tapped={card.tapped}
+            keywords={card.keywords}
+            zhLabels={zh}
+            counters={
+              card.isHead
+                ? [
+                    {
+                      id: 'head',
+                      text: zh ? '头' : 'H',
+                      title: zh ? 'Hydra head' : 'Head',
+                      tone: 'gold',
+                    },
+                  ]
+                : card.isElite
+                  ? [{ id: 'elite', text: '★', title: 'Elite', tone: 'gold' }]
+                  : null
+            }
+            showPt={card.power != null && card.toughness != null}
             compact={compact}
             note={card.note || null}
-            onMouseEnter={coarsePointer ? undefined : () => previewCard(card)}
+            onMouseEnter={
+              coarsePointer ? undefined : (e) => previewCard(card, e)
+            }
             onMouseLeave={coarsePointer ? undefined : clearPreview}
             onDoubleClick={(e) => {
               e.preventDefault()
@@ -821,10 +912,19 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
           className={[
             'card-preview-pane',
             'assistant-preview-pane',
+            coarsePointer ? '' : 'is-follow',
             inspect || searchOpen || noteEditId ? 'is-above-modal' : '',
           ]
             .filter(Boolean)
             .join(' ')}
+          style={
+            coarsePointer
+              ? undefined
+              : ({
+                  '--preview-x': `${previewPos.x}px`,
+                  '--preview-y': `${previewPos.y}px`,
+                } as CSSProperties)
+          }
         >
           <CardImage localPath={preview.image} kind="large" alt={preview.name} />
           <div className="card-preview-copy">

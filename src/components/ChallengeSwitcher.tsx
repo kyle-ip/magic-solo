@@ -32,9 +32,6 @@ export function ChallengeSwitcher({
       className={['challenge-switcher', className].filter(Boolean).join(' ')}
       aria-label={t('challenge.otherChallenges')}
     >
-      <Link to="/" className="challenge-switcher-label">
-        {t('challenge.otherChallenges')}
-      </Link>
       <div className="challenge-switcher-links">
         {others.map((deck) => {
           const name = metaTable[deck.code]?.name ?? deck.name

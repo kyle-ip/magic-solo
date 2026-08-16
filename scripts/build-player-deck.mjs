@@ -1,5 +1,5 @@
 /**
- * Build Challenge Experience player decks from Scryfall + local images.
+ * Build Challenge player decks from Scryfall + local images.
  * Usage: node scripts/build-player-deck.mjs <burn|skies|terror>
  */
 import { mkdir, writeFile } from 'node:fs/promises'
@@ -63,9 +63,9 @@ const DECKS = {
     name: 'Challenge Burn',
     nameZh: '挑战燃烧',
     blurb:
-      'Low-curve red burn adapted for Challenge Experience: haste attackers and Lightning Bolt-style damage to Heads, the Horde library, or Revelers.',
+      'Low-curve red burn adapted for Challenge: haste attackers and Lightning Bolt-style damage to Heads, the Horde library, or Revelers.',
     blurbZh:
-      '为挑战体验精简的低曲线红色燃烧：敏捷生物配合闪电击式直伤，可打头颅、磨部落牌库或点掉狂欢者。',
+      '为挑战精简的低曲线红色燃烧：敏捷生物配合闪电击式直伤，可打头颅、磨部落牌库或点掉狂欢者。',
     colors: ['R'],
     archetype: 'aggro',
     hint: 'Aim burn at the Horde pile or troublesome creatures; haste pressures before blockers pile up.',
@@ -167,8 +167,8 @@ const DECKS = {
         nameZh: '渺无人烟之旅',
         effect: { type: 'destroy_creature' },
         oracleNote:
-          '(Challenge Experience: exile is treated as destroying the challenge permanent.)',
-        oracleNoteZh: '（挑战体验：放逐按消灭挑战永久物处理。）',
+          '(Challenge: exile is treated as destroying the challenge permanent.)',
+        oracleNoteZh: '（挑战：放逐按消灭挑战永久物处理。）',
       },
       {
         name: 'Banishing Light',
@@ -176,8 +176,8 @@ const DECKS = {
         nameZh: '放逐之光',
         effect: { type: 'destroy_creature' },
         oracleNote:
-          '(Challenge Experience: exile is treated as destroying the challenge permanent.)',
-        oracleNoteZh: '（挑战体验：放逐按消灭挑战永久物处理。）',
+          '(Challenge: exile is treated as destroying the challenge permanent.)',
+        oracleNoteZh: '（挑战：放逐按消灭挑战永久物处理。）',
       },
       { name: 'Opt', quantity: 4, effect: { type: 'scry_draw', scry: 1, draw: 1 } },
       { name: 'Brainstorm', quantity: 2, effect: { type: 'brainstorm' } },

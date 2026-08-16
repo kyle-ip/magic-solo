@@ -5,6 +5,7 @@ import {
   useReducer,
   useRef,
   useState,
+  type CSSProperties,
 } from 'react'
 import { createPortal } from 'react-dom'
 import { Link, Navigate, useParams } from 'react-router-dom'
@@ -75,10 +76,20 @@ import {
 } from '../llm/prompts'
 import { CardImage, RemoteArtBackground } from '../hooks/useCardImageSrc'
 import { useHasLlmApiKey } from '../hooks/useLlmSettings'
+import {
+  preloadChallengeImages,
+  type ChallengePreloadProgress,
+} from '../utils/preloadChallengeImages'
+import {
+  useBoardExitGhosts,
+  type BoardExitGhost,
+} from '../hooks/useBoardExitGhosts'
 import { SetupLlmAdvisor } from '../components/SetupLlmAdvisor'
 import { LlmRichText } from '../components/LlmRichText'
 import { preferredAssetUrl } from '../utils/remoteAsset'
 import { setHideSiteChrome } from '../utils/siteChrome'
+import { clampPreviewPosition } from '../utils/previewFollow'
+import type { ArenaCounterBadge } from '../components/challenge/ArenaCard'
 
 const CODES: ChallengeCode[] = ['tfth', 'tbth', 'tdag']
 const COACH_KEY = 'magic-solo-coach'
@@ -206,12 +217,19 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
   const [playerDeckId, setPlayerDeckId] = useState<PlayerDeckId>(DEFAULT_PLAYER_DECK)
   const [heroIds, setHeroIds] = useState<string[]>([])
   const [rosterModalId, setRosterModalId] = useState<PlayerDeckId | null>(null)
+  const [assetLoading, setAssetLoading] = useState(false)
+  const [assetProgress, setAssetProgress] = useState<ChallengePreloadProgress>({
+    done: 0,
+    total: 0,
+  })
+  const assetLoadGenRef = useRef(0)
   const [focusAttacker, setFocusAttacker] = useState<string | null>(null)
   const [preview, setPreview] = useState<{
     image: string
     name: string
     text?: string
   } | null>(null)
+  const [previewPos, setPreviewPos] = useState({ x: 16, y: 72 })
   const [inspect, setInspect] = useState<'graveyard' | 'player-graveyard' | null>(null)
   const [coachOn, setCoachOn] = useState(readCoachEnabled)
   const [logModalOpen, setLogModalOpen] = useState(false)
@@ -243,9 +261,70 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
 
   const act = useCallback((action: GameAction) => dispatch(action), [])
 
+  const beginChallenge = useCallback(async () => {
+    if (assetLoading) return
+    const gen = ++assetLoadGenRef.current
+    setAssetLoading(true)
+    setAssetProgress({ done: 0, total: 0 })
+    try {
+      await preloadChallengeImages(
+        { code, playerDeckId, heroIds },
+        (progress) => {
+          if (gen !== assetLoadGenRef.current) return
+          setAssetProgress(progress)
+        },
+      )
+    } finally {
+      if (gen !== assetLoadGenRef.current) return
+      setAssetLoading(false)
+      act({
+        type: 'START',
+        config: {
+          code,
+          startingHeads: heads,
+          playerTurnsBeforeHorde: hordeDelay,
+          playerDeckId,
+          heroIds,
+        },
+      })
+    }
+  }, [
+    act,
+    assetLoading,
+    code,
+    heads,
+    heroIds,
+    hordeDelay,
+    playerDeckId,
+  ])
+
   const advance = useCallback(() => act({ type: 'ADVANCE' }), [act])
 
-  const clearPreview = useCallback(() => setPreview(null), [])
+  const clearPreviewTimer = useRef(0)
+
+  const clearPreview = useCallback(() => {
+    window.clearTimeout(clearPreviewTimer.current)
+    // Delay hide so moving between cards does not flash the preview away
+    clearPreviewTimer.current = window.setTimeout(() => setPreview(null), 160)
+  }, [])
+
+  const placePreview = useCallback(
+    (
+      next: { image: string; name: string; text?: string },
+      point?: { clientX: number; clientY: number } | null,
+    ) => {
+      window.clearTimeout(clearPreviewTimer.current)
+      setPreview(next)
+      if (point) {
+        setPreviewPos(clampPreviewPosition(point.clientX, point.clientY))
+      }
+    },
+    [],
+  )
+
+  useEffect(() => {
+    return () => window.clearTimeout(clearPreviewTimer.current)
+  }, [])
 
   const localizeName = useCallback(
     (name: string) => {
@@ -582,18 +661,33 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
   }, [])
 
   const previewChallengeCard = useCallback(
-    (card: CardInstance) => {
+    (
+      card: CardInstance,
+      point?: { clientX: number; clientY: number } | null,
+    ) => {
       const zhCard = zh ? getCardZh(code, card.name) : null
-      setPreview({
-        image: card.image,
-        name: zhCard?.name ?? card.name,
-        text: zhCard
-          ? `${zhCard.typeLine}\n${zhCard.oracleText}`
-          : `${card.typeLine}\n${card.oracleText}`,
-      })
+      placePreview(
+        {
+          image: card.image,
+          name: zhCard?.name ?? card.name,
+          text: zhCard
+            ? `${zhCard.typeLine}\n${zhCard.oracleText}`
+            : `${card.typeLine}\n${card.oracleText}`,
+        },
+        point,
+      )
     },
-    [zh, code],
+    [zh, code, placePreview],
   )
+
+  useEffect(() => {
+    if (!preview) return
+    const onMove = (e: PointerEvent) => {
+      setPreviewPos(clampPreviewPosition(e.clientX, e.clientY))
+    }
+    window.addEventListener('pointermove', onMove, { passive: true })
+    return () => window.removeEventListener('pointermove', onMove)
+  }, [preview])
 
   useEffect(() => {
     if (!logModalOpen) return
@@ -651,14 +745,96 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
     [act],
   )
 
-  if (!deck) return <Navigate to="/" replace />
+  const challengeCreatures = useMemo(
+    () =>
+      state.challenge.battlefield.filter(
+        (c) => c.power != null || c.isHead || c.isGod || c.isReveler || c.isMinotaur,
+      ),
+    [state.challenge.battlefield],
+  )
+  const challengeOthers = useMemo(
+    () =>
+      state.challenge.battlefield.filter(
+        (c) =>
+          !(c.power != null || c.isHead || c.isGod || c.isReveler || c.isMinotaur),
+      ),
+    [state.challenge.battlefield],
+  )
 
-  const challengeCreatures = state.challenge.battlefield.filter(
-    (c) => c.power != null || c.isHead || c.isGod || c.isReveler || c.isMinotaur,
+  const boardExitLive = useMemo((): BoardExitGhost[] => {
+    const challengeCreatureIds = new Set(challengeCreatures.map((c) => c.instanceId))
+    const out: BoardExitGhost[] = []
+    for (const card of challengeCreatures) {
+      out.push({
+        id: card.instanceId,
+        zone: 'challenge-creatures',
+        image: card.image,
+        name: localizeName(card.name),
+        power: card.power,
+        toughness: card.toughness,
+        markedDamage: card.markedDamage,
+        tapped: card.tapped,
+        keywords: card.keywords,
+      })
+    }
+    for (const card of state.challenge.battlefield) {
+      if (challengeCreatureIds.has(card.instanceId)) continue
+      out.push({
+        id: card.instanceId,
+        zone: 'challenge-others',
+        image: card.image,
+        name: card.name,
+        tapped: card.tapped,
+      })
+    }
+    for (const c of state.player.creatures) {
+      const def = findCardDef(c.defId, state.playerDeckId)
+      out.push({
+        id: c.instanceId,
+        zone: 'player-creatures',
+        image: c.image,
+        name: zh
+          ? (findCardDef(c.defId, state.playerDeckId)?.nameZh ?? c.name)
+          : c.name,
+        power: effectivePower(state, c),
+        toughness: effectiveToughness(state, c),
+        markedDamage: c.markedDamage,
+        tapped: c.tapped,
+        keywords: c.keywords?.length ? c.keywords : def?.keywords,
+        manaCost: def?.manaCost,
+        colors: c.produces,
+      })
+    }
+    for (const land of state.player.lands) {
+      out.push({
+        id: land.instanceId,
+        zone: 'player-lands',
+        image: land.image,
+        name: zh
+          ? (findCardDef(land.defId, state.playerDeckId)?.nameZh ?? land.name)
+          : land.name,
+        tapped: land.tapped,
+        colors: land.produces,
+      })
+    }
+    return out
+  }, [
+    challengeCreatures,
+    state.challenge.battlefield,
+    state.player.creatures,
+    state.player.lands,
+    state.playerDeckId,
+    state,
+    zh,
+    localizeName,
+  ])
+
+  const exitGhosts = useBoardExitGhosts(
+    boardExitLive,
+    state.status === 'playing',
   )
-  const challengeOthers = state.challenge.battlefield.filter(
-    (c) => !challengeCreatures.includes(c),
-  )
+
+  if (!deck) return <Navigate to="/" replace />
 
   const canTarget = (card: CardInstance) => {
     if (state.status !== 'playing' || state.activeSide !== 'player') return false
@@ -694,15 +870,34 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
         : 'resolve'
 
   if (state.status === 'setup') {
+    const preloadPct =
+      assetProgress.total > 0
+        ? Math.round((assetProgress.done / assetProgress.total) * 100)
+        : 0
     return (
       <main className={`arena-root theme-${deck.theme}`}>
         <RemoteArtBackground className="arena-bg" localPath={heroArt} kind="art_crop" />
         <div className="arena-bg-veil" />
-        <section className="arena-setup">
-          <Link to={`/decks/${code}`} className="back-link">
-            ← {t('challenge.backDeck')}
-          </Link>
-          <ChallengeSwitcher currentCode={code} mode="challenge" />
+        <section className={`arena-setup${assetLoading ? ' is-preloading' : ''}`}>
+          {assetLoading ? (
+            <div className="setup-preload" role="status" aria-live="polite">
+              <p>
+                {t('challenge.loadingAssets', {
+                  done: assetProgress.done,
+                  total: assetProgress.total || '…',
+                })}
+              </p>
+              <div className="setup-preload-bar" aria-hidden="true">
+                <span style={{ width: `${preloadPct}%` }} />
+              </div>
+            </div>
+          ) : null}
+          <div className="page-top-nav">
+            <Link to={`/decks/${code}`} className="back-link">
+              ← {t('challenge.backDeck')}
+            </Link>
+            <ChallengeSwitcher currentCode={code} mode="challenge" />
+          </div>
           <p className="eyebrow">{t('challenge.eyebrow')}</p>
           <h1>{meta?.name ?? deck.name}</h1>
           <p className="lede">{t('challenge.setupLead')}</p>
@@ -869,21 +1064,11 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
             />
             <button
               type="button"
-              className="btn primary"
-              onClick={() =>
-                act({
-                  type: 'START',
-                  config: {
-                    code,
-                    startingHeads: heads,
-                    playerTurnsBeforeHorde: hordeDelay,
-                    playerDeckId,
-                    heroIds,
-                  },
-                })
-              }
+              className={`btn primary${assetLoading ? ' is-busy' : ''}`}
+              disabled={assetLoading}
+              onClick={() => void beginChallenge()}
             >
-              {t('challenge.begin')}
+              {assetLoading ? t('challenge.beginLoading') : t('challenge.begin')}
             </button>
           </div>
         </section>
@@ -919,107 +1104,52 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
       <div className="arena-bg-veil" />
       <AttackArrows rootRef={arenaRef} links={attackLinks} />
 
-      <header className="arena-topbar">
-        <div className="arena-topbar-actions is-tools">
-          <button type="button" className="btn ghost" onClick={() => act({ type: 'RESET' })}>
-            {t('challenge.resign')}
-          </button>
-          <button
-            type="button"
-            className="btn ghost"
-            onClick={() => setLogModalOpen(true)}
-            aria-haspopup="dialog"
-            aria-expanded={logModalOpen}
-          >
-            {t('challenge.log')}
-          </button>
-          <button
-            type="button"
-            className={`btn ghost coach-toggle ${coachOn ? 'is-on' : ''}`}
-            onClick={toggleCoach}
-            aria-pressed={coachOn}
-          >
-            {coachOn ? t('challenge.coachOn') : t('challenge.coachOff')}
-          </button>
-          <LanguageSwitch compact asButton />
-        </div>
-        <div className="arena-title">
-          <strong>{meta?.name ?? deck.name}</strong>
-          <span className="arena-turn-meta">
-            <span className="arena-turn-count">
-              {t('challenge.turn')} {state.turnNumber}
-            </span>
-            <span
-              className={`arena-turn-side ${
-                state.activeSide === 'player' ? 'is-you' : 'is-them'
-              }`}
-            >
-              {state.activeSide === 'player'
-                ? t('challenge.yourTurn')
-                : t('challenge.theirTurn')}
-            </span>
-          </span>
-        </div>
-        <div className="arena-topbar-actions is-play">
-          {state.activeSide === 'player' && !over ? (
-            <>
-              {state.playerPhase === 'main' && attackables.length > 0 ? (
-                <button type="button" className="btn ghost" onClick={enterCombat}>
-                  {t('challenge.enterCombat')}
-                </button>
-              ) : null}
-              {state.playerPhase === 'combat' ? (
-                <>
-                  <button type="button" className="btn ghost" onClick={cancelCombat}>
-                    {t('challenge.cancelCombat')}
-                  </button>
-                  <button
-                    type="button"
-                    className="btn ghost"
-                    disabled={
-                      state.selectedAttackers.length === 0 ||
-                      (state.code !== 'tbth' &&
-                        state.selectedAttackers.some((id) => !state.attackAssignments[id]))
-                    }
-                    onClick={() => act({ type: 'RESOLVE_ATTACKS' })}
-                  >
-                    {state.code === 'tbth'
-                      ? t('challenge.attackHorde')
-                      : t('challenge.resolveCombat')}
-                  </button>
-                </>
-              ) : null}
-              {state.pendingCast ? (
-                <button
-                  type="button"
-                  className="btn ghost"
-                  onClick={() => act({ type: 'CANCEL_PENDING' })}
-                >
-                  {t('challenge.cancelTarget')}
-                </button>
-              ) : null}
-              <button
-                type="button"
-                className="btn ghost is-end-turn"
-                onClick={() => {
-                  setFocusAttacker(null)
-                  act({ type: 'END_TURN' })
-                }}
-              >
-                {t('challenge.endTurn')}
-              </button>
-            </>
-          ) : state.pendingCast ? (
+      <div className="arena-topbar-shell">
+        <div className="arena-topbar-hotzone" aria-hidden="true" />
+        <header className="arena-topbar">
+          <div className="arena-topbar-actions is-tools">
+            <button type="button" className="btn ghost" onClick={() => act({ type: 'RESET' })}>
+              {t('challenge.resign')}
+            </button>
             <button
               type="button"
               className="btn ghost"
-              onClick={() => act({ type: 'CANCEL_PENDING' })}
+              onClick={() => setLogModalOpen(true)}
+              aria-haspopup="dialog"
+              aria-expanded={logModalOpen}
             >
-              {t('challenge.cancelTarget')}
+              {t('challenge.log')}
             </button>
-          ) : null}
-        </div>
-      </header>
+            <button
+              type="button"
+              className={`btn ghost coach-toggle ${coachOn ? 'is-on' : ''}`}
+              onClick={toggleCoach}
+              aria-pressed={coachOn}
+            >
+              {coachOn ? t('challenge.coachOn') : t('challenge.coachOff')}
+            </button>
+            <LanguageSwitch compact asButton />
+          </div>
+          <div className="arena-title">
+            <strong>{meta?.name ?? deck.name}</strong>
+            <span className="arena-turn-meta">
+              <span className="arena-turn-count">
+                {t('challenge.turn')} {state.turnNumber}
+              </span>
+              <span
+                className={`arena-turn-side ${
+                  state.activeSide === 'player' ? 'is-you' : 'is-them'
+                }`}
+              >
+                {state.activeSide === 'player'
+                  ? t('challenge.yourTurn')
+                  : t('challenge.theirTurn')}
+              </span>
+            </span>
+          </div>
+          <div className="arena-topbar-actions is-play-spacer" aria-hidden="true" />
+        </header>
+      </div>
 
       {/* Opponent chrome */}
       <div className="arena-opponent-rail">
@@ -1135,13 +1265,39 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
               return (
                 <ArenaCard
                   key={card.instanceId}
+                  variant="board"
                   instanceId={card.instanceId}
                   image={card.image}
                   name={localizeName(card.name)}
+                  keywords={card.keywords}
+                  zhLabels={zh}
+                  counters={[
+                    ...(card.isHead
+                      ? [
+                          {
+                            id: 'head',
+                            text: zh ? '头' : 'H',
+                            title: zh ? 'Hydra head' : 'Head',
+                            tone: 'gold' as const,
+                          },
+                        ]
+                      : []),
+                    ...(card.isElite
+                      ? [
+                          {
+                            id: 'elite',
+                            text: '★',
+                            title: 'Elite',
+                            tone: 'gold' as const,
+                          },
+                        ]
+                      : []),
+                  ]}
                   power={card.power}
                   toughness={card.toughness}
                   markedDamage={card.markedDamage}
                   tapped={card.tapped}
+                  showPt
                   attacking={
                     targeted ||
                     state.revealed.some((r) => r.instanceId === card.instanceId) ||
@@ -1187,24 +1343,56 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                       })
                     }
                   }}
-                  onMouseEnter={() => previewChallengeCard(card)}
+                  onMouseEnter={(e) => previewChallengeCard(card, e)}
                   onMouseLeave={clearPreview}
                 />
               )
             })}
+              {exitGhosts
+                .filter((g) => g.zone === 'challenge-creatures')
+                .map((g) => (
+                  <ArenaCard
+                    key={`exit-${g.id}`}
+                    variant="board"
+                    dying
+                    image={g.image}
+                    name={g.name}
+                    keywords={g.keywords}
+                    zhLabels={zh}
+                    power={g.power}
+                    toughness={g.toughness}
+                    markedDamage={g.markedDamage}
+                    tapped={g.tapped}
+                    showPt
+                  />
+                ))}
             </div>
           </div>
           <div className="bf-others">
             {challengeOthers.map((card) => (
               <ArenaCard
                 key={card.instanceId}
+                variant="board"
                 image={card.image}
                 name={card.name}
                 compact
-                onMouseEnter={() => previewChallengeCard(card)}
+                onMouseEnter={(e) => previewChallengeCard(card, e)}
                 onMouseLeave={clearPreview}
               />
             ))}
+            {exitGhosts
+              .filter((g) => g.zone === 'challenge-others')
+              .map((g) => (
+                <ArenaCard
+                  key={`exit-${g.id}`}
+                  variant="board"
+                  dying
+                  image={g.image}
+                  name={g.name}
+                  compact
+                  tapped={g.tapped}
+                />
+              ))}
           </div>
         </section>
 
@@ -1269,14 +1457,17 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                     key={h.instanceId}
                     type="button"
                     className="hero-chip"
-                    onMouseEnter={() =>
-                      setPreview({
-                        image: def?.image || h.image || '',
-                        name: zh ? (def?.nameZh ?? h.name) : h.name,
-                        text: zh
-                          ? `${def?.typeLineZh ?? ''}\n${def?.oracleTextZh ?? h.oracleText}`
-                          : `${def?.typeLine ?? 'Hero'}\n${h.oracleText}`,
-                      })
+                    onMouseEnter={(e) =>
+                      placePreview(
+                        {
+                          image: def?.image || h.image || '',
+                          name: zh ? (def?.nameZh ?? h.name) : h.name,
+                          text: zh
+                            ? `${def?.typeLineZh ?? ''}\n${def?.oracleTextZh ?? h.oracleText}`
+                            : `${def?.typeLine ?? 'Hero'}\n${h.oracleText}`,
+                        },
+                        e,
+                      )
                     }
                     onMouseLeave={clearPreview}
                   >
@@ -1346,16 +1537,42 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                 canActivateCreature(state, c.instanceId) && !pendingMine && !blocking
               const enh = creatureEnhancement(state, c)
               const enhLabel = enh ? formatEnhancementLabel(enh) : null
+              const def = findCardDef(c.defId, state.playerDeckId)
+              const boardCounters: ArenaCounterBadge[] = []
+              if (c.monstrous) {
+                boardCounters.push({
+                  id: 'monstrous',
+                  text: 'M',
+                  title: zh ? '已蛮化' : 'Monstrous',
+                  tone: 'gold',
+                })
+              }
+              const temp = Math.min(c.tempPower ?? 0, c.tempToughness ?? 0)
+              if (temp > 0 && (c.tempPower ?? 0) === (c.tempToughness ?? 0)) {
+                boardCounters.push({
+                  id: 'p1p1',
+                  text: `+${temp}`,
+                  title: zh ? `+1/+1 ×${temp}` : `+1/+1 ×${temp}`,
+                  tone: 'buff',
+                })
+              }
               return (
                 <ArenaCard
                   key={c.instanceId}
+                  variant="board"
                   instanceId={c.instanceId}
                   image={c.image}
                   name={label}
+                  manaCost={def?.manaCost}
+                  colors={c.produces}
+                  keywords={c.keywords?.length ? c.keywords : def?.keywords}
+                  zhLabels={zh}
+                  counters={boardCounters}
                   power={power}
                   toughness={toughness}
                   markedDamage={c.markedDamage}
                   tapped={c.tapped}
+                  showPt
                   selected={selected}
                   attacking={selected || pop?.kind === 'attack'}
                   attackReady={showReady}
@@ -1413,22 +1630,45 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                     if (!canDeclare && !selected) return
                     declareOrToggleAttacker(c.instanceId)
                   }}
-                  onMouseEnter={() => {
+                  onMouseEnter={(e) => {
                     const tpl = findCardDef(c.defId, state.playerDeckId)
-                    setPreview({
-                      image: c.image,
-                      name: label,
-                      text: tpl
-                        ? `${zh ? tpl.typeLineZh : tpl.typeLine}\n${power}/${toughness}${
-                            enhLabel ? ` (${enhLabel})` : ''
-                          }\n${zh ? tpl.oracleTextZh : tpl.oracleText}`
-                        : `${power}/${toughness}`,
-                    })
+                    placePreview(
+                      {
+                        image: c.image,
+                        name: label,
+                        text: tpl
+                          ? `${zh ? tpl.typeLineZh : tpl.typeLine}\n${power}/${toughness}${
+                              enhLabel ? ` (${enhLabel})` : ''
+                            }\n${zh ? tpl.oracleTextZh : tpl.oracleText}`
+                          : `${power}/${toughness}`,
+                      },
+                      e,
+                    )
                   }}
                   onMouseLeave={clearPreview}
                 />
               )
             })}
+            {exitGhosts
+              .filter((g) => g.zone === 'player-creatures')
+              .map((g) => (
+                <ArenaCard
+                  key={`exit-${g.id}`}
+                  variant="board"
+                  dying
+                  image={g.image}
+                  name={g.name}
+                  manaCost={g.manaCost}
+                  colors={g.colors}
+                  keywords={g.keywords}
+                  zhLabels={zh}
+                  power={g.power}
+                  toughness={g.toughness}
+                  markedDamage={g.markedDamage}
+                  tapped={g.tapped}
+                  showPt
+                />
+              ))}
           </div>
             <div
               className={`bf-lands${
@@ -1442,22 +1682,40 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                 return (
                   <ArenaCard
                     key={land.instanceId}
+                    variant="board"
                     instanceId={land.instanceId}
                     image={land.image}
                     name={label}
+                    colors={land.produces}
                     tapped={land.tapped}
                     dimmed={land.tapped}
-                    onMouseEnter={() =>
-                      setPreview({
-                        image: land.image,
-                        name: label,
-                        text: land.typeLine,
-                      })
+                    onMouseEnter={(e) =>
+                      placePreview(
+                        {
+                          image: land.image,
+                          name: label,
+                          text: land.typeLine,
+                        },
+                        e,
+                      )
                     }
                     onMouseLeave={clearPreview}
                   />
                 )
               })}
+              {exitGhosts
+                .filter((g) => g.zone === 'player-lands')
+                .map((g) => (
+                  <ArenaCard
+                    key={`exit-${g.id}`}
+                    variant="board"
+                    dying
+                    image={g.image}
+                    name={g.name}
+                    colors={g.colors}
+                    tapped={g.tapped}
+                  />
+                ))}
             </div>
           </div>
         </section>
@@ -1512,7 +1770,14 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
         </div>
 
         <div className="hand-dock">
-          <div className="hand-fan">
+          <div
+            className="hand-fan"
+            style={
+              {
+                '--hand-mid': Math.max(0, (state.player.hand.length - 1) / 2),
+              } as CSSProperties
+            }
+          >
             {state.player.hand.map((card, i) => {
               const unaffordable =
                 !canAffordCard(state, card) ||
@@ -1532,7 +1797,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                   key={card.instanceId}
                   type="button"
                   className={`hand-card ${unaffordable ? 'is-disabled' : ''} ${pending ? 'is-pending' : ''}`}
-                  style={{ '--i': i } as React.CSSProperties}
+                  style={{ '--i': i } as CSSProperties}
                   aria-disabled={unaffordable && !pending ? true : undefined}
                   onClick={() => {
                     if (pending) {
@@ -1542,22 +1807,25 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                     if (unaffordable) return
                     act({ type: 'CAST', handId: card.instanceId })
                   }}
-                  onMouseEnter={() =>
-                    setPreview({
-                      image: card.image,
-                      name: zh ? card.nameZh : card.name,
-                      text: [
-                        zh ? card.typeLineZh : card.typeLine,
-                        card.kind === 'land'
-                          ? t('challenge.land')
-                          : card.power != null
-                            ? `${card.power}/${card.toughness} · ${card.manaCost}`
-                            : card.manaCost,
-                        zh ? card.oracleTextZh : card.oracleText,
-                      ]
-                        .filter(Boolean)
-                        .join('\n'),
-                    })
+                  onMouseEnter={(e) =>
+                    placePreview(
+                      {
+                        image: card.image,
+                        name: zh ? card.nameZh : card.name,
+                        text: [
+                          zh ? card.typeLineZh : card.typeLine,
+                          card.kind === 'land'
+                            ? t('challenge.land')
+                            : card.power != null
+                              ? `${card.power}/${card.toughness} · ${card.manaCost}`
+                              : card.manaCost,
+                          zh ? card.oracleTextZh : card.oracleText,
+                        ]
+                          .filter(Boolean)
+                          .join('\n'),
+                      },
+                      e,
+                    )
                   }
                   onMouseLeave={clearPreview}
                 >
@@ -1567,29 +1835,103 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
             })}
           </div>
         </div>
+
+        <div className="arena-play-actions">
+          {state.activeSide === 'player' && !over ? (
+            <>
+              {state.playerPhase === 'main' && attackables.length > 0 ? (
+                <button type="button" className="btn ghost" onClick={enterCombat}>
+                  {t('challenge.enterCombat')}
+                </button>
+              ) : null}
+              {state.playerPhase === 'combat' ? (
+                <>
+                  <button type="button" className="btn ghost" onClick={cancelCombat}>
+                    {t('challenge.cancelCombat')}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn ghost"
+                    disabled={
+                      state.selectedAttackers.length === 0 ||
+                      (state.code !== 'tbth' &&
+                        state.selectedAttackers.some((id) => !state.attackAssignments[id]))
+                    }
+                    onClick={() => act({ type: 'RESOLVE_ATTACKS' })}
+                  >
+                    {state.code === 'tbth'
+                      ? t('challenge.attackHorde')
+                      : t('challenge.resolveCombat')}
+                  </button>
+                </>
+              ) : null}
+              {state.pendingCast ? (
+                <button
+                  type="button"
+                  className="btn ghost"
+                  onClick={() => act({ type: 'CANCEL_PENDING' })}
+                >
+                  {t('challenge.cancelTarget')}
+                </button>
+              ) : null}
+              <button
+                type="button"
+                className="btn ghost is-end-turn"
+                onClick={() => {
+                  setFocusAttacker(null)
+                  act({ type: 'END_TURN' })
+                }}
+              >
+                {t('challenge.endTurn')}
+              </button>
+            </>
+          ) : state.pendingCast ? (
+            <button
+              type="button"
+              className="btn ghost"
+              onClick={() => act({ type: 'CANCEL_PENDING' })}
+            >
+              {t('challenge.cancelTarget')}
+            </button>
+          ) : null}
+        </div>
       </div>
 
       {preview
         ? createPortal(
-            <aside className="card-preview-pane" aria-hidden="true">
-              {preview.image ? (
-                <div className="card-preview-art">
-                  <CardImage
-                    localPath={preview.image}
-                    kind="large"
-                    alt={preview.name}
-                  />
+            <aside
+              className="card-preview-pane is-follow"
+              aria-hidden="true"
+              style={
+                {
+                  '--preview-x': `${previewPos.x}px`,
+                  '--preview-y': `${previewPos.y}px`,
+                } as CSSProperties
+              }
+            >
+              <div
+                className="card-preview-swap"
+                key={`${preview.image}|${preview.name}`}
+              >
+                {preview.image ? (
+                  <div className="card-preview-art">
+                    <CardImage
+                      localPath={preview.image}
+                      kind="large"
+                      alt={preview.name}
+                    />
+                  </div>
+                ) : (
+                  <div className="preview-token">
+                    <strong>{preview.name}</strong>
+                  </div>
+                )}
+                <div className="card-preview-copy">
+                  <p className="card-preview-name">{preview.name}</p>
+                  {preview.text ? (
+                    <p className="card-preview-text">{preview.text}</p>
+                  ) : null}
                 </div>
-              ) : (
-                <div className="preview-token">
-                  <strong>{preview.name}</strong>
-                </div>
-              )}
-              <div className="card-preview-copy">
-                <p className="card-preview-name">{preview.name}</p>
-                {preview.text ? (
-                  <p className="card-preview-text">{preview.text}</p>
-                ) : null}
               </div>
             </aside>,
             document.body,
@@ -1718,12 +2060,15 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                       onClick={() =>
                         act({ type: 'ANSWER_PROMPT', optionId: opt.id })
                       }
-                      onMouseEnter={() =>
-                        setPreview({
-                          image: picked.image,
-                          name: label,
-                          text: picked.text,
-                        })
+                      onMouseEnter={(e) =>
+                        placePreview(
+                          {
+                            image: picked.image,
+                            name: label,
+                            text: picked.text,
+                          },
+                          e,
+                        )
                       }
                       onMouseLeave={clearPreview}
                     >
@@ -1915,7 +2260,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                   key={c.instanceId}
                   image={c.image}
                   name={localizeName(c.name)}
-                  onMouseEnter={() => previewChallengeCard(c)}
+                  onMouseEnter={(e) => previewChallengeCard(c, e)}
                   onMouseLeave={clearPreview}
                 />
               ))}
@@ -1958,18 +2303,21 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                     <ArenaCard
                       image={c.image}
                       name={label}
-                      onMouseEnter={() =>
-                        setPreview({
-                          image: c.image,
-                          name: label,
-                          text: [
-                            zh ? c.typeLineZh || c.typeLine : c.typeLine,
-                            c.power != null ? `${c.power}/${c.toughness}` : null,
-                            zh ? c.oracleTextZh || c.oracleText : c.oracleText,
-                          ]
-                            .filter(Boolean)
-                            .join('\n'),
-                        })
+                      onMouseEnter={(e) =>
+                        placePreview(
+                          {
+                            image: c.image,
+                            name: label,
+                            text: [
+                              zh ? c.typeLineZh || c.typeLine : c.typeLine,
+                              c.power != null ? `${c.power}/${c.toughness}` : null,
+                              zh ? c.oracleTextZh || c.oracleText : c.oracleText,
+                            ]
+                              .filter(Boolean)
+                              .join('\n'),
+                          },
+                          e,
+                        )
                       }
                       onMouseLeave={clearPreview}
                     />

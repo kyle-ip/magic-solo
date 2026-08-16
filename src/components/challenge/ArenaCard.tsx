@@ -1,17 +1,48 @@
 import {
   memo,
+  useEffect,
+  useRef,
+  useState,
   type ButtonHTMLAttributes,
   type MouseEventHandler,
   type PointerEventHandler,
   type ReactNode,
 } from 'react'
 import { CardImage } from '../../hooks/useCardImageSrc'
+import { parseManaCost, type ManaColor } from '../../game/mana'
+import {
+  KeywordGlyph,
+  keywordLabel,
+  normalizeBoardKeywords,
+} from './keywordIcons'
+
+export type ArenaCardVariant = 'full' | 'board'
+export type ArenaFrameColor = 'W' | 'U' | 'B' | 'R' | 'G' | 'M' | 'C'
+
+export interface ArenaCounterBadge {
+  id: string
+  text: string
+  title?: string
+  tone?: 'buff' | 'gold' | 'neutral'
+}
 
 interface ArenaCardProps {
   image: string
   name: string
   /** Used for attack-arrow targeting */
   instanceId?: string
+  /** `full` = normal face (hand/inspect); `board` = art_crop token */
+  variant?: ArenaCardVariant
+  /** Mana cost string e.g. `{2}{R}{G}` — drives board color rim */
+  manaCost?: string | null
+  /** Explicit colors (lands / produces) — overrides manaCost when set */
+  colors?: ReadonlyArray<ManaColor> | null
+  /** Keyword strings for board icons (flying, trample, …) */
+  keywords?: ReadonlyArray<string> | null
+  /** Prefer Chinese keyword tooltips */
+  zhLabels?: boolean
+  /** Top-right counter chips (+1/+1 stacks, monstrous, heads, …) */
+  counters?: ReadonlyArray<ArenaCounterBadge> | null
   power?: number | null
   toughness?: number | null
   markedDamage?: number
@@ -34,19 +65,47 @@ interface ArenaCardProps {
   floater?: { kind: 'damage' | 'attack' | 'heal' | 'mill'; amount?: number } | null
   /** Free-form note overlay on the card. */
   note?: string | null
+  /** Play destroy / leave-battlefield exit animation */
+  dying?: boolean
   onClick?: () => void
   onDoubleClick?: MouseEventHandler<HTMLElement>
-  onMouseEnter?: () => void
-  onMouseLeave?: () => void
+  onMouseEnter?: MouseEventHandler<HTMLElement>
+  onMouseLeave?: MouseEventHandler<HTMLElement>
   onContextMenu?: MouseEventHandler<HTMLElement>
   onPointerDown?: PointerEventHandler<HTMLElement>
   children?: ReactNode
+}
+
+export function frameColorFromMana(
+  manaCost?: string | null,
+  colors?: ReadonlyArray<ManaColor> | null,
+): ArenaFrameColor {
+  if (colors && colors.length > 0) {
+    const unique = [...new Set(colors.filter((c) => c !== 'C'))]
+    if (unique.length === 0) return 'C'
+    if (unique.length === 1) return unique[0]!
+    return 'M'
+  }
+  if (manaCost) {
+    const p = parseManaCost(manaCost)
+    const present = (['W', 'U', 'B', 'R', 'G'] as const).filter((c) => p[c] > 0)
+    if (present.length === 0) return 'C'
+    if (present.length === 1) return present[0]!
+    return 'M'
+  }
+  return 'C'
 }
 
 function ArenaCardInner({
   image,
   name,
   instanceId,
+  variant = 'full',
+  manaCost,
+  colors,
+  keywords,
+  zhLabels = false,
+  counters,
   power,
   toughness,
   markedDamage = 0,
@@ -64,6 +123,7 @@ function ArenaCardInner({
   strikeFx,
   floater,
   note,
+  dying,
   onClick,
   onDoubleClick,
   onMouseEnter,
@@ -72,8 +132,79 @@ function ArenaCardInner({
   onPointerDown,
   children,
 }: ArenaCardProps) {
+  const isBoard = variant === 'board'
+  const frame = isBoard ? frameColorFromMana(manaCost, colors) : null
+  const boardKeywords = isBoard && !compact ? normalizeBoardKeywords(keywords) : []
+  const boardCounters =
+    isBoard && !compact && counters?.length ? counters.slice(0, 3) : []
+
+  const [ptFlash, setPtFlash] = useState<'up' | 'down' | null>(null)
+  const [buffPop, setBuffPop] = useState(false)
+  const [dmgPop, setDmgPop] = useState(false)
+  const prevPt = useRef<{ p: number | null | undefined; t: number | null | undefined }>({
+    p: power,
+    t: toughness,
+  })
+  const prevEnh = useRef(enhancement ?? null)
+  const prevDmg = useRef(markedDamage)
+  const mounted = useRef(false)
+
+  useEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true
+      prevPt.current = { p: power, t: toughness }
+      prevEnh.current = enhancement ?? null
+      prevDmg.current = markedDamage
+      return
+    }
+
+    const prevPower = prevPt.current.p ?? 0
+    const prevTough = prevPt.current.t ?? 0
+    const nextPower = power ?? 0
+    const nextTough = toughness ?? 0
+    if (power != null || toughness != null) {
+      if (nextPower > prevPower || nextTough > prevTough) {
+        setPtFlash('up')
+      } else if (nextPower < prevPower || nextTough < prevTough) {
+        setPtFlash('down')
+      }
+    }
+    prevPt.current = { p: power, t: toughness }
+
+    const enh = enhancement ?? null
+    if (enh && enh !== prevEnh.current) {
+      setBuffPop(true)
+    }
+    prevEnh.current = enh
+
+    if (markedDamage > prevDmg.current) {
+      setDmgPop(true)
+    }
+    prevDmg.current = markedDamage
+  }, [power, toughness, enhancement, markedDamage])
+
+  useEffect(() => {
+    if (!ptFlash) return
+    const id = window.setTimeout(() => setPtFlash(null), 520)
+    return () => window.clearTimeout(id)
+  }, [ptFlash])
+
+  useEffect(() => {
+    if (!buffPop) return
+    const id = window.setTimeout(() => setBuffPop(false), 560)
+    return () => window.clearTimeout(id)
+  }, [buffPop])
+
+  useEffect(() => {
+    if (!dmgPop) return
+    const id = window.setTimeout(() => setDmgPop(false), 560)
+    return () => window.clearTimeout(id)
+  }, [dmgPop])
+
   const className = [
     'arena-card',
+    isBoard ? 'is-board' : 'is-full',
+    frame ? `is-frame-${frame}` : '',
     compact ? 'is-compact' : '',
     tapped ? 'is-tapped' : '',
     selected ? 'is-selected' : '',
@@ -84,14 +215,22 @@ function ArenaCardInner({
     hitFx ? 'is-hit' : '',
     strikeFx ? 'is-striking' : '',
     enhancement ? 'is-enhanced' : '',
+    boardKeywords.length ? 'has-keywords' : '',
+    boardCounters.length ? 'has-counters' : '',
+    ptFlash === 'up' ? 'is-pt-flash-up' : '',
+    ptFlash === 'down' ? 'is-pt-flash-down' : '',
+    buffPop ? 'is-buff-pop' : '',
+    dmgPop ? 'is-dmg-pop' : '',
+    dying ? 'is-dying' : '',
     onPointerDown ? 'is-draggable' : '',
   ]
     .filter(Boolean)
     .join(' ')
 
   const damaged = toughness != null && markedDamage > 0
+  const forcePt = showPt || isBoard
   const displayPt =
-    toughness != null && (showPt || damaged || Boolean(enhancement))
+    toughness != null && (forcePt || damaged || Boolean(enhancement))
       ? `${power ?? 0}/${Math.max(0, toughness - markedDamage)}`
       : null
 
@@ -104,14 +243,45 @@ function ArenaCardInner({
           : `−${floater.amount}`
       : null
 
+  const imageKind = isBoard ? 'art_crop' : 'normal'
+
   const inner = (
     <>
-      <CardImage
-        localPath={image}
-        kind="normal"
-        alt={name}
-        draggable={false}
-      />
+      <span className="arena-card-art">
+        <CardImage
+          localPath={image}
+          kind={imageKind}
+          alt={name}
+          draggable={false}
+        />
+      </span>
+      {isBoard ? <span className="arena-card-frame-bar" aria-hidden="true" /> : null}
+      {boardCounters.length ? (
+        <span className="arena-card-counters" aria-hidden="true">
+          {boardCounters.map((c) => (
+            <span
+              key={c.id}
+              className={`arena-card-counter tone-${c.tone ?? 'neutral'}`}
+              title={c.title ?? c.text}
+            >
+              {c.text}
+            </span>
+          ))}
+        </span>
+      ) : null}
+      {boardKeywords.length ? (
+        <span className="arena-card-keywords" aria-hidden="true">
+          {boardKeywords.map((id) => (
+            <span
+              key={id}
+              className={`arena-kw is-${id}`}
+              title={keywordLabel(id, zhLabels)}
+            >
+              <KeywordGlyph id={id} />
+            </span>
+          ))}
+        </span>
+      ) : null}
       {badge ? <span className="arena-card-badge">{badge}</span> : null}
       {note ? <span className="arena-card-note">{note}</span> : null}
       {enhancement ? (

@@ -1,4 +1,4 @@
-/* —— Arena Solo board (MTG Arena–inspired, simplified) —— */
+/* ?? Arena Solo board (MTG Arena?inspired, simplified) ?? */
 .app-shell.is-arena {
   min-height: 100vh;
   min-height: 100dvh;
@@ -13,17 +13,17 @@ html:has(.app-shell.is-arena) {
 
 /* Board tokens available to portaled hover preview on document.body */
 html.is-arena-playing {
-  /* Large fixed card scale — page scrolls; hand+chrome viewport-fixed */
+  /* Large fixed card scale ? page scrolls; hand+chrome viewport-fixed */
   --play-card-h: clamp(7.3rem, 17.7vh, 10.45rem);
   --bf-card-h: var(--play-card-h);
   --hand-full: var(--play-card-h);
-  --hand-peek: calc(var(--hand-full) * 0.5);
+  --hand-peek: calc(var(--hand-full) * 0.75);
   --hand-edge: 0.35rem;
   --hand-dock-h: calc(var(--hand-peek) + var(--hand-edge) + var(--safe-bottom, 0px) + 0.45rem);
   --preview-h: min(58dvh, calc(100dvh - 7rem - var(--hand-dock-h)));
   height: auto;
   min-height: 100%;
-  /* Single scrollport on html — avoid overflow-x:hidden + y:visible (creates nested scroll) */
+  /* Single scrollport on html ? avoid overflow-x:hidden + y:visible (creates nested scroll) */
   overflow-x: clip;
   overflow-y: auto;
   scrollbar-gutter: stable;
@@ -87,7 +87,7 @@ html.is-arena-playing body {
 
 .arena-root {
   position: relative;
-  /* Grow with setup content; document scrolls — never nest a second scrollport */
+  /* Grow with setup content; document scrolls ? never nest a second scrollport */
   flex-shrink: 0;
   min-height: 100vh;
   min-height: 100dvh;
@@ -101,7 +101,7 @@ html.is-arena-playing body {
   --play-card-h: clamp(7.3rem, 17.7vh, 10.45rem);
   --bf-card-h: var(--play-card-h);
   --hand-full: var(--play-card-h);
-  --hand-peek: calc(var(--hand-full) * 0.5);
+  --hand-peek: calc(var(--hand-full) * 0.75);
   --hand-edge: 0.35rem;
   --hand-dock-h: calc(var(--hand-peek) + var(--hand-edge) + var(--safe-bottom, 0px) + 0.45rem);
   --preview-h: min(58dvh, calc(100dvh - 7rem - var(--hand-dock-h)));
@@ -159,7 +159,7 @@ html.is-arena-playing body {
   }
 }
 
-/* Phone / short landscape — still large fixed cards; page scrolls */
+/* Phone / short landscape ? still large fixed cards; page scrolls */
 @media (orientation: landscape) and (max-height: 820px) {
   .arena-root.is-playing,
   html.is-arena-playing {
@@ -167,7 +167,7 @@ html.is-arena-playing body {
     --play-card-h: clamp(6.05rem, 26.6vh, 8.5rem);
     --bf-card-h: var(--play-card-h);
     --hand-full: var(--play-card-h);
-    --hand-peek: calc(var(--hand-full) * 0.5);
+    --hand-peek: calc(var(--hand-full) * 0.75);
     --hand-edge: 0.25rem;
     --hand-dock-h: calc(var(--hand-peek) + var(--hand-edge) + var(--safe-bottom, 0px) + 0.35rem);
     --preview-h: min(48dvh, calc(100dvh - 5.5rem - var(--hand-dock-h)));
@@ -395,7 +395,12 @@ html.is-arena-playing body {
     max-height: none;
     max-width: none;
     aspect-ratio: auto;
-    transform: translateY(50%) rotate(calc((var(--i) - 2.5) * 0.8deg));
+    transform: translateY(
+      calc(
+        25% + (var(--i) - var(--hand-mid, 2.5)) * (var(--i) - var(--hand-mid, 2.5)) * 1.1%
+      )
+    )
+    rotate(calc((var(--i) - var(--hand-mid, 2.5)) * 2deg));
   }
 
   .hand-card img {
@@ -531,6 +536,48 @@ html.is-arena-playing body {
   box-sizing: border-box;
   margin: 4rem auto;
   padding: 0 clamp(0.5rem, 2.5vw, 1.75rem) 3rem;
+}
+
+.arena-setup.is-preloading {
+  pointer-events: none;
+}
+
+.setup-preload {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-content: center;
+  gap: 0.85rem;
+  padding: 1.5rem;
+  background: rgba(10, 8, 6, 0.72);
+  backdrop-filter: blur(6px);
+  color: rgba(245, 232, 210, 0.95);
+  text-align: center;
+  pointer-events: all;
+}
+
+.setup-preload p {
+  margin: 0;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+}
+
+.setup-preload-bar {
+  width: min(18rem, 70vw);
+  height: 0.35rem;
+  margin: 0 auto;
+  border-radius: 999px;
+  background: rgba(245, 232, 210, 0.16);
+  overflow: hidden;
+}
+
+.setup-preload-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--accent, #d4a24a) 85%, #fff 10%);
+  transition: width 120ms ease-out;
 }
 
 .setup-decks {
@@ -741,13 +788,13 @@ html.is-arena-playing body {
 }
 
 .prompt-shell.deck-roster-shell {
-  width: min(42rem, 94vw);
-  max-width: min(42rem, 94vw);
+  width: min(56rem, 96vw);
+  max-width: min(56rem, 96vw);
   max-height: min(90vh, 960px);
   overflow: auto;
   display: grid;
   gap: 1rem;
-  padding: 1.25rem 1.35rem 1.15rem;
+  padding: 1.25rem 1.45rem 1.15rem;
 }
 
 .deck-roster-head {
@@ -919,8 +966,8 @@ html.is-arena-playing body {
 
 .deck-roster-row {
   display: grid;
-  grid-template-columns: 1.6rem 1fr auto;
-  gap: 0.55rem;
+  grid-template-columns: 1.6rem minmax(0, 1fr) auto auto;
+  gap: 0.45rem 0.55rem;
   align-items: center;
   width: 100%;
   padding: 0.28rem 0.35rem;
@@ -945,16 +992,25 @@ html.is-arena-playing body {
 .deck-roster-name {
   font-size: 0.88rem;
   color: #f3e6c8;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .deck-roster-cost {
   margin: 0;
   justify-self: end;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .deck-roster-land-tag {
   font-size: 0.72rem;
   color: rgba(231, 215, 184, 0.55);
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .deck-roster-simplified {
@@ -965,6 +1021,7 @@ html.is-arena-playing body {
   border-radius: 0.25rem;
   padding: 0.05rem 0.35rem;
   flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .deck-roster-foot {
@@ -1014,7 +1071,7 @@ html.is-arena-playing body {
   justify-content: flex-end;
 }
 
-/* Assistant: no centered title — just back link + tools */
+/* Assistant: no centered title ? just back link + tools */
 .assistant-topbar.arena-topbar {
   display: flex;
   align-items: center;
@@ -1276,7 +1333,7 @@ html.is-arena-playing body {
 }
 
 .arena-topbar-actions .btn.is-end-turn {
-  /* Color accent only — same size as sibling ghost buttons */
+  /* Color accent only ? same size as sibling ghost buttons */
   background: linear-gradient(180deg, #e06a48 0%, #c44b2d 48%, #8a2f1a 100%);
   border-color: rgba(255, 190, 160, 0.42);
   color: #fff4ec;
@@ -1294,7 +1351,7 @@ html.is-arena-playing body {
   gap: 0.55rem;
   padding: 0.25rem 1.15rem 0.45rem 0.85rem;
   min-width: 0;
-  /* Chrome only — battle log is fixed and must not affect board size */
+  /* Chrome only ? battle log is fixed and must not affect board size */
   pointer-events: none;
 }
 
@@ -1467,7 +1524,7 @@ html.is-arena-playing body {
 }
 
 .zone-pile.kind-library .zone-pile-sheet.is-top {
-  /* Extra inset so the printed back doesn’t look flush in the tray */
+  /* Extra inset so the printed back doesn?t look flush in the tray */
   inset: 2px;
 }
 
@@ -1728,7 +1785,7 @@ html.is-arena-playing body {
   padding-bottom: 0.45rem;
 }
 
-/* Beat deck.css hero-clearance rules — keep side chrome clear, maximize board */
+/* Beat deck.css hero-clearance rules ? keep side chrome clear, maximize board */
 .arena-root.is-playing .player-row .bf-board {
   width: 100%;
   padding-inline: min(96px, 10%);
@@ -1797,7 +1854,7 @@ html.is-arena-playing body {
   padding-block: 0.15rem;
 }
 
-/* Fixed scale: dense boards wrap and the page scrolls — do not shrink cards */
+/* Fixed scale: dense boards wrap and the page scrolls ? do not shrink cards */
 
 .bf-others {
   display: flex;
@@ -1830,7 +1887,7 @@ html.is-arena-playing body {
   box-shadow: var(--card-shadow);
   transition: transform 180ms ease, box-shadow 180ms ease, opacity 180ms ease, filter 180ms ease,
     border-color 180ms ease;
-  /* Do not use fill-mode:both — it freezes transform:none and breaks tapped rotation */
+  /* Do not use fill-mode:both ? it freezes transform:none and breaks tapped rotation */
   animation: card-enter 380ms ease;
   isolation: isolate;
   line-height: 0;
@@ -1971,7 +2028,7 @@ button.arena-card {
 .arena-card.is-tapped {
   transform: rotate(90deg);
   transform-origin: center center;
-  /* Portrait slot becomes landscape visually — give neighbors room */
+  /* Portrait slot becomes landscape visually ? give neighbors room */
   margin-inline: 1.65rem;
   margin-block: 0.85rem;
 }
@@ -2109,13 +2166,14 @@ button.arena-card {
 }
 
 .arena-card.is-dimmed {
-  opacity: 0.48;
-  filter: grayscale(0.35) saturate(0.55) brightness(0.85);
+  /* Keep board permanents readable; signal ?unavailable? with tone, not wash-out */
+  opacity: 0.88;
+  filter: saturate(0.78) brightness(0.9);
 }
 
 .arena-card.is-dimmed.is-tapped {
-  opacity: 0.62;
-  filter: grayscale(0.2) saturate(0.7) brightness(0.9);
+  opacity: 0.9;
+  filter: saturate(0.82) brightness(0.92);
 }
 
 .arena-card.is-attack-ready {
@@ -2125,7 +2183,7 @@ button.arena-card {
 }
 
 .arena-card.is-attacking {
-  /* Lean toward midline — gap/padding reserves --bf-lean so this stays clear */
+  /* Lean toward midline ? gap/padding reserves --bf-lean so this stays clear */
   transform: translateY(calc(var(--bf-lean, 8px) * -1)) scale(1.03);
   box-shadow: 0 14px 26px rgba(0, 0, 0, 0.55);
   outline: 2px solid #fff3c4;
@@ -2152,7 +2210,7 @@ button.arena-card {
 .arena-card-badge {
   position: absolute;
   left: 50%;
-  /* Inside the card (overflow:hidden) — lower art, clear of name/cost */
+  /* Inside the card (overflow:hidden) ? lower art, clear of name/cost */
   top: auto;
   bottom: 13%;
   transform: translateX(-50%);
@@ -2362,8 +2420,13 @@ button.arena-card {
   padding: 0;
   text-align: left;
   cursor: pointer;
-  /* Rest: only the top half peeks above the bottom edge */
-  transform: translateY(50%) rotate(calc((var(--i) - 2.5) * 1.1deg));
+  /* Rest: top ~3/4 peeks above the bottom edge; stronger fan arc */
+  transform: translateY(
+    calc(
+      25% + (var(--i) - var(--hand-mid, 2.5)) * (var(--i) - var(--hand-mid, 2.5)) * 1.35%
+    )
+  )
+  rotate(calc((var(--i) - var(--hand-mid, 2.5)) * 2.6deg));
   transition: transform 180ms ease, border-color 160ms ease, box-shadow 180ms ease;
   box-shadow: var(--card-shadow);
   position: relative;
@@ -2493,7 +2556,7 @@ button.arena-card {
   border-radius: 0;
   background: #0a0806;
   box-shadow: none;
-  /* Hide JPG white corners — same trick as .arena-card */
+  /* Hide JPG white corners ? same trick as .arena-card */
   transform: scale(var(--card-img-scale, 1.03));
   transform-origin: center;
 }
@@ -3049,7 +3112,7 @@ button.arena-card {
 }
 
 .prompt-shell.inspect-shell {
-  /* Beat .prompt-shell’s 440px — match settlement panel width */
+  /* Beat .prompt-shell?s 440px ? match settlement panel width */
   width: min(68rem, 98vw);
   max-width: min(68rem, 98vw);
   max-height: min(85vh, 52rem);
@@ -3078,7 +3141,7 @@ button.arena-card {
   margin: 0.85rem 0 0;
 }
 
-/* Match battlefield card scale (modals / graveyard — fixed size OK) */
+/* Match battlefield card scale (modals / graveyard ? fixed size OK) */
 .inspect-grid .arena-card,
 .player-gy-card .arena-card {
   height: clamp(5.75rem, 15dvh, 11.5rem);
@@ -3098,7 +3161,7 @@ button.arena-card {
     --play-card-h: clamp(5.85rem, 22.8vh, 8.25rem);
     --bf-card-h: var(--play-card-h);
     --hand-full: var(--play-card-h);
-    --hand-peek: calc(var(--hand-full) * 0.5);
+    --hand-peek: calc(var(--hand-full) * 0.75);
     --hand-edge: 0.25rem;
     --hand-dock-h: calc(var(--hand-peek) + var(--hand-edge) + var(--safe-bottom, 0px) + 0.35rem);
     --preview-h: min(46dvh, calc(100dvh - 5.5rem - var(--hand-dock-h)));
@@ -3224,7 +3287,7 @@ button.arena-card {
   }
 }
 
-/* Decorative loops / entrances only — do NOT nuke pack/challenge one-shot FX.
+/* Decorative loops / entrances only ? do NOT nuke pack/challenge one-shot FX.
    Real phones often have OS "Reduce Motion" on; DevTools mobile usually does not. */
 @media (prefers-reduced-motion: reduce) {
   .arena-card.is-attack-ready,
@@ -3254,7 +3317,7 @@ button.arena-card {
   color: #e28b7a;
 }
 
-/* —— Arena card extras (assistant) —— */
+/* ?? Arena card extras (assistant) ?? */
 .arena-card.is-draggable {
   cursor: grab;
   touch-action: none;
@@ -3284,7 +3347,7 @@ button.arena-card {
   pointer-events: none;
 }
 
-/* —— Game assistant (Arena-style half board) —— */
+/* ?? Game assistant (Arena-style half board) ?? */
 .assistant-root {
   -webkit-user-select: none;
   user-select: none;
@@ -3303,7 +3366,7 @@ button.arena-card {
 }
 
 .assistant-root.is-playing {
-  /* Player values float over the board — do not reserve a growing bottom row */
+  /* Player values float over the board ? do not reserve a growing bottom row */
   grid-template-rows: auto auto 1fr;
 }
 
@@ -3528,7 +3591,7 @@ button.arena-card {
 }
 
 .assistant-root.setup-blank .assistant-slot-board.is-sparse {
-  /* Keep every seat the same size — no back-row shrink. */
+  /* Keep every seat the same size ? no back-row shrink. */
   --assistant-card-w: max(
     72px,
     min(
@@ -4200,5 +4263,456 @@ button.arena-card {
 
 .app-shell.is-arena .assistant-root .back-link {
   color: rgba(231, 215, 184, 0.75);
+}
+
+/* === Arena UX overrides (board tokens, hand, preview, topbar, play actions) === */
+
+html.is-arena-playing,
+.arena-root.is-playing {
+  --bf-token-h: var(--bf-card-h);
+  --hand-edge: 0.45rem;
+  --hand-dock-h: calc(var(--hand-peek) + var(--hand-edge) + var(--safe-bottom, 0px) + 0.55rem);
+  --bf-mid-gap: clamp(0.85rem, 2.2dvh, 1.35rem);
+  --bf-lean: 10px;
+}
+
+/* ---- Board art_crop tokens: upright 3:4; tapped reads 4:3 ---- */
+.arena-card.is-board {
+  overflow: visible;
+  border-width: 2px;
+  border-style: solid;
+  border-color: rgba(200, 180, 140, 0.45);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.55), var(--card-shadow);
+  height: var(--bf-token-h, var(--bf-card-h, 10rem));
+  width: calc(var(--bf-token-h, var(--bf-card-h, 10rem)) * 3 / 4);
+  aspect-ratio: 3 / 4;
+  max-width: none;
+  max-height: none;
+  animation: card-enter 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.arena-card.is-board .arena-card-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: inherit;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.arena-card.is-full .arena-card-art {
+  display: contents;
+}
+
+.arena-card.is-board .arena-card-frame-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 22%;
+  z-index: 2;
+  pointer-events: none;
+  border-radius: 0 0 inherit inherit;
+  background: linear-gradient(180deg, transparent 0%, rgba(8, 6, 4, 0.35) 35%, rgba(8, 6, 4, 0.72) 100%);
+}
+
+.arena-card.is-full .arena-card-frame-bar {
+  display: none;
+}
+
+.bf-board .arena-card.is-board,
+.opponent-row .bf-board .arena-card.is-board,
+.player-row .bf-board .arena-card.is-board {
+  height: var(--bf-token-h, var(--bf-card-h));
+  width: calc(var(--bf-token-h, var(--bf-card-h)) * 3 / 4);
+  min-height: 0;
+  min-width: 0;
+  max-height: none;
+  max-width: none;
+  aspect-ratio: 3 / 4;
+}
+
+.arena-card.is-board img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 42%;
+  transform: none;
+}
+
+.arena-card.is-board.is-compact {
+  width: min(58px, 10vw);
+  aspect-ratio: 3 / 4;
+  height: auto;
+}
+
+.arena-card.is-board.is-tapped {
+  margin-inline: 0.85rem;
+  margin-block: 0.7rem;
+}
+
+.arena-card.is-board.is-frame-W { border-color: #f2e6c4; box-shadow: 0 0 0 1px rgba(80, 60, 20, 0.55), 0 0 12px rgba(240, 220, 160, 0.35), var(--card-shadow); }
+.arena-card.is-board.is-frame-U { border-color: #6a9fd4; box-shadow: 0 0 0 1px rgba(20, 40, 80, 0.55), 0 0 12px rgba(80, 140, 220, 0.4), var(--card-shadow); }
+.arena-card.is-board.is-frame-B { border-color: #7a6a88; box-shadow: 0 0 0 1px rgba(20, 10, 30, 0.7), 0 0 12px rgba(90, 70, 110, 0.4), var(--card-shadow); }
+.arena-card.is-board.is-frame-R { border-color: #d07048; box-shadow: 0 0 0 1px rgba(80, 24, 8, 0.55), 0 0 12px rgba(220, 90, 50, 0.4), var(--card-shadow); }
+.arena-card.is-board.is-frame-G { border-color: #5a9a58; box-shadow: 0 0 0 1px rgba(20, 50, 20, 0.55), 0 0 12px rgba(70, 160, 80, 0.38), var(--card-shadow); }
+.arena-card.is-board.is-frame-M { border-color: #d4b050; box-shadow: 0 0 0 1px rgba(70, 50, 10, 0.55), 0 0 14px rgba(220, 170, 60, 0.42), var(--card-shadow); }
+.arena-card.is-board.is-frame-C { border-color: #a8a090; box-shadow: 0 0 0 1px rgba(40, 36, 30, 0.6), 0 0 10px rgba(160, 150, 130, 0.28), var(--card-shadow); }
+
+.arena-card-pt,
+.arena-card-buff,
+.arena-card-dmg {
+  font-family: var(--font-game-ui);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.arena-card-keywords {
+  position: absolute;
+  left: 50%;
+  bottom: 2.2%;
+  transform: translateX(-50%);
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 0.12rem;
+  max-width: 46%;
+  pointer-events: none;
+}
+
+.arena-kw {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(0.85rem, 15cqi, 1.15rem);
+  height: clamp(0.85rem, 15cqi, 1.15rem);
+  border-radius: 3px;
+  color: #f3e6cf;
+  background: rgba(8, 6, 4, 0.72);
+  border: 1px solid rgba(224, 180, 90, 0.4);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+  font-size: clamp(0.55rem, 10cqi, 0.78rem);
+  line-height: 0;
+}
+
+.arena-card-counters {
+  position: absolute;
+  top: 3%;
+  right: 3%;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15rem;
+  pointer-events: none;
+}
+
+.arena-card-counter {
+  min-width: clamp(1rem, 18cqi, 1.35rem);
+  height: clamp(1rem, 18cqi, 1.35rem);
+  padding: 0 0.2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-family: var(--font-game-ui);
+  font-size: clamp(0.55rem, 11cqi, 0.78rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: #1a120c;
+  background: linear-gradient(180deg, #f0e2c4, #d4bc8a);
+  border: 1px solid rgba(90, 62, 28, 0.55);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+  white-space: nowrap;
+}
+
+.arena-card-counter.tone-buff {
+  color: #102010;
+  background: linear-gradient(180deg, #e0f6c0, #8fd060);
+  border-color: rgba(48, 96, 28, 0.55);
+}
+
+.arena-card-counter.tone-gold {
+  color: #2a1c08;
+  background: linear-gradient(180deg, #ffe08a, #e0b44a);
+  border-color: rgba(120, 80, 20, 0.55);
+}
+
+.arena-card.has-keywords .arena-card-badge {
+  bottom: 22%;
+}
+
+.arena-card.is-dimmed {
+  opacity: 0.88;
+  filter: saturate(0.78) brightness(0.9);
+}
+
+.arena-card.is-dimmed.is-tapped {
+  opacity: 0.9;
+  filter: saturate(0.82) brightness(0.92);
+}
+
+.arena-card.is-attack-ready {
+  outline: none;
+  box-shadow: 0 0 0 2px #e8c86a, 0 0 16px rgba(232, 200, 106, 0.55), 0 10px 22px rgba(0, 0, 0, 0.45);
+}
+
+.arena-card.is-targetable {
+  outline: none;
+  box-shadow: 0 0 0 2px #ffe08a, 0 0 0 5px rgba(255, 200, 80, 0.35), 0 0 18px rgba(255, 190, 70, 0.5);
+}
+
+.arena-card.is-selected {
+  outline: none;
+  box-shadow: 0 0 0 2px #fff3c4, 0 0 14px rgba(255, 230, 160, 0.45), var(--card-shadow);
+}
+
+@keyframes card-die {
+  0% { opacity: 1; transform: scale(1) rotate(0deg); filter: brightness(1); }
+  25% { opacity: 1; transform: scale(1.06) rotate(-2deg); filter: brightness(1.35) saturate(0.4); }
+  100% { opacity: 0; transform: scale(0.55) rotate(8deg) translateY(12px); filter: brightness(0.4) saturate(0.2); }
+}
+
+@keyframes card-die-tapped {
+  0% { opacity: 1; transform: rotate(90deg) scale(1); filter: brightness(1); }
+  25% { opacity: 1; transform: rotate(90deg) scale(1.06); filter: brightness(1.35) saturate(0.4); }
+  100% { opacity: 0; transform: rotate(98deg) scale(0.55) translateY(10px); filter: brightness(0.4) saturate(0.2); }
+}
+
+.arena-card.is-dying {
+  pointer-events: none;
+  z-index: 6;
+  animation: card-die 680ms ease forwards;
+}
+
+.arena-card.is-dying.is-tapped {
+  animation-name: card-die-tapped;
+}
+
+.arena-card.is-dying::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 3;
+  background: rgba(255, 60, 30, 0.35);
+  animation: hit-flash 680ms ease both;
+}
+
+@keyframes pt-flash-up {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.28); box-shadow: 0 0 0 4px rgba(120, 200, 80, 0.55); background: linear-gradient(180deg, #e8ffc8, #8fd860); }
+  100% { transform: scale(1); }
+}
+
+@keyframes pt-flash-down {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.22); box-shadow: 0 0 0 4px rgba(220, 70, 40, 0.5); background: linear-gradient(180deg, #ffd0b8, #e07050); }
+  100% { transform: scale(1); }
+}
+
+.arena-card.is-pt-flash-up .arena-card-pt { animation: pt-flash-up 520ms ease; }
+.arena-card.is-pt-flash-down .arena-card-pt { animation: pt-flash-down 520ms ease; }
+
+@keyframes card-enter {
+  0% { opacity: 0; transform: translateY(-10px) scale(1.14); filter: brightness(1.35); }
+  55% { opacity: 1; transform: translateY(2px) scale(0.98); filter: brightness(1.05); }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: none; }
+}
+
+/* ---- Hand: 3/4 peek, clearer fan, milder overlap ---- */
+.hand-fan {
+  gap: 0;
+}
+
+.hand-card {
+  margin-left: calc(var(--hand-full) * -0.14);
+  transform: translateY(
+    calc(
+      25% + (var(--i) - var(--hand-mid, 2.5)) * (var(--i) - var(--hand-mid, 2.5)) * 1.35%
+    )
+  )
+  rotate(calc((var(--i) - var(--hand-mid, 2.5)) * 2.6deg));
+}
+
+.hand-fan .hand-card:first-child {
+  margin-left: 0;
+}
+
+.hand-card img {
+  object-position: 72% 6%;
+  transform-origin: 72% 6%;
+}
+
+.hand-card:hover img,
+.hand-card:focus-visible img,
+.hand-card.is-pending img {
+  object-position: center top;
+  transform-origin: center top;
+}
+
+.hand-card.is-disabled {
+  opacity: 1;
+  filter: saturate(0.72) brightness(0.92);
+  border-color: rgba(184, 137, 58, 0.22);
+  cursor: not-allowed;
+}
+
+.hand-card.is-disabled:hover {
+  opacity: 1;
+  filter: saturate(0.85) brightness(0.96);
+}
+
+/* ---- Preview: ~15% smaller + smoother swap ---- */
+.card-preview-pane {
+  --preview-frame: 0.75rem;
+  --preview-copy-budget: min(7.2rem, 19dvh);
+  --preview-art-h: max(
+    12.9rem,
+    calc(
+      (100dvh - var(--preview-top-clear) - var(--preview-bottom-clear) -
+        var(--preview-copy-budget) - var(--preview-frame)) * 0.85
+    )
+  );
+  width: min(309px, 28vw, calc(var(--preview-art-h) * 744 / 1040));
+  padding: 0.35rem 0.35rem 0.4rem;
+  transition: opacity 160ms ease;
+}
+
+.card-preview-pane.is-follow {
+  left: var(--preview-x, 1rem);
+  top: var(--preview-y, 4.5rem);
+  right: auto;
+  bottom: auto;
+  transform: none;
+  transition: left 90ms ease-out, top 90ms ease-out, opacity 160ms ease;
+}
+
+.card-preview-swap {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-height: 0;
+  animation: preview-swap-in 180ms ease;
+}
+
+@keyframes preview-swap-in {
+  from { opacity: 0.28; }
+  to { opacity: 1; }
+}
+
+/* ---- Topbar: collapsed by default, hover top edge to reveal ---- */
+.arena-topbar-shell {
+  display: contents;
+}
+
+.arena-topbar-hotzone {
+  display: none;
+}
+
+.arena-root.is-playing .arena-topbar-shell {
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 0;
+  overflow: visible;
+  z-index: 80;
+  pointer-events: none;
+}
+
+.arena-root.is-playing .arena-topbar-hotzone {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: max(0.85rem, calc(var(--safe-top, 0px) + 0.55rem));
+  pointer-events: auto;
+}
+
+.arena-root.is-playing .arena-topbar {
+  position: absolute;
+  top: max(0.35rem, var(--safe-top, 0px));
+  left: clamp(0.65rem, 1.8vw, 1.5rem);
+  right: clamp(0.65rem, 1.8vw, 1.5rem);
+  margin: 0;
+  pointer-events: auto;
+  transform: translateY(calc(-100% - 0.75rem));
+  opacity: 0;
+  transition: transform 220ms ease, opacity 180ms ease;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+}
+
+.arena-root.is-playing .arena-topbar-shell:hover .arena-topbar,
+.arena-root.is-playing .arena-topbar-shell:focus-within .arena-topbar {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.arena-topbar-actions.is-play-spacer {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* ---- Play actions: fixed bottom-right, clear of edge ---- */
+.arena-play-actions {
+  position: absolute;
+  right: calc(clamp(0.65rem, 1.8vw, 1.5rem) + var(--safe-right, 0px));
+  bottom: calc(max(var(--hand-edge, 0.35rem), var(--safe-bottom, 0px)) + 0.7rem);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.4rem;
+  pointer-events: auto;
+  max-width: min(14rem, 42vw);
+}
+
+.player-dock .arena-play-actions {
+  pointer-events: auto;
+}
+
+.arena-play-actions .btn {
+  box-sizing: border-box;
+  min-height: 2.15rem;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.arena-play-actions .btn.is-end-turn {
+  background: linear-gradient(180deg, #e06a48 0%, #c44b2d 48%, #8a2f1a 100%);
+  border-color: rgba(255, 190, 160, 0.42);
+  color: #fff4ec;
+  box-shadow:
+    0 4px 12px rgba(120, 40, 20, 0.28),
+    inset 0 1px 0 rgba(255, 220, 200, 0.28);
+}
+
+.assistant-card-slot .arena-card:not(.is-board) {
+  border: var(--card-border);
+  box-shadow: var(--card-shadow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arena-card.is-dying,
+  .arena-card.is-dying.is-tapped {
+    animation: none !important;
+    opacity: 0;
+  }
+
+  .card-preview-swap {
+    animation: none;
+  }
+
+  .arena-root.is-playing .arena-topbar {
+    transition: none;
+  }
 }
 

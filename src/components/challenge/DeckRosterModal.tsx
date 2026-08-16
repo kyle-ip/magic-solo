@@ -48,13 +48,13 @@ function constructedToDrawn(card: ConstructedCardDef): DrawnCard {
     setName: '',
     collectorNumber: '',
     artist: '',
-    scryfallUri: '',
+    scryfallUri: `https://scryfall.com/card/${card.id}`,
     frontImageUrl: preferredAssetUrl(card.image, {
       id: card.id,
       kind: 'large',
     }),
     backImageUrl: defaultCardBackUrl(),
-    source: 'local',
+    source: 'scryfall',
     oracleId: '',
     keywords: Array.isArray(card.keywords) ? [...card.keywords] : [],
     flavorText: '',
@@ -230,8 +230,8 @@ export function DeckRosterModal({
                     {group.cards.map((card) => {
                       const label = zh ? card.nameZh : card.name
                       const simplified =
-                        /Challenge Experience|挑战体验/i.test(card.oracleText) ||
-                        /Challenge Experience|挑战体验/i.test(card.oracleTextZh)
+                        /Challenge Experience|\(Challenge:|挑战体验|（挑战：/i.test(card.oracleText) ||
+                        /Challenge Experience|\(Challenge:|挑战体验|（挑战：/i.test(card.oracleTextZh)
                       return (
                         <li key={card.id}>
                           <button
