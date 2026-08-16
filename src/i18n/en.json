@@ -296,6 +296,7 @@
     "cards": "Card Gallery",
     "quantity": "×{{n}}",
     "flip": "Flip card",
+    "faceGesture": "Click to zoom · double-click to flip",
     "zoomPreview": "Card zoom preview",
     "oracle": "Oracle Text",
     "artist": "Illustrated by {{name}}",

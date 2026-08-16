@@ -259,7 +259,7 @@ function DrawnCardModalBody({
                     ]
                       .filter(Boolean)
                       .join(' ')}
-                    ariaLabel={t('deck.flip')}
+                    ariaLabel={t('deck.faceGesture')}
                     style={{
                       transform: `translate3d(0, 0, 0) rotateY(${flipTurns * 180}deg)`,
                     }}
@@ -272,6 +272,14 @@ function DrawnCardModalBody({
                         alt={displayTitle}
                         draggable={false}
                       />
+                      {quantity != null && quantity > 0 ? (
+                        <span
+                          className="pack-card-qty-badge"
+                          aria-label={t('deck.quantity', { n: quantity })}
+                        >
+                          ×{quantity}
+                        </span>
+                      ) : null}
                     </span>
                     <span className="card-face back">
                       <CardArtImage
@@ -282,14 +290,6 @@ function DrawnCardModalBody({
                     </span>
                   </CardFaceButton>
                 </div>
-                {quantity != null && quantity > 0 ? (
-                  <span
-                    className="pack-card-qty-badge"
-                    aria-label={t('deck.quantity', { n: quantity })}
-                  >
-                    ×{quantity}
-                  </span>
-                ) : null}
               </div>
             </div>
 

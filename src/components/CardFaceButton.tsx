@@ -1,7 +1,7 @@
 import type { CSSProperties, KeyboardEvent, ReactNode } from 'react'
 import { useCardFaceTap } from '../hooks/useCardFaceTap'
 
-/** Shared flip / double-click zoom hit target for pack, collection, and deck details. */
+/** Shared single-click zoom / double-click flip hit target for pack, collection, and deck details. */
 export function CardFaceButton({
   onFlip,
   onToggleZoom,
@@ -15,7 +15,7 @@ export function CardFaceButton({
   onFlip: () => void
   onToggleZoom: () => void
   enabled?: boolean
-  /** Flip on first tap without waiting for double-tap detection. */
+  /** Flip on first tap without waiting for double-tap detection — pack reveals. */
   immediateFlip?: boolean
   className?: string
   style?: CSSProperties
@@ -32,6 +32,9 @@ export function CardFaceButton({
   const onKeyDown = (e: KeyboardEvent) => {
     if (!enabled) return
     if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      onToggleZoom()
+    } else if (e.key === 'f' || e.key === 'F') {
       e.preventDefault()
       onFlip()
     }

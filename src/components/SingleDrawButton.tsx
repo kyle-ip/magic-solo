@@ -23,10 +23,15 @@ import {
 } from '../data/randomCard'
 import { useArtZoomPan } from '../hooks/useArtZoomPan'
 import { useCardHoldDrag } from '../hooks/useCardHoldDrag'
+import { preloadImage } from '../utils/imageCache'
 import { PackCollectionCabinet } from './PackCollectionCabinet'
 import { PackHeadIconButton } from './PackHeadIconButton'
 
 const FLIP_MS = 220
+/** Continuous Y-spin while the draw request is in flight. */
+const WAIT_SPIN_PERIOD_MS = 900
+/** Snap from pack-back to art after the card resolves. */
+const REVEAL_FLIP_MS = 260
 const FX_FADE_MS = 900
 
 type ModalView = 'draw' | 'collection'
@@ -228,16 +233,39 @@ export function SingleDrawButton() {
     try {
       const drawn = await drawWeightedCard()
       if (gen !== drawGen.current) return
-      // Land face-down even if the user was flipping while waiting.
-      setFlipTurns(0)
-      setFlipping(false)
+      await preloadImage(drawn.frontImageUrl).catch(() => undefined)
+      if (gen !== drawGen.current) return
       setCard(drawn)
       hydrateZh(drawn)
+      setDrawing(false)
+
+      // Stop wait-spin on pack back (0°), then quickly turn to art (180°).
+      const ms = prefersReducedMotion() ? 0 : REVEAL_FLIP_MS
+      setFlipMs(ms || FLIP_MS)
+      setFlipTurns(0)
+      setFlipping(false)
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (gen !== drawGen.current) return
+          setFlipping(true)
+          setFlipTurns(1)
+          packHaptic(10)
+          schedule(() => {
+            packHaptic(revealLandHaptic(drawn))
+          }, Math.max(40, Math.round(ms * 0.55)))
+          schedule(() => {
+            if (gen !== drawGen.current) return
+            setFlipping(false)
+            setRevealed(true)
+            setCollected(isCollected(drawn.id))
+            triggerFrontFx(drawn)
+          }, ms)
+        })
+      })
     } catch {
       if (gen !== drawGen.current) return
       setError(t('singleDraw.error'))
-    } finally {
-      if (gen === drawGen.current) setDrawing(false)
+      setDrawing(false)
     }
   }, [drawing, t])
 
@@ -255,20 +283,8 @@ export function SingleDrawButton() {
     (fxClass === 'pack-fx-rare' || fxClass === 'pack-fx-mythic')
 
   const flipOnce = () => {
-    if (flipping) return
+    if (flipping || waiting || !card || !revealed) return
 
-    // While the request is in flight: spin the pack back only.
-    if (waiting) {
-      const ms = prefersReducedMotion() ? 0 : FLIP_MS
-      setFlipMs(ms)
-      setFlipping(true)
-      setFlipTurns((n) => n + 1)
-      packHaptic(8)
-      schedule(() => setFlipping(false), ms)
-      return
-    }
-
-    if (!card) return
     const nextTurns = flipTurns + 1
     const revealing = isShowingFront(nextTurns)
     const ms = flipDurationMs(card)
@@ -282,7 +298,6 @@ export function SingleDrawButton() {
     schedule(() => {
       setFlipping(false)
       if (revealing) {
-        setRevealed(true)
         setCollected(isCollected(card.id))
         triggerFrontFx(card)
       }
@@ -435,7 +450,8 @@ export function SingleDrawButton() {
                           'is-expanded',
                           'is-active',
                           flipping ? 'is-flipping' : '',
-                          !revealed ? 'is-awaiting-flip' : '',
+                          waiting ? 'is-waiting-spin' : '',
+                          !revealed && !waiting ? 'is-awaiting-flip' : '',
                           card && !waiting ? fxClass : '',
                           fxGlow && faceUp ? 'is-glowing' : '',
                           fxFade && faceUp ? 'is-fading' : '',
@@ -452,6 +468,7 @@ export function SingleDrawButton() {
                           ['--pack-flip-ms' as string]: flipping
                             ? `${flipMs}ms`
                             : undefined,
+                          ['--single-draw-spin-ms' as string]: `${WAIT_SPIN_PERIOD_MS}ms`,
                           ['--pack-hold-x' as string]: hold.holding
                             ? `${hold.dragX}px`
                             : undefined,
@@ -480,22 +497,32 @@ export function SingleDrawButton() {
                         ) : null}
                         <div className="card-flip pack-card-flip">
                           <CardFaceButton
-                            className="card-flip-inner"
-                            enabled
-                            immediateFlip={!revealed}
+                            className={[
+                              'card-flip-inner',
+                              waiting ? 'is-waiting-spin' : '',
+                              flipping ? 'is-flipping' : '',
+                            ]
+                              .filter(Boolean)
+                              .join(' ')}
+                            enabled={revealed && !waiting}
+                            immediateFlip={false}
                             ariaLabel={
                               waiting
                                 ? t('singleDraw.loading')
                                 : revealed
-                                  ? `${card!.name}. ${t('deck.flip')}`
-                                  : t('packDraw.tapToReveal')
+                                  ? `${card!.name}. ${t('deck.faceGesture')}`
+                                  : t('singleDraw.loading')
                             }
-                            style={{
-                              transform: `translate3d(0, 0, 0) rotateY(${flipTurns * 180}deg)`,
-                              transitionDuration: flipping
-                                ? `${flipMs}ms`
-                                : undefined,
-                            }}
+                            style={
+                              waiting
+                                ? undefined
+                                : {
+                                    transform: `translate3d(0, 0, 0) rotateY(${flipTurns * 180}deg)`,
+                                    transitionDuration: flipping
+                                      ? `${flipMs}ms`
+                                      : undefined,
+                                  }
+                            }
                             onFlip={flipOnce}
                             onToggleZoom={() => {
                               if (!card || !revealed) return
@@ -509,16 +536,24 @@ export function SingleDrawButton() {
                                 draggable={false}
                               />
                             </span>
-                            <span className="card-face back">
-                              <img
-                                src={frontSrc}
-                                alt={
-                                  waiting
-                                    ? t('deck.backHint')
-                                    : card?.name || ''
-                                }
-                                draggable={false}
-                              />
+                            <span
+                              className={[
+                                'card-face',
+                                'back',
+                                waiting ? 'is-blank-face' : '',
+                              ]
+                                .filter(Boolean)
+                                .join(' ')}
+                            >
+                              {waiting ? (
+                                <span className="card-face-blank" aria-hidden />
+                              ) : (
+                                <img
+                                  src={frontSrc}
+                                  alt={card?.name || ''}
+                                  draggable={false}
+                                />
+                              )}
                             </span>
                           </CardFaceButton>
                         </div>
@@ -544,11 +579,7 @@ export function SingleDrawButton() {
                         />
                       ) : (
                         <p className="pack-draw-hint pack-tap-hint" role="status">
-                          {error
-                            ? error
-                            : drawing || !card
-                              ? t('singleDraw.loading')
-                              : t('packDraw.tapToReveal')}
+                          {error ? error : t('singleDraw.loading')}
                         </p>
                       )}
                     </div>

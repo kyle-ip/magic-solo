@@ -1429,7 +1429,7 @@ export function PackDrawButton() {
                       <div className="card-flip pack-inspect-flip">
                         <CardFaceButton
                           className="card-flip-inner"
-                          ariaLabel={t('deck.flip')}
+                          ariaLabel={t('deck.faceGesture')}
                           style={{
                             transform: `translate3d(0, 0, 0) rotateY(${inspectFlipTurns * 180}deg)`,
                           }}
@@ -1693,7 +1693,7 @@ export function PackDrawButton() {
                                     ariaLabel={
                                       slot
                                         ? cardRevealed
-                                          ? `${slot.name}. ${t('deck.flip')}`
+                                          ? `${slot.name}. ${t('deck.faceGesture')}`
                                           : t('packDraw.tapToReveal')
                                         : t('packDraw.tapToReveal')
                                     }

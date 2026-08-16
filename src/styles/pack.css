@@ -178,6 +178,12 @@
   border: 1px solid rgba(255, 236, 196, 0.35);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
   pointer-events: none;
+  /* Stay on the front face plane so flip backface-hides the badge */
+  transform: translateZ(0);
+}
+
+.card-face.back .pack-card-qty-badge {
+  display: none;
 }
 
 .pack-draw-stage {

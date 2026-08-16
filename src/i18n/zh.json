@@ -296,6 +296,7 @@
     "cards": "卡牌图鉴",
     "quantity": "×{{n}}",
     "flip": "翻转卡牌",
+    "faceGesture": "单击放大，双击翻面",
     "zoomPreview": "卡牌放大预览",
     "oracle": "规则叙述",
     "artist": "绘师 {{name}}",

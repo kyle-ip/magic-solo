@@ -657,6 +657,28 @@
   transition: transform 400ms cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
+/* Single-draw: idle spin on pack back while Scryfall resolves */
+.card-flip-inner.is-waiting-spin {
+  cursor: progress;
+  transition: none;
+  animation: single-draw-wait-spin var(--single-draw-spin-ms, 900ms) linear infinite;
+}
+
+@keyframes single-draw-wait-spin {
+  from {
+    transform: translate3d(0, 0, 0) rotateY(0deg);
+  }
+  to {
+    transform: translate3d(0, 0, 0) rotateY(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-flip-inner.is-waiting-spin {
+    animation: none;
+  }
+}
+
 /* Pack draw reuses .card-flip but lives outside .modal-backdrop — set own size */
 .pack-card-wrap .card-flip.pack-card-flip {
   --pack-card-max-h: var(--pack-reveal-card-max-h, calc(min(68vh, calc(90dvh - 8.5rem), 640px) * 0.9));
@@ -748,6 +770,38 @@
 
 .card-face.back {
   transform: rotateY(180deg) translateZ(0);
+}
+
+/* Single-draw wait spin: reverse face is a dark panel with silver-gray rim */
+.card-face.is-blank-face {
+  background: #0a0806;
+  box-shadow:
+    0 14px 26px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 2px rgba(196, 200, 210, 0.88),
+    inset 0 0 0 5px rgba(10, 8, 6, 0.98),
+    inset 0 0 0 6px rgba(160, 166, 178, 0.35);
+}
+
+.card-face.is-blank-face::after {
+  /* Outer silver rim so the blank face reads against a black stage */
+  box-shadow:
+    inset 0 0 0 1.5px rgba(220, 224, 232, 0.92),
+    inset 0 0 0 3px rgba(120, 126, 138, 0.55);
+}
+
+.card-face-blank {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  box-sizing: border-box;
+  border: 1.5px solid rgba(198, 204, 216, 0.9);
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 40%, rgba(36, 28, 20, 0.45), transparent 70%),
+    #0a0806;
+  box-shadow:
+    inset 0 0 0 3px #0a0806,
+    inset 0 0 0 4.5px rgba(150, 156, 168, 0.4);
 }
 
 .modal-copy {

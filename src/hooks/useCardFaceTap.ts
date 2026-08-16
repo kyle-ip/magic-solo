@@ -1,23 +1,23 @@
 import { useCallback, useEffect, useRef } from 'react'
 import type { MouseEvent, PointerEvent as ReactPointerEvent } from 'react'
 
-/** Short enough that single-tap flip feels snappy; long enough to catch double-tap zoom. */
+/** Short enough that single-tap zoom feels snappy; long enough to catch double-tap flip. */
 const DOUBLE_TAP_MS = 220
 
 /**
  * Card face gestures for pack / collection / deck details.
- * - Single tap/click → flip (delayed so a double-tap can cancel it, unless immediateFlip)
- * - Double tap/click → toggle art zoom (no flip)
+ * - Single tap/click → toggle art zoom (delayed so a double-tap can cancel it)
+ * - Double tap/click → flip (no zoom)
  *
- * Face-down reveals (`immediateFlip`) flip on pointerup. The trailing click must be
- * ignored even after React re-renders with immediateFlip=false, or the card would
- * flip face-up then immediately schedule a flip back.
+ * Face-down pack reveals (`immediateFlip`) still flip on pointerup. The trailing
+ * click must be ignored even after React re-renders with immediateFlip=false,
+ * or the card would flip face-up then immediately schedule a zoom.
  */
 export function useCardFaceTap(options: {
   onFlip: () => void
   onToggleZoom: () => void
   enabled?: boolean
-  /** Skip double-tap wait — used for face-down pack reveals. */
+  /** Flip on first tap without waiting for double-tap detection — pack reveals. */
   immediateFlip?: boolean
 }): {
   onClick: (e: MouseEvent) => void
@@ -33,7 +33,7 @@ export function useCardFaceTap(options: {
   } = options
   const timerRef = useRef<number | null>(null)
   const clickCountRef = useRef(0)
-  const zoomedFromClicksRef = useRef(false)
+  const flippedFromClicksRef = useRef(false)
   /** Swallow the click that follows a pointerup flip (survives immediateFlip toggle). */
   const suppressClickRef = useRef(false)
   const pointerStartRef = useRef<{ x: number; y: number; id: number } | null>(
@@ -47,8 +47,8 @@ export function useCardFaceTap(options: {
   const clearTimer = useCallback(() => {
     if (timerRef.current != null) {
       window.clearTimeout(timerRef.current)
-      timerRef.current = null
     }
+    timerRef.current = null
   }, [])
 
   useEffect(
@@ -58,12 +58,12 @@ export function useCardFaceTap(options: {
     [clearTimer],
   )
 
-  // Drop a pending delayed flip when the face becomes inactive (e.g. browsed away).
+  // Drop a pending delayed zoom when the face becomes inactive (e.g. browsed away).
   useEffect(() => {
     if (enabled) return
     clearTimer()
     clickCountRef.current = 0
-    zoomedFromClicksRef.current = false
+    flippedFromClicksRef.current = false
     suppressClickRef.current = false
     pointerStartRef.current = null
   }, [enabled, clearTimer])
@@ -124,16 +124,16 @@ export function useCardFaceTap(options: {
 
       if (clickCountRef.current >= 2) {
         clickCountRef.current = 0
-        zoomedFromClicksRef.current = true
-        onToggleZoomRef.current()
+        flippedFromClicksRef.current = true
+        onFlipRef.current()
         return
       }
 
-      zoomedFromClicksRef.current = false
+      flippedFromClicksRef.current = false
       timerRef.current = window.setTimeout(() => {
         timerRef.current = null
         clickCountRef.current = 0
-        onFlipRef.current()
+        onToggleZoomRef.current()
       }, DOUBLE_TAP_MS)
     },
     [clearTimer, enabled, immediateFlip],
@@ -146,12 +146,12 @@ export function useCardFaceTap(options: {
       e.stopPropagation()
       clearTimer()
       clickCountRef.current = 0
-      // click×2 already toggled zoom; don't toggle again on the synthetic dblclick.
-      if (zoomedFromClicksRef.current) {
-        zoomedFromClicksRef.current = false
+      // click×2 already flipped; don't flip again on the synthetic dblclick.
+      if (flippedFromClicksRef.current) {
+        flippedFromClicksRef.current = false
         return
       }
-      onToggleZoomRef.current()
+      onFlipRef.current()
     },
     [clearTimer, enabled, immediateFlip],
   )
