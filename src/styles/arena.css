@@ -2029,9 +2029,6 @@ button.arena-card {
 .arena-card.is-tapped {
   transform: rotate(90deg);
   transform-origin: center center;
-  /* Portrait slot becomes landscape visually ? give neighbors room */
-  margin-inline: 1.65rem;
-  margin-block: 0.85rem;
 }
 
 .arena-card.is-tapped.is-attacking:not(.is-striking) {
@@ -4340,6 +4337,12 @@ html.is-arena-playing,
   max-height: none;
   max-width: none;
   aspect-ratio: 3 / 4;
+  /*
+   * Always reserve the tapped (landscape) footprint: visual width after
+   * rotate = token height, while the box stays 3:4. Side pad = (1 − 3/4)/2
+   * so tap/untap does not change neighbor spacing — gap stays the flex gap.
+   */
+  margin-inline: calc(var(--bf-token-h, var(--bf-card-h)) * 0.125);
 }
 
 .arena-card.is-board img {
@@ -4354,11 +4357,13 @@ html.is-arena-playing,
   width: min(58px, 10vw);
   aspect-ratio: 3 / 4;
   height: auto;
+  margin-inline: 0;
 }
 
 .arena-card.is-board.is-tapped {
-  margin-inline: 0.85rem;
-  margin-block: 0.7rem;
+  /* Same horizontal reserve as upright — only rotate in place */
+  margin-inline: calc(var(--bf-token-h, var(--bf-card-h)) * 0.125);
+  margin-block: 0;
 }
 
 .arena-card.is-board.is-frame-W { border-color: #f2e6c4; box-shadow: 0 0 0 1px rgba(80, 60, 20, 0.55), 0 0 12px rgba(240, 220, 160, 0.35), var(--card-shadow); }
