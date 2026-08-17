@@ -1,0 +1,311 @@
+{
+  "id": "akroan",
+  "name": "Akroan Legion",
+  "nameZh": "阿喀洛斯军团",
+  "blurb": "White-red Theros soldiers: first strike, vigilance, and flying pressure for chopping Heads and holding the line.",
+  "blurbZh": "红白 Theros 士兵：先攻、警戒与飞行施压，适合砍头颅与稳住防线。",
+  "colors": [
+    "W",
+    "R"
+  ],
+  "archetype": "aggro",
+  "hint": "Attack with multiple creatures to pump Hoplite; first strikers carve Heads before breath.",
+  "hintZh": "多生物进攻触发步兵泵攻；先攻者在吐息前切掉头颅。",
+  "hintByChallenge": {
+    "tfth": {
+      "en": "First strike and Hoplite pumps race Heads; chump flyers into breath when needed.",
+      "zh": "先攻与步兵泵攻抢掉头颅；必要时用飞行挡吐息。"
+    },
+    "tbth": {
+      "en": "Burn mills the Horde; keep a wide attack for Hoplite.",
+      "zh": "直伤磨部落；保持宽攻触发步兵。"
+    },
+    "tdag": {
+      "en": "Clear Revelers with burn or Archon, then finish Xenagos.",
+      "zh": "用直伤或执政清狂欢者，再收尾泽纳加思。"
+    }
+  },
+  "art": "assets/cards/player/04aa9d4f-37cc-4fc8-877a-6190f96eb509-art.jpg",
+  "cards": [
+    {
+      "id": "04aa9d4f-37cc-4fc8-877a-6190f96eb509",
+      "quantity": 4,
+      "name": "Akroan Hoplite",
+      "nameZh": "阿喀洛斯重装步兵",
+      "typeLine": "Creature — Human Soldier",
+      "typeLineZh": "生物～人类／士兵",
+      "oracleText": "Whenever this creature attacks, it gets +X/+0 until end of turn, where X is the number of attacking creatures you control.\n(Challenge: when this attacks, it gets +1/+0 until end of turn for each attacking creature you control.)",
+      "oracleTextZh": "每当阿喀洛斯重装步兵攻击时，它得+X/+0直到回合结束，X为由你操控且进行攻击的生物数量。\n（挑战：当此生物攻击时，攻击中由你操控的生物每有一个，它便得+1/+0直到回合结束。）",
+      "manaCost": "{R}{W}",
+      "cmc": 2,
+      "power": 1,
+      "toughness": 2,
+      "keywords": [],
+      "kind": "creature",
+      "effect": {
+        "type": "attack_pump_per_attacker",
+        "powerPer": 1
+      },
+      "image": "assets/cards/player/04aa9d4f-37cc-4fc8-877a-6190f96eb509-normal.jpg"
+    },
+    {
+      "id": "0ea1dfb4-1983-41f7-956c-f2a1d1489b54",
+      "quantity": 4,
+      "name": "Oreskos Swiftclaw",
+      "nameZh": "俄瑞恣迅爪兵",
+      "typeLine": "Creature — Cat Warrior",
+      "typeLineZh": "生物 ～猫／战士",
+      "oracleText": "First strike",
+      "oracleTextZh": "先攻",
+      "manaCost": "{1}{W}",
+      "cmc": 2,
+      "power": 3,
+      "toughness": 1,
+      "keywords": [
+        "First strike"
+      ],
+      "kind": "creature",
+      "effect": {
+        "type": "none"
+      },
+      "image": "assets/cards/player/0ea1dfb4-1983-41f7-956c-f2a1d1489b54-normal.jpg"
+    },
+    {
+      "id": "9e0234e0-6cdd-46b8-91b5-1b8ba7db3014",
+      "quantity": 4,
+      "name": "Wingsteed Rider",
+      "nameZh": "飞马骑士",
+      "typeLine": "Creature — Human Knight",
+      "typeLineZh": "生物 ～人类／骑士",
+      "oracleText": "Flying\nHeroic — Whenever you cast a spell that targets this creature, put a +1/+1 counter on this creature.",
+      "oracleTextZh": "飞行\n勇行～每当你施放以它为目标的咒语时，在其上放置一个+1/+1指示物。",
+      "manaCost": "{1}{W}{W}",
+      "cmc": 3,
+      "power": 2,
+      "toughness": 2,
+      "keywords": [
+        "Flying"
+      ],
+      "kind": "creature",
+      "effect": {
+        "type": "heroic_self"
+      },
+      "image": "assets/cards/player/9e0234e0-6cdd-46b8-91b5-1b8ba7db3014-normal.jpg"
+    },
+    {
+      "id": "e1410d10-476a-4ed2-ae44-75383ed0e359",
+      "quantity": 4,
+      "name": "Observant Alseid",
+      "nameZh": "明眼蔻灵",
+      "typeLine": "Enchantment Creature — Nymph",
+      "typeLineZh": "结界生物～宁芙",
+      "oracleText": "Bestow {4}{W}\nVigilance\nEnchanted creature gets +2/+2 and has vigilance.",
+      "oracleTextZh": "神授{4}{W}\n警戒\n所结附的生物得+2/+2且具有警戒。",
+      "manaCost": "{2}{W}",
+      "cmc": 3,
+      "power": 2,
+      "toughness": 2,
+      "keywords": [
+        "Vigilance"
+      ],
+      "kind": "creature",
+      "effect": {
+        "type": "bestow",
+        "manaCost": "{4}{W}",
+        "power": 2,
+        "toughness": 2,
+        "keywords": [
+          "Vigilance"
+        ]
+      },
+      "image": "assets/cards/player/e1410d10-476a-4ed2-ae44-75383ed0e359-normal.jpg"
+    },
+    {
+      "id": "63cb977e-bd42-43b1-83d1-124e7a413aca",
+      "quantity": 2,
+      "name": "Anax and Cymede",
+      "nameZh": "阿那克斯与赛美狄",
+      "typeLine": "Legendary Creature — Human Soldier",
+      "typeLineZh": "传奇生物～人类／士兵",
+      "oracleText": "First strike, vigilance\nHeroic — Whenever you cast a spell that targets Anax and Cymede, creatures you control get +1/+1 and gain trample until end of turn.",
+      "oracleTextZh": "先攻，警戒\n勇行～每当你施放以它为目标的咒语时，由你操控的生物得+1/+1且获得践踏直到回合结束。",
+      "manaCost": "{1}{R}{W}",
+      "cmc": 3,
+      "power": 3,
+      "toughness": 2,
+      "keywords": [
+        "First strike",
+        "Vigilance"
+      ],
+      "kind": "creature",
+      "effect": {
+        "type": "heroic_team",
+        "power": 1,
+        "toughness": 1,
+        "grantTrample": true
+      },
+      "image": "assets/cards/player/63cb977e-bd42-43b1-83d1-124e7a413aca-normal.jpg"
+    },
+    {
+      "id": "c40cb58f-370f-487a-9a96-bdce173aa3c6",
+      "quantity": 2,
+      "name": "Celestial Archon",
+      "nameZh": "天界统领",
+      "typeLine": "Enchantment Creature — Archon",
+      "typeLineZh": "结界生物～统领",
+      "oracleText": "Bestow {5}{W}{W}\nFlying, first strike\nEnchanted creature gets +4/+4 and has flying and first strike.",
+      "oracleTextZh": "神授{5}{W}{W}\n飞行，先攻\n所结附的生物得+4/+4且具有飞行与先攻。",
+      "manaCost": "{3}{W}{W}",
+      "cmc": 5,
+      "power": 4,
+      "toughness": 4,
+      "keywords": [
+        "Flying",
+        "First strike"
+      ],
+      "kind": "creature",
+      "effect": {
+        "type": "bestow",
+        "manaCost": "{5}{W}{W}",
+        "power": 4,
+        "toughness": 4,
+        "keywords": [
+          "Flying",
+          "First strike"
+        ]
+      },
+      "image": "assets/cards/player/c40cb58f-370f-487a-9a96-bdce173aa3c6-normal.jpg"
+    },
+    {
+      "id": "c39f6916-e89d-4185-84b9-c6c02e348ad8",
+      "quantity": 4,
+      "name": "Boros Elite",
+      "nameZh": "波洛斯精兵",
+      "typeLine": "Creature — Human Soldier",
+      "typeLineZh": "生物 — 人类／士兵",
+      "oracleText": "Battalion — Whenever this creature and at least two other creatures attack, this creature gets +2/+2 until end of turn.\n(Challenge: Battalion — when this and at least two other creatures attack, it gets +2/+2 until end of turn.)",
+      "oracleTextZh": "协战～每当波洛斯精兵与至少两个其他生物攻击时，波洛斯精兵得+2/+2直到回合结束。\n（挑战：营队——当此生物与至少两个其他生物攻击时，它得+2/+2直到回合结束。）",
+      "manaCost": "{W}",
+      "cmc": 1,
+      "power": 1,
+      "toughness": 1,
+      "keywords": [],
+      "kind": "creature",
+      "effect": {
+        "type": "attack_battalion",
+        "power": 2,
+        "toughness": 2,
+        "minAttackers": 3
+      },
+      "image": "assets/cards/player/c39f6916-e89d-4185-84b9-c6c02e348ad8-normal.jpg"
+    },
+    {
+      "id": "88b13bc0-da54-4c3b-917c-7c8345a329f5",
+      "quantity": 4,
+      "name": "Lightning Strike",
+      "nameZh": "闪电炼击",
+      "typeLine": "Instant",
+      "typeLineZh": "瞬间",
+      "oracleText": "Lightning Strike deals 3 damage to any target.",
+      "oracleTextZh": "闪电炼击对任意一个目标造成3点伤害。",
+      "manaCost": "{1}{R}",
+      "cmc": 2,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "instant",
+      "effect": {
+        "type": "damage_any",
+        "amount": 3
+      },
+      "image": "assets/cards/player/88b13bc0-da54-4c3b-917c-7c8345a329f5-normal.jpg"
+    },
+    {
+      "id": "b23900fb-efe9-43ab-9f67-4545dd01fb9c",
+      "quantity": 4,
+      "name": "Shock",
+      "nameZh": "电震",
+      "typeLine": "Instant",
+      "typeLineZh": "瞬间",
+      "oracleText": "Shock deals 2 damage to any target.",
+      "oracleTextZh": "电震对任意一个目标造成2点伤害。",
+      "manaCost": "{R}",
+      "cmc": 1,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "instant",
+      "effect": {
+        "type": "damage_any",
+        "amount": 2
+      },
+      "image": "assets/cards/player/b23900fb-efe9-43ab-9f67-4545dd01fb9c-normal.jpg"
+    },
+    {
+      "id": "4686b51c-e02b-48c1-bafe-e8d08a5407b9",
+      "quantity": 3,
+      "name": "Journey to Nowhere",
+      "nameZh": "未知旅程",
+      "typeLine": "Enchantment",
+      "typeLineZh": "结界",
+      "oracleText": "When this enchantment enters, exile target creature.\nWhen this enchantment leaves the battlefield, return the exiled card to the battlefield under its owner's control.\n(Challenge: exile is treated as destroying the challenge permanent.)",
+      "oracleTextZh": "当未知旅程进战场时，放逐目标生物。\n当未知旅程离开战场时，将所放逐的牌在其拥有者的操控下移回战场。\n（挑战：放逐按消灭挑战永久物处理。）",
+      "manaCost": "{1}{W}",
+      "cmc": 2,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "sorcery",
+      "effect": {
+        "type": "destroy_creature"
+      },
+      "image": "assets/cards/player/4686b51c-e02b-48c1-bafe-e8d08a5407b9-normal.jpg"
+    },
+    {
+      "id": "8ab0f4c0-b331-4c57-b68f-2e24bb5ba06c",
+      "quantity": 13,
+      "name": "Plains",
+      "nameZh": "平原",
+      "typeLine": "Basic Land — Plains",
+      "typeLineZh": "基本地 — 平原",
+      "oracleText": "({T}: Add {W}.)",
+      "oracleTextZh": "({T}: Add {W}.)",
+      "manaCost": "",
+      "cmc": 0,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "land",
+      "produces": [
+        "W"
+      ],
+      "effect": {
+        "type": "none"
+      },
+      "image": "assets/cards/player/8ab0f4c0-b331-4c57-b68f-2e24bb5ba06c-normal.jpg"
+    },
+    {
+      "id": "2a844b96-6616-4c39-8f4f-5d14a3b2bd55",
+      "quantity": 12,
+      "name": "Mountain",
+      "nameZh": "山脉",
+      "typeLine": "Basic Land — Mountain",
+      "typeLineZh": "基本地 — 山脉",
+      "oracleText": "({T}: Add {R}.)",
+      "oracleTextZh": "({T}: Add {R}.)",
+      "manaCost": "",
+      "cmc": 0,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "land",
+      "produces": [
+        "R"
+      ],
+      "effect": {
+        "type": "none"
+      },
+      "image": "assets/cards/player/2a844b96-6616-4c39-8f4f-5d14a3b2bd55-normal.jpg"
+    }
+  ]
+}

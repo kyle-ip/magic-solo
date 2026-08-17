@@ -2,8 +2,8 @@ import { expandLibrary, resetIdSeq } from './buildDeck'
 import {
   baseState,
   beginPlayerTurn,
+  buryPlayerCreatures,
   checkHordeWin,
-  creatureToGyCard,
   damagePlayer,
   destroyChallengePermanent,
   millHorde,
@@ -222,19 +222,7 @@ export function resolveHordeCombat(state: GameState): GameState {
         for (const b of dead) {
           next = addFxPop(next, { targetId: b.instanceId, kind: 'damage', amount: b.toughness }, 'damage')
         }
-        next = {
-          ...next,
-          player: {
-            ...next.player,
-            creatures: next.player.creatures.filter(
-              (c) => !deadBlockers.includes(c.instanceId),
-            ),
-            graveyard: [
-              ...dead.map((d) => creatureToGyCard(d, next.playerDeckId)),
-              ...next.player.graveyard,
-            ],
-          },
-        }
+        next = buryPlayerCreatures(next, deadBlockers)
       }
       // Blockers deal damage back (player deathtouch kills with any damage)
       const blockPower = blockers.reduce((s, b) => s + b.power, 0)

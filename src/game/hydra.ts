@@ -1,8 +1,8 @@
 import { makeInstance } from './buildDeck'
 import {
   beginPlayerTurn,
+  buryPlayerCreatures,
   checkHydraWin,
-  creatureToGyCard,
   damagePlayer,
   destroyChallengePermanent,
   effectiveToughness,
@@ -461,17 +461,10 @@ export function resolveHydraPrompt(
   if (kind === 'noxious_mode') {
     if (optionId === 'destroy') {
       const tapped = next.player.creatures.filter((c) => c.tapped)
-      next = {
-        ...next,
-        player: {
-          ...next.player,
-          creatures: next.player.creatures.filter((c) => !c.tapped),
-          graveyard: [
-            ...tapped.map((c) => creatureToGyCard(c, next.playerDeckId)),
-            ...next.player.graveyard,
-          ],
-        },
-      }
+      next = buryPlayerCreatures(
+        next,
+        tapped.map((c) => c.instanceId),
+      )
       return pushLog(next, 'noxiousBreath', 'bad', { n: tapped.length })
     }
     return damagePlayer(next, 5)
@@ -487,14 +480,7 @@ export function resolveHydraPrompt(
 function afterDistractSacrifice(state: GameState, creatureId: string): GameState {
   const sac = state.player.creatures.find((c) => c.instanceId === creatureId)
   if (!sac) return damagePlayer(state, 3)
-  let next: GameState = {
-    ...state,
-    player: {
-      ...state.player,
-      creatures: state.player.creatures.filter((c) => c.instanceId !== creatureId),
-      graveyard: [creatureToGyCard(sac, state.playerDeckId), ...state.player.graveyard],
-    },
-  }
+  let next = buryPlayerCreatures(state, [creatureId])
   next = pushLog(next, 'youSacrifice', 'info', { name: sac.name })
   const heads = headsOf(next)
   if (heads.length === 0) return next

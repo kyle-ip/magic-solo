@@ -16,7 +16,9 @@ import {
   resolveBrainstormPrompt,
   resolveEdictPrompt,
   resolveCrawlPrompt,
+  resolveMonstrousFight,
 } from './playerCast'
+import { destroyFlyingChallenge } from './playerExtras'
 import { emptyManaPool } from './mana'
 import { defsFromDeck, type ChallengeCode, type GameState, type SetupConfig } from './types'
 import {
@@ -211,7 +213,27 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           })
         }
         const cast = 'fromGraveyard' in p && p.fromGraveyard ? castFlashback : castFromHand
-        if (p.mode === 'damage' || p.mode === 'pump' || p.mode === 'destroy' || p.mode === 'fangs') {
+        if (p.mode === 'damage' || p.mode === 'pump' || p.mode === 'destroy' || p.mode === 'fangs' || p.mode === 'bounce') {
+          return cast(state, p.handInstanceId, { targetId: action.targetId })
+        }
+        if (p.mode === 'etb_tap') {
+          const enemy = state.challenge.battlefield.find((c) => c.instanceId === action.targetId)
+          if (!enemy) return pushLog(state, 'invalidTarget', 'info')
+          let next: typeof state = {
+            ...state,
+            pendingCast: null,
+            challenge: {
+              ...state.challenge,
+              battlefield: state.challenge.battlefield.map((c) =>
+                c.instanceId === action.targetId
+                  ? { ...c, tapped: true, keywords: c.keywords.filter((k) => !/hexproof/i.test(k)) }
+                  : c,
+              ),
+            },
+          }
+          return pushLog(next, 'etbTapOpp', 'good', { name: enemy.name })
+        }
+        if (p.mode === 'bestow' || p.mode === 'bloodrush') {
           return cast(state, p.handInstanceId, { targetId: action.targetId })
         }
         if (p.mode === 'fight_mine') {
@@ -283,6 +305,38 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
       if (kind === 'choose_crawl' || kind === 'choose_crawl_zombie') {
         return resolveCrawlPrompt(state, action.optionId)
+      }
+
+      if (kind === 'bestow_mode' && resume) {
+        if (action.optionId === 'creature') {
+          return castFromHand({ ...state, prompt: null }, resume, { asCreature: true })
+        }
+        if (action.optionId.startsWith('bestow:')) {
+          const hostId = action.optionId.slice('bestow:'.length)
+          return castFromHand({ ...state, prompt: null }, resume, {
+            targetId: hostId,
+          })
+        }
+      }
+
+      if (kind === 'bloodrush_mode' && resume) {
+        if (action.optionId === 'cast') {
+          return castFromHand({ ...state, prompt: null }, resume, { asCreature: true })
+        }
+        if (action.optionId.startsWith('rush:')) {
+          const tid = action.optionId.slice('rush:'.length)
+          return castFromHand({ ...state, prompt: null }, resume, {
+            targetId: tid,
+          })
+        }
+      }
+
+      if (kind === 'choose_monstrous_flyer') {
+        return destroyFlyingChallenge({ ...state, prompt: null }, action.optionId)
+      }
+
+      if (kind === 'choose_monstrous_fight' && resume) {
+        return resolveMonstrousFight({ ...state, prompt: null }, resume, action.optionId)
       }
 
       if (kind === 'vitality_return') {

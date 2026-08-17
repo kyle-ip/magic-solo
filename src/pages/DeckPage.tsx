@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { BattleHistoryModal } from '../components/BattleHistoryModal'
 import { CardModal } from '../components/CardModal'
 import { CardTile } from '../components/CardTile'
+import { DeckAtmosphere } from '../components/DeckAtmosphere'
 import { PrintAssistantModal } from '../components/PrintAssistantModal'
 import { RulesPanel } from '../components/RulesPanel'
 import { UiButton, UiButtonLink, AppOverlay } from '../components/ui'
@@ -16,7 +17,7 @@ import {
 import { getDeckRules } from '../data/deckRegistry'
 import { getDeck } from '../data/deckStore'
 import { deckMetaEn, deckMetaZh } from '../data/locale/deckMeta'
-import { CardImage, useResolvedCardImageUrl } from '../hooks/useCardImageSrc'
+import { CardImage } from '../hooks/useCardImageSrc'
 import { printItemsFromDeckCards } from '../print/printCards'
 import type { ChallengeCode } from '../game/types'
 import type { DeckCard } from '../types'
@@ -44,11 +45,6 @@ export function DeckPage() {
     () => deck?.cards.find((c) => c.images.artCrop === deck.heroArt) ?? deck?.cards[0],
     [deck],
   )
-
-  const heroArtUrl = useResolvedCardImageUrl(hero?.images.artCrop, {
-    id: hero?.id,
-    kind: 'art_crop',
-  })
   const heroFront = hero?.images.display || hero?.images.front
 
   const history = useMemo(() => {
@@ -77,17 +73,7 @@ export function DeckPage() {
 
   return (
     <main className={`page deck-page theme-${deck.theme}`}>
-      <div className="deck-atmosphere" aria-hidden="true">
-        <div
-          className="deck-atmosphere-bg"
-          style={
-            hero?.images.artCrop
-              ? { backgroundImage: `url(${heroArtUrl})` }
-              : undefined
-          }
-        />
-        <div className="deck-atmosphere-veil" />
-      </div>
+      <DeckAtmosphere deck={deck} />
 
       <section className="deck-hero">
         <div className="deck-hero-inner">

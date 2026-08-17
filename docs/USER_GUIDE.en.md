@@ -22,6 +22,8 @@ Fan site for the three *Magic: The Gathering* **Challenge Decks** from Theros-bl
 10. [AI Assistant](#10-ai-assistant)
 11. [Notes & attribution](#11-notes--attribution)
 
+Maintainer detail for Digital Play coverage: [Challenge implementation status](./CHALLENGE_IMPLEMENTATION.en.md).
+
 ---
 
 ## 1. Getting started
@@ -94,16 +96,22 @@ A simplified solo PvE board (Arena-inspired), not a full Comprehensive Rules eng
 | --- | --- | --- |
 | `wildfire` | Wildfire Host | RG midrange |
 | `terror` | UB Terror | UB tempo (delve / Terror-style removal) |
-| `burn` | Challenge Burn | R aggro / burn |
+| `burn` | Ember Barrage | R aggro / burn |
 | `skies` | Azure Skies | WU flyers + removal |
+| `merfolk` | Pearl Trident | U tribal tempo / lords |
+| `akroan` | Akroan Legion | WR soldiers (first strike) |
+| `nessian` | Nessian Wilds | G beasts (reach / trample) |
+| `humans` | Parish Host | W Human tribal |
+| `spirits` | Spectral Chorus | WU Spirit flyers |
+| `jund` | Bloodbraid Barrens | BRG midrange |
 
-Only **implemented** abilities fire (supported evergreen today: haste, flash, vigilance, lifelink, prowess, flyer anthem, flying/reach blocking, deathtouch; double strike approximated as ×2 power; player-side trample spills excess to Xenagos in Defeat a God when Champion is selected. Also Fog, fight, burn-to-any, mill/draw, flashback, delve discount, attack-reveal triggers, limited monstrosity activation, and choice prompts). Many printed cards are approximated or simplified (roster **Simplified** badge). Azure Skies uses white removal you can actually pay with W/U mana.
+Only **implemented** abilities fire (supported evergreen today: haste, flash, vigilance, lifelink, prowess, flyer anthem, type anthem, flying/reach blocking, deathtouch, **first / double strike as combat damage steps**; player-side **trample** spills excess — Hydra → another Head, God → Xenagos, Horde → continue milling. Also Fog, fight, burn-to-any, mill/draw, flashback, delve discount, attack-reveal triggers, attack pump per attacker, battalion, Parish counters, limited monstrosity activation, **bestow** (attach + falloff to creature), **heroic** (including spells that bestow onto the creature), Persist, Scavenge Ooze activate, Maelstrom Pulse same-name wipe, and choice prompts). Many printed cards are still approximated (roster **Simplified** badge). Azure Skies uses white removal you can actually pay with W/U mana.
 
 ### During play
 
 - Your hand, lands, creatures, and the challenge half-board
 - Challenge reveals/casts cards one by one
-- Declare attackers, assign targets (where applicable), resolve combat
+- Declare attackers, assign targets (where applicable), resolve combat (first-strike step → normal damage step)
 - Toggle **coach tips** and a floating **battle log**
 - Win / loss **settlement** with match stats (and optional AI battle report)
 - Leave to the deck hub or use header **Challenges** (when chrome is visible) to open another challenge
@@ -112,12 +120,14 @@ Only **implemented** abilities fire (supported evergreen today: haste, flash, vi
 
 | Official | This Challenge |
 | --- | --- |
-| Any Constructed deck | Four curated lists; only implemented abilities fire |
+| Any Constructed deck | Ten curated lists; only implemented abilities fire |
 | Full stack / priority | Spells resolve immediately (Fog still stops breath / combat damage) |
-| All Theros mechanics | Evergreen + selected effects (incl. limited monstrosity); bestow omitted |
+| All Theros mechanics | Evergreen + selected effects (bestow attach/falloff, heroic, limited monstrosity) |
 | Multiplayer variants | Solo only |
 
 For an arbitrary paper deck, use the [Game Assistant](#4-game-assistant) instead.
+
+**Implementation inventory** (what each list wires vs still approximates): [CHALLENGE_IMPLEMENTATION.en.md](./CHALLENGE_IMPLEMENTATION.en.md).
 
 ---
 

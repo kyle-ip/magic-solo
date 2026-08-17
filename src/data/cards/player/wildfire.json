@@ -4,7 +4,10 @@
   "nameZh": "野火军团",
   "blurb": "Theros-era red-green midrange: early beasts, Fog vs Hydra breath, burn to mill the Horde and finish Xenagos.",
   "blurbZh": "Theros 时代红绿中速：前期兽群展开，用浓雾挡多头龙吐息，用直伤磨部落牌库并收尾塞纳戈斯。",
-  "colors": ["R", "G"],
+  "colors": [
+    "R",
+    "G"
+  ],
   "archetype": "midrange",
   "hint": "Curve beasts and dorks; save Fog for lethal Hydra combat, and use burn or fight to clear key threats.",
   "hintZh": "用秘教徒与兽群铺场；浓雾留给致命吐息，直伤或互斗清关键威胁。",
@@ -35,8 +38,12 @@
       "toughness": null,
       "keywords": [],
       "kind": "land",
-      "produces": ["G"],
-      "effect": { "type": "none" },
+      "produces": [
+        "G"
+      ],
+      "effect": {
+        "type": "none"
+      },
       "image": "assets/cards/player/dce15387-4114-4b3e-91aa-5b42b45c44ac-normal.jpg"
     },
     {
@@ -54,8 +61,12 @@
       "toughness": null,
       "keywords": [],
       "kind": "land",
-      "produces": ["R"],
-      "effect": { "type": "none" },
+      "produces": [
+        "R"
+      ],
+      "effect": {
+        "type": "none"
+      },
       "image": "assets/cards/player/2a844b96-6616-4c39-8f4f-5d14a3b2bd55-normal.jpg"
     },
     {
@@ -73,8 +84,13 @@
       "toughness": 1,
       "keywords": [],
       "kind": "creature",
-      "produces": ["G"],
-      "effect": { "type": "mana_dork", "color": "G" },
+      "produces": [
+        "G"
+      ],
+      "effect": {
+        "type": "mana_dork",
+        "color": "G"
+      },
       "image": "assets/cards/player/08b9a296-3b76-4f8f-9d71-7c9af92bb3b4-normal.jpg"
     },
     {
@@ -92,7 +108,9 @@
       "toughness": 3,
       "keywords": [],
       "kind": "creature",
-      "effect": { "type": "none" },
+      "effect": {
+        "type": "none"
+      },
       "image": "assets/cards/player/4697f3aa-abde-4379-af82-f30115f59be0-normal.jpg"
     },
     {
@@ -110,7 +128,9 @@
       "toughness": 3,
       "keywords": [],
       "kind": "creature",
-      "effect": { "type": "none" },
+      "effect": {
+        "type": "none"
+      },
       "image": "assets/cards/player/135946fc-fe67-401f-821d-d7145c63f030-normal.jpg"
     },
     {
@@ -126,9 +146,15 @@
       "cmc": 3,
       "power": 2,
       "toughness": 2,
-      "keywords": ["haste"],
+      "keywords": [
+        "haste"
+      ],
       "kind": "creature",
-      "effect": { "type": "etb_self_pump", "power": 2, "toughness": 0 },
+      "effect": {
+        "type": "etb_self_pump",
+        "power": 2,
+        "toughness": 0
+      },
       "image": "assets/cards/player/b6fef9f8-ff3e-4a3f-a3ff-4534ff0c3946-normal.jpg"
     },
     {
@@ -161,19 +187,22 @@
       "nameZh": "吞世者波洛克拉诺斯",
       "typeLine": "Legendary Creature — Hydra",
       "typeLineZh": "传奇生物～多头龙",
-      "oracleText": "Trample\nMonstrosity X — {X}{G}{G}: If this creature isn't monstrous, put X +1/+1 counters on it and it becomes monstrous. Then it fights up to X target creatures.\n(Challenge: double-click with {4}{G}{G} for +4/+4; fight trigger omitted.)",
-      "oracleTextZh": "践踏\n庞大化X—{X}{G}{G}：若此生物未庞大化，在其上放置X个+1/+1指示物且它成为庞大化。然后它与至多X个目标生物互斗。（挑战：双击支付{4}{G}{G}得+4/+4；省略互斗触发。）",
+      "oracleText": "Trample\nMonstrosity X — {X}{G}{G}: If this creature isn't monstrous, put X +1/+1 counters on it and it becomes monstrous. Then it fights up to X target creatures.\n(Challenge: double-click with {4}{G}{G} for +4/+4, then fight one challenge creature.)",
+      "oracleTextZh": "践踏\n庞大化X—{X}{G}{G}：若此生物未庞大化，在其上放置X个+1/+1指示物且它成为庞大化。然后它与至多X个目标生物互斗。（挑战：双击支付{4}{G}{G}得+4/+4，然后与一个挑战生物互斗。）",
       "manaCost": "{2}{G}{G}",
       "cmc": 4,
       "power": 5,
       "toughness": 5,
-      "keywords": ["trample"],
+      "keywords": [
+        "trample"
+      ],
       "kind": "creature",
       "effect": {
         "type": "activate_monstrosity",
         "manaCost": "{4}{G}{G}",
         "power": 4,
-        "toughness": 4
+        "toughness": 4,
+        "thenFight": true
       },
       "image": "assets/cards/player/4979cc1b-9c1a-47e4-ae37-7c41798eb89a-normal.jpg"
     },
@@ -190,7 +219,10 @@
       "cmc": 5,
       "power": 4,
       "toughness": 4,
-      "keywords": ["flying", "haste"],
+      "keywords": [
+        "flying",
+        "haste"
+      ],
       "kind": "creature",
       "effect": {
         "type": "activate_monstrosity",
@@ -215,7 +247,10 @@
       "toughness": null,
       "keywords": [],
       "kind": "instant",
-      "effect": { "type": "damage_any", "amount": 3 },
+      "effect": {
+        "type": "damage_any",
+        "amount": 3
+      },
       "image": "assets/cards/player/88b13bc0-da54-4c3b-917c-7c8345a329f5-normal.jpg"
     },
     {
@@ -233,7 +268,9 @@
       "toughness": null,
       "keywords": [],
       "kind": "instant",
-      "effect": { "type": "fog" },
+      "effect": {
+        "type": "fog"
+      },
       "image": "assets/cards/player/bbc3152e-7b3b-4ac6-8b33-abfebde216aa-normal.jpg"
     },
     {
@@ -251,7 +288,9 @@
       "toughness": null,
       "keywords": [],
       "kind": "sorcery",
-      "effect": { "type": "fight" },
+      "effect": {
+        "type": "fight"
+      },
       "image": "assets/cards/player/0eb1b036-0856-4cfb-ace5-2731f13696bd-normal.jpg"
     },
     {
@@ -269,7 +308,11 @@
       "toughness": null,
       "keywords": [],
       "kind": "instant",
-      "effect": { "type": "pump_target", "power": 3, "toughness": 3 },
+      "effect": {
+        "type": "pump_target",
+        "power": 3,
+        "toughness": 3
+      },
       "image": "assets/cards/player/fd1f95bf-48ea-455a-8a6c-0249b11c8900-normal.jpg"
     }
   ]

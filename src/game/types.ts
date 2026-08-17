@@ -85,6 +85,26 @@ export interface PlayerCreature {
   tempToughness?: number
   /** Monstrosity resolved at least once */
   monstrous?: boolean
+  /** −1/−1 counters (Persist tracking) */
+  minusOneCounters?: number
+  /** Bestow aura attached to this creature */
+  bestowed?: {
+    instanceId: string
+    defId: string
+    name: string
+    nameZh: string
+    power: number
+    toughness: number
+    keywords: string[]
+    image: string
+    oracleText: string
+    oracleTextZh: string
+    manaCost: string
+    cmc: number
+    typeLine: string
+    typeLineZh: string
+    effect: import('./playerDecks').PlayerEffect
+  }
 }
 
 export interface PlayerLand {
@@ -101,11 +121,19 @@ export interface PlayerLand {
 export type PendingCast =
   | {
       handInstanceId: string
-      mode: 'damage' | 'pump' | 'destroy' | 'fangs' | 'fight_mine'
-      /** Cast from graveyard via flashback */
+      mode:
+        | 'damage'
+        | 'pump'
+        | 'destroy'
+        | 'bounce'
+        | 'fangs'
+        | 'fight_mine'
+        | 'bestow'
+        | 'bloodrush'
+        | 'etb_tap'
       fromGraveyard?: boolean
-      /** Activated ability on a battlefield creature */
       activateCreatureId?: string
+      kicked?: boolean
     }
   | {
       handInstanceId: string
@@ -146,6 +174,10 @@ export type PromptKind =
   | 'choose_edict'
   | 'choose_crawl'
   | 'choose_crawl_zombie'
+  | 'bestow_mode'
+  | 'bloodrush_mode'
+  | 'choose_monstrous_flyer'
+  | 'choose_monstrous_fight'
 
 export type LogTone = 'info' | 'good' | 'bad' | 'cast'
 
@@ -290,6 +322,8 @@ export interface GameState {
     hydraBreathDone: boolean
     /** Fog: prevent combat damage this turn (incl. Hydra breath) */
     preventCombatDamageThisTurn: boolean
+    /** Rattlechains: Spirit creature spells have flash */
+    spiritsHaveFlash: boolean
   }
   log: LogEntry[]
   prompt: PromptState | null

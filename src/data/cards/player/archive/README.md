@@ -1,12 +1,12 @@
 # Archived player deck JSON
 
-These Theros-themed lists use a legacy `roster[]` shape and are **not** wired into
-`PLAYER_DECKS` / Challenge setup. Live Constructed decks are:
+Legacy Theros `roster[]` lists that have been superseded by live Constructed decks:
 
-- `../wildfire.json`
-- `../terror.json`
-- `../burn.json`
-- `../skies.json`
+| Archive | Live deck |
+| --- | --- |
+| `akroan.json` | [`../akroan.json`](../akroan.json) |
+| `nessian.json` | [`../nessian.json`](../nessian.json) |
+| `forge.json` | not yet converted |
+| `meletis.json` | not yet converted |
 
-Do not import these files into the game engine without converting them to the
-constructed `cards[]` + `effect` format used by the live decks.
+Do not import archive files into the game engine. Live decks under `../` use `cards[]` + `effect`.

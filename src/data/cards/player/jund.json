@@ -1,0 +1,315 @@
+{
+  "id": "jund",
+  "name": "Bloodbraid Barrens",
+  "nameZh": "血辫荒原",
+  "blurb": "Black-red-green midrange adapted from Modern Jund: value creatures, bolts, and fight/removal to grind Challenge boards.",
+  "blurbZh": "自近代杰恩德改编的黑红绿中速：价值生物、闪电击与互斗/清除，磨掉挑战场面。",
+  "colors": [
+    "B",
+    "R",
+    "G"
+  ],
+  "archetype": "midrange",
+  "hint": "Curve midrange threats; bolt or fight key permanents; grind with card advantage.",
+  "hintZh": "曲线中速威胁；用闪电或互斗清关键永久物；用卡优磨穿。",
+  "hintByChallenge": {
+    "tfth": {
+      "en": "Fight and bolt Heads; Fog the big breath turns.",
+      "zh": "互斗与闪电砍头颅；大吐息回合用浓雾。"
+    },
+    "tbth": {
+      "en": "Bolts mill the Horde; keep pressure with hasty threats.",
+      "zh": "闪电磨部落；用敏捷威胁持续施压。"
+    },
+    "tdag": {
+      "en": "Clear Revelers with removal, then finish Xenagos.",
+      "zh": "用清除清狂欢者，再收尾泽纳加思。"
+    }
+  },
+  "art": "assets/cards/player/e2f12f6f-9383-47e6-a44f-2834ad130e51-art.jpg",
+  "cards": [
+    {
+      "id": "e2f12f6f-9383-47e6-a44f-2834ad130e51",
+      "quantity": 4,
+      "name": "Bloodbraid Elf",
+      "nameZh": "血辫妖精",
+      "typeLine": "Creature — Elf Berserker",
+      "typeLineZh": "生物 ～妖精／狂战士",
+      "oracleText": "Haste (This creature can attack and {T} as soon as it comes under your control.)\nCascade (When you cast this spell, exile cards from the top of your library until you exile a nonland card that costs less. You may cast it without paying its mana cost. Put the exiled cards on the bottom in a random order.)\n(Challenge: cascade approximated as draw a card on ETB.)",
+      "oracleTextZh": "敏捷\n倾曳（当你施放此咒语时，从你的牌库顶开始放逐牌，直到放逐一张费用比此咒语低的非地牌为止。你可以施放该牌，且不需支付其法术力费用。将所放逐的牌以随机顺序置于你的牌库底。）\n（挑战：倾曳近似为进场抓一张牌。）",
+      "manaCost": "{2}{R}{G}",
+      "cmc": 4,
+      "power": 3,
+      "toughness": 2,
+      "keywords": [
+        "Haste"
+      ],
+      "kind": "creature",
+      "effect": {
+        "type": "draw",
+        "amount": 1
+      },
+      "image": "assets/cards/player/e2f12f6f-9383-47e6-a44f-2834ad130e51-normal.jpg"
+    },
+    {
+      "id": "69daba76-96e8-4bcc-ab79-2f00189ad8fb",
+      "quantity": 4,
+      "name": "Tarmogoyf",
+      "nameZh": "塔莫耶夫",
+      "typeLine": "Creature — Lhurgoyf",
+      "typeLineZh": "生物 — 拉高耶夫",
+      "oracleText": "Tarmogoyf's power is equal to the number of card types among cards in all graveyards and its toughness is equal to that number plus 1.\n(Challenge: enters as 2/3 then sticky +2/+2 — approximate CDAs without counting types.)",
+      "oracleTextZh": "搜掠死亡爪的力量等同于所有坟墓场中牌的牌张类别数量，其防御力等同于该数量加1。\n（挑战：以 2/3 进场并永久 +2/+2 近似——不按牌类计数。）",
+      "manaCost": "{1}{G}",
+      "cmc": 2,
+      "power": 2,
+      "toughness": 3,
+      "keywords": [],
+      "kind": "creature",
+      "effect": {
+        "type": "etb_self_pump",
+        "power": 2,
+        "toughness": 2,
+        "untilEndOfTurn": false
+      },
+      "image": "assets/cards/player/69daba76-96e8-4bcc-ab79-2f00189ad8fb-normal.jpg"
+    },
+    {
+      "id": "8c504c23-1e9a-411b-9cfe-4180d0c744f6",
+      "quantity": 3,
+      "name": "Scavenging Ooze",
+      "nameZh": "腐食流浆",
+      "typeLine": "Creature — Ooze",
+      "typeLineZh": "生物 — 流浆",
+      "oracleText": "{G}: Exile target card from a graveyard. If it was a creature card, put a +1/+1 counter on this creature and you gain 1 life.\n(Challenge: double-click to pay {G}; prefers challenge graveyard.)",
+      "oracleTextZh": "{G}：将目标牌从坟墓场放逐。如果它是生物牌，则在腐食流浆上放置一个+1/+1指示物，且你获得1点生命。\n（挑战：双击支付{G}；优先挑战坟墓场。）",
+      "manaCost": "{1}{G}",
+      "cmc": 2,
+      "power": 2,
+      "toughness": 2,
+      "keywords": [],
+      "kind": "creature",
+      "effect": {
+        "type": "scavenge_ooze",
+        "manaCost": "{G}"
+      },
+      "image": "assets/cards/player/8c504c23-1e9a-411b-9cfe-4180d0c744f6-normal.jpg"
+    },
+    {
+      "id": "a844d537-df73-422d-a154-f1c6b92d0469",
+      "quantity": 3,
+      "name": "Kitchen Finks",
+      "nameZh": "帮厨奥夫",
+      "typeLine": "Creature — Ouphe",
+      "typeLineZh": "生物～奥夫",
+      "oracleText": "When this creature enters, you gain 2 life.\nPersist (When this creature dies, if it had no -1/-1 counters on it, return it to the battlefield under its owner's control with a -1/-1 counter on it.)",
+      "oracleTextZh": "当帮厨奥夫进场时，你获得2点生命。\n留存（当此生物从场上置入坟墓场时，若其上没有-1/-1指示物，则将它在其拥有者的操控下返回场上，且其上有一个-1/-1指示物。）",
+      "manaCost": "{1}{G/W}{G/W}",
+      "cmc": 3,
+      "power": 3,
+      "toughness": 2,
+      "keywords": [],
+      "kind": "creature",
+      "effect": {
+        "type": "etb_gain_life",
+        "amount": 2,
+        "persist": true
+      },
+      "image": "assets/cards/player/a844d537-df73-422d-a154-f1c6b92d0469-normal.jpg"
+    },
+    {
+      "id": "7673784e-db4b-43a1-8d55-1bb9fc1e284f",
+      "quantity": 4,
+      "name": "Lightning Bolt",
+      "nameZh": "闪电击",
+      "typeLine": "Instant",
+      "typeLineZh": "瞬间",
+      "oracleText": "Lightning Bolt deals 3 damage to any target.",
+      "oracleTextZh": "闪电击对任意一个目标造成3点伤害。",
+      "manaCost": "{R}",
+      "cmc": 1,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "instant",
+      "effect": {
+        "type": "damage_any",
+        "amount": 3
+      },
+      "image": "assets/cards/player/7673784e-db4b-43a1-8d55-1bb9fc1e284f-normal.jpg"
+    },
+    {
+      "id": "379ffc67-4142-4ead-a871-0f851523745e",
+      "quantity": 4,
+      "name": "Terminate",
+      "nameZh": "终结",
+      "typeLine": "Instant",
+      "typeLineZh": "瞬间",
+      "oracleText": "Destroy target creature. It can't be regenerated.",
+      "oracleTextZh": "消灭目标生物。它不能重生。",
+      "manaCost": "{B}{R}",
+      "cmc": 2,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "instant",
+      "effect": {
+        "type": "destroy_creature"
+      },
+      "image": "assets/cards/player/379ffc67-4142-4ead-a871-0f851523745e-normal.jpg"
+    },
+    {
+      "id": "66f17263-b916-40f4-b175-fcfd5630103d",
+      "quantity": 2,
+      "name": "Maelstrom Pulse",
+      "nameZh": "涡心鼓动",
+      "typeLine": "Sorcery",
+      "typeLineZh": "法术",
+      "oracleText": "Destroy target nonland permanent and all other permanents with the same name as that permanent.\n(Challenge: challenge creatures only; same-name wipe included.)",
+      "oracleTextZh": "消灭目标非地永久物和所有与之同名的其他永久物。\n（挑战：仅挑战生物；含同名清场。）",
+      "manaCost": "{1}{B}{G}",
+      "cmc": 3,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "sorcery",
+      "effect": {
+        "type": "destroy_creature",
+        "sameName": true
+      },
+      "image": "assets/cards/player/66f17263-b916-40f4-b175-fcfd5630103d-normal.jpg"
+    },
+    {
+      "id": "0eb1b036-0856-4cfb-ace5-2731f13696bd",
+      "quantity": 3,
+      "name": "Prey Upon",
+      "nameZh": "捕食",
+      "typeLine": "Sorcery",
+      "typeLineZh": "法术",
+      "oracleText": "Target creature you control fights target creature you don't control. (Each deals damage equal to its power to the other.)",
+      "oracleTextZh": "目标由你操控的生物与目标不由你操控的生物互斗。（它们各向对方造成等同于本身力量的伤害。）",
+      "manaCost": "{G}",
+      "cmc": 1,
+      "power": null,
+      "toughness": null,
+      "keywords": [
+        "Fight"
+      ],
+      "kind": "sorcery",
+      "effect": {
+        "type": "fight"
+      },
+      "image": "assets/cards/player/0eb1b036-0856-4cfb-ace5-2731f13696bd-normal.jpg"
+    },
+    {
+      "id": "bbc3152e-7b3b-4ac6-8b33-abfebde216aa",
+      "quantity": 3,
+      "name": "Fog",
+      "nameZh": "浓雾",
+      "typeLine": "Instant",
+      "typeLineZh": "瞬间",
+      "oracleText": "Prevent all combat damage that would be dealt this turn.",
+      "oracleTextZh": "于本回合中，防止将造成的所有战斗伤害。",
+      "manaCost": "{G}",
+      "cmc": 1,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "instant",
+      "effect": {
+        "type": "fog"
+      },
+      "image": "assets/cards/player/bbc3152e-7b3b-4ac6-8b33-abfebde216aa-normal.jpg"
+    },
+    {
+      "id": "08b9a296-3b76-4f8f-9d71-7c9af92bb3b4",
+      "quantity": 4,
+      "name": "Elvish Mystic",
+      "nameZh": "妖精秘教徒",
+      "typeLine": "Creature — Elf Druid",
+      "typeLineZh": "生物 — 妖精／德鲁伊",
+      "oracleText": "{T}: Add {G}.",
+      "oracleTextZh": "{T}：加{G}。",
+      "manaCost": "{G}",
+      "cmc": 1,
+      "power": 1,
+      "toughness": 1,
+      "keywords": [],
+      "kind": "creature",
+      "effect": {
+        "type": "mana_dork",
+        "color": "G"
+      },
+      "image": "assets/cards/player/08b9a296-3b76-4f8f-9d71-7c9af92bb3b4-normal.jpg"
+    },
+    {
+      "id": "b7387103-1df1-4fd0-9e91-1544509792c7",
+      "quantity": 8,
+      "name": "Swamp",
+      "nameZh": "沼泽",
+      "typeLine": "Basic Land — Swamp",
+      "typeLineZh": "基本地 — 沼泽",
+      "oracleText": "({T}: Add {B}.)",
+      "oracleTextZh": "({T}: Add {B}.)",
+      "manaCost": "",
+      "cmc": 0,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "land",
+      "produces": [
+        "B"
+      ],
+      "effect": {
+        "type": "none"
+      },
+      "image": "assets/cards/player/b7387103-1df1-4fd0-9e91-1544509792c7-normal.jpg"
+    },
+    {
+      "id": "2a844b96-6616-4c39-8f4f-5d14a3b2bd55",
+      "quantity": 8,
+      "name": "Mountain",
+      "nameZh": "山脉",
+      "typeLine": "Basic Land — Mountain",
+      "typeLineZh": "基本地 — 山脉",
+      "oracleText": "({T}: Add {R}.)",
+      "oracleTextZh": "({T}: Add {R}.)",
+      "manaCost": "",
+      "cmc": 0,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "land",
+      "produces": [
+        "R"
+      ],
+      "effect": {
+        "type": "none"
+      },
+      "image": "assets/cards/player/2a844b96-6616-4c39-8f4f-5d14a3b2bd55-normal.jpg"
+    },
+    {
+      "id": "dce15387-4114-4b3e-91aa-5b42b45c44ac",
+      "quantity": 10,
+      "name": "Forest",
+      "nameZh": "树林",
+      "typeLine": "Basic Land — Forest",
+      "typeLineZh": "基本地 — 树林",
+      "oracleText": "({T}: Add {G}.)",
+      "oracleTextZh": "({T}: Add {G}.)",
+      "manaCost": "",
+      "cmc": 0,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "land",
+      "produces": [
+        "G"
+      ],
+      "effect": {
+        "type": "none"
+      },
+      "image": "assets/cards/player/dce15387-4114-4b3e-91aa-5b42b45c44ac-normal.jpg"
+    }
+  ]
+}

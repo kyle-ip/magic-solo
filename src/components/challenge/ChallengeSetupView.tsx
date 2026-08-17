@@ -25,7 +25,7 @@ export function ChallengeSetupView({
   hordeDelay,
   heroIds,
   playerDeckId,
-  background,
+  atmosphere,
   onHeads,
   onHordeDelay,
   onToggleHero,
@@ -46,7 +46,8 @@ export function ChallengeSetupView({
   hordeDelay: number
   heroIds: string[]
   playerDeckId: PlayerDeckId
-  background?: ReactNode
+  /** Shared {@link DeckAtmosphere} — same art + CSS as deck hubs. */
+  atmosphere?: ReactNode
   onHeads: (n: number) => void
   onHordeDelay: (n: number) => void
   onToggleHero: (id: string) => void
@@ -65,8 +66,7 @@ export function ChallengeSetupView({
 
   return (
     <main className={`arena-root theme-${theme}`}>
-      {background}
-      <div className="arena-bg-veil" />
+      {atmosphere}
       <section className={`arena-setup${assetLoading ? ' is-preloading' : ''}`}>
         {assetLoading ? (
           <div className="setup-preload" role="status" aria-live="polite">

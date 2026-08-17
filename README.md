@@ -4,14 +4,15 @@ Solo fan site for the three *Magic: The Gathering* **Challenge Decks** from Ther
 
 **Live:** [https://kyle-ip.github.io/magic-solo/](https://kyle-ip.github.io/magic-solo/)
 
-**User guides:** [English](docs/USER_GUIDE.en.md) · [中文](docs/USER_GUIDE.zh.md) · in-app `/help`
+**User guides:** [English](docs/USER_GUIDE.en.md) · [中文](docs/USER_GUIDE.zh.md) · in-app `/help`  
+**Digital Play status:** [EN](docs/CHALLENGE_IMPLEMENTATION.en.md) · [中文](docs/CHALLENGE_IMPLEMENTATION.zh.md)
 
 ## Features
 
 | Area | Routes / entry | Summary |
 | --- | --- | --- |
 | Challenge Decks | `/`, `/decks/:code` | Rules + card gallery; CTAs to Challenge, Assistant, Print |
-| Challenge (Digital Play) | `/challenge/:code` | Automated solo PvE; 4 curated player lists; heroes & difficulty |
+| Challenge (Digital Play) | `/challenge/:code` | Automated solo PvE; 10 curated player lists; heroes & difficulty |
 | Paper Play | `/assistant/:code` | Challenge half-board for paper decks at the table |
 | Classic decks | `/classic-decks` | Curated archetypes + sample lists + print PDF |
 | Set gallery | `/sets` | Live Scryfall browsing + print PDF |
@@ -31,7 +32,7 @@ UI: English + 中文. Without an AI key, gameplay and layout match the non-AI si
 | Battle the Horde | `tbth` | *Born of the Gods* |
 | Defeat a God | `tdag` | *Journey into Nyx* |
 
-**Challenge** player lists (curated, not full Constructed): Wildfire Host, UB Terror, Challenge Burn, Azure Skies. Challenge follows official challenge loops where implemented, but is **not** a full CR engine. Details: [user guide](docs/USER_GUIDE.en.md#3-challenge).
+**Challenge** player lists (curated, not full Constructed): Wildfire Host, UB Terror, Ember Barrage, Azure Skies, Pearl Trident, Akroan Legion, Nessian Wilds, Parish Host, Spectral Chorus, Bloodbraid Barrens. Challenge follows official challenge loops where implemented, but is **not** a full CR engine. Details: [user guide](docs/USER_GUIDE.en.md#3-challenge) · [implementation status](docs/CHALLENGE_IMPLEMENTATION.en.md).
 
 ## Stack
 

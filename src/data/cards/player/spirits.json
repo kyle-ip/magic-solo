@@ -1,0 +1,282 @@
+{
+  "id": "spirits",
+  "name": "Spectral Chorus",
+  "nameZh": "幽影合唱",
+  "blurb": "White-blue Spirit tempo adapted from Pioneer Spirits: flying lords, flash bodies, and bounce/removal.",
+  "blurbZh": "自先驱精怪改编的白蓝精怪节奏：飞行领主、闪现身材、弹回与清除。",
+  "colors": [
+    "W",
+    "U"
+  ],
+  "archetype": "tempo",
+  "hint": "Curve Spirit lords, flash in blockers, then clear Revelers or Heads before swinging.",
+  "hintZh": "曲线精怪领主，闪现挡者，开战前清狂欢者或头颅。",
+  "hintByChallenge": {
+    "tfth": {
+      "en": "Flyers race Heads; bounce resets a regenerating Head.",
+      "zh": "飞行与头颅赛跑；弹回可重置会再生的头颅。"
+    },
+    "tbth": {
+      "en": "Anthemed flyers mill the Horde; flash blocks buy a turn.",
+      "zh": "颂歌飞行磨部落；闪现阻挡换回合。"
+    },
+    "tdag": {
+      "en": "Remove Revelers, then finish Xenagos in the air.",
+      "zh": "先清狂欢者，再从空中收尾泽纳加思。"
+    }
+  },
+  "art": "assets/cards/player/cbf4ca25-73cc-45ba-bed5-dbaa517e8bb8-art.jpg",
+  "cards": [
+    {
+      "id": "cbf4ca25-73cc-45ba-bed5-dbaa517e8bb8",
+      "quantity": 4,
+      "name": "Supreme Phantom",
+      "nameZh": "超凡幽魅",
+      "typeLine": "Creature — Spirit",
+      "typeLineZh": "生物 ～精怪",
+      "oracleText": "Flying\nOther Spirits you control get +1/+1.",
+      "oracleTextZh": "飞行\n由你操控的其他精怪得+1/+1。",
+      "manaCost": "{1}{U}",
+      "cmc": 2,
+      "power": 1,
+      "toughness": 3,
+      "keywords": [
+        "Flying"
+      ],
+      "kind": "creature",
+      "effect": {
+        "type": "anthem_creature_type",
+        "creatureType": "Spirit",
+        "power": 1,
+        "toughness": 1
+      },
+      "image": "assets/cards/player/cbf4ca25-73cc-45ba-bed5-dbaa517e8bb8-normal.jpg"
+    },
+    {
+      "id": "f47bda42-8eb7-49c5-8f3b-e988e377a7f5",
+      "quantity": 4,
+      "name": "Mausoleum Wanderer",
+      "nameZh": "陵墓游灵",
+      "typeLine": "Creature — Spirit",
+      "typeLineZh": "生物～精怪",
+      "oracleText": "Flying\nWhenever another Spirit you control enters, this creature gets +1/+1 until end of turn.\n(Challenge: counter ability omitted — no stack.)",
+      "oracleTextZh": "飞行\n每当另一个由你操控的精怪进场时，此生物得+1/+1直到回合结束。\n（挑战：省略反击异能——无堆叠。）",
+      "manaCost": "{U}",
+      "cmc": 1,
+      "power": 1,
+      "toughness": 1,
+      "keywords": [
+        "Flying"
+      ],
+      "kind": "creature",
+      "effect": {
+        "type": "spirit_etb_pump"
+      },
+      "image": "assets/cards/player/f47bda42-8eb7-49c5-8f3b-e988e377a7f5-normal.jpg"
+    },
+    {
+      "id": "709f6376-9a33-4900-a7ae-00767fb9f9bf",
+      "quantity": 4,
+      "name": "Rattlechains",
+      "nameZh": "缀链灵",
+      "typeLine": "Creature — Spirit",
+      "typeLineZh": "生物 ～精怪",
+      "oracleText": "Flash\nFlying\nYou may cast Spirit spells as though they had flash.\n(Challenge: ETB hexproof grant omitted.)",
+      "oracleTextZh": "闪现\n飞行\n你可以将精怪咒语视同具有闪现来施放。\n（挑战：省略进场赋予辟邪。）",
+      "manaCost": "{1}{U}",
+      "cmc": 2,
+      "power": 2,
+      "toughness": 1,
+      "keywords": [
+        "Flash",
+        "Flying"
+      ],
+      "kind": "creature",
+      "effect": {
+        "type": "spirits_have_flash"
+      },
+      "image": "assets/cards/player/709f6376-9a33-4900-a7ae-00767fb9f9bf-normal.jpg"
+    },
+    {
+      "id": "5ef30b6c-0806-4bf6-9a84-c2aea8d84cf1",
+      "quantity": 4,
+      "name": "Spectral Sailor",
+      "nameZh": "魂魅船员",
+      "typeLine": "Creature — Spirit Pirate",
+      "typeLineZh": "生物 ～精怪／海盗",
+      "oracleText": "Flash (You may cast this spell any time you could cast an instant.)\nFlying\n{3}{U}: Draw a card.",
+      "oracleTextZh": "闪现\n飞行\n{3}{U}：抓一张牌。",
+      "manaCost": "{U}",
+      "cmc": 1,
+      "power": 1,
+      "toughness": 1,
+      "keywords": [
+        "Flash",
+        "Flying"
+      ],
+      "kind": "creature",
+      "effect": {
+        "type": "activate_draw",
+        "manaCost": "{3}{U}",
+        "amount": 1
+      },
+      "image": "assets/cards/player/5ef30b6c-0806-4bf6-9a84-c2aea8d84cf1-normal.jpg"
+    },
+    {
+      "id": "665a1bd1-db82-4db9-af7d-af161d31a696",
+      "quantity": 3,
+      "name": "Remorseful Cleric",
+      "nameZh": "悔恨僧侣",
+      "typeLine": "Creature — Spirit Cleric",
+      "typeLineZh": "生物 ～精怪／僧侣",
+      "oracleText": "Flying\nSacrifice this creature: Exile target player's graveyard.",
+      "oracleTextZh": "飞行\n牺牲此生物：放逐目标牌手的坟墓场。",
+      "manaCost": "{1}{W}",
+      "cmc": 2,
+      "power": 2,
+      "toughness": 1,
+      "keywords": [
+        "Flying"
+      ],
+      "kind": "creature",
+      "effect": {
+        "type": "activate_sac_exile_gy"
+      },
+      "image": "assets/cards/player/665a1bd1-db82-4db9-af7d-af161d31a696-normal.jpg"
+    },
+    {
+      "id": "577e99a7-4a55-4314-8f08-2ae0c33b85c7",
+      "quantity": 3,
+      "name": "Empyrean Eagle",
+      "nameZh": "苍穹灵鹰",
+      "typeLine": "Creature — Bird Spirit",
+      "typeLineZh": "生物 ～鸟／精怪",
+      "oracleText": "Flying\nOther creatures you control with flying get +1/+1.",
+      "oracleTextZh": "飞行\n由你操控且具飞行异能的其他生物得+1/+1。",
+      "manaCost": "{1}{W}{U}",
+      "cmc": 3,
+      "power": 2,
+      "toughness": 3,
+      "keywords": [
+        "Flying"
+      ],
+      "kind": "creature",
+      "effect": {
+        "type": "anthem_other_flyers",
+        "power": 1,
+        "toughness": 1
+      },
+      "image": "assets/cards/player/577e99a7-4a55-4314-8f08-2ae0c33b85c7-normal.jpg"
+    },
+    {
+      "id": "2815d8e6-3668-4b9d-abe6-eca6a500707d",
+      "quantity": 4,
+      "name": "Unsummon",
+      "nameZh": "反召唤",
+      "typeLine": "Instant",
+      "typeLineZh": "瞬间",
+      "oracleText": "Return target creature to its owner's hand.\n(Challenge: returned to the top of the challenge library.)",
+      "oracleTextZh": "将目标生物移回其拥有者手上。\n（挑战：置于挑战牌库顶。）",
+      "manaCost": "{U}",
+      "cmc": 1,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "instant",
+      "effect": {
+        "type": "bounce_creature"
+      },
+      "image": "assets/cards/player/2815d8e6-3668-4b9d-abe6-eca6a500707d-normal.jpg"
+    },
+    {
+      "id": "4686b51c-e02b-48c1-bafe-e8d08a5407b9",
+      "quantity": 3,
+      "name": "Journey to Nowhere",
+      "nameZh": "未知旅程",
+      "typeLine": "Enchantment",
+      "typeLineZh": "结界",
+      "oracleText": "When this enchantment enters, exile target creature.\nWhen this enchantment leaves the battlefield, return the exiled card to the battlefield under its owner's control.\n(Challenge: exile is treated as destroying the challenge permanent.)",
+      "oracleTextZh": "当未知旅程进战场时，放逐目标生物。\n当未知旅程离开战场时，将所放逐的牌在其拥有者的操控下移回战场。\n（挑战：放逐按消灭挑战永久物处理。）",
+      "manaCost": "{1}{W}",
+      "cmc": 2,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "sorcery",
+      "effect": {
+        "type": "destroy_creature"
+      },
+      "image": "assets/cards/player/4686b51c-e02b-48c1-bafe-e8d08a5407b9-normal.jpg"
+    },
+    {
+      "id": "bbc99a51-1501-4525-a3cc-f48249b64bed",
+      "quantity": 4,
+      "name": "Opt",
+      "nameZh": "抉择",
+      "typeLine": "Instant",
+      "typeLineZh": "瞬间",
+      "oracleText": "Scry 1. (Look at the top card of your library. You may put that card on the bottom.)\nDraw a card.",
+      "oracleTextZh": "占卜1。（检视你牌库顶的牌。你可以将该牌置于你的牌库底。）\n抓一张牌。",
+      "manaCost": "{U}",
+      "cmc": 1,
+      "power": null,
+      "toughness": null,
+      "keywords": [
+        "Scry"
+      ],
+      "kind": "instant",
+      "effect": {
+        "type": "scry_draw",
+        "scry": 1,
+        "draw": 1
+      },
+      "image": "assets/cards/player/bbc99a51-1501-4525-a3cc-f48249b64bed-normal.jpg"
+    },
+    {
+      "id": "8ab0f4c0-b331-4c57-b68f-2e24bb5ba06c",
+      "quantity": 12,
+      "name": "Plains",
+      "nameZh": "平原",
+      "typeLine": "Basic Land — Plains",
+      "typeLineZh": "基本地 — 平原",
+      "oracleText": "({T}: Add {W}.)",
+      "oracleTextZh": "({T}: Add {W}.)",
+      "manaCost": "",
+      "cmc": 0,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "land",
+      "produces": [
+        "W"
+      ],
+      "effect": {
+        "type": "none"
+      },
+      "image": "assets/cards/player/8ab0f4c0-b331-4c57-b68f-2e24bb5ba06c-normal.jpg"
+    },
+    {
+      "id": "f3cc07cd-cc79-4745-b0b7-eade60175cc3",
+      "quantity": 15,
+      "name": "Island",
+      "nameZh": "海岛",
+      "typeLine": "Basic Land — Island",
+      "typeLineZh": "基本地 — 海岛",
+      "oracleText": "({T}: Add {U}.)",
+      "oracleTextZh": "({T}: Add {U}.)",
+      "manaCost": "",
+      "cmc": 0,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "land",
+      "produces": [
+        "U"
+      ],
+      "effect": {
+        "type": "none"
+      },
+      "image": "assets/cards/player/f3cc07cd-cc79-4745-b0b7-eade60175cc3-normal.jpg"
+    }
+  ]
+}

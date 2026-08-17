@@ -1,4 +1,5 @@
 import { castGodCard, resolveGodCombat } from '../god'
+import { resolvePlayerCombat } from '../combat'
 import { describe, expect, it } from 'vitest'
 import type { CardInstance, GameState } from '../types'
 import {
@@ -267,6 +268,28 @@ describe('Constructed player deck', () => {
     expect(started.turnNumber).toBe(1)
   })
 
+  it.each(['merfolk', 'akroan', 'nessian', 'humans', 'spirits', 'jund'] as const)(
+    'starts %s deck on each challenge',
+    (deckId) => {
+      for (const code of ['tfth', 'tbth', 'tdag'] as const) {
+        const setup = createInitialSetup(code)
+        const started = gameReducer(setup, {
+          type: 'START',
+          config: {
+            code,
+            startingHeads: 1,
+            playerTurnsBeforeHorde: 3,
+            playerDeckId: deckId,
+          },
+        })
+        expect(started.status).toBe('playing')
+        expect(started.playerDeckId).toBe(deckId)
+        expect(started.player.hand).toHaveLength(7)
+        expect(started.player.library).toHaveLength(53)
+      }
+    },
+  )
+
   it('skips draw on turn 1 then draws on turn 2', () => {
     let state = basePlaying()
     state.turnNumber = 0
@@ -442,5 +465,146 @@ describe('God combat blocker damage', () => {
     // beginPlayerTurn at end of God combat clears marked damage
     expect(state.player.creatures[0].name).toBe('Wall')
     expect(state.player.life).toBe(20)
+  })
+})
+
+describe('Player combat first/double strike and trample', () => {
+  it('first strike deals damage once (not doubled)', () => {
+    let state = basePlaying('tfth')
+    const head = card({
+      name: 'Hydra Head',
+      instanceId: 'h1',
+      isHead: true,
+      power: 0,
+      toughness: 4,
+    })
+    state.challenge.battlefield = [head]
+    state.player.creatures = [
+      {
+        instanceId: 'a1',
+        defId: 'a1',
+        name: 'Swiftclaw',
+        power: 3,
+        toughness: 1,
+        markedDamage: 0,
+        tapped: false,
+        summoningSickness: false,
+        keywords: ['first strike'],
+        image: '',
+      },
+    ]
+    state.selectedAttackers = ['a1']
+    state.attackAssignments = { a1: 'h1' }
+    state = resolvePlayerCombat(state)
+    expect(state.challenge.battlefield[0]?.markedDamage ?? 0).toBe(3)
+  })
+
+  it('double strike deals damage in both steps', () => {
+    let state = basePlaying('tfth')
+    const head = card({
+      name: 'Hydra Head',
+      instanceId: 'h1',
+      isHead: true,
+      power: 0,
+      toughness: 8,
+    })
+    state.challenge.battlefield = [head]
+    state.player.creatures = [
+      {
+        instanceId: 'a1',
+        defId: 'a1',
+        name: 'Doubler',
+        power: 2,
+        toughness: 2,
+        markedDamage: 0,
+        tapped: false,
+        summoningSickness: false,
+        keywords: ['double strike'],
+        image: '',
+      },
+    ]
+    state.selectedAttackers = ['a1']
+    state.attackAssignments = { a1: 'h1' }
+    state = resolvePlayerCombat(state)
+    expect(state.challenge.battlefield[0]?.markedDamage ?? 0).toBe(4)
+  })
+
+  it('trample excess spills to another Hydra Head', () => {
+    let state = basePlaying('tfth')
+    const h1 = card({
+      name: 'Hydra Head',
+      instanceId: 'h1',
+      isHead: true,
+      power: 0,
+      toughness: 2,
+    })
+    const h2 = card({
+      name: 'Hydra Head',
+      instanceId: 'h2',
+      isHead: true,
+      power: 0,
+      toughness: 5,
+    })
+    state.challenge.battlefield = [h1, h2]
+    state.player.creatures = [
+      {
+        instanceId: 'a1',
+        defId: 'a1',
+        name: 'Beast',
+        power: 5,
+        toughness: 3,
+        markedDamage: 0,
+        tapped: false,
+        summoningSickness: false,
+        keywords: ['trample'],
+        image: '',
+      },
+    ]
+    state.selectedAttackers = ['a1']
+    state.attackAssignments = { a1: 'h1' }
+    state = resolvePlayerCombat(state)
+    const remaining = state.challenge.battlefield
+    // h1 lethal (2) → destroyed; excess 3 on h2
+    expect(remaining.find((c) => c.instanceId === 'h1')).toBeUndefined()
+    expect(remaining.find((c) => c.instanceId === 'h2')?.markedDamage).toBe(3)
+  })
+
+  it('trample excess spills to Xenagos without Champion', () => {
+    let state = basePlaying('tdag')
+    const reveler = card({
+      name: 'Rollicking Throng',
+      instanceId: 'r1',
+      isReveler: true,
+      power: 2,
+      toughness: 2,
+    })
+    const xenagos = card({
+      name: 'Xenagos Ascended',
+      instanceId: 'x1',
+      isGod: true,
+      power: 0,
+      toughness: 7,
+      indestructible: true,
+    })
+    state.challenge.battlefield = [reveler, xenagos]
+    state.player.creatures = [
+      {
+        instanceId: 'a1',
+        defId: 'a1',
+        name: 'Slaughterhorn',
+        power: 5,
+        toughness: 2,
+        markedDamage: 0,
+        tapped: false,
+        summoningSickness: false,
+        keywords: ['trample'],
+        image: '',
+      },
+    ]
+    state.selectedAttackers = ['a1']
+    state.attackAssignments = { a1: 'r1' }
+    state = resolvePlayerCombat(state)
+    expect(state.challenge.battlefield.find((c) => c.instanceId === 'r1')).toBeUndefined()
+    expect(state.challenge.battlefield.find((c) => c.instanceId === 'x1')?.markedDamage).toBe(3)
   })
 })

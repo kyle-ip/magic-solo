@@ -123,6 +123,17 @@ export function DeckRosterModal({
             onClick={onClose}
           />
         }
+        footer={
+          <UiButton
+            variant="primary"
+            onClick={() => {
+              onSelect(deckId)
+              onClose()
+            }}
+          >
+            {t('challenge.useDeck')}
+          </UiButton>
+        }
       >
           <header className="deck-roster-head">
             <div>
@@ -256,18 +267,6 @@ export function DeckRosterModal({
               )
             })}
           </div>
-
-          <footer className="deck-roster-foot">
-            <UiButton
-              variant="primary"
-              onClick={() => {
-                onSelect(deckId)
-                onClose()
-              }}
-            >
-              {t('challenge.useDeck')}
-            </UiButton>
-          </footer>
       </AppOverlay>
 
       <DrawnCardModal

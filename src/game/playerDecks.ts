@@ -4,8 +4,24 @@ import wildfire from '../data/cards/player/wildfire.json'
 import terror from '../data/cards/player/terror.json'
 import burn from '../data/cards/player/burn.json'
 import skies from '../data/cards/player/skies.json'
+import merfolk from '../data/cards/player/merfolk.json'
+import akroan from '../data/cards/player/akroan.json'
+import nessian from '../data/cards/player/nessian.json'
+import humans from '../data/cards/player/humans.json'
+import spirits from '../data/cards/player/spirits.json'
+import jund from '../data/cards/player/jund.json'
 
-export type PlayerDeckId = 'wildfire' | 'terror' | 'burn' | 'skies'
+export type PlayerDeckId =
+  | 'wildfire'
+  | 'terror'
+  | 'burn'
+  | 'skies'
+  | 'merfolk'
+  | 'akroan'
+  | 'nessian'
+  | 'humans'
+  | 'spirits'
+  | 'jund'
 
 export type PlayerDeckArchetype = 'aggro' | 'midrange' | 'control' | 'tempo'
 
@@ -14,7 +30,13 @@ export type PlayerCardKind = 'land' | 'creature' | 'instant' | 'sorcery'
 export type PlayerEffect =
   | { type: 'none' }
   | { type: 'mana_dork'; color: ManaColor }
-  | { type: 'etb_self_pump'; power: number; toughness: number }
+  | {
+      type: 'etb_self_pump'
+      power: number
+      toughness: number
+      /** When false, pump is a sticky +1/+1-style boost (not cleared at EOT). Default true. */
+      untilEndOfTurn?: boolean
+    }
   | { type: 'damage_any'; amount: number }
   | { type: 'fog' }
   | { type: 'fight' }
@@ -23,26 +45,91 @@ export type PlayerEffect =
   | { type: 'brainstorm' }
   | { type: 'draw'; amount: number }
   | { type: 'scry_draw'; scry: number; draw: number }
-  | { type: 'destroy_creature'; nonlegendary?: boolean }
+  | {
+      type: 'destroy_creature'
+      nonlegendary?: boolean
+      /** Also destroy other challenge permanents with the same name (Maelstrom Pulse). */
+      sameName?: boolean
+    }
   | { type: 'edict' }
   | { type: 'fangs' }
   | { type: 'crawl_cellar' }
   | { type: 'etb_mill_loot'; mill: number }
   | { type: 'etb_miscreant_draw' }
+  | { type: 'etb_tap_opp' }
   | { type: 'terror_discount' }
   | { type: 'delve' }
-  | { type: 'etb_gain_life'; amount: number }
+  | { type: 'etb_gain_life'; amount: number; persist?: boolean }
   | { type: 'etb_exile_opp_graveyard' }
+  /** Scavenging Ooze: {G} exile a GY card; if creature, +1/+1 and gain 1 life. */
+  | { type: 'scavenge_ooze'; manaCost: string }
   | { type: 'activate_sac_damage'; amount: number }
   | { type: 'activate_draw'; manaCost: string; amount: number }
+  | { type: 'activate_sac_exile_gy' }
   | {
       type: 'activate_monstrosity'
       manaCost: string
       power: number
       toughness: number
+      /** After becoming monstrous, destroy a flying challenge creature. */
+      thenDestroyFlyer?: boolean
+      /** After becoming monstrous, fight one challenge creature. */
+      thenFight?: boolean
     }
   | { type: 'anthem_other_flyers'; power: number; toughness: number }
+  | {
+      type: 'anthem_creature_type'
+      creatureType: string
+      power: number
+      toughness: number
+    }
+  | { type: 'anthem_other_creatures'; power: number; toughness: number }
   | { type: 'attack_guide' }
+  | { type: 'attack_pump_per_attacker'; powerPer: number }
+  | {
+      type: 'attack_battalion'
+      power: number
+      toughness: number
+      minAttackers?: number
+    }
+  | { type: 'parish_counters' }
+  /** Thalia's Lieutenant: Human anthem + parish + ETB pump other Humans. */
+  | {
+      type: 'human_lieutenant'
+      power: number
+      toughness: number
+    }
+  | { type: 'heroic_self' }
+  | {
+      type: 'heroic_team'
+      power: number
+      toughness: number
+      grantTrample?: boolean
+    }
+  | {
+      type: 'bestow'
+      manaCost: string
+      power: number
+      toughness: number
+      keywords?: string[]
+    }
+  | {
+      type: 'bloodrush'
+      manaCost: string
+      power: number
+      toughness: number
+    }
+  /** Mausoleum Wanderer: +1/+1 EOT when another Spirit enters. */
+  | { type: 'spirit_etb_pump' }
+  /** Rattlechains: Spirits you cast have flash while this is on the battlefield. */
+  | { type: 'spirits_have_flash' }
+  /** Into the Roil–style bounce with optional kicker draw. */
+  | {
+      type: 'bounce_creature'
+      kicker?: { manaCost: string; draw: number }
+    }
+  /** Silvergill: extra {3} unless another Merfolk is in hand; ETB draw. */
+  | { type: 'silvergill_draw' }
 
 export interface FlashbackSpec {
   manaCost: string
@@ -96,6 +183,12 @@ export const PLAYER_DECKS: PlayerDeckDef[] = [
   terror as PlayerDeckDef,
   burn as PlayerDeckDef,
   skies as PlayerDeckDef,
+  merfolk as PlayerDeckDef,
+  akroan as PlayerDeckDef,
+  nessian as PlayerDeckDef,
+  humans as PlayerDeckDef,
+  spirits as PlayerDeckDef,
+  jund as PlayerDeckDef,
 ]
 
 export const DEFAULT_PLAYER_DECK: PlayerDeckId = 'wildfire'

@@ -18,7 +18,7 @@ export function makePlayerCardInstance(def: ConstructedCardDef): PlayerCardInsta
     cmc: def.cmc,
     power: def.power,
     toughness: def.toughness,
-    keywords: [...def.keywords],
+    keywords: [...(def.keywords ?? [])],
     kind: def.kind,
     produces: def.produces ? [...def.produces] : undefined,
     effect: def.effect,

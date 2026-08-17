@@ -196,7 +196,7 @@ html.is-arena-playing body {
 }
 
 @media (max-width: 960px) and (orientation: portrait) {
-  .arena-root.is-playing > :not(.arena-rotate-gate):not(.arena-bg):not(.arena-bg-veil) {
+  .arena-root.is-playing > :not(.arena-rotate-gate):not(.arena-bg):not(.arena-bg-veil):not(.deck-atmosphere) {
     visibility: hidden;
     pointer-events: none;
   }
@@ -575,23 +575,23 @@ html.is-arena-playing body {
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
-  background-color: #1c1612;
+  background-color: #211a14;
   background-size: 112%;
-  background-position: center;
-  /* Prefer size over transform — scale() expands scrollable overflow on setup pages */
-  filter: blur(14px) saturate(1.05) brightness(1.08);
+  background-position: center 22%;
+  /* Match deck atmosphere; avoid transform:scale — expands setup scroll overflow */
+  filter: blur(14px) saturate(1.05) contrast(1.02) brightness(1.08);
 }
 
 .arena-root.is-playing .arena-bg,
 .arena-root.is-playing .arena-bg-veil {
   position: fixed;
   inset: 0;
-  transform: none;
 }
 
 .arena-root.is-playing .arena-bg {
-  filter: blur(14px) saturate(1.05) brightness(1.08);
+  filter: blur(14px) saturate(1.05) contrast(1.02) brightness(1.08);
   background-size: 112%;
+  background-position: center 22%;
 }
 
 .arena-bg-veil {
@@ -600,8 +600,15 @@ html.is-arena-playing body {
   z-index: 0;
   pointer-events: none;
   background:
-    linear-gradient(180deg, rgba(18, 14, 10, 0.12), rgba(18, 14, 10, 0.2) 45%, rgba(18, 14, 10, 0.28)),
-    radial-gradient(ellipse 80% 50% at 50% 50%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 70%);
+    linear-gradient(
+      180deg,
+      rgba(22, 17, 12, 0.08) 0%,
+      rgba(22, 17, 12, 0.16) 28%,
+      rgba(22, 17, 12, 0.26) 62%,
+      rgba(22, 17, 12, 0.36) 100%
+    ),
+    linear-gradient(90deg, rgba(22, 17, 12, 0.14), transparent 55%, rgba(22, 17, 12, 0.1)),
+    radial-gradient(ellipse 70% 55% at 70% 18%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 68%);
 }
 
 /* TBTH / horde art is high-key — mild dim + left veil so white titles stay readable */
@@ -863,7 +870,7 @@ html.is-arena-playing body {
 
 .setup-deck-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
   gap: 0.65rem;
 }
 
@@ -1061,12 +1068,33 @@ html.is-arena-playing body {
 .prompt-shell.deck-roster-shell {
   width: min(56rem, 96vw);
   max-width: min(56rem, 96vw);
-  max-height: min(90vh, 960px);
-  overflow: auto;
-  display: grid;
-  gap: 1rem;
+  max-height: min(90dvh, 960px);
+  /* Keep AppOverlay flex column so .app-overlay-body can scroll */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  gap: 0;
   padding: 1.25rem 1.45rem 1.15rem;
   border-radius: var(--modal-shell-radius);
+}
+
+.prompt-shell.deck-roster-shell .app-overlay-head {
+  margin-bottom: 0.65rem;
+}
+
+.prompt-shell.deck-roster-shell .app-overlay-body {
+  display: grid;
+  gap: 1rem;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.prompt-shell.deck-roster-shell .app-overlay-foot {
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  justify-content: flex-end;
 }
 
 .deck-roster-head {
@@ -3666,9 +3694,12 @@ button.arena-card {
       72dvh,
       calc(100dvh - 2.25rem - var(--safe-top, 0px) - var(--safe-bottom, 0px))
     );
-    gap: 0.55rem;
     padding: 0.55rem 0.65rem 0.65rem;
     box-sizing: border-box;
+  }
+
+  html.is-challenge-fit .prompt-shell.deck-roster-shell .app-overlay-body {
+    gap: 0.55rem;
   }
 
   html.is-challenge-fit .deck-roster-head h2 {

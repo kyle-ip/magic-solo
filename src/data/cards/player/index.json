@@ -1,3 +1,14 @@
 {
-  "decks": ["wildfire", "terror", "burn", "skies"]
+  "decks": [
+    "wildfire",
+    "terror",
+    "burn",
+    "skies",
+    "merfolk",
+    "akroan",
+    "nessian",
+    "humans",
+    "spirits",
+    "jund"
+  ]
 }

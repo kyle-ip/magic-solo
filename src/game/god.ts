@@ -2,7 +2,7 @@ import { expandLibrary, makeInstance, resetIdSeq } from './buildDeck'
 import {
   baseState,
   beginPlayerTurn,
-  creatureToGyCard,
+  buryPlayerCreatures,
   damagePlayer,
   destroyChallengePermanent,
   revelersOf,
@@ -266,19 +266,10 @@ export function resolveGodCombat(state: GameState): GameState {
       const blockToughness = blockers.reduce((s, b) => s + (b.toughness - b.markedDamage), 0)
       const blockerDeathtouch = blockers.some((b) => creatureHasDeathtouch(b))
       if (atk.keywords.some((k) => /deathtouch/i.test(k)) || /deathtouch/i.test(atk.oracleText)) {
-        next = {
-          ...next,
-          player: {
-            ...next.player,
-            creatures: next.player.creatures.filter(
-              (c) => !blockers.some((b) => b.instanceId === c.instanceId),
-            ),
-            graveyard: [
-              ...blockers.map((b) => creatureToGyCard(b, next.playerDeckId)),
-              ...next.player.graveyard,
-            ],
-          },
-        }
+        next = buryPlayerCreatures(
+          next,
+          blockers.map((b) => b.instanceId),
+        )
       } else {
         // Assign attacker damage across blockers (remaining toughness), like Horde.
         let remaining = power
@@ -305,22 +296,7 @@ export function resolveGodCombat(state: GameState): GameState {
           }
         }
         if (deadIds.length) {
-          const dead = next.player.creatures.filter((c) =>
-            deadIds.includes(c.instanceId),
-          )
-          next = {
-            ...next,
-            player: {
-              ...next.player,
-              creatures: next.player.creatures.filter(
-                (c) => !deadIds.includes(c.instanceId),
-              ),
-              graveyard: [
-                ...dead.map((d) => creatureToGyCard(d, next.playerDeckId)),
-                ...next.player.graveyard,
-              ],
-            },
-          }
+          next = buryPlayerCreatures(next, deadIds)
         }
       }
       // Damage to attacker (not Xenagos if revelers remain — lethal still marks)

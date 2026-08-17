@@ -101,6 +101,7 @@ export function useResolvedCardImageUrl(
 ): string {
   const { primary } = assetCandidates(localPath, opts)
   const [src, setSrc] = useState(primary)
+  const pathKey = `${localPath ?? ''}|${opts?.kind ?? ''}|${opts?.id ?? ''}|${opts?.strategy ?? ''}`
 
   useEffect(() => {
     setSrc(primary)
@@ -112,7 +113,9 @@ export function useResolvedCardImageUrl(
     return () => {
       cancelled = true
     }
-  }, [localPath, primary, opts?.id, opts?.kind, opts?.strategy])
+    // pathKey captures meaningful opts fields (avoid new-object identity churn).
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- pathKey encodes opts
+  }, [pathKey, primary, localPath])
 
   return src
 }

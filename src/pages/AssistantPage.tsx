@@ -48,7 +48,8 @@ import { getCardZh } from '../data/locale/cardsZh'
 import { deckMetaEn, deckMetaZh } from '../data/locale/deckMeta'
 import type { ChallengeCode } from '../game/types'
 import { defsFromDeck } from '../game/types'
-import { CardImage, RemoteArtBackground } from '../hooks/useCardImageSrc'
+import { DeckAtmosphere } from '../components/DeckAtmosphere'
+import { CardImage } from '../hooks/useCardImageSrc'
 import { useArenaScale } from '../hooks/useArenaScale'
 import { useBoardPan } from '../hooks/useBoardPan'
 import {
@@ -701,11 +702,10 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
   }
 
   const noteCard = state.battlefield.find((c) => c?.instanceId === noteEditId)
-  const heroArt =
-    deck?.cards.find((c) => c.images.artCrop === deck.heroArt)?.images.artCrop ??
-    deck?.cards[0]?.images.artCrop
 
   if (!deck) return <Navigate to="/" replace />
+
+  const atmosphere = <DeckAtmosphere deck={deck} />
 
   if (state.status === 'setup') {
     const preloadPct =
@@ -715,8 +715,7 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
     return (
       <>
         <main className={`arena-root assistant-root theme-${deck.theme} is-setup`}>
-          <RemoteArtBackground className="arena-bg" localPath={heroArt} kind="art_crop" />
-          <div className="arena-bg-veil" />
+          {atmosphere}
           <div className={`assistant-setup arena-setup${assetLoading ? ' is-preloading' : ''}`}>
             {assetLoading ? (
               <div className="setup-preload" role="status" aria-live="polite">
@@ -1089,8 +1088,7 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
     >
       <div className="arena-scene-veil" aria-hidden="true" />
       <CardFlightLayer flights={flights} />
-      <RemoteArtBackground className="arena-bg" localPath={heroArt} kind="art_crop" />
-      <div className="arena-bg-veil" />
+      {atmosphere}
 
       <div
         ref={boardStageRef}

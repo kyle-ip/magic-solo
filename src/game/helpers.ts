@@ -75,6 +75,100 @@ export function playerAlive(creature: PlayerCreature): boolean {
   return creature.toughness - creature.markedDamage > 0
 }
 
+/** When a bestowed host dies, the Aura becomes a creature again (CR bestow). */
+export function bestowFalloffCreatures(
+  dead: PlayerCreature[],
+  deckId: string | undefined,
+): PlayerCreature[] {
+  const out: PlayerCreature[] = []
+  for (const d of dead) {
+    if (!d.bestowed) continue
+    const b = d.bestowed
+    const def = findCardDef(b.defId, deckId)
+    out.push({
+      instanceId: b.instanceId,
+      defId: b.defId,
+      name: b.name,
+      power: def?.power ?? b.power,
+      toughness: def?.toughness ?? b.toughness,
+      markedDamage: 0,
+      tapped: false,
+      summoningSickness: false,
+      keywords: def ? [...def.keywords] : [...b.keywords],
+      image: b.image,
+    })
+  }
+  return out
+}
+
+/**
+ * Remove dead player creatures: bestow falloff → creatures; Persist may return;
+ * otherwise to graveyard.
+ */
+export function buryPlayerCreatures(
+  state: GameState,
+  deadIds: string[],
+): GameState {
+  const ids = [...new Set(deadIds)]
+  if (!ids.length) return state
+  const dead = state.player.creatures.filter((c) => ids.includes(c.instanceId))
+  if (!dead.length) return state
+
+  const falloff = bestowFalloffCreatures(dead, state.playerDeckId)
+  const toGy: PlayerCardInstance[] = []
+  const persisted: PlayerCreature[] = []
+
+  for (const d of dead) {
+    const def = findCardDef(d.defId, state.playerDeckId)
+    const hasPersist =
+      def?.effect.type === 'etb_gain_life' && Boolean(def.effect.persist)
+    if (hasPersist && !(d.minusOneCounters ?? 0)) {
+      const baseP = def?.power ?? d.power
+      const baseT = def?.toughness ?? d.toughness
+      persisted.push({
+        instanceId: d.instanceId,
+        defId: d.defId,
+        name: d.name,
+        power: Math.max(0, baseP - 1),
+        toughness: Math.max(0, baseT - 1),
+        markedDamage: 0,
+        tapped: false,
+        summoningSickness: true,
+        keywords: def ? [...def.keywords] : [...d.keywords],
+        image: d.image,
+        produces: d.produces ? [...d.produces] : undefined,
+        minusOneCounters: 1,
+        monstrous: d.monstrous,
+      })
+    } else {
+      toGy.push(creatureToGyCard(d, state.playerDeckId))
+    }
+  }
+
+  let next: GameState = {
+    ...state,
+    player: {
+      ...state.player,
+      creatures: [
+        ...state.player.creatures.filter((c) => !ids.includes(c.instanceId)),
+        ...falloff,
+        ...persisted,
+      ],
+      graveyard: [...toGy, ...state.player.graveyard],
+    },
+  }
+  if (falloff.length) {
+    next = pushLog(next, 'bestowFalloff', 'info', { n: falloff.length })
+  }
+  for (const p of persisted) {
+    next = pushLog(next, 'persistReturn', 'good', { name: p.name })
+  }
+  if (toGy.length) {
+    next = pushLog(next, 'yourCreaturesDie', 'bad', { n: toGy.length })
+  }
+  return next
+}
+
 export function isIndestructible(state: GameState, card: CardInstance): boolean {
   return card.indestructible || (card.isHead && state.flags.headsIndestructible)
 }
@@ -579,6 +673,7 @@ export function emptyFlags() {
     hydraTriggersDone: false,
     hydraBreathDone: false,
     preventCombatDamageThisTurn: false,
+    spiritsHaveFlash: false,
   }
 }
 
@@ -656,35 +751,13 @@ export function damagePlayerCreatures(
 ): GameState {
   if (amount <= 0) return state
   let next = { ...state, player: { ...state.player, creatures: [...state.player.creatures] } }
+  const deadIds: string[] = []
   const survivors: PlayerCreature[] = []
-  const dead: PlayerCardInstance[] = []
   for (const c of next.player.creatures) {
     next = addFxPop(next, { targetId: c.instanceId, kind: 'damage', amount }, 'damage')
     const dmg = c.markedDamage + amount
     if (c.toughness - dmg <= 0) {
-      const def = findCardDef(c.defId, state.playerDeckId)
-      dead.push(
-        def
-          ? { ...makePlayerCardInstance(def), instanceId: c.instanceId }
-          : {
-              instanceId: c.instanceId,
-              defId: c.defId,
-              name: c.name,
-              nameZh: c.name,
-              typeLine: 'Creature',
-              typeLineZh: '',
-              oracleText: '',
-              oracleTextZh: '',
-              manaCost: '',
-              cmc: 0,
-              power: c.power,
-              toughness: c.toughness,
-              keywords: [...c.keywords],
-              kind: 'creature',
-              image: c.image,
-              effect: { type: 'none' },
-            },
-      )
+      deadIds.push(c.instanceId)
     } else survivors.push({ ...c, markedDamage: dmg })
   }
   next = {
@@ -692,13 +765,9 @@ export function damagePlayerCreatures(
     player: {
       ...next.player,
       creatures: survivors,
-      graveyard: [...dead, ...next.player.graveyard],
     },
   }
-  if (dead.length) {
-    next = pushLog(next, 'yourCreaturesDie', 'bad', { n: dead.length })
-  }
-  return next
+  return buryPlayerCreatures(next, deadIds)
 }
 
 /** Tick Hide duration at end of a Hydra turn. Cast sets countdown to 2. */

@@ -1,0 +1,218 @@
+{
+  "id": "humans",
+  "name": "Parish Host",
+  "nameZh": "教区人海",
+  "blurb": "White Human tribal adapted from Modern Humans: Parish counters, Lieutenant anthem, and cheap bodies with exile removal.",
+  "blurbZh": "自近代人类改编的白色人类部族：教区冠军指示物、中尉颂歌、廉价生物配合放逐清除。",
+  "colors": [
+    "W"
+  ],
+  "archetype": "aggro",
+  "hint": "Curve Humans into Parish and Lieutenant; keep pressure wide for lords.",
+  "hintZh": "曲线铺人类接冠军与中尉；保持宽场面吃满领主加成。",
+  "hintByChallenge": {
+    "tfth": {
+      "en": "Wide Human boards carve Heads; exile must-answer Heads.",
+      "zh": "宽人类场面砍头颅；用放逐处理必须回答的头颅。"
+    },
+    "tbth": {
+      "en": "Race the Horde with anthemed Humans; removal buys time.",
+      "zh": "用颂歌人类与部落赛跑；清除换时间。"
+    },
+    "tdag": {
+      "en": "Exile Revelers so Xenagos can die to the Human swarm.",
+      "zh": "放逐狂欢者，人类海才能击杀泽纳加思。"
+    }
+  },
+  "art": "assets/cards/player/ec2120ff-a6d4-4192-96c0-33c139155ddf-art.jpg",
+  "cards": [
+    {
+      "id": "ec2120ff-a6d4-4192-96c0-33c139155ddf",
+      "quantity": 4,
+      "name": "Champion of the Parish",
+      "nameZh": "教区斗士",
+      "typeLine": "Creature — Human Soldier",
+      "typeLineZh": "生物～人类／士兵",
+      "oracleText": "Whenever another Human you control enters, put a +1/+1 counter on this creature.\n(Challenge: whenever another Human you control enters, this gets a +1/+1 counter.)",
+      "oracleTextZh": "每当另一个人类在你的操控下进战场时，在教区斗士上放置一个+1/+1指示物。\n（挑战：每当另一个由你操控的人类进场时，此生物获得一个+1/+1指示物。）",
+      "manaCost": "{W}",
+      "cmc": 1,
+      "power": 1,
+      "toughness": 1,
+      "keywords": [],
+      "kind": "creature",
+      "effect": {
+        "type": "parish_counters"
+      },
+      "image": "assets/cards/player/ec2120ff-a6d4-4192-96c0-33c139155ddf-normal.jpg"
+    },
+    {
+      "id": "9c2000ef-3e6b-4f44-8bd6-ed8119336d5a",
+      "quantity": 4,
+      "name": "Thalia's Lieutenant",
+      "nameZh": "莎利雅的副官",
+      "typeLine": "Creature — Human Soldier",
+      "typeLineZh": "生物～人类／士兵",
+      "oracleText": "When this creature enters, put a +1/+1 counter on each other Human you control.\nOther Human creatures you control get +1/+1.\nWhenever another Human you control enters, put a +1/+1 counter on this creature.",
+      "oracleTextZh": "当此生物进战场时，在每个由你操控的其他人类上各放置一个+1/+1指示物。\n由你操控的其他人类生物得+1/+1。\n每当另一个由你操控的人类进场时，在此生物上放置一个+1/+1指示物。",
+      "manaCost": "{1}{W}",
+      "cmc": 2,
+      "power": 1,
+      "toughness": 1,
+      "keywords": [],
+      "kind": "creature",
+      "effect": {
+        "type": "human_lieutenant",
+        "power": 1,
+        "toughness": 1
+      },
+      "image": "assets/cards/player/9c2000ef-3e6b-4f44-8bd6-ed8119336d5a-normal.jpg"
+    },
+    {
+      "id": "5cfc0f46-4df4-4ae3-bfe6-391916eb590f",
+      "quantity": 4,
+      "name": "Soldier of the Pantheon",
+      "nameZh": "万神殿卫",
+      "typeLine": "Creature — Human Soldier",
+      "typeLineZh": "生物～人类／士兵",
+      "oracleText": "Protection from multicolored\nWhenever an opponent casts a multicolored spell, you gain 1 life.\n(Challenge: protection from multicolored omitted — 2/1 Human body.)",
+      "oracleTextZh": "反多色保护\n每当任一对手施放多色咒语时，你获得1点生命。\n（挑战：省略防多色——仅 2/1 人类身材。）",
+      "manaCost": "{W}",
+      "cmc": 1,
+      "power": 2,
+      "toughness": 1,
+      "keywords": [],
+      "kind": "creature",
+      "effect": {
+        "type": "none"
+      },
+      "image": "assets/cards/player/5cfc0f46-4df4-4ae3-bfe6-391916eb590f-normal.jpg"
+    },
+    {
+      "id": "28a5c350-2ed1-4a25-9626-0f8da5d1aef7",
+      "quantity": 4,
+      "name": "Elite Vanguard",
+      "nameZh": "菁英先锋",
+      "typeLine": "Creature — Human Soldier",
+      "typeLineZh": "生物～人类／士兵",
+      "oracleText": "",
+      "oracleTextZh": "",
+      "manaCost": "{W}",
+      "cmc": 1,
+      "power": 2,
+      "toughness": 1,
+      "keywords": [],
+      "kind": "creature",
+      "effect": {
+        "type": "none"
+      },
+      "image": "assets/cards/player/28a5c350-2ed1-4a25-9626-0f8da5d1aef7-normal.jpg"
+    },
+    {
+      "id": "08a5007f-06a0-40fa-a252-c38baa6b5c6f",
+      "quantity": 4,
+      "name": "Thraben Inspector",
+      "nameZh": "瑟班巡检官",
+      "typeLine": "Creature — Human Soldier",
+      "typeLineZh": "生物 — 人类／士兵",
+      "oracleText": "When this creature enters, investigate. (Create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")\n(Challenge: Clue omitted — enters and draws a card.)",
+      "oracleTextZh": "当瑟班巡检官进战场时，探查。（派出一个线索衍生物。它是具有「{2}，牺牲此神器：抓一张牌」的神器。）\n（挑战：省略线索——进场抓一张牌。）",
+      "manaCost": "{W}",
+      "cmc": 1,
+      "power": 1,
+      "toughness": 2,
+      "keywords": [],
+      "kind": "creature",
+      "effect": {
+        "type": "draw",
+        "amount": 1
+      },
+      "image": "assets/cards/player/08a5007f-06a0-40fa-a252-c38baa6b5c6f-normal.jpg"
+    },
+    {
+      "id": "fc395215-a2ec-49e1-9b1b-f8fcfe73e361",
+      "quantity": 3,
+      "name": "Benalish Marshal",
+      "nameZh": "宾纳里亚元帅",
+      "typeLine": "Creature — Human Knight",
+      "typeLineZh": "生物 ～人类／骑士",
+      "oracleText": "Other creatures you control get +1/+1.",
+      "oracleTextZh": "由你操控的其他生物得+1/+1。",
+      "manaCost": "{W}{W}{W}",
+      "cmc": 3,
+      "power": 3,
+      "toughness": 3,
+      "keywords": [],
+      "kind": "creature",
+      "effect": {
+        "type": "anthem_other_creatures",
+        "power": 1,
+        "toughness": 1
+      },
+      "image": "assets/cards/player/fc395215-a2ec-49e1-9b1b-f8fcfe73e361-normal.jpg"
+    },
+    {
+      "id": "4686b51c-e02b-48c1-bafe-e8d08a5407b9",
+      "quantity": 4,
+      "name": "Journey to Nowhere",
+      "nameZh": "未知旅程",
+      "typeLine": "Enchantment",
+      "typeLineZh": "结界",
+      "oracleText": "When this enchantment enters, exile target creature.\nWhen this enchantment leaves the battlefield, return the exiled card to the battlefield under its owner's control.\n(Challenge: exile is treated as destroying the challenge permanent.)",
+      "oracleTextZh": "当未知旅程进战场时，放逐目标生物。\n当未知旅程离开战场时，将所放逐的牌在其拥有者的操控下移回战场。\n（挑战：放逐按消灭挑战永久物处理。）",
+      "manaCost": "{1}{W}",
+      "cmc": 2,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "sorcery",
+      "effect": {
+        "type": "destroy_creature"
+      },
+      "image": "assets/cards/player/4686b51c-e02b-48c1-bafe-e8d08a5407b9-normal.jpg"
+    },
+    {
+      "id": "d53c7e49-745d-48ba-bc50-240472a4f039",
+      "quantity": 3,
+      "name": "Banishing Light",
+      "nameZh": "驱逐明光",
+      "typeLine": "Enchantment",
+      "typeLineZh": "结界",
+      "oracleText": "When this enchantment enters, exile target nonland permanent an opponent controls until this enchantment leaves the battlefield.\n(Challenge: exile is treated as destroying the challenge permanent.)",
+      "oracleTextZh": "当驱逐明光进战场时，放逐目标由对手操控的非地永久物，直到驱逐明光离开战场为止。\n（挑战：放逐按消灭挑战永久物处理。）",
+      "manaCost": "{2}{W}",
+      "cmc": 3,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "sorcery",
+      "effect": {
+        "type": "destroy_creature"
+      },
+      "image": "assets/cards/player/d53c7e49-745d-48ba-bc50-240472a4f039-normal.jpg"
+    },
+    {
+      "id": "8ab0f4c0-b331-4c57-b68f-2e24bb5ba06c",
+      "quantity": 30,
+      "name": "Plains",
+      "nameZh": "平原",
+      "typeLine": "Basic Land — Plains",
+      "typeLineZh": "基本地 — 平原",
+      "oracleText": "({T}: Add {W}.)",
+      "oracleTextZh": "({T}: Add {W}.)",
+      "manaCost": "",
+      "cmc": 0,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "land",
+      "produces": [
+        "W"
+      ],
+      "effect": {
+        "type": "none"
+      },
+      "image": "assets/cards/player/8ab0f4c0-b331-4c57-b68f-2e24bb5ba06c-normal.jpg"
+    }
+  ]
+}

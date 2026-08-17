@@ -60,8 +60,8 @@ function producesFrom(name, typeLine, oracleText) {
 const DECKS = {
   burn: {
     id: 'burn',
-    name: 'Challenge Burn',
-    nameZh: '挑战燃烧',
+    name: 'Ember Barrage',
+    nameZh: '焦炎齐射',
     blurb:
       'Low-curve red burn adapted for Challenge: haste attackers and Lightning Bolt-style damage to Heads, the Horde library, or Revelers.',
     blurbZh:
@@ -242,6 +242,620 @@ const DECKS = {
       },
     ],
   },
+  merfolk: {
+    id: 'merfolk',
+    name: 'Pearl Trident',
+    nameZh: '珍珠三叉戟',
+    blurb:
+      'Blue Merfolk tempo adapted for Challenge: lords pump the tribe, cheap body pressure, and bounce/removal to clear Heads or Revelers.',
+    blurbZh:
+      '为挑战精简的蓝人人鱼节奏：领主加成部族，廉价生物施压，弹回/清除对付头颅或狂欢者。',
+    colors: ['U'],
+    archetype: 'tempo',
+    hint: 'Curve lords, then swing wide. Bounce or destroy must-answer threats before combat.',
+    hintZh: '先铺领主再宽攻；开战前弹回或消灭必须回答的威胁。',
+    hintByChallenge: {
+      tfth: {
+        en: 'Lords make small Merfolk chop Heads quickly; save removal for regenerating threats.',
+        zh: '领主让小人鱼快速砍头颅；清除留给会再生的威胁。',
+      },
+      tbth: {
+        en: 'Wide boards mill the Horde; bounce buys a turn when the pile is lethal.',
+        zh: '宽场面磨部落牌库；致命时弹回可换一回合。',
+      },
+      tdag: {
+        en: 'Clear Revelers first so lords can finish Xenagos.',
+        zh: '先清狂欢者，领主加成才能收尾泽纳加思。',
+      },
+    },
+    artCard: 'Lord of Atlantis',
+    list: [
+      {
+        name: 'Lord of Atlantis',
+        quantity: 4,
+        keywords: [],
+        effect: {
+          type: 'anthem_creature_type',
+          creatureType: 'Merfolk',
+          power: 1,
+          toughness: 1,
+        },
+        oracleNote:
+          '(Challenge: other Merfolk you control get +1/+1; islandwalk omitted.)',
+        oracleNoteZh: '（挑战：由你操控的其他人鱼得+1/+1；海岛行省略。）',
+      },
+      {
+        name: 'Master of the Pearl Trident',
+        quantity: 4,
+        keywords: [],
+        effect: {
+          type: 'anthem_creature_type',
+          creatureType: 'Merfolk',
+          power: 1,
+          toughness: 1,
+        },
+        oracleNote:
+          '(Challenge: other Merfolk you control get +1/+1; islandwalk omitted.)',
+        oracleNoteZh: '（挑战：由你操控的其他人鱼得+1/+1；海岛行省略。）',
+      },
+      {
+        name: 'Merfolk of the Pearl Trident',
+        quantity: 4,
+        keywords: [],
+        effect: { type: 'none' },
+      },
+      {
+        name: 'Coral Merfolk',
+        quantity: 4,
+        keywords: [],
+        effect: { type: 'none' },
+      },
+      {
+        name: 'Merfolk Trickster',
+        quantity: 4,
+        keywords: ['Flash'],
+        effect: { type: 'none' },
+        oracleNote:
+          '(Challenge: ETB tap/hexproof strip omitted — flash body only.)',
+        oracleNoteZh: '（挑战：省略进场横置/去辟邪；仅作闪现生物。）',
+      },
+      {
+        name: 'Silvergill Adept',
+        quantity: 4,
+        keywords: [],
+        effect: { type: 'draw', amount: 1 },
+        oracleNote:
+          '(Challenge: enters, draw a card; reveal Merfolk cost omitted — always draws.)',
+        oracleNoteZh: '（挑战：进场抓一张；省略展示人鱼费用——始终抓牌。）',
+      },
+      // draw on ETB for creature - need to check if draw effect works on creature cast
+      {
+        name: 'Unsummon',
+        quantity: 4,
+        effect: { type: 'destroy_creature' },
+        oracleNote:
+          '(Challenge: bounce treated as destroying the challenge permanent.)',
+        oracleNoteZh: '（挑战：弹回按消灭挑战永久物处理。）',
+      },
+      {
+        name: 'Into the Roil',
+        quantity: 3,
+        effect: { type: 'destroy_creature' },
+        oracleNote:
+          '(Challenge: bounce treated as destroying the challenge permanent; kicker draw omitted.)',
+        oracleNoteZh: '（挑战：弹回按消灭挑战永久物处理；起动式抓牌省略。）',
+      },
+      {
+        name: 'Opt',
+        quantity: 4,
+        effect: { type: 'scry_draw', scry: 1, draw: 1 },
+      },
+      { name: 'Island', quantity: 25, effect: { type: 'none' } },
+    ],
+  },
+  akroan: {
+    id: 'akroan',
+    name: 'Akroan Legion',
+    nameZh: '阿喀洛斯军团',
+    blurb:
+      'White-red Theros soldiers: first strike, vigilance, and flying pressure for chopping Heads and holding the line.',
+    blurbZh: '红白 Theros 士兵：先攻、警戒与飞行施压，适合砍头颅与稳住防线。',
+    colors: ['W', 'R'],
+    archetype: 'aggro',
+    hint: 'Attack with multiple creatures to pump Hoplite; first strikers carve Heads before breath.',
+    hintZh: '多生物进攻触发步兵泵攻；先攻者在吐息前切掉头颅。',
+    hintByChallenge: {
+      tfth: {
+        en: 'First strike and Hoplite pumps race Heads; chump flyers into breath when needed.',
+        zh: '先攻与步兵泵攻抢掉头颅；必要时用飞行挡吐息。',
+      },
+      tbth: {
+        en: 'Burn mills the Horde; keep a wide attack for Hoplite.',
+        zh: '直伤磨部落；保持宽攻触发步兵。',
+      },
+      tdag: {
+        en: 'Clear Revelers with burn or Archon, then finish Xenagos.',
+        zh: '用直伤或执政清狂欢者，再收尾泽纳加思。',
+      },
+    },
+    artCard: 'Akroan Hoplite',
+    list: [
+      {
+        name: 'Akroan Hoplite',
+        quantity: 4,
+        keywords: [],
+        effect: { type: 'attack_pump_per_attacker', powerPer: 1 },
+        oracleNote:
+          '(Challenge: when this attacks, it gets +1/+0 until end of turn for each attacking creature you control.)',
+        oracleNoteZh:
+          '（挑战：当此生物攻击时，攻击中由你操控的生物每有一个，它便得+1/+0直到回合结束。）',
+      },
+      {
+        name: 'Oreskos Swiftclaw',
+        quantity: 4,
+        keywords: ['First strike'],
+        effect: { type: 'none' },
+      },
+      {
+        name: 'Wingsteed Rider',
+        quantity: 4,
+        keywords: ['Flying'],
+        effect: { type: 'none' },
+        oracleNote: '(Challenge: Heroic omitted.)',
+        oracleNoteZh: '（挑战：省略英雄纪元异能。）',
+      },
+      {
+        name: 'Observant Alseid',
+        quantity: 4,
+        keywords: ['Vigilance'],
+        effect: { type: 'none' },
+        oracleNote: '(Challenge: Bestow omitted.)',
+        oracleNoteZh: '（挑战：省略寄身异能。）',
+      },
+      {
+        name: 'Anax and Cymede',
+        quantity: 2,
+        keywords: ['First strike', 'Vigilance'],
+        effect: { type: 'none' },
+        oracleNote: '(Challenge: Heroic omitted.)',
+        oracleNoteZh: '（挑战：省略英雄纪元异能。）',
+      },
+      {
+        name: 'Celestial Archon',
+        quantity: 2,
+        keywords: ['Flying', 'First strike'],
+        effect: { type: 'none' },
+        oracleNote: '(Challenge: Bestow omitted.)',
+        oracleNoteZh: '（挑战：省略寄身异能。）',
+      },
+      {
+        name: 'Boros Elite',
+        quantity: 4,
+        keywords: [],
+        effect: { type: 'attack_battalion', power: 2, toughness: 2, minAttackers: 3 },
+        oracleNote:
+          '(Challenge: Battalion — when this and at least two other creatures attack, it gets +2/+2 until end of turn.)',
+        oracleNoteZh:
+          '（挑战：营队——当此生物与至少两个其他生物攻击时，它得+2/+2直到回合结束。）',
+      },
+      { name: 'Lightning Strike', quantity: 4, effect: { type: 'damage_any', amount: 3 } },
+      { name: 'Shock', quantity: 4, effect: { type: 'damage_any', amount: 2 } },
+      {
+        name: 'Journey to Nowhere',
+        quantity: 3,
+        effect: { type: 'destroy_creature' },
+        oracleNote:
+          '(Challenge: exile is treated as destroying the challenge permanent.)',
+        oracleNoteZh: '（挑战：放逐按消灭挑战永久物处理。）',
+      },
+      { name: 'Plains', quantity: 13, effect: { type: 'none' } },
+      { name: 'Mountain', quantity: 12, effect: { type: 'none' } },
+    ],
+  },
+  nessian: {
+    id: 'nessian',
+    name: 'Nessian Wilds',
+    nameZh: '涅西恩荒野',
+    blurb:
+      'Green Theros beasts with reach and trample — sturdy blockers that finish wide boards late.',
+    blurbZh: '具延势与践踏的绿色 Theros 野兽——能挡能打，后期清场。',
+    colors: ['G'],
+    archetype: 'midrange',
+    hint: 'Ramp into Asp and Colossus; fight or trample through blockers; Fog the lethal breath.',
+    hintZh: '加速拍出蚺与巨像；互斗或践踏过挡者；浓雾挡致命吐息。',
+    hintByChallenge: {
+      tfth: {
+        en: 'Reach blocks flying Heads; trample spills excess to the next Head.',
+        zh: '延势挡飞行头颅；践踏超额溢到下一头颅。',
+      },
+      tbth: {
+        en: 'Big tramplers mill the Horde; fight clears Minotaurs.',
+        zh: '大型践踏磨部落；互斗清牛头人。',
+      },
+      tdag: {
+        en: 'Trample over Revelers into Xenagos; keep Fog for combat.',
+        zh: '践踏过狂欢者打到泽纳加思；浓雾留给战斗。',
+      },
+    },
+    artCard: 'Arbor Colossus',
+    list: [
+      {
+        name: 'Leafcrown Dryad',
+        quantity: 4,
+        keywords: ['Reach'],
+        effect: { type: 'none' },
+        oracleNote: '(Challenge: Bestow omitted.)',
+        oracleNoteZh: '（挑战：省略寄身异能。）',
+      },
+      {
+        name: 'Kalonian Tusker',
+        quantity: 4,
+        keywords: [],
+        effect: { type: 'none' },
+      },
+      {
+        name: 'Nessian Courser',
+        quantity: 4,
+        keywords: [],
+        effect: { type: 'none' },
+      },
+      {
+        name: 'Slaughterhorn',
+        quantity: 4,
+        keywords: ['Trample'],
+        effect: { type: 'none' },
+        oracleNote:
+          '(Challenge: Bloodrush omitted; Trample granted for Challenge midrange.)',
+        oracleNoteZh: '（挑战：省略血奔；为挑战中速赋予践踏。）',
+      },
+      {
+        name: 'Nessian Asp',
+        quantity: 3,
+        keywords: ['Reach'],
+        effect: {
+          type: 'activate_monstrosity',
+          manaCost: '{6}{G}',
+          power: 4,
+          toughness: 4,
+        },
+      },
+      {
+        name: 'Arbor Colossus',
+        quantity: 2,
+        keywords: ['Reach'],
+        effect: {
+          type: 'activate_monstrosity',
+          manaCost: '{3}{G}{G}{G}',
+          power: 3,
+          toughness: 3,
+        },
+        oracleNote:
+          '(Challenge: monstrosity destroy-flyer trigger omitted.)',
+        oracleNoteZh: '（挑战：省略庞大化消灭飞行生物的触发。）',
+      },
+      {
+        name: 'Elvish Mystic',
+        quantity: 4,
+        keywords: [],
+        effect: { type: 'mana_dork', color: 'G' },
+      },
+      { name: 'Prey Upon', quantity: 4, effect: { type: 'fight' } },
+      { name: 'Fog', quantity: 4, effect: { type: 'fog' } },
+      {
+        name: 'Giant Growth',
+        quantity: 3,
+        effect: { type: 'pump_target', power: 3, toughness: 3 },
+      },
+      { name: 'Forest', quantity: 24, effect: { type: 'none' } },
+    ],
+  },
+  humans: {
+    id: 'humans',
+    name: 'Parish Host',
+    nameZh: '教区人海',
+    blurb:
+      'White Human tribal adapted from Modern Humans: Parish counters, Lieutenant anthem, and cheap bodies with exile removal.',
+    blurbZh:
+      '自近代人类改编的白色人类部族：教区冠军指示物、中尉颂歌、廉价生物配合放逐清除。',
+    colors: ['W'],
+    archetype: 'aggro',
+    hint: 'Curve Humans into Parish and Lieutenant; keep pressure wide for lords.',
+    hintZh: '曲线铺人类接冠军与中尉；保持宽场面吃满领主加成。',
+    hintByChallenge: {
+      tfth: {
+        en: 'Wide Human boards carve Heads; exile must-answer Heads.',
+        zh: '宽人类场面砍头颅；用放逐处理必须回答的头颅。',
+      },
+      tbth: {
+        en: 'Race the Horde with anthemed Humans; removal buys time.',
+        zh: '用颂歌人类与部落赛跑；清除换时间。',
+      },
+      tdag: {
+        en: 'Exile Revelers so Xenagos can die to the Human swarm.',
+        zh: '放逐狂欢者，人类海才能击杀泽纳加思。',
+      },
+    },
+    artCard: 'Champion of the Parish',
+    list: [
+      {
+        name: 'Champion of the Parish',
+        quantity: 4,
+        keywords: [],
+        effect: { type: 'parish_counters' },
+        oracleNote:
+          '(Challenge: whenever another Human you control enters, this gets a +1/+1 counter.)',
+        oracleNoteZh:
+          '（挑战：每当另一个由你操控的人类进场时，此生物获得一个+1/+1指示物。）',
+      },
+      {
+        name: "Thalia's Lieutenant",
+        quantity: 4,
+        keywords: [],
+        effect: {
+          type: 'anthem_creature_type',
+          creatureType: 'Human',
+          power: 1,
+          toughness: 1,
+        },
+        oracleNote:
+          '(Challenge: other Humans you control get +1/+1; ETB pump omitted — static anthem only.)',
+        oracleNoteZh:
+          '（挑战：由你操控的其他人类得+1/+1；省略进场泵攻——仅静态颂歌。）',
+      },
+      {
+        name: 'Soldier of the Pantheon',
+        quantity: 4,
+        keywords: [],
+        effect: { type: 'none' },
+        oracleNote:
+          '(Challenge: protection from multicolored omitted — 2/1 Human body.)',
+        oracleNoteZh: '（挑战：省略防多色——仅 2/1 人类身材。）',
+      },
+      {
+        name: 'Elite Vanguard',
+        quantity: 4,
+        keywords: [],
+        effect: { type: 'none' },
+      },
+      {
+        name: 'Thraben Inspector',
+        quantity: 4,
+        keywords: [],
+        effect: { type: 'draw', amount: 1 },
+        oracleNote:
+          '(Challenge: Clue omitted — enters and draws a card.)',
+        oracleNoteZh: '（挑战：省略线索——进场抓一张牌。）',
+      },
+      {
+        name: 'Benalish Marshal',
+        quantity: 3,
+        keywords: [],
+        effect: {
+          type: 'anthem_creature_type',
+          creatureType: 'Human',
+          power: 1,
+          toughness: 1,
+        },
+        oracleNote:
+          '(Challenge: other creatures get +1/+1 approximated as other Humans +1/+1.)',
+        oracleNoteZh:
+          '（挑战：其他生物+1/+1 近似为其他人类+1/+1。）',
+      },
+      {
+        name: 'Journey to Nowhere',
+        quantity: 4,
+        effect: { type: 'destroy_creature' },
+        oracleNote:
+          '(Challenge: exile is treated as destroying the challenge permanent.)',
+        oracleNoteZh: '（挑战：放逐按消灭挑战永久物处理。）',
+      },
+      {
+        name: 'Banishing Light',
+        quantity: 3,
+        effect: { type: 'destroy_creature' },
+        oracleNote:
+          '(Challenge: exile is treated as destroying the challenge permanent.)',
+        oracleNoteZh: '（挑战：放逐按消灭挑战永久物处理。）',
+      },
+      { name: 'Plains', quantity: 30, effect: { type: 'none' } },
+    ],
+  },
+  spirits: {
+    id: 'spirits',
+    name: 'Spectral Chorus',
+    nameZh: '幽影合唱',
+    blurb:
+      'White-blue Spirit tempo adapted from Pioneer Spirits: flying lords, flash bodies, and bounce/removal.',
+    blurbZh:
+      '自先驱精怪改编的白蓝精怪节奏：飞行领主、闪现身材、弹回与清除。',
+    colors: ['W', 'U'],
+    archetype: 'tempo',
+    hint: 'Curve Spirit lords, flash in blockers, then clear Revelers or Heads before swinging.',
+    hintZh: '曲线精怪领主，闪现挡者，开战前清狂欢者或头颅。',
+    hintByChallenge: {
+      tfth: {
+        en: 'Flyers race Heads; bounce resets a regenerating Head.',
+        zh: '飞行与头颅赛跑；弹回可重置会再生的头颅。',
+      },
+      tbth: {
+        en: 'Anthemed flyers mill the Horde; flash blocks buy a turn.',
+        zh: '颂歌飞行磨部落；闪现阻挡换回合。',
+      },
+      tdag: {
+        en: 'Remove Revelers, then finish Xenagos in the air.',
+        zh: '先清狂欢者，再从空中收尾泽纳加思。',
+      },
+    },
+    artCard: 'Supreme Phantom',
+    list: [
+      {
+        name: 'Supreme Phantom',
+        quantity: 4,
+        keywords: ['Flying'],
+        effect: {
+          type: 'anthem_creature_type',
+          creatureType: 'Spirit',
+          power: 1,
+          toughness: 1,
+        },
+      },
+      {
+        name: 'Mausoleum Wanderer',
+        quantity: 4,
+        keywords: ['Flying'],
+        effect: { type: 'none' },
+        oracleNote:
+          '(Challenge: spell-counter / power-from-Spirits omitted — flying Spirit body.)',
+        oracleNoteZh: '（挑战：省略反击与按精怪数加力——仅飞行精怪身材。）',
+      },
+      {
+        name: 'Rattlechains',
+        quantity: 4,
+        keywords: ['Flash', 'Flying'],
+        effect: { type: 'none' },
+        oracleNote:
+          '(Challenge: give-flash / hexproof to Spirits omitted — flash flyer.)',
+        oracleNoteZh: '（挑战：省略赋予闪现/辟邪——仅闪现飞行。）',
+      },
+      {
+        name: 'Spectral Sailor',
+        quantity: 4,
+        keywords: ['Flash', 'Flying'],
+        effect: { type: 'activate_draw', manaCost: '{3}{U}', amount: 1 },
+      },
+      {
+        name: 'Remorseful Cleric',
+        quantity: 3,
+        keywords: ['Flying'],
+        effect: { type: 'none' },
+        oracleNote:
+          '(Challenge: activate exile graveyard omitted — flying Spirit body.)',
+        oracleNoteZh: '（挑战：省略启动放逐坟墓——仅飞行精怪身材。）',
+      },
+      {
+        name: 'Empyrean Eagle',
+        quantity: 3,
+        keywords: ['Flying'],
+        effect: { type: 'anthem_other_flyers', power: 1, toughness: 1 },
+      },
+      {
+        name: 'Unsummon',
+        quantity: 4,
+        effect: { type: 'destroy_creature' },
+        oracleNote:
+          '(Challenge: bounce treated as destroying the challenge permanent.)',
+        oracleNoteZh: '（挑战：弹回按消灭挑战永久物处理。）',
+      },
+      {
+        name: 'Journey to Nowhere',
+        quantity: 3,
+        effect: { type: 'destroy_creature' },
+        oracleNote:
+          '(Challenge: exile is treated as destroying the challenge permanent.)',
+        oracleNoteZh: '（挑战：放逐按消灭挑战永久物处理。）',
+      },
+      { name: 'Opt', quantity: 4, effect: { type: 'scry_draw', scry: 1, draw: 1 } },
+      { name: 'Plains', quantity: 12, effect: { type: 'none' } },
+      { name: 'Island', quantity: 15, effect: { type: 'none' } },
+    ],
+  },
+  jund: {
+    id: 'jund',
+    name: 'Bloodbraid Barrens',
+    nameZh: '血辫荒原',
+    blurb:
+      'Black-red-green midrange adapted from Modern Jund: value creatures, bolts, and fight/removal to grind Challenge boards.',
+    blurbZh:
+      '自近代杰恩德改编的黑红绿中速：价值生物、闪电击与互斗/清除，磨掉挑战场面。',
+    colors: ['B', 'R', 'G'],
+    archetype: 'midrange',
+    hint: 'Curve midrange threats; bolt or fight key permanents; grind with card advantage.',
+    hintZh: '曲线中速威胁；用闪电或互斗清关键永久物；用卡优磨穿。',
+    hintByChallenge: {
+      tfth: {
+        en: 'Fight and bolt Heads; Fog the big breath turns.',
+        zh: '互斗与闪电砍头颅；大吐息回合用浓雾。',
+      },
+      tbth: {
+        en: 'Bolts mill the Horde; keep pressure with hasty threats.',
+        zh: '闪电磨部落；用敏捷威胁持续施压。',
+      },
+      tdag: {
+        en: 'Clear Revelers with removal, then finish Xenagos.',
+        zh: '用清除清狂欢者，再收尾泽纳加思。',
+      },
+    },
+    artCard: 'Bloodbraid Elf',
+    list: [
+      {
+        name: 'Bloodbraid Elf',
+        quantity: 4,
+        keywords: ['Haste'],
+        effect: { type: 'draw', amount: 1 },
+        oracleNote:
+          '(Challenge: cascade approximated as draw a card on ETB.)',
+        oracleNoteZh: '（挑战：倾曳近似为进场抓一张牌。）',
+      },
+      {
+        name: 'Tarmogoyf',
+        quantity: 4,
+        keywords: [],
+        effect: {
+          type: 'etb_self_pump',
+          power: 2,
+          toughness: 2,
+          untilEndOfTurn: false,
+        },
+        oracleNote:
+          '(Challenge: enters as 2/3 then sticky +2/+2 — approximate CDAs without counting types.)',
+        oracleNoteZh:
+          '（挑战：以 2/3 进场并永久 +2/+2 近似——不按牌类计数。）',
+      },
+      {
+        name: 'Scavenging Ooze',
+        quantity: 3,
+        keywords: [],
+        effect: { type: 'scavenge_ooze', manaCost: '{G}' },
+        oracleNote:
+          '(Challenge: double-click to pay {G}; prefers challenge graveyard.)',
+        oracleNoteZh: '（挑战：双击支付{G}；优先挑战坟墓场。）',
+      },
+      {
+        name: 'Kitchen Finks',
+        quantity: 3,
+        keywords: [],
+        effect: { type: 'etb_gain_life', amount: 2, persist: true },
+      },
+      {
+        name: 'Lightning Bolt',
+        quantity: 4,
+        effect: { type: 'damage_any', amount: 3 },
+      },
+      {
+        name: 'Terminate',
+        quantity: 4,
+        effect: { type: 'destroy_creature' },
+      },
+      {
+        name: 'Maelstrom Pulse',
+        quantity: 2,
+        effect: { type: 'destroy_creature', sameName: true },
+        oracleNote:
+          '(Challenge: challenge creatures only; same-name wipe included.)',
+        oracleNoteZh: '（挑战：仅挑战生物；含同名清场。）',
+      },
+      { name: 'Prey Upon', quantity: 3, effect: { type: 'fight' } },
+      { name: 'Fog', quantity: 3, effect: { type: 'fog' } },
+      {
+        name: 'Elvish Mystic',
+        quantity: 4,
+        effect: { type: 'mana_dork', color: 'G' },
+      },
+      { name: 'Swamp', quantity: 8, effect: { type: 'none' } },
+      { name: 'Mountain', quantity: 8, effect: { type: 'none' } },
+      { name: 'Forest', quantity: 10, effect: { type: 'none' } },
+    ],
+  },
 }
 
 async function download(url, dest) {
@@ -353,7 +967,9 @@ async function buildDeck(key) {
 
 const key = process.argv[2]
 if (!key) {
-  console.error('Usage: node scripts/build-player-deck.mjs <burn|skies|terror>')
+  console.error(
+    'Usage: node scripts/build-player-deck.mjs <burn|skies|terror|merfolk|akroan|nessian|humans|spirits|jund>',
+  )
   process.exit(1)
 }
 

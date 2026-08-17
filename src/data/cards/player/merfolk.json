@@ -1,0 +1,251 @@
+{
+  "id": "merfolk",
+  "name": "Pearl Trident",
+  "nameZh": "珍珠三叉戟",
+  "blurb": "Blue Merfolk tempo adapted for Challenge: lords pump the tribe, cheap body pressure, and bounce/removal to clear Heads or Revelers.",
+  "blurbZh": "为挑战精简的蓝人人鱼节奏：领主加成部族，廉价生物施压，弹回/清除对付头颅或狂欢者。",
+  "colors": [
+    "U"
+  ],
+  "archetype": "tempo",
+  "hint": "Curve lords, then swing wide. Bounce or destroy must-answer threats before combat.",
+  "hintZh": "先铺领主再宽攻；开战前弹回或消灭必须回答的威胁。",
+  "hintByChallenge": {
+    "tfth": {
+      "en": "Lords make small Merfolk chop Heads quickly; save removal for regenerating threats.",
+      "zh": "领主让小人鱼快速砍头颅；清除留给会再生的威胁。"
+    },
+    "tbth": {
+      "en": "Wide boards mill the Horde; bounce buys a turn when the pile is lethal.",
+      "zh": "宽场面磨部落牌库；致命时弹回可换一回合。"
+    },
+    "tdag": {
+      "en": "Clear Revelers first so lords can finish Xenagos.",
+      "zh": "先清狂欢者，领主加成才能收尾泽纳加思。"
+    }
+  },
+  "art": "assets/cards/player/a9407b60-8921-4531-bdbe-9a82aaa38d28-art.jpg",
+  "cards": [
+    {
+      "id": "a9407b60-8921-4531-bdbe-9a82aaa38d28",
+      "quantity": 4,
+      "name": "Lord of Atlantis",
+      "nameZh": "亚特兰提斯领主",
+      "typeLine": "Creature — Merfolk",
+      "typeLineZh": "Creature — Merfolk",
+      "oracleText": "Other Merfolk get +1/+1 and have islandwalk. (They can't be blocked as long as defending player controls an Island.)\n(Challenge: other Merfolk you control get +1/+1; islandwalk omitted.)",
+      "oracleTextZh": "其他人鱼得+1/+1且具有海岛行者异能。\n（挑战：由你操控的其他人鱼得+1/+1；海岛行省略。）",
+      "manaCost": "{U}{U}",
+      "cmc": 2,
+      "power": 2,
+      "toughness": 2,
+      "keywords": [],
+      "kind": "creature",
+      "effect": {
+        "type": "anthem_creature_type",
+        "creatureType": "Merfolk",
+        "power": 1,
+        "toughness": 1
+      },
+      "image": "assets/cards/player/a9407b60-8921-4531-bdbe-9a82aaa38d28-normal.jpg"
+    },
+    {
+      "id": "6b48dc56-667c-4fde-8175-952463e233cc",
+      "quantity": 4,
+      "name": "Master of the Pearl Trident",
+      "nameZh": "珍珠三叉戟大师",
+      "typeLine": "Creature — Merfolk",
+      "typeLineZh": "生物 ～人鱼",
+      "oracleText": "Other Merfolk creatures you control get +1/+1 and have islandwalk. (They can't be blocked as long as defending player controls an Island.)\n(Challenge: other Merfolk you control get +1/+1; islandwalk omitted.)",
+      "oracleTextZh": "由你操控的其他人鱼生物得+1/+1且具有海岛行者异能。（只要防御牌手操控海岛，它们便不能被阻挡。）\n（挑战：由你操控的其他人鱼得+1/+1；海岛行省略。）",
+      "manaCost": "{U}{U}",
+      "cmc": 2,
+      "power": 2,
+      "toughness": 2,
+      "keywords": [],
+      "kind": "creature",
+      "effect": {
+        "type": "anthem_creature_type",
+        "creatureType": "Merfolk",
+        "power": 1,
+        "toughness": 1
+      },
+      "image": "assets/cards/player/6b48dc56-667c-4fde-8175-952463e233cc-normal.jpg"
+    },
+    {
+      "id": "a360fe4e-c9a6-42fa-a97a-8b5a0c19ef93",
+      "quantity": 4,
+      "name": "Merfolk of the Pearl Trident",
+      "nameZh": "珍珠三叉戟人鱼",
+      "typeLine": "Creature — Merfolk",
+      "typeLineZh": "生物～人鱼",
+      "oracleText": "",
+      "oracleTextZh": "",
+      "manaCost": "{U}",
+      "cmc": 1,
+      "power": 1,
+      "toughness": 1,
+      "keywords": [],
+      "kind": "creature",
+      "effect": {
+        "type": "none"
+      },
+      "image": "assets/cards/player/a360fe4e-c9a6-42fa-a97a-8b5a0c19ef93-normal.jpg"
+    },
+    {
+      "id": "97a74ccf-8165-4db1-a87c-52c2d8ea0058",
+      "quantity": 4,
+      "name": "Coral Merfolk",
+      "nameZh": "珊瑚人鱼",
+      "typeLine": "Creature — Merfolk",
+      "typeLineZh": "生物 ～人鱼",
+      "oracleText": "",
+      "oracleTextZh": "",
+      "manaCost": "{1}{U}",
+      "cmc": 2,
+      "power": 2,
+      "toughness": 1,
+      "keywords": [],
+      "kind": "creature",
+      "effect": {
+        "type": "none"
+      },
+      "image": "assets/cards/player/97a74ccf-8165-4db1-a87c-52c2d8ea0058-normal.jpg"
+    },
+    {
+      "id": "359b2f2b-7b58-47b6-b00c-8616f981e3a3",
+      "quantity": 4,
+      "name": "Merfolk Trickster",
+      "nameZh": "人鱼诈术师",
+      "typeLine": "Creature — Merfolk Wizard",
+      "typeLineZh": "生物 ～人鱼／法术师",
+      "oracleText": "Flash\nWhen this creature enters, tap target creature an opponent controls. It loses all abilities until end of turn.",
+      "oracleTextZh": "闪现\n当此生物进战场时，横置目标由对手操控的生物。它失去所有异能直到回合结束。",
+      "manaCost": "{U}{U}",
+      "cmc": 2,
+      "power": 2,
+      "toughness": 2,
+      "keywords": [
+        "Flash"
+      ],
+      "kind": "creature",
+      "effect": {
+        "type": "etb_tap_opp"
+      },
+      "image": "assets/cards/player/359b2f2b-7b58-47b6-b00c-8616f981e3a3-normal.jpg"
+    },
+    {
+      "id": "45ea8ca1-612d-4984-8572-06710d38bfa6",
+      "quantity": 4,
+      "name": "Silvergill Adept",
+      "nameZh": "银鳃专家",
+      "typeLine": "Creature — Merfolk Wizard",
+      "typeLineZh": "生物 ～人鱼／法术师",
+      "oracleText": "As an additional cost to cast this spell, reveal a Merfolk card from your hand or pay {3}.\nWhen this creature enters, draw a card.",
+      "oracleTextZh": "从你的手上展示一张人鱼牌或支付{3}，以作为施放此咒语的额外费用。\n当此生物进战场时，抓一张牌。",
+      "manaCost": "{1}{U}",
+      "cmc": 2,
+      "power": 2,
+      "toughness": 1,
+      "keywords": [],
+      "kind": "creature",
+      "effect": {
+        "type": "silvergill_draw"
+      },
+      "image": "assets/cards/player/45ea8ca1-612d-4984-8572-06710d38bfa6-normal.jpg"
+    },
+    {
+      "id": "2815d8e6-3668-4b9d-abe6-eca6a500707d",
+      "quantity": 4,
+      "name": "Unsummon",
+      "nameZh": "反召唤",
+      "typeLine": "Instant",
+      "typeLineZh": "瞬间",
+      "oracleText": "Return target creature to its owner's hand.\n(Challenge: returned to the top of the challenge library.)",
+      "oracleTextZh": "将目标生物移回其拥有者手上。\n（挑战：置于挑战牌库顶。）",
+      "manaCost": "{U}",
+      "cmc": 1,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "instant",
+      "effect": {
+        "type": "bounce_creature"
+      },
+      "image": "assets/cards/player/2815d8e6-3668-4b9d-abe6-eca6a500707d-normal.jpg"
+    },
+    {
+      "id": "25edefa9-9fff-4b71-83ae-696c196a795c",
+      "quantity": 3,
+      "name": "Into the Roil",
+      "nameZh": "没入狂搅",
+      "typeLine": "Instant",
+      "typeLineZh": "瞬间",
+      "oracleText": "Kicker {1}{U}\nReturn target nonland permanent to its owner's hand. If this spell was kicked, draw a card.\n(Challenge: bounce to library top; auto-kick when affordable.)",
+      "oracleTextZh": "增幅{1}{U}\n将目标非地永久物移回其拥有者手上。若已增幅，则抓一张牌。\n（挑战：弹回牌库顶；能支付时自动增幅。）",
+      "manaCost": "{1}{U}",
+      "cmc": 2,
+      "power": null,
+      "toughness": null,
+      "keywords": [
+        "Kicker"
+      ],
+      "kind": "instant",
+      "effect": {
+        "type": "bounce_creature",
+        "kicker": {
+          "manaCost": "{1}{U}",
+          "draw": 1
+        }
+      },
+      "image": "assets/cards/player/25edefa9-9fff-4b71-83ae-696c196a795c-normal.jpg"
+    },
+    {
+      "id": "bbc99a51-1501-4525-a3cc-f48249b64bed",
+      "quantity": 4,
+      "name": "Opt",
+      "nameZh": "抉择",
+      "typeLine": "Instant",
+      "typeLineZh": "瞬间",
+      "oracleText": "Scry 1. (Look at the top card of your library. You may put that card on the bottom.)\nDraw a card.",
+      "oracleTextZh": "占卜1。（检视你牌库顶的牌。你可以将该牌置于你的牌库底。）\n抓一张牌。",
+      "manaCost": "{U}",
+      "cmc": 1,
+      "power": null,
+      "toughness": null,
+      "keywords": [
+        "Scry"
+      ],
+      "kind": "instant",
+      "effect": {
+        "type": "scry_draw",
+        "scry": 1,
+        "draw": 1
+      },
+      "image": "assets/cards/player/bbc99a51-1501-4525-a3cc-f48249b64bed-normal.jpg"
+    },
+    {
+      "id": "f3cc07cd-cc79-4745-b0b7-eade60175cc3",
+      "quantity": 25,
+      "name": "Island",
+      "nameZh": "海岛",
+      "typeLine": "Basic Land — Island",
+      "typeLineZh": "基本地 — 海岛",
+      "oracleText": "({T}: Add {U}.)",
+      "oracleTextZh": "({T}: Add {U}.)",
+      "manaCost": "",
+      "cmc": 0,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "land",
+      "produces": [
+        "U"
+      ],
+      "effect": {
+        "type": "none"
+      },
+      "image": "assets/cards/player/f3cc07cd-cc79-4745-b0b7-eade60175cc3-normal.jpg"
+    }
+  ]
+}

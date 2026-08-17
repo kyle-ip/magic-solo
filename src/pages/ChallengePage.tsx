@@ -88,7 +88,8 @@ import {
   coachSystemPrompt,
   postGameAskSystemPrompt,
 } from '../llm/prompts'
-import { CardImage, RemoteArtBackground } from '../hooks/useCardImageSrc'
+import { DeckAtmosphere } from '../components/DeckAtmosphere'
+import { CardImage } from '../hooks/useCardImageSrc'
 import { useArenaScale } from '../hooks/useArenaScale'
 import { useBoardPan } from '../hooks/useBoardPan'
 import { useHasLlmApiKey } from '../hooks/useLlmSettings'
@@ -1661,7 +1662,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
     if (state.pendingCast) {
       const mode = state.pendingCast.mode
       if (mode === 'damage') return true
-      if (mode === 'destroy') return !card.isGod
+      if (mode === 'destroy' || mode === 'bounce' || mode === 'etb_tap') return !card.isGod
       if (mode === 'fight_theirs') {
         return card.power != null || card.isHead || card.isGod || card.isReveler
       }
@@ -1674,7 +1675,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
     return false
   }
 
-  const heroArt = deck.heroArt
+  const atmosphere = <DeckAtmosphere deck={deck} />
   const attackables = state.player.creatures.filter(
     (c) => !c.tapped && !c.summoningSickness,
   )
@@ -1735,9 +1736,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
           hordeDelay={hordeDelay}
           heroIds={heroIds}
           playerDeckId={playerDeckId}
-          background={
-            <RemoteArtBackground className="arena-bg" localPath={heroArt} kind="art_crop" />
-          }
+          atmosphere={atmosphere}
           onHeads={setHeads}
           onHordeDelay={setHordeDelay}
           onToggleHero={(id) => {
@@ -1812,8 +1811,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
       >
         <p>{t('challenge.rotateLandscape')}</p>
       </div>
-      <RemoteArtBackground className="arena-bg" localPath={heroArt} kind="art_crop" />
-      <div className="arena-bg-veil" />
+      {atmosphere}
       <AttackArrows
         rootRef={arenaRef}
         links={attackLinks}

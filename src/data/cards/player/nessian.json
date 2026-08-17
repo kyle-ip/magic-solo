@@ -1,0 +1,282 @@
+{
+  "id": "nessian",
+  "name": "Nessian Wilds",
+  "nameZh": "涅西恩荒野",
+  "blurb": "Green Theros beasts with reach and trample — sturdy blockers that finish wide boards late.",
+  "blurbZh": "具延势与践踏的绿色 Theros 野兽——能挡能打，后期清场。",
+  "colors": [
+    "G"
+  ],
+  "archetype": "midrange",
+  "hint": "Ramp into Asp and Colossus; fight or trample through blockers; Fog the lethal breath.",
+  "hintZh": "加速拍出蚺与巨像；互斗或践踏过挡者；浓雾挡致命吐息。",
+  "hintByChallenge": {
+    "tfth": {
+      "en": "Reach blocks flying Heads; trample spills excess to the next Head.",
+      "zh": "延势挡飞行头颅；践踏超额溢到下一头颅。"
+    },
+    "tbth": {
+      "en": "Big tramplers mill the Horde; fight clears Minotaurs.",
+      "zh": "大型践踏磨部落；互斗清牛头人。"
+    },
+    "tdag": {
+      "en": "Trample over Revelers into Xenagos; keep Fog for combat.",
+      "zh": "践踏过狂欢者打到泽纳加思；浓雾留给战斗。"
+    }
+  },
+  "art": "assets/cards/player/87a12eac-c104-4a91-a9d3-ccc450d5114c-art.jpg",
+  "cards": [
+    {
+      "id": "8202e426-ad91-4d2e-9373-7a829b58fff5",
+      "quantity": 4,
+      "name": "Leafcrown Dryad",
+      "nameZh": "叶冠树灵",
+      "typeLine": "Enchantment Creature — Nymph Dryad",
+      "typeLineZh": "结界生物～宁芙／树灵",
+      "oracleText": "Bestow {3}{G}\nReach\nEnchanted creature gets +2/+2 and has reach.",
+      "oracleTextZh": "神授{3}{G}\n延势\n所结附的生物得+2/+2且具有延势。",
+      "manaCost": "{1}{G}",
+      "cmc": 2,
+      "power": 2,
+      "toughness": 2,
+      "keywords": [
+        "Reach"
+      ],
+      "kind": "creature",
+      "effect": {
+        "type": "bestow",
+        "manaCost": "{3}{G}",
+        "power": 2,
+        "toughness": 2,
+        "keywords": [
+          "Reach"
+        ]
+      },
+      "image": "assets/cards/player/8202e426-ad91-4d2e-9373-7a829b58fff5-normal.jpg"
+    },
+    {
+      "id": "135946fc-fe67-401f-821d-d7145c63f030",
+      "quantity": 4,
+      "name": "Kalonian Tusker",
+      "nameZh": "卡隆尼亚长牙野猪",
+      "typeLine": "Creature — Beast",
+      "typeLineZh": "生物～野兽",
+      "oracleText": "",
+      "oracleTextZh": "",
+      "manaCost": "{G}{G}",
+      "cmc": 2,
+      "power": 3,
+      "toughness": 3,
+      "keywords": [],
+      "kind": "creature",
+      "effect": {
+        "type": "none"
+      },
+      "image": "assets/cards/player/135946fc-fe67-401f-821d-d7145c63f030-normal.jpg"
+    },
+    {
+      "id": "4697f3aa-abde-4379-af82-f30115f59be0",
+      "quantity": 4,
+      "name": "Nessian Courser",
+      "nameZh": "奈西安骏马",
+      "typeLine": "Creature — Centaur Warrior",
+      "typeLineZh": "生物～半人马／战士",
+      "oracleText": "",
+      "oracleTextZh": "",
+      "manaCost": "{2}{G}",
+      "cmc": 3,
+      "power": 3,
+      "toughness": 3,
+      "keywords": [],
+      "kind": "creature",
+      "effect": {
+        "type": "none"
+      },
+      "image": "assets/cards/player/4697f3aa-abde-4379-af82-f30115f59be0-normal.jpg"
+    },
+    {
+      "id": "4010a419-8291-4c8b-8cda-38c35fbd7b88",
+      "quantity": 4,
+      "name": "Slaughterhorn",
+      "nameZh": "屠角兽",
+      "typeLine": "Creature — Beast",
+      "typeLineZh": "生物～野兽",
+      "oracleText": "Trample\nBloodrush — {G}, Discard this card: Target attacking creature gets +3/+2 until end of turn.",
+      "oracleTextZh": "践踏\n血激～{G}，弃掉此牌：目标攻击中的生物得+3/+2直到回合结束。",
+      "manaCost": "{2}{G}",
+      "cmc": 3,
+      "power": 3,
+      "toughness": 2,
+      "keywords": [
+        "Trample"
+      ],
+      "kind": "creature",
+      "effect": {
+        "type": "bloodrush",
+        "manaCost": "{G}",
+        "power": 3,
+        "toughness": 2
+      },
+      "image": "assets/cards/player/4010a419-8291-4c8b-8cda-38c35fbd7b88-normal.jpg"
+    },
+    {
+      "id": "bf6eae62-5a42-42e9-ba65-84500cdff95a",
+      "quantity": 3,
+      "name": "Nessian Asp",
+      "nameZh": "奈西安双头角奎",
+      "typeLine": "Creature — Snake",
+      "typeLineZh": "生物～蛇",
+      "oracleText": "Reach\n{6}{G}: Monstrosity 4. (If this creature isn't monstrous, put four +1/+1 counters on it and it becomes monstrous.)",
+      "oracleTextZh": "延势\n{6}{G}：蛮化4。（如果此生物未蛮化，则在其上放置四个+1/+1指示物且它已蛮化。）",
+      "manaCost": "{4}{G}",
+      "cmc": 5,
+      "power": 4,
+      "toughness": 5,
+      "keywords": [
+        "Reach"
+      ],
+      "kind": "creature",
+      "effect": {
+        "type": "activate_monstrosity",
+        "manaCost": "{6}{G}",
+        "power": 4,
+        "toughness": 4
+      },
+      "image": "assets/cards/player/bf6eae62-5a42-42e9-ba65-84500cdff95a-normal.jpg"
+    },
+    {
+      "id": "87a12eac-c104-4a91-a9d3-ccc450d5114c",
+      "quantity": 2,
+      "name": "Arbor Colossus",
+      "nameZh": "乔木巨像",
+      "typeLine": "Creature — Giant",
+      "typeLineZh": "生物～巨人",
+      "oracleText": "Reach\n{3}{G}{G}{G}: Monstrosity 3. (If this creature isn't monstrous, put three +1/+1 counters on it and it becomes monstrous.)\nWhen this creature becomes monstrous, destroy target creature with flying an opponent controls.",
+      "oracleTextZh": "延势\n{3}{G}{G}{G}：蛮化3。\n当乔木巨像蛮化时，消灭目标由对手操控且具飞行异能的生物。",
+      "manaCost": "{2}{G}{G}{G}",
+      "cmc": 5,
+      "power": 6,
+      "toughness": 6,
+      "keywords": [
+        "Reach"
+      ],
+      "kind": "creature",
+      "effect": {
+        "type": "activate_monstrosity",
+        "manaCost": "{3}{G}{G}{G}",
+        "power": 3,
+        "toughness": 3,
+        "thenDestroyFlyer": true
+      },
+      "image": "assets/cards/player/87a12eac-c104-4a91-a9d3-ccc450d5114c-normal.jpg"
+    },
+    {
+      "id": "08b9a296-3b76-4f8f-9d71-7c9af92bb3b4",
+      "quantity": 4,
+      "name": "Elvish Mystic",
+      "nameZh": "妖精秘教徒",
+      "typeLine": "Creature — Elf Druid",
+      "typeLineZh": "生物 — 妖精／德鲁伊",
+      "oracleText": "{T}: Add {G}.",
+      "oracleTextZh": "{T}：加{G}。",
+      "manaCost": "{G}",
+      "cmc": 1,
+      "power": 1,
+      "toughness": 1,
+      "keywords": [],
+      "kind": "creature",
+      "effect": {
+        "type": "mana_dork",
+        "color": "G"
+      },
+      "image": "assets/cards/player/08b9a296-3b76-4f8f-9d71-7c9af92bb3b4-normal.jpg"
+    },
+    {
+      "id": "0eb1b036-0856-4cfb-ace5-2731f13696bd",
+      "quantity": 4,
+      "name": "Prey Upon",
+      "nameZh": "捕食",
+      "typeLine": "Sorcery",
+      "typeLineZh": "法术",
+      "oracleText": "Target creature you control fights target creature you don't control. (Each deals damage equal to its power to the other.)",
+      "oracleTextZh": "目标由你操控的生物与目标不由你操控的生物互斗。（它们各向对方造成等同于本身力量的伤害。）",
+      "manaCost": "{G}",
+      "cmc": 1,
+      "power": null,
+      "toughness": null,
+      "keywords": [
+        "Fight"
+      ],
+      "kind": "sorcery",
+      "effect": {
+        "type": "fight"
+      },
+      "image": "assets/cards/player/0eb1b036-0856-4cfb-ace5-2731f13696bd-normal.jpg"
+    },
+    {
+      "id": "bbc3152e-7b3b-4ac6-8b33-abfebde216aa",
+      "quantity": 4,
+      "name": "Fog",
+      "nameZh": "浓雾",
+      "typeLine": "Instant",
+      "typeLineZh": "瞬间",
+      "oracleText": "Prevent all combat damage that would be dealt this turn.",
+      "oracleTextZh": "于本回合中，防止将造成的所有战斗伤害。",
+      "manaCost": "{G}",
+      "cmc": 1,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "instant",
+      "effect": {
+        "type": "fog"
+      },
+      "image": "assets/cards/player/bbc3152e-7b3b-4ac6-8b33-abfebde216aa-normal.jpg"
+    },
+    {
+      "id": "fd1f95bf-48ea-455a-8a6c-0249b11c8900",
+      "quantity": 3,
+      "name": "Giant Growth",
+      "nameZh": "变巨术",
+      "typeLine": "Instant",
+      "typeLineZh": "瞬间",
+      "oracleText": "Target creature gets +3/+3 until end of turn.",
+      "oracleTextZh": "目标生物得+3/+3直到回合结束。",
+      "manaCost": "{G}",
+      "cmc": 1,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "instant",
+      "effect": {
+        "type": "pump_target",
+        "power": 3,
+        "toughness": 3
+      },
+      "image": "assets/cards/player/fd1f95bf-48ea-455a-8a6c-0249b11c8900-normal.jpg"
+    },
+    {
+      "id": "dce15387-4114-4b3e-91aa-5b42b45c44ac",
+      "quantity": 24,
+      "name": "Forest",
+      "nameZh": "树林",
+      "typeLine": "Basic Land — Forest",
+      "typeLineZh": "基本地 — 树林",
+      "oracleText": "({T}: Add {G}.)",
+      "oracleTextZh": "({T}: Add {G}.)",
+      "manaCost": "",
+      "cmc": 0,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "land",
+      "produces": [
+        "G"
+      ],
+      "effect": {
+        "type": "none"
+      },
+      "image": "assets/cards/player/dce15387-4114-4b3e-91aa-5b42b45c44ac-normal.jpg"
+    }
+  ]
+}

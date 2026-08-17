@@ -12,7 +12,8 @@ import {
   canBlockAttacker,
   effectivePower,
 } from '../playerAbilities'
-import { dealDamageToChallengeCreature } from '../helpers'
+import { resolvePlayerCombat } from '../combat'
+import { buryPlayerCreatures, dealDamageToChallengeCreature } from '../helpers'
 import { getDeckCards } from '../playerDecks'
 import type { GameState, PlayerCardInstance, PlayerCreature } from '../types'
 import { emptyManaPool } from '../mana'
@@ -405,5 +406,340 @@ describe('player ability coverage', () => {
     expect(state.player.creatures[0].monstrous).toBe(true)
     const again = activateCreature(state, 'es1')
     expect(again.log.some((e) => e.key === 'alreadyMonstrous')).toBe(true)
+  })
+
+  it('Merfolk lord anthem pumps other Merfolk', () => {
+    let state = baseState('merfolk')
+    const lord = fromDef('Lord of Atlantis', 'merfolk')
+    const body = fromDef('Coral Merfolk', 'merfolk')
+    state.player.creatures = [
+      {
+        instanceId: 'lord',
+        defId: lord.defId,
+        name: lord.name,
+        power: lord.power ?? 2,
+        toughness: lord.toughness ?? 2,
+        markedDamage: 0,
+        tapped: false,
+        summoningSickness: false,
+        keywords: [],
+        image: '',
+      },
+      {
+        instanceId: 'body',
+        defId: body.defId,
+        name: body.name,
+        power: body.power ?? 2,
+        toughness: body.toughness ?? 1,
+        markedDamage: 0,
+        tapped: false,
+        summoningSickness: false,
+        keywords: [],
+        image: '',
+      },
+    ]
+    const bodyC = state.player.creatures[1]
+    expect(effectivePower(state, bodyC)).toBe((body.power ?? 2) + 1)
+  })
+
+  it('Akroan Hoplite pumps per attacker on attack', () => {
+    let state = baseState('akroan')
+    state.code = 'tfth'
+    state.theme = 'hydra'
+    const hop = fromDef('Akroan Hoplite', 'akroan')
+    const claw = fromDef('Oreskos Swiftclaw', 'akroan')
+    state.player.creatures = [
+      {
+        instanceId: 'h1',
+        defId: hop.defId,
+        name: hop.name,
+        power: hop.power ?? 1,
+        toughness: hop.toughness ?? 2,
+        markedDamage: 0,
+        tapped: false,
+        summoningSickness: false,
+        keywords: [],
+        image: '',
+      },
+      {
+        instanceId: 'c1',
+        defId: claw.defId,
+        name: claw.name,
+        power: claw.power ?? 3,
+        toughness: claw.toughness ?? 1,
+        markedDamage: 0,
+        tapped: false,
+        summoningSickness: false,
+        keywords: ['First strike'],
+        image: '',
+      },
+    ]
+    state.challenge.battlefield = [
+      {
+        instanceId: 'head',
+        defId: 'x',
+        name: 'Hydra Head',
+        typeLine: 'Creature — Head',
+        oracleText: '',
+        power: 0,
+        toughness: 10,
+        markedDamage: 0,
+        tapped: false,
+        skipUntap: false,
+        indestructible: false,
+        keywords: [],
+        image: '',
+        isHead: true,
+        isElite: false,
+        isMinotaur: false,
+        isReveler: false,
+        isArtifact: false,
+        isEnchantment: false,
+        isGod: false,
+      },
+    ]
+    state.selectedAttackers = ['h1', 'c1']
+    state.attackAssignments = { h1: 'head', c1: 'head' }
+    state = resolvePlayerCombat(state)
+    // Hoplite base +2 for 2 attackers in first (only) normal step; claw first strike 3
+    expect(state.challenge.battlefield[0]?.markedDamage).toBeGreaterThanOrEqual(
+      (hop.power ?? 1) + 2 + (claw.power ?? 3),
+    )
+  })
+
+  it('Boros Elite battalion pumps when three attack', () => {
+    let state = baseState('akroan')
+    state.code = 'tfth'
+    state.theme = 'hydra'
+    const elite = fromDef('Boros Elite', 'akroan')
+    const mk = (id: string, defId: string, name: string, power: number) => ({
+      instanceId: id,
+      defId,
+      name,
+      power,
+      toughness: 1,
+      markedDamage: 0,
+      tapped: false,
+      summoningSickness: false,
+      keywords: [] as string[],
+      image: '',
+    })
+    state.player.creatures = [
+      mk('e1', elite.defId, elite.name, 1),
+      mk('a2', elite.defId, 'Ally A', 1),
+      mk('a3', elite.defId, 'Ally B', 1),
+    ]
+    state.challenge.battlefield = [
+      {
+        instanceId: 'head',
+        defId: 'x',
+        name: 'Hydra Head',
+        typeLine: 'Creature — Head',
+        oracleText: '',
+        power: 0,
+        toughness: 20,
+        markedDamage: 0,
+        tapped: false,
+        skipUntap: false,
+        indestructible: false,
+        keywords: [],
+        image: '',
+        isHead: true,
+        isElite: false,
+        isMinotaur: false,
+        isReveler: false,
+        isArtifact: false,
+        isEnchantment: false,
+        isGod: false,
+      },
+    ]
+    state.selectedAttackers = ['e1', 'a2', 'a3']
+    state.attackAssignments = { e1: 'head', a2: 'head', a3: 'head' }
+    state = resolvePlayerCombat(state)
+    // Each elite gets +2/+2 from battalion → 3 power each ×3 = 9
+    expect(state.challenge.battlefield[0]?.markedDamage).toBe(9)
+  })
+
+  it('Champion of the Parish grows when another Human enters', () => {
+    let state = baseState('humans')
+    const champ = fromDef('Champion of the Parish', 'humans')
+    const body = fromDef('Elite Vanguard', 'humans')
+    state.player.creatures = [
+      {
+        instanceId: 'ch',
+        defId: champ.defId,
+        name: champ.name,
+        power: 1,
+        toughness: 1,
+        markedDamage: 0,
+        tapped: false,
+        summoningSickness: false,
+        keywords: [],
+        image: '',
+      },
+    ]
+    state.player.hand = [fromDef('Elite Vanguard', 'humans')]
+    state.player.hand[0].instanceId = 'hv'
+    state.player.lands = Array.from({ length: 1 }, (_, i) =>
+      basicLand(`W${i}`, 'Plains', 'W'),
+    )
+    state = castFromHand(state, 'hv')
+    const grown = state.player.creatures.find((c) => c.instanceId === 'ch')
+    expect(grown?.power).toBe(2)
+    expect(grown?.toughness).toBe(2)
+    expect(state.player.creatures.some((c) => c.name === body.name)).toBe(true)
+  })
+
+  it('Fallaji Archaeologist gets +1/+1 when mill finds no loot', () => {
+    let state = baseState('terror')
+    const fallaji = fromDef('Fallaji Archaeologist', 'terror')
+    state.player.hand = [fallaji]
+    fallaji.instanceId = 'fa'
+    state.player.library = [
+      fromDef('Island', 'terror'),
+      fromDef('Island', 'terror'),
+      fromDef('Tolarian Terror', 'terror'),
+    ]
+    state.player.lands = Array.from({ length: 2 }, (_, i) =>
+      basicLand(`U${i}`, 'Island', 'U'),
+    )
+    state = castFromHand(state, 'fa')
+    const body = state.player.creatures.find((c) => c.instanceId === 'fa')
+    expect(body?.power).toBe(1)
+    expect(body?.toughness).toBe(4)
+    expect(state.player.hand.some((c) => c.instanceId === 'fa')).toBe(false)
+  })
+
+  it('Tarmogoyf sticky pump survives EOT clear', () => {
+    let state = baseState('jund')
+    const goyf = fromDef('Tarmogoyf', 'jund')
+    state.player.hand = [goyf]
+    goyf.instanceId = 'tg'
+    state.player.lands = [
+      basicLand('G0', 'Forest', 'G'),
+      basicLand('G1', 'Forest', 'G'),
+    ]
+    state = castFromHand(state, 'tg')
+    let body = state.player.creatures.find((c) => c.instanceId === 'tg')
+    expect(body?.power).toBe(4)
+    expect(body?.toughness).toBe(5)
+    // Simulate EOT clear used by beginPlayerTurn helpers
+    state = {
+      ...state,
+      player: {
+        ...state.player,
+        creatures: state.player.creatures.map((c) => ({
+          ...c,
+          power: Math.max(0, c.power - (c.tempPower ?? 0)),
+          toughness: Math.max(0, c.toughness - (c.tempToughness ?? 0)),
+          tempPower: 0,
+          tempToughness: 0,
+        })),
+      },
+    }
+    body = state.player.creatures.find((c) => c.instanceId === 'tg')
+    expect(body?.power).toBe(4)
+    expect(body?.toughness).toBe(5)
+  })
+
+  it('bestow triggers heroic and falloff returns aura as creature', () => {
+    let state = baseState('akroan')
+    const rider = fromDef('Wingsteed Rider', 'akroan')
+    const alseid = fromDef('Observant Alseid', 'akroan')
+    state.player.creatures = [
+      {
+        instanceId: 'wr',
+        defId: rider.defId,
+        name: rider.name,
+        power: 2,
+        toughness: 2,
+        markedDamage: 0,
+        tapped: false,
+        summoningSickness: false,
+        keywords: [...rider.keywords],
+        image: '',
+      },
+    ]
+    state.player.hand = [alseid]
+    alseid.instanceId = 'oa'
+    state.player.lands = Array.from({ length: 5 }, (_, i) =>
+      basicLand(`W${i}`, 'Plains', 'W'),
+    )
+    state = castFromHand(state, 'oa', { targetId: 'wr' })
+    const enchanted = state.player.creatures.find((c) => c.instanceId === 'wr')
+    expect(enchanted?.bestowed?.name).toBe('Observant Alseid')
+    expect(enchanted?.power).toBe(3) // heroic sticky +1
+    expect(enchanted?.toughness).toBe(3)
+    expect(effectivePower(state, enchanted!)).toBe(5) // +2 from bestow
+
+    state = buryPlayerCreatures(state, ['wr'])
+    expect(state.player.creatures.some((c) => c.name === 'Observant Alseid')).toBe(
+      true,
+    )
+    expect(state.player.creatures.some((c) => c.instanceId === 'wr')).toBe(false)
+  })
+
+  it('Kitchen Finks persist returns with -1/-1', () => {
+    let state = baseState('jund')
+    const finks = fromDef('Kitchen Finks', 'jund')
+    state.player.creatures = [
+      {
+        instanceId: 'kf',
+        defId: finks.defId,
+        name: finks.name,
+        power: 3,
+        toughness: 2,
+        markedDamage: 0,
+        tapped: false,
+        summoningSickness: false,
+        keywords: [],
+        image: '',
+      },
+    ]
+    state = buryPlayerCreatures(state, ['kf'])
+    const back = state.player.creatures.find((c) => c.instanceId === 'kf')
+    expect(back?.power).toBe(2)
+    expect(back?.toughness).toBe(1)
+    expect(back?.minusOneCounters).toBe(1)
+    state = buryPlayerCreatures(state, ['kf'])
+    expect(state.player.creatures.some((c) => c.instanceId === 'kf')).toBe(false)
+    expect(state.player.graveyard.some((c) => c.instanceId === 'kf')).toBe(true)
+  })
+
+  it('Maelstrom Pulse wipes same-name challenge creatures', () => {
+    let state = baseState('jund')
+    const pulse = fromDef('Maelstrom Pulse', 'jund')
+    state.player.hand = [pulse]
+    pulse.instanceId = 'mp'
+    state.player.lands = [
+      basicLand('B0', 'Swamp', 'B'),
+      basicLand('G0', 'Forest', 'G'),
+      basicLand('G1', 'Forest', 'G'),
+    ]
+    const mk = (id: string) => ({
+      instanceId: id,
+      defId: 'r',
+      name: 'Rollicking Throng',
+      typeLine: 'Creature — Satyr',
+      oracleText: '',
+      power: 2,
+      toughness: 2,
+      markedDamage: 0,
+      tapped: false,
+      skipUntap: false,
+      indestructible: false,
+      keywords: [],
+      image: '',
+      isHead: false,
+      isElite: false,
+      isMinotaur: false,
+      isReveler: true,
+      isArtifact: false,
+      isEnchantment: false,
+      isGod: false,
+    })
+    state.challenge.battlefield = [mk('r1'), mk('r2'), mk('r3')]
+    state = castFromHand(state, 'mp', { targetId: 'r1' })
+    expect(state.challenge.battlefield.length).toBe(0)
   })
 })
