@@ -8,6 +8,7 @@ import '../styles/pack.css'
 import '../styles/deck.css'
 import '../styles/rarityFrame.css'
 import { CardFaceButton } from './CardFaceButton'
+import { CardArtImage } from './CardArtImage'
 import {
   addCollected,
   clearCollected,
@@ -1464,14 +1465,14 @@ export function PackDrawButton() {
                           onToggleZoom={() => setArtZoomed((z) => !z)}
                         >
                           <span className="card-face front">
-                            <img
+                            <CardArtImage
                               src={inspect.frontImageUrl}
                               alt={inspect.name}
                               draggable={false}
                             />
                           </span>
                           <span className="card-face back">
-                            <img
+                            <CardArtImage
                               src={inspectReverseSrc}
                               alt={
                                 inspectShowingBack
@@ -1754,14 +1755,14 @@ export function PackDrawButton() {
                                     }}
                                   >
                                     <span className="card-face front">
-                                      <img
+                                      <CardArtImage
                                         src={backSrc}
                                         alt={t('deck.backHint')}
                                         draggable={false}
                                       />
                                     </span>
                                     <span className="card-face back">
-                                      <img
+                                      <CardArtImage
                                         src={frontSrc}
                                         alt={slot?.name || ''}
                                         draggable={false}

@@ -1,9 +1,9 @@
-/* —— Pack draw (booster tear → pull → flip) —— */
+/* ?? Pack draw (booster tear ? pull ? flip) ?? */
 .pack-draw-backdrop {
   position: fixed;
   inset: 0;
   z-index: 80;
-  /* Flex + margin:auto — avoid place-items:center (clips tall overflow tops) */
+  /* Flex + margin:auto ? avoid place-items:center (clips tall overflow tops) */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -42,14 +42,14 @@
   height: min(90dvh, 90vh);
   max-height: min(90dvh, 90vh);
   overflow: hidden;
-  /* Shared budgets — shell & reveal cards fit the same stage */
+  /* Shared budgets ? shell & reveal cards fit the same stage */
   --pack-stage-pad-y: clamp(0.35rem, 1.5vh, 1rem);
   --pack-reveal-card-max-h: calc(min(68vh, calc(90dvh - 8.5rem), 640px) * 0.9);
   --pack-shell-max-h: min(68vh, calc(90dvh - 8.5rem), 640px);
 }
 
-/* Tear / glow may extend past the pack box — don't hard-clip auras.
-   Prefer `.is-fx-open` (JS) over :has alone — older WebKit :has was flaky. */
+/* Tear / glow may extend past the pack box ? don't hard-clip auras.
+   Prefer `.is-fx-open` (JS) over :has alone ? older WebKit :has was flaky. */
 .pack-draw-modal:not(.is-collection).is-fx-open,
 .pack-draw-modal:not(.is-collection):has(
   .pack-stage-visual.is-tearing,
@@ -221,7 +221,7 @@
   min-height: 0;
 }
 
-/* Shared card details column — pack open + collection inspect */
+/* Shared card details column ? pack open + collection inspect */
 .pack-card-copy {
   min-width: 0;
   height: 100%;
@@ -621,7 +621,7 @@
 
 .pack-details-block {
   margin: 0.5rem 0 1rem;
-  /* No frame — pack / collection / deck details share a borderless reading pane */
+  /* No frame ? pack / collection / deck details share a borderless reading pane */
   background: transparent;
   border: none;
   outline: none;
@@ -752,7 +752,7 @@
   background: rgba(48, 34, 12, 0.55);
 }
 
-/* Sealed / tearing pack — size inherited from modal (--pack-shell-max-h) */
+/* Sealed / tearing pack ? size inherited from modal (--pack-shell-max-h) */
 .pack-shell {
   appearance: none;
   position: relative;
@@ -767,7 +767,7 @@
 }
 
 .pack-shell.is-sealed {
-  /* Static shadow — animating filter/drop-shadow is costly on mobile GPUs */
+  /* Static shadow ? animating filter/drop-shadow is costly on mobile GPUs */
   filter: drop-shadow(0 22px 32px rgba(0, 0, 0, 0.55));
   cursor: pointer;
   animation: pack-sealed-breathe 2.8s ease-in-out infinite;
@@ -785,7 +785,7 @@
   filter: drop-shadow(0 18px 26px rgba(0, 0, 0, 0.5));
 }
 
-/* Waiting mid-tear — scale breathe only; light flashes on tap */
+/* Waiting mid-tear ? scale breathe only; light flashes on tap */
 .pack-shell.is-tearing.is-charging {
   animation: pack-charge-breathe 2.2s ease-in-out infinite;
 }
@@ -902,7 +902,7 @@
   }
 }
 
-/* Cards under the ripping pack — float while waiting (no idle light pulse) */
+/* Cards under the ripping pack ? float while waiting (no idle light pulse) */
 .pack-reveal-stack.is-in-tear.is-charging .pack-card-wrap.is-in-pack {
   animation-name: pack-under-float-0;
   animation-duration: 2.4s;
@@ -953,7 +953,7 @@
   inset: 0;
   overflow: hidden;
   pointer-events: none;
-  /* will-change only while tearing — see .pack-shell.is-tearing below */
+  /* will-change only while tearing ? see .pack-shell.is-tearing below */
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
 }
@@ -1045,7 +1045,7 @@
   padding: 0 1.35rem 1.5rem 0;
 }
 
-/* While tearing, cards must fill the pack face — not the smaller post-reveal budget */
+/* While tearing, cards must fill the pack face ? not the smaller post-reveal budget */
 .pack-reveal-stack.is-in-tear .pack-card-deck {
   width: min(
     420px,
@@ -1223,17 +1223,21 @@
   pointer-events: auto;
 }
 
-/* Hold-to-browse — float the card; horizontal drag tremors toward prev/next */
+/* Hold-to-browse ? float the card; horizontal drag tremors toward prev/next */
 .pack-card-wrap.is-expanded.is-active.is-holding {
   transform: translate3d(var(--pack-hold-x, 0px), -12px, 0)
     rotate(var(--pack-hold-rot, 0deg))
     scale(1.028);
-  transition:
-    transform 0.16s cubic-bezier(0.22, 0.61, 0.36, 1),
-    filter 0.16s ease;
-  filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.55));
+  transition: transform 0.16s cubic-bezier(0.22, 0.61, 0.36, 1);
+  /* box-shadow on the clipped face ? drop-shadow revealed JPG corner fringing */
   cursor: grabbing;
   will-change: transform;
+}
+
+.pack-card-wrap.is-expanded.is-active.is-holding .card-face {
+  box-shadow:
+    0 20px 30px rgba(0, 0, 0, 0.55),
+    0 8px 16px rgba(0, 0, 0, 0.28);
 }
 
 .pack-card-wrap.is-expanded.is-active.is-holding.is-dragging {
@@ -1285,7 +1289,7 @@
   }
 }
 
-/* Clear deck peeks — both under-cards stay readable at the bottom-right edge */
+/* Clear deck peeks ? both under-cards stay readable at the bottom-right edge */
 .pack-card-wrap.is-expanded.is-behind {
   transform:
     translate3d(
@@ -1312,7 +1316,7 @@
   animation: pack-deck-land 0.28s cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
 
-/* Face-down suspense — soft float + rarity edge foreshadow */
+/* Face-down suspense ? soft float + rarity edge foreshadow */
 .pack-card-wrap.is-awaiting-flip.is-active {
   animation: pack-await-float 2.4s ease-in-out infinite;
 }
@@ -1361,7 +1365,7 @@
   transition-duration: var(--pack-flip-ms, 400ms);
 }
 
-/* Suppress cast shadows while rotating — hidden-face box-shadow paints a static rect */
+/* Suppress cast shadows while rotating ? hidden-face box-shadow paints a static rect */
 .pack-card-wrap.is-flipping .card-face,
 .card-flip-inner.is-flipping .card-face {
   box-shadow: none !important;
@@ -1625,7 +1629,7 @@
   }
 }
 
-/* One-shot rarity FX — hierarchy: mythic (ornate) → rare → uncommon → common (plain)
+/* One-shot rarity FX ? hierarchy: mythic (ornate) ? rare ? uncommon ? common (plain)
    Soft glow language (no hard rims). Peak duration set in JS by rarity. */
 .pack-card-wrap[class*='pack-fx-'] .card-face {
   transition:
@@ -1642,7 +1646,7 @@
   transition-duration: 0.22s;
 }
 
-/* ── Common — soft brightness settle ── */
+/* ?? Common ? soft brightness settle ?? */
 .pack-card-wrap.pack-fx-common.is-glowing .card-face {
   animation: pack-common-flash 1.6s ease-out both;
 }
@@ -1651,7 +1655,7 @@
   box-shadow: inset 0 0 12px rgba(210, 200, 185, 0.18);
 }
 
-/* ── Uncommon — soft steel bloom + cool sweep ── */
+/* ?? Uncommon ? soft steel bloom + cool sweep ?? */
 .pack-card-wrap.pack-fx-uncommon.is-glowing {
   filter: none;
 }
@@ -1691,7 +1695,7 @@
   animation: pack-uncommon-shimmer 2s ease-out both;
 }
 
-/* Do not keep ::before into is-fading — killing the animation resets
+/* Do not keep ::before into is-fading ? killing the animation resets
    background-position and opacity, which freezes a bright streak mid-card. */
 .pack-card-wrap.pack-fx-uncommon.is-fading .card-face::before {
   content: none;
@@ -1703,7 +1707,7 @@
   transition: filter 0.85s ease;
 }
 
-/* ── Rare — soft bright-gold aureole + foil + corner stars ── */
+/* ?? Rare ? soft bright-gold aureole + foil + corner stars ?? */
 .pack-card-wrap.pack-fx-rare.is-glowing {
   filter: none;
 }
@@ -1722,7 +1726,7 @@
     transparent 70%
   );
   animation: pack-rare-aureole 2.6s ease-out both;
-  /* Avoid mix-blend-mode: screen — often invisible on real mobile GPUs */
+  /* Avoid mix-blend-mode: screen ? often invisible on real mobile GPUs */
 }
 
 .pack-card-wrap.pack-fx-rare.is-glowing .card-face {
@@ -1776,7 +1780,7 @@
   transition: opacity 0.85s ease;
 }
 
-/* ── Mythic — soft dark-gold nested bloom + foil + rich glints ── */
+/* ?? Mythic ? soft dark-gold nested bloom + foil + rich glints ?? */
 .pack-card-wrap.pack-fx-mythic.is-glowing {
   filter: none;
 }
@@ -1875,7 +1879,7 @@
   transition: opacity 0.85s ease;
 }
 
-/* Rare particles — soft floating glints (not frame-aligned) */
+/* Rare particles ? soft floating glints (not frame-aligned) */
 .pack-fx-layer.is-sparkles {
   inset: -16% -12%;
   background:
@@ -1886,7 +1890,7 @@
   animation: pack-rare-filigree 2.6s ease-out both;
 }
 
-/* Mythic particles — denser soft antique-gold dust */
+/* Mythic particles ? denser soft antique-gold dust */
 .pack-fx-layer.is-sparkles.is-mythic {
   inset: -22% -16%;
   background:
@@ -2062,7 +2066,7 @@
     min-height: clamp(7.5rem, 20vh, 11.5rem);
   }
 
-  /* Collection cabinet — balanced filter grid */
+  /* Collection cabinet ? balanced filter grid */
   .pack-collection-toolbar {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -2324,7 +2328,7 @@
   margin-bottom: 0.35rem;
 }
 
-/* Collection cabinet — fill modal; inspect card scales to fit fully */
+/* Collection cabinet ? fill modal; inspect card scales to fit fully */
 .pack-collection {
   position: relative;
   flex: 1 1 auto;
@@ -2346,7 +2350,7 @@
 .pack-collection-grid {
   list-style: none;
   margin: 0;
-  /* Padding so rarity bloom isn’t clipped by the scrollport */
+  /* Padding so rarity bloom isn?t clipped by the scrollport */
   padding: 0.75rem 0.55rem 1.15rem;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
@@ -2360,15 +2364,17 @@
   width: 100%;
   padding: 0;
   border: 1px solid rgba(184, 137, 58, 0.28);
-  border-radius: 8px;
+  border-radius: var(--card-radius);
   overflow: hidden;
-  background: rgba(0, 0, 0, 0.35);
+  background: var(--card-face-bg);
   cursor: pointer;
   aspect-ratio: 744 / 1040;
+  isolation: isolate;
+  line-height: 0;
 }
 
 .pack-collection-tile[class*='rarity-frame-'] {
-  border-radius: 8px;
+  border-radius: var(--card-radius);
   z-index: 0;
 }
 
@@ -2382,6 +2388,9 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center center;
+  transform: scale(var(--card-img-scale));
+  transform-origin: center center;
 }
 
 .pack-inspect {
@@ -2395,7 +2404,7 @@
   padding: 1.1rem 1.35rem 1.15rem;
   border-radius: 0;
   border: none;
-  /* Must be opaque — covers the collection grid underneath */
+  /* Must be opaque ? covers the collection grid underneath */
   background: #000;
   overflow: hidden;
   min-height: 0;
@@ -2426,7 +2435,7 @@
   cursor: grabbing;
 }
 
-/* Double-click art zoom — larger than the pane; drag to pan clipped edges */
+/* Double-click art zoom ? larger than the pane; drag to pan clipped edges */
 .pack-inspect.is-art-zoomed,
 .pack-draw-stage.is-art-zoomed {
   --pack-art-zoom-pad: 4.5rem;
@@ -2434,7 +2443,7 @@
     calc(100dvh - var(--pack-art-zoom-pad) - var(--safe-top, 0px) - var(--safe-bottom, 0px)),
     calc(100svh - var(--pack-art-zoom-pad) - var(--safe-top, 0px) - var(--safe-bottom, 0px))
   );
-  /* Intentionally larger than the visible stage so PC zoom can crop — pan to explore */
+  /* Intentionally larger than the visible stage so PC zoom can crop ? pan to explore */
   --pack-art-zoom-scale: 1.28;
   --pack-art-zoom-max-w: min(
     calc((100vw - 1rem - var(--safe-left, 0px) - var(--safe-right, 0px)) * var(--pack-art-zoom-scale)),
@@ -2513,7 +2522,7 @@
   object-fit: contain;
 }
 
-/* Full art edges while zoomed — default face imgs are slightly overscaled */
+/* Full art edges while zoomed ? default face imgs are slightly overscaled */
 .pack-inspect.is-art-zoomed .card-face img,
 .pack-inspect.is-art-zoomed .card-face .card-art img,
 .pack-draw-stage.is-art-zoomed .card-face img,
@@ -2912,7 +2921,7 @@
 
 
 
-/* Mobile / coarse pointer �� cheaper compositing (desktop keeps richer FX) */
+/* Mobile / coarse pointer ?? cheaper compositing (desktop keeps richer FX) */
 @media (hover: none), (pointer: coarse) {
   .pack-draw-backdrop {
     backdrop-filter: none;

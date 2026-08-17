@@ -49,6 +49,12 @@
   --card-border: 1px solid rgba(224, 180, 90, 0.28);
   --card-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
   --card-face-bg: #050403;
+  /*
+   * Shared Scryfall JPG corner clip (Sets / classic / pack / arena):
+   * 1) Frame: border-radius + overflow:hidden + isolation (+ face bg when possible)
+   * 2) Image: transform: scale(var(--card-img-scale)); transform-origin: center
+   * Prefer box-shadow on the clipped frame — filter:drop-shadow paints JPG corner fringing.
+   */
   --card-img-scale: 1.03;
   /* Catalog list surfaces (sets / classic) */
   --catalog-card-radius: var(--radius-sm);
@@ -917,33 +923,37 @@ h2 {
   position: absolute;
   width: min(62%, 360px);
   aspect-ratio: 744 / 1040;
-  border-radius: 4.75% / 3.5%;
+  border-radius: var(--card-radius);
   overflow: hidden;
-  background: #0a0806;
+  background: var(--card-face-bg);
   box-shadow: var(--shadow);
   object-fit: cover;
   object-position: center center;
   border: 1px solid rgba(224, 180, 90, 0.35);
   animation: floaty 8s ease-in-out infinite;
+  isolation: isolate;
+  /* Overscale hides Scryfall JPG corner fringing (same as set gallery) */
+  transform: scale(var(--card-img-scale));
+  transform-origin: center center;
 }
 
 .orbit-0 {
   left: 4%;
   top: 8%;
-  transform: rotate(-8deg);
+  transform: rotate(-8deg) scale(var(--card-img-scale));
 }
 
 .orbit-1 {
   right: 2%;
   top: 22%;
-  transform: rotate(7deg);
+  transform: rotate(7deg) scale(var(--card-img-scale));
   animation-delay: -2s;
 }
 
 .orbit-2 {
   left: 26%;
   bottom: 2%;
-  transform: rotate(2deg);
+  transform: rotate(2deg) scale(var(--card-img-scale));
   animation-delay: -4s;
 }
 

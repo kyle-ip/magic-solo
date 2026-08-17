@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import '../styles/pack.css'
 import '../styles/deck.css'
 import { CardFaceButton } from './CardFaceButton'
+import { CardArtImage } from './CardArtImage'
 import { CardDetailsBody } from './CardDetailsBody'
 import {
   addCollected,
@@ -530,7 +531,7 @@ export function SingleDrawButton() {
                             }}
                           >
                             <span className="card-face front">
-                              <img
+                              <CardArtImage
                                 src={backSrc}
                                 alt={t('deck.backHint')}
                                 draggable={false}
@@ -548,7 +549,7 @@ export function SingleDrawButton() {
                               {waiting ? (
                                 <span className="card-face-blank" aria-hidden />
                               ) : (
-                                <img
+                                <CardArtImage
                                   src={frontSrc}
                                   alt={card?.name || ''}
                                   draggable={false}

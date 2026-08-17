@@ -11,6 +11,7 @@ interface CardArtImageProps {
 
 /**
  * Shows an empty card-frame silhouette until the face art finishes loading.
+ * Uses `.card-art` clip shell so Scryfall JPG corners are masked like set gallery tiles.
  */
 export function CardArtImage({
   src,
