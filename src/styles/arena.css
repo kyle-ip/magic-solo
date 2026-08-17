@@ -660,10 +660,16 @@ html.is-arena-playing body {
   pointer-events: none;
 }
 
+html.is-setup-preloading,
+html.is-setup-preloading body {
+  overscroll-behavior: none;
+  touch-action: none;
+}
+
 .setup-preload {
   position: fixed;
   inset: 0;
-  z-index: 40;
+  z-index: 200;
   display: grid;
   place-content: center;
   justify-items: center;
@@ -671,12 +677,14 @@ html.is-arena-playing body {
   padding: 1.5rem;
   background:
     radial-gradient(ellipse at 50% 42%, rgba(48, 32, 18, 0.45), transparent 55%),
-    rgba(8, 6, 5, 0.82);
+    rgba(8, 6, 5, 0.88);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   color: rgba(245, 232, 210, 0.95);
   text-align: center;
   pointer-events: all;
+  touch-action: none;
+  overscroll-behavior: none;
   animation: modal-fade-in var(--motion-med) var(--motion-ease-out) both;
 }
 
@@ -783,18 +791,30 @@ html.is-arena-playing body {
   }
 }
 
+.setup-preload-cancel {
+  margin-top: 0.55rem;
+  min-width: 7.5rem;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+
 .setup-cta-begin {
+  position: relative;
   display: grid;
-  gap: 0.35rem;
   justify-items: stretch;
 }
 
 .setup-warm-hint {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 0.35rem);
   margin: 0;
   font-size: 0.78rem;
   letter-spacing: 0.03em;
   color: rgba(231, 215, 184, 0.62);
   text-align: right;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

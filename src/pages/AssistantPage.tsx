@@ -49,6 +49,7 @@ import { deckMetaEn, deckMetaZh } from '../data/locale/deckMeta'
 import type { ChallengeCode } from '../game/types'
 import { defsFromDeck } from '../game/types'
 import { DeckAtmosphere } from '../components/DeckAtmosphere'
+import { SetupPreloadOverlay } from '../components/challenge/SetupPreloadOverlay'
 import { CardImage } from '../hooks/useCardImageSrc'
 import { useArenaScale } from '../hooks/useArenaScale'
 import { useBoardPan } from '../hooks/useBoardPan'
@@ -144,6 +145,7 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
   const assetLoadGenRef = useRef(0)
   const assetsReadyRef = useRef(false)
   const warmPromiseRef = useRef<Promise<ImagePreloadProgress> | null>(null)
+  const enterGenRef = useRef(0)
   const arenaRef = useRef<HTMLElement | null>(null)
   const boardStageRef = useRef<HTMLDivElement | null>(null)
   const boardPanRef = useRef<HTMLDivElement | null>(null)
@@ -196,39 +198,54 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
 
   const beginAssistant = useCallback(async () => {
     if (assetLoading) return
+    const enterGen = ++enterGenRef.current
     setAssetLoading(true)
     try {
       if (!assetsReadyRef.current) {
         await (warmPromiseRef.current ?? warmAssistantAssets())
       }
+      if (enterGen !== enterGenRef.current) return
       if (!assetsReadyRef.current) {
         await warmAssistantAssets()
       }
+      if (enterGen !== enterGenRef.current) return
       if (!assetsReadyRef.current) return
       act({ type: 'START' })
     } finally {
-      setAssetLoading(false)
+      if (enterGen === enterGenRef.current) {
+        setAssetLoading(false)
+      }
     }
   }, [act, assetLoading, warmAssistantAssets])
+
+  const cancelAssetLoading = useCallback(() => {
+    enterGenRef.current += 1
+    setAssetLoading(false)
+  }, [])
 
   const resumeAssistant = useCallback(async () => {
     const saved = pendingResumeRef.current
     if (!saved || assetLoading) return
     // Keep the dialog up until HYDRATE leaves setup to avoid a setup-page flash.
+    const enterGen = ++enterGenRef.current
     setAssetLoading(true)
     try {
       if (!assetsReadyRef.current) {
         await (warmPromiseRef.current ?? warmAssistantAssets())
       }
+      if (enterGen !== enterGenRef.current) return
       if (!assetsReadyRef.current) {
         await warmAssistantAssets()
       }
+      if (enterGen !== enterGenRef.current) return
       if (!assetsReadyRef.current) return
       pendingResumeRef.current = null
       setResumePromptOpen(false)
       act({ type: 'HYDRATE', state: saved })
     } finally {
-      setAssetLoading(false)
+      if (enterGen === enterGenRef.current) {
+        setAssetLoading(false)
+      }
     }
   }, [act, assetLoading, warmAssistantAssets])
 
@@ -718,24 +735,13 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
           {atmosphere}
           <div className={`assistant-setup arena-setup${assetLoading ? ' is-preloading' : ''}`}>
             {assetLoading ? (
-              <div className="setup-preload" role="status" aria-live="polite">
-                <div className="setup-preload-fx" aria-hidden="true">
-                  <span className="setup-preload-card" />
-                  <span className="setup-preload-card" />
-                  <span className="setup-preload-card" />
-                </div>
-                <p className="setup-preload-title">{t('assistant.loadingTitle')}</p>
-                <p>
-                  {t('assistant.loadingAssets', {
-                    done: assetProgress.done,
-                    total: assetProgress.total || '…',
-                    pct: preloadPct,
-                  })}
-                </p>
-                <div className="setup-preload-bar" aria-hidden="true">
-                  <span style={{ width: `${preloadPct}%` }} />
-                </div>
-              </div>
+              <SetupPreloadOverlay
+                titleKey="assistant.loadingTitle"
+                done={assetProgress.done}
+                total={assetProgress.total}
+                ns="assistant"
+                onCancel={cancelAssetLoading}
+              />
             ) : null}
             <h1>{meta?.name ?? deck.name}</h1>
             <p className="lede">{t('assistant.setupLead')}</p>

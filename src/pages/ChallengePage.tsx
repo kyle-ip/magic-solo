@@ -465,6 +465,8 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
   const assetLoadGenRef = useRef(0)
   const assetsReadyRef = useRef(false)
   const warmPromiseRef = useRef<Promise<ChallengePreloadProgress> | null>(null)
+  /** Bumped to abort an in-flight Begin / Resume enter after cancel. */
+  const enterGenRef = useRef(0)
   const [focusAttacker, setFocusAttacker] = useState<string | null>(null)
   const [preview, setPreview] = useState<{
     image: string
@@ -659,14 +661,17 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
 
   const beginChallenge = useCallback(async () => {
     if (assetLoading) return
+    const enterGen = ++enterGenRef.current
     setAssetLoading(true)
     try {
       if (!assetsReadyRef.current) {
         await (warmPromiseRef.current ?? warmChallengeAssets())
       }
+      if (enterGen !== enterGenRef.current) return
       if (!assetsReadyRef.current) {
         await warmChallengeAssets()
       }
+      if (enterGen !== enterGenRef.current) return
       if (!assetsReadyRef.current) return
       act({
         type: 'START',
@@ -679,7 +684,9 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
         },
       })
     } finally {
-      setAssetLoading(false)
+      if (enterGen === enterGenRef.current) {
+        setAssetLoading(false)
+      }
     }
   }, [
     act,
@@ -692,6 +699,11 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
     warmChallengeAssets,
   ])
 
+  const cancelAssetLoading = useCallback(() => {
+    enterGenRef.current += 1
+    setAssetLoading(false)
+  }, [])
+
   const resumeChallenge = useCallback(async () => {
     const saved = pendingResumeRef.current
     if (!saved || assetLoading) return
@@ -699,6 +711,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
     const resumeHeroIds = saved.player.heroes.map((h) => h.defId)
     // Keep the resume dialog mounted until HYDRATE leaves setup — closing it first
     // flashes the setup page (AnimatePresence exit + warm restart).
+    const enterGen = ++enterGenRef.current
     setAssetLoading(true)
     try {
       const gen = ++assetLoadGenRef.current
@@ -713,6 +726,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
       )
       warmPromiseRef.current = run
       await run
+      if (enterGen !== enterGenRef.current) return
       if (gen !== assetLoadGenRef.current) return
       assetsReadyRef.current = true
       setAssetsReady(true)
@@ -724,7 +738,9 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
       setResumePromptOpen(false)
       act({ type: 'HYDRATE', state: saved })
     } finally {
-      setAssetLoading(false)
+      if (enterGen === enterGenRef.current) {
+        setAssetLoading(false)
+      }
     }
   }, [act, assetLoading, code])
 
@@ -1749,6 +1765,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
           onPickDeck={setPlayerDeckId}
           onViewRoster={setRosterModalId}
           onBegin={() => void beginChallenge()}
+          onCancelLoading={cancelAssetLoading}
           rosterModal={
             rosterModalId ? (
               <DeckRosterModal

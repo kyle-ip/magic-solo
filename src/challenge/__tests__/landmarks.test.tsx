@@ -100,6 +100,7 @@ describe('Challenge setup landmarks', () => {
           onPickDeck: () => {},
           onViewRoster: () => {},
           onBegin: () => {},
+          onCancelLoading: () => {},
         }),
       ),
     )

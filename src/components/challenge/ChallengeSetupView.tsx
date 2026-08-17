@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ManaSymbol } from '../ManaCost'
 import { SetupLlmAdvisor } from '../SetupLlmAdvisor'
+import { SetupPreloadOverlay } from './SetupPreloadOverlay'
 import { HERO_DEFS, maxHeroesFor } from '../../game/heroes'
 import {
   getDeckCardCount,
@@ -32,6 +33,7 @@ export function ChallengeSetupView({
   onPickDeck,
   onViewRoster,
   onBegin,
+  onCancelLoading,
   rosterModal,
 }: {
   code: ChallengeCode
@@ -54,6 +56,8 @@ export function ChallengeSetupView({
   onPickDeck: (id: PlayerDeckId) => void
   onViewRoster: (id: PlayerDeckId) => void
   onBegin: () => void
+  /** Dismiss the preparing-arena overlay without starting. */
+  onCancelLoading: () => void
   rosterModal?: ReactNode
 }) {
   const { t } = useTranslation()
@@ -69,24 +73,13 @@ export function ChallengeSetupView({
       {atmosphere}
       <section className={`arena-setup${assetLoading ? ' is-preloading' : ''}`}>
         {assetLoading ? (
-          <div className="setup-preload" role="status" aria-live="polite">
-            <div className="setup-preload-fx" aria-hidden="true">
-              <span className="setup-preload-card" />
-              <span className="setup-preload-card" />
-              <span className="setup-preload-card" />
-            </div>
-            <p className="setup-preload-title">{t('challenge.loadingTitle')}</p>
-            <p>
-              {t('challenge.loadingAssets', {
-                done: assetProgress.done,
-                total: assetProgress.total || '…',
-                pct: preloadPct,
-              })}
-            </p>
-            <div className="setup-preload-bar" aria-hidden="true">
-              <span style={{ width: `${preloadPct}%` }} />
-            </div>
-          </div>
+          <SetupPreloadOverlay
+            titleKey="challenge.loadingTitle"
+            done={assetProgress.done}
+            total={assetProgress.total}
+            ns="challenge"
+            onCancel={onCancelLoading}
+          />
         ) : null}
 
         <h1>{title}</h1>
