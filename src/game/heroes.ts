@@ -14,7 +14,7 @@ export interface HeroDef {
   typeLineZh: string
   oracleText: string
   oracleTextZh: string
-  /** Which challenges this hero is recommended for (all allowed in Experience). */
+  /** Which challenges this hero is recommended for (all allowed in Challenge). */
   quests: ChallengeCode[]
   effect: HeroEffect
   /** Extra keywords granted to creatures (in addition to grantKeywords effects). */
@@ -25,7 +25,7 @@ export interface HeroDef {
   art?: string
 }
 
-/** Curated Hero's Path cards with Experience-friendly effects. */
+/** Curated Hero's Path cards with Challenge-friendly effects. */
 export const HERO_DEFS: HeroDef[] = [
   {
     id: 'protector',

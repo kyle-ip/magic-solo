@@ -543,7 +543,7 @@ export function applyHeadDamageChoice(
   return next
 }
 
-/** Legacy bulk turn — Challenge Experience uses challengeTurn.ts instead. */
+/** Legacy bulk turn — Challenge uses challengeTurn.ts instead. */
 export function runHydraTurn(state: GameState): GameState {
   return beginPlayerTurn(checkHydraWin(state))
 }

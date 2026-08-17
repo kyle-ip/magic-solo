@@ -13,7 +13,7 @@ export type PageChatKind =
 export interface PageBrief {
   path: string
   kind: PageChatKind
-  /** Challenge Experience / Game Assistant routes use simplified site rules. */
+  /** Challenge / Game Assistant routes use simplified site rules. */
   challengeMode: boolean
   params: Record<string, string>
   title: string

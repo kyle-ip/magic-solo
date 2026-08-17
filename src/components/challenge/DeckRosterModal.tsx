@@ -216,8 +216,8 @@ export function DeckRosterModal({
                     {group.cards.map((card) => {
                       const label = zh ? card.nameZh : card.name
                       const simplified =
-                        /Challenge Experience|\(Challenge:|挑战体验|（挑战：/i.test(card.oracleText) ||
-                        /Challenge Experience|\(Challenge:|挑战体验|（挑战：/i.test(card.oracleTextZh)
+                        /\(Challenge:|（挑战：/i.test(card.oracleText) ||
+                        /\(Challenge:|（挑战：/i.test(card.oracleTextZh)
                       return (
                         <li key={card.id}>
                           <button

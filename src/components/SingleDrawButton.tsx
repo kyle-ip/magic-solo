@@ -91,10 +91,16 @@ function isShowingFront(turns: number): boolean {
   return turns % 2 === 1
 }
 
-export function SingleDrawButton() {
+export function SingleDrawButton({
+  open,
+  onOpenChange,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}) {
   const { t } = useTranslation()
   const titleId = useId()
-  const [open, setOpen] = useState(false)
+  const setOpen = onOpenChange
   const [view, setView] = useState<ModalView>('draw')
   const [card, setCard] = useState<DrawnCard | null>(null)
   const [drawing, setDrawing] = useState(false)
@@ -594,16 +600,5 @@ export function SingleDrawButton() {
         )
       : null
 
-  return (
-    <>
-      <button
-        type="button"
-        className="references-text-btn"
-        onClick={() => setOpen(true)}
-      >
-        {t('singleDraw.open')}
-      </button>
-      {dialog}
-    </>
-  )
+  return <>{dialog}</>
 }

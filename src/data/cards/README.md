@@ -12,7 +12,7 @@ Edit **this folder** when you need to change card text or image paths. The app r
 
 Each card entry has bilingual copy and asset paths under `images` (relative to `public/`). At runtime the UI prefers **remote CDN** URLs (see mapping below) and falls back to these local paths.
 
-## Player Constructed decks (Challenge Experience)
+## Player Constructed decks (Challenge)
 
 | File | Deck |
 | --- | --- |
@@ -31,7 +31,7 @@ node scripts/build-player-deck.mjs skies
 node scripts/build-player-deck.mjs terror
 ```
 
-**Oracle policy:** only listed keywords and `effect` hooks resolve. Monstrosity / protection-from-white on printed Stormbreath / Ember Swallower / Polukranos are noted as omitted. Soft counters are not used in Challenge Experience lists.
+**Oracle policy:** only listed keywords and `effect` hooks resolve. Monstrosity / protection-from-white on printed Stormbreath / Ember Swallower / Polukranos are noted as omitted. Soft counters are not used in Challenge lists.
 
 ## Local ↔ remote image mapping
 

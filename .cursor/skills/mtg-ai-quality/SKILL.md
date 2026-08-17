@@ -11,12 +11,12 @@ description: >-
 
 ## Goal
 
-Keep Magic Solo’s browser LLM answers grounded in **authoritative** sources—not fan wikis—while respecting this site’s **Challenge Experience** simplifications.
+Keep Magic Solo’s browser LLM answers grounded in **authoritative** sources—not fan wikis—while respecting this site’s **Challenge** simplifications.
 
 ## Authority order (must follow)
 
 1. **Request payload** — card/rules/board JSON the app already sends  
-2. **Magic Solo Challenge / Experience rules** — when those modes apply, they override full CR  
+2. **Magic Solo Challenge rules** — when those modes apply, they override full CR  
 3. **Wizards of the Coast**
    - Rules hub: https://magic.wizards.com/en/rules  
    - Comprehensive Rules (current text downloads linked from that page)  

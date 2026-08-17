@@ -108,7 +108,7 @@ export function DeckPage() {
                 onPointerEnter={warmPlayAssets}
                 onFocus={warmPlayAssets}
               >
-                {t('deck.startExperience')}
+                {t('deck.startChallenge')}
               </UiButtonLink>
               <UiButtonLink
                 variant="ghost"

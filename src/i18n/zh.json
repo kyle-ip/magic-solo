@@ -169,7 +169,8 @@
     }
   },
   "nav": {
-    "challenges": "挑战"
+    "challenges": "挑战",
+    "draw": "抽卡"
   },
   "classicDecks": {
     "open": "牌组",
@@ -296,8 +297,7 @@
     "setLine": "{{expansion}} · {{code}}",
     "viewRules": "查看规则",
     "viewCards": "查看卡牌",
-    "startChallenge": "开始挑战",
-    "startExperience": "挑战",
+    "startChallenge": "挑战",
     "startAssistant": "游戏助手",
     "startSoon": "开始挑战 — 即将推出",
     "overview": "挑战简介",

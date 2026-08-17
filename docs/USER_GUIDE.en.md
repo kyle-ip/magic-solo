@@ -12,7 +12,7 @@ Fan site for the three *Magic: The Gathering* **Challenge Decks** from Theros-bl
 
 1. [Getting started](#1-getting-started)
 2. [Challenge Decks](#2-challenge-decks)
-3. [Challenge Experience](#3-challenge-experience)
+3. [Challenge](#3-challenge)
 4. [Game Assistant](#4-game-assistant)
 5. [Classic decks](#5-classic-decks)
 6. [Set gallery](#6-set-gallery)
@@ -65,13 +65,13 @@ Overview of the three Challenge Decks; links go to each deck hub.
 
 - Rules summary (expandable sections)
 - Full card gallery (open a card for art, oracle text, quantity)
-- Links to **Challenge Experience** and **Game Assistant**
+- Links to **Challenge** and **Game Assistant**
 - **Print assistant** for the deck catalog, expanding each card by its quantity (see [§8](#8-print-assistant))
 - **Challenge switcher** to jump to a sibling challenge without returning home
 
 ---
 
-## 3. Challenge Experience
+## 3. Challenge
 
 Route: `/challenge/:setCode`
 
@@ -107,9 +107,9 @@ Only **implemented** abilities fire (supported evergreen today: haste, flash, vi
 - Win / loss **settlement** with match stats (and optional AI battle report)
 - Challenge switcher available from setup / related surfaces
 
-### Experience vs official Challenge Decks
+### Challenge vs official Challenge Decks
 
-| Official | This Experience |
+| Official | This Challenge |
 | --- | --- |
 | Any Constructed deck | Four curated lists; only implemented abilities fire |
 | Full stack / priority | Spells resolve immediately (Fog still stops breath / combat damage) |
@@ -259,7 +259,7 @@ Stable answers (card text, rules, archetypes, same question, etc.) are **cached 
 ### Limits
 
 - AI does **not** replace the game rules engine or auto-play turns.
-- Answers are grounded in data the site sends (card JSON, rules JSON, board snapshot, page brief) plus a short official keyword gloss when relevant. Challenge Experience rules override full Comprehensive Rules when they conflict. Answers can still be wrong—prefer [Wizards Rules](https://magic.wizards.com/en/rules) / printed oracle when it matters.
+- Answers are grounded in data the site sends (card JSON, rules JSON, board snapshot, page brief) plus a short official keyword gloss when relevant. Challenge rules override full Comprehensive Rules when they conflict. Answers can still be wrong—prefer [Wizards Rules](https://magic.wizards.com/en/rules) / printed oracle when it matters.
 - You pay your provider for usage; caching reduces repeat cost.
 
 ---

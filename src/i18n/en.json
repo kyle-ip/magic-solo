@@ -169,7 +169,8 @@
     }
   },
   "nav": {
-    "challenges": "Challenges"
+    "challenges": "Challenges",
+    "draw": "Draw"
   },
   "classicDecks": {
     "open": "Decks",
@@ -296,8 +297,7 @@
     "setLine": "{{expansion}} · {{code}}",
     "viewRules": "View Rules",
     "viewCards": "View Cards",
-    "startChallenge": "Start Challenge",
-    "startExperience": "Challenge",
+    "startChallenge": "Challenge",
     "startAssistant": "Game Assistant",
     "startSoon": "Start Challenge — Coming Soon",
     "overview": "The Challenge",

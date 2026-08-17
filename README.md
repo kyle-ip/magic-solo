@@ -1,17 +1,19 @@
 # Magic Solo — Challenge Decks
 
-Solo fan site for the three *Magic: The Gathering* **Challenge Decks** from Theros-block Game Days (Face the Hydra, Battle the Horde, Defeat a God), with a simplified PvE **Challenge Experience**, a paper-play **Game Assistant**, classic archetypes, Scryfall set gallery, local pack/collection toys, a **Print assistant** for proxy PDFs, and an optional BYO-key **AI Assistant**.
+Solo fan site for the three *Magic: The Gathering* **Challenge Decks** from Theros-block Game Days (Face the Hydra, Battle the Horde, Defeat a God), with a simplified PvE **Challenge**, a paper-play **Game Assistant**, classic archetypes, Scryfall set gallery, local pack/collection toys, a **Print assistant** for proxy PDFs, and an optional BYO-key **AI Assistant**.
 
 **Live:** [https://kyle-ip.github.io/magic-solo/](https://kyle-ip.github.io/magic-solo/)
 
 **User guides:** [English](docs/USER_GUIDE.en.md) · [中文](docs/USER_GUIDE.zh.md) · in-app `/help`
 
+**Roadmap / agent progress:** [docs/ROADMAP.md](docs/ROADMAP.md) · [docs/PROGRESS.md](docs/PROGRESS.md)
+
 ## Features
 
 | Area | Routes / entry | Summary |
 | --- | --- | --- |
-| Challenge Decks | `/`, `/decks/:code` | Rules + card gallery; CTAs to Experience, Assistant, Print |
-| Challenge Experience | `/challenge/:code` | Automated solo PvE; 4 curated player lists; heroes & difficulty |
+| Challenge Decks | `/`, `/decks/:code` | Rules + card gallery; CTAs to Challenge, Assistant, Print |
+| Challenge | `/challenge/:code` | Automated solo PvE; 4 curated player lists; heroes & difficulty |
 | Game Assistant | `/assistant/:code` | Manual challenge half-board for paper decks |
 | Classic decks | `/classic-decks` | Curated archetypes + sample lists + print PDF |
 | Set gallery | `/sets` | Live Scryfall browsing + print PDF |
@@ -31,7 +33,7 @@ UI: English + 中文. Without an AI key, gameplay and layout match the non-AI si
 | Battle the Horde | `tbth` | *Born of the Gods* |
 | Defeat a God | `tdag` | *Journey into Nyx* |
 
-**Challenge Experience** player lists (curated, not full Constructed): Wildfire Host, UB Terror, Challenge Burn, Azure Skies. Experience follows official challenge loops where implemented, but is **not** a full CR engine. Details: [user guide](docs/USER_GUIDE.en.md#3-challenge-experience).
+**Challenge** player lists (curated, not full Constructed): Wildfire Host, UB Terror, Challenge Burn, Azure Skies. Challenge follows official challenge loops where implemented, but is **not** a full CR engine. Details: [user guide](docs/USER_GUIDE.en.md#3-challenge).
 
 ## Stack
 
@@ -60,14 +62,14 @@ npm test
 | `fetch:local` | Art crops / player muster paths |
 | `fetch:classic-decks` / `generate:classic-decks` | Classic archetype data (optional) |
 
-High-res card PNG/`*-display.jpg` under `public/assets/cards/` are gitignored; CI regenerates on deploy. Player-deck JPG faces under `public/assets/cards/player/` are tracked for Challenge Experience.
+High-res card PNG/`*-display.jpg` under `public/assets/cards/` are gitignored; CI regenerates on deploy. Player-deck JPG faces under `public/assets/cards/player/` are tracked for Challenge.
 
 ### Layout
 
 ```
 src/pages/        Routes (home, decks, challenge, assistant, sets, classic, help, editor)
 src/editor/       Card editor (canvas compositor; gated by CARD_EDITOR_ENABLED)
-src/game/         Challenge Experience engine + player abilities
+src/game/         Challenge engine + player abilities
 src/assistant/    Game Assistant state
 src/print/        Print assistant layout + PDF export
 src/llm/          Optional browser LLM client, page chat, cache

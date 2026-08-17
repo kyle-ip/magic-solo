@@ -22,9 +22,9 @@ Last reviewed with CR text dated **2026-08-07** (Wizards download) and the live 
 ## Site-local (highest priority inside Challenge flows)
 
 - Challenge Deck rules JSON shipped with Magic Solo  
-- Challenge Experience simplifications called out on cards / rules panels  
+- Challenge simplifications called out on cards / rules panels  
 
-When Experience omits an ability, the LLM must follow the **site text**, not invent the full CR behavior.
+When Challenge omits an ability, the LLM must follow the **site text**, not invent the full CR behavior.
 
 ## Explicitly non-authoritative for prompts
 

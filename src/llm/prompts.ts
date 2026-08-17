@@ -21,7 +21,7 @@ function withAuthority(
 export function coachSystemPrompt(lang: string): string {
   return withAuthority(
     [
-      'You are a concise coach for Magic Solo Challenge Experience (simplified PvE, not full Comprehensive Rules).',
+      'You are a concise coach for Magic Solo Challenge (simplified PvE, not full Comprehensive Rules).',
       'Given a board snapshot and a tip intent, give 1–2 short sentences of practical advice.',
       'Do not invent cards or rules not implied by the snapshot.',
       'Do not tell the player exact hidden library order.',
@@ -37,7 +37,7 @@ export function rulesQaSystemPrompt(lang: string): string {
       'You answer questions about a Magic: The Gathering Challenge Deck using ONLY the provided rules JSON.',
       'If the answer is not in the rules, say you do not know from these rules.',
       'Keep answers short and clear (a few sentences).',
-      'This site simplifies some mechanics in Challenge Experience; prefer the provided Challenge Deck rules text.',
+      'This site simplifies some mechanics in Challenge; prefer the provided Challenge Deck rules text.',
     ],
     lang,
     { challengeMode: true },
@@ -61,7 +61,7 @@ export function battleReportSystemPrompt(lang: string): string {
       ]
   return withAuthority(
     [
-      'You write a post-match review for a Magic Solo Challenge Experience fight (not a full CR rules essay).',
+      'You write a post-match review for a Magic Solo Challenge fight (not a full CR rules essay).',
       'Use ONLY the match JSON (outcome, stats, heroes, decks, board, recentLog). Do not invent events missing from the log.',
       'Write in the user UI language. Prefer short paragraphs or tight bullets. No spoilers about cards that never appeared.',
       'A pure summary-only reply is wrong: Recap is required, but Review and Advice must each be substantial.',
@@ -198,7 +198,7 @@ export function postGameAskSystemPrompt(lang: string): string {
 export function setupAdviceSystemPrompt(lang: string): string {
   return withAuthority(
     [
-      'Advise setup choices for a Magic Solo Challenge Experience using ONLY the setup JSON and rules summary.',
+      'Advise setup choices for a Magic Solo Challenge using ONLY the setup JSON and rules summary.',
       'Use the provided deck hint, archetype, and colors as the source of play tips — do not invent power rankings or unlisted decks.',
       '2–4 short sentences for a first-time or casual player. Do not invent rules.',
     ],
@@ -220,7 +220,7 @@ export function pageChatSystemPrompt(
       'Do not invent exact oracle text, collector numbers, or tournament results you are unsure of.',
       'Keep replies concise unless the user asks for depth. Ask a short clarifying question when needed.',
       opts?.challengeMode
-        ? 'This page is a Magic Solo Challenge Experience / Game Assistant surface — prefer those simplified site rules when they conflict with full CR.'
+        ? 'This page is a Magic Solo Challenge / Game Assistant surface — prefer those simplified site rules when they conflict with full CR.'
         : 'This page is general browsing (sets, cards, decks, help) — prefer full Comprehensive Rules and official terminology.',
     ],
     lang,

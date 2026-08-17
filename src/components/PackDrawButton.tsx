@@ -441,10 +441,16 @@ function isShowingCardFront(turns: number): boolean {
   return turns % 2 === 1
 }
 
-export function PackDrawButton() {
+export function PackDrawButton({
+  open,
+  onOpenChange,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}) {
   const { t, i18n } = useTranslation()
   const titleId = useId()
-  const [open, setOpen] = useState(false)
+  const setOpen = onOpenChange
   const [view, setView] = useState<ModalView>('pack')
   const [phase, setPhase] = useState<RevealPhase>('sealed')
   const [cards, setCards] = useState<DrawnCard[]>([])
@@ -1894,13 +1900,6 @@ export function PackDrawButton() {
 
   return (
     <>
-      <button
-        type="button"
-        className="references-text-btn"
-        onClick={() => setOpen(true)}
-      >
-        {t('packDraw.open')}
-      </button>
       {dialog}
       <PrintAssistantModal
         open={printOpen}

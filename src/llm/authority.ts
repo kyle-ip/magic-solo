@@ -5,7 +5,7 @@
  * 1. Wizards Comprehensive Rules — https://magic.wizards.com/en/rules
  * 2. Wizards ZH keyword glossary — https://magic.wizards.com/zh-hans/keyword-glossary
  * 3. Scryfall card oracle / search — https://scryfall.com/docs/syntax
- * 4. Site-local Challenge Deck / Experience rules JSON (overrides CR when modes conflict)
+ * 4. Site-local Challenge Deck / Challenge rules JSON (overrides CR when modes conflict)
  *
  * Gloss English lines paraphrase the CR glossary (effective Aug 7, 2026 download).
  * Gloss Chinese lines paraphrase the official ZH keyword glossary where available.
@@ -24,14 +24,14 @@ export const MTG_AUTHORITY = {
 
 /** Shared system-prompt rules: prefer provided data + named authorities; never invent rulings. */
 export function authorityGrounding(opts?: {
-  /** Challenge Experience / Challenge Deck local rules beat full CR. */
+  /** Challenge / Challenge Deck local rules beat full CR. */
   challengeMode?: boolean
 }): string {
   const challenge = opts?.challengeMode
-    ? 'For Challenge Experience / Challenge Deck flows, the provided site rules JSON overrides Comprehensive Rules when they conflict.'
-    : 'If site context includes Challenge or Experience rules, those local rules override Comprehensive Rules when they conflict.'
+    ? 'For Challenge / Challenge Deck flows, the provided site rules JSON overrides Comprehensive Rules when they conflict.'
+    : 'If site context includes Challenge or Challenge Deck rules, those local rules override Comprehensive Rules when they conflict.'
   return [
-    'Authority order: (1) JSON / text provided in this request, (2) Magic Solo Challenge/Experience rules when present, (3) Wizards Comprehensive Rules and official keyword glossaries, (4) Scryfall oracle/search syntax for card data and queries.',
+    'Authority order: (1) JSON / text provided in this request, (2) Magic Solo Challenge rules when present, (3) Wizards Comprehensive Rules and official keyword glossaries, (4) Scryfall oracle/search syntax for card data and queries.',
     challenge,
     'Do not invent Gatherer rulings, errata, or cards. If unsupported by the provided data (and any injected official gloss), say you cannot tell from the given information.',
     'Do not cite fan wikis as authority. Card names/oracle come from the provided JSON (Scryfall-backed data on this site).',
