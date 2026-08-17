@@ -39,16 +39,21 @@ function baseState(deckId: string): GameState {
       hand: [],
       lands: [],
       creatures: [],
+      planeswalkers: [],
+      enchantments: [],
+      artifacts: [],
       graveyard: [],
       exile: [],
       heroes: [],
       landsPlayedThisTurn: 0,
       manaPool: emptyManaPool(),
     },
-    challenge: { library: [], battlefield: [], graveyard: [] },
+    challenge: { library: [], battlefield: [], graveyard: [], exile: [] },
     flags: { ...emptyFlags(), playerTurnsRemaining: 0 },
     log: [],
     prompt: null,
+    mulliganCount: 0,
+    stack: [],
     selectedAttackers: [],
     attackAssignments: {},
     blockAssignments: {},
@@ -92,7 +97,7 @@ function basicLand(
     instanceId: id,
     defId: id,
     name,
-    typeLine: `Basic Land — ${name}`,
+    typeLine: `Basic Land �?${name}`,
     tapped: false,
     produces: [color] as Array<'R' | 'U' | 'W' | 'B' | 'G'>,
     image: '',
@@ -146,7 +151,7 @@ describe('player ability coverage', () => {
       instanceId: `h${i}`,
       defId: 'x',
       name: 'Minotaur',
-      typeLine: 'Creature — Minotaur',
+      typeLine: 'Creature �?Minotaur',
       oracleText: '',
       power: 2,
       toughness: 2,
@@ -285,7 +290,7 @@ describe('player ability coverage', () => {
         instanceId: 'm1',
         defId: 'x',
         name: 'Minotaur A',
-        typeLine: 'Creature — Minotaur',
+        typeLine: 'Creature �?Minotaur',
         oracleText: '',
         power: 2,
         toughness: 3,
@@ -307,7 +312,7 @@ describe('player ability coverage', () => {
         instanceId: 'm2',
         defId: 'x',
         name: 'Minotaur B',
-        typeLine: 'Creature — Minotaur',
+        typeLine: 'Creature �?Minotaur',
         oracleText: '',
         power: 5,
         toughness: 4,
@@ -340,7 +345,7 @@ describe('player ability coverage', () => {
         instanceId: 'h1',
         defId: 'x',
         name: 'Hydra Head',
-        typeLine: 'Creature — Head',
+        typeLine: 'Creature �?Head',
         oracleText: '',
         power: 0,
         toughness: 3,
@@ -479,7 +484,7 @@ describe('player ability coverage', () => {
         instanceId: 'head',
         defId: 'x',
         name: 'Hydra Head',
-        typeLine: 'Creature — Head',
+        typeLine: 'Creature �?Head',
         oracleText: '',
         power: 0,
         toughness: 10,
@@ -534,7 +539,7 @@ describe('player ability coverage', () => {
         instanceId: 'head',
         defId: 'x',
         name: 'Hydra Head',
-        typeLine: 'Creature — Head',
+        typeLine: 'Creature �?Head',
         oracleText: '',
         power: 0,
         toughness: 20,
@@ -556,7 +561,7 @@ describe('player ability coverage', () => {
     state.selectedAttackers = ['e1', 'a2', 'a3']
     state.attackAssignments = { e1: 'head', a2: 'head', a3: 'head' }
     state = resolvePlayerCombat(state)
-    // Each elite gets +2/+2 from battalion → 3 power each ×3 = 9
+    // Each elite gets +2/+2 from battalion �?3 power each ×3 = 9
     expect(state.challenge.battlefield[0]?.markedDamage).toBe(9)
   })
 
@@ -610,7 +615,7 @@ describe('player ability coverage', () => {
     expect(state.player.hand.some((c) => c.instanceId === 'fa')).toBe(false)
   })
 
-  it('Tarmogoyf sticky pump survives EOT clear', () => {
+  it('Tarmogoyf CDA tracks graveyard card types', async () => {
     let state = baseState('jund')
     const goyf = fromDef('Tarmogoyf', 'jund')
     state.player.hand = [goyf]
@@ -621,25 +626,15 @@ describe('player ability coverage', () => {
     ]
     state = castFromHand(state, 'tg')
     let body = state.player.creatures.find((c) => c.instanceId === 'tg')
-    expect(body?.power).toBe(4)
-    expect(body?.toughness).toBe(5)
-    // Simulate EOT clear used by beginPlayerTurn helpers
-    state = {
-      ...state,
-      player: {
-        ...state.player,
-        creatures: state.player.creatures.map((c) => ({
-          ...c,
-          power: Math.max(0, c.power - (c.tempPower ?? 0)),
-          toughness: Math.max(0, c.toughness - (c.tempToughness ?? 0)),
-          tempPower: 0,
-          tempToughness: 0,
-        })),
-      },
-    }
+    // Empty graveyards → 0/1
+    expect(body?.power).toBe(0)
+    expect(body?.toughness).toBe(1)
+    state.player.graveyard = [fromDef('Lightning Bolt', 'jund')]
+    const { refreshGoyfStats } = await import('../cascadeGoyf')
+    state = refreshGoyfStats(state)
     body = state.player.creatures.find((c) => c.instanceId === 'tg')
-    expect(body?.power).toBe(4)
-    expect(body?.toughness).toBe(5)
+    expect(body?.power).toBe(1)
+    expect(body?.toughness).toBe(2)
   })
 
   it('bestow triggers heroic and falloff returns aura as creature', () => {
@@ -720,7 +715,7 @@ describe('player ability coverage', () => {
       instanceId: id,
       defId: 'r',
       name: 'Rollicking Throng',
-      typeLine: 'Creature — Satyr',
+      typeLine: 'Creature �?Satyr',
       oracleText: '',
       power: 2,
       toughness: 2,

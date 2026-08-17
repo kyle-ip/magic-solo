@@ -8,9 +8,9 @@
 
 | In scope | Out of scope |
 | --- | --- |
-| Official Challenge Deck loops (Hydra / Horde / God) | Full Comprehensive Rules / Arena opponent |
-| Playable site Constructed lists; abilities as close to print as practical | Import arbitrary classic-deck lists into battle |
-| Full play without an AI key | Real stack, priority, continuous layers |
+| Official Challenge Deck loops; print-faithful mechanics for curated lists | Full Arena / arbitrary deck import |
+| Planeswalkers, enchantments, Clues, limited stack | Full Commander; default multiplayer Challenge |
+| Full play without an AI key | Universal oracle interpreter; full layers 1–7 |
 
 Data: `src/data/cards/player/*.json` · Engine: `src/game/` · Challenge half: `hydra.ts` / `horde.ts` / `god.ts`
 
@@ -31,7 +31,7 @@ Data: `src/data/cards/player/*.json` · Engine: `src/game/` · Challenge half: `
 | `spirits` | Spectral Chorus | WU Spirits | `player/spirits.json` |
 | `jund` | Bloodbraid Barrens | BRG midrange | `player/jund.json` |
 
-All three challenges share these lists. Roster **Simplified** badges mark cards whose print text is approximated (see `(Challenge:…)` notes on the card).
+Selected planeswalkers appear in **all ten** curated lists (at least one each). **Simplified** badges mark remaining honest approximations.
 
 Rebuild: `node scripts/build-player-deck.mjs <id>`
 
@@ -39,68 +39,65 @@ Rebuild: `node scripts/build-player-deck.mjs <id>`
 
 ## Engine capabilities (implemented)
 
+### Turns & cleanup
+
+- Opening **mulligan** (London rule); end-of-turn discard to **7**
+- UI phases remain main / combat / end; FS/DS damage steps internally
+
+### Limited stack
+
+- Challenge spells enter the stack; player priority: **Pass** / **Mausoleum Wanderer counter** / **cast Fog** (auto-resolves when Pass is the only option)
+- Not full priority passing; challenge side passes by default
+
 ### Evergreen & combat
 
-- Haste, flash, vigilance, lifelink, prowess, deathtouch, reach / flying blocking  
-- **First / double strike** as combat damage steps (not ×2 power)  
-- **Trample** (player): excess — Hydra → another Head; God → Xenagos; Horde → continue milling  
-- Anthems: flyers, creature type, other creatures  
+- Haste, flash, vigilance, lifelink, prowess, deathtouch, reach / flying, islandwalk (keyword; no Island → inert)
+- First / double strike steps; trample spill; Horde combat aligned with FS/deathtouch
+- Protection from multicolored; temp hexproof (e.g. Rattlechains)
 
-### Casting & interaction
+### Permanents
 
-- Lands, mana pool, auto-tap payment, sorcery-speed limits (simplified timing)  
-- Burn-to-any, Fog, fight, pump, destroy, bounce (challenge creature → top of challenge library)  
-- Mill / draw, scry, brainstorm, flashback, delve discount, Terror discount  
-- Edict, Fangs, Crawl from the Cellar, Fallaji mill-loot (else +1/+1 counter)  
-
-### Theros / Constructed keywords
-
-- **Bestow**: attach + falloff to creature on host death; bestow targets fire **heroic**  
-- **Heroic** / **bloodrush** / **battalion** / **Parish counters** / **Human lieutenant**  
-- **Monstrosity** (double-click pay; optional destroy flyer / fight)  
-- **Persist** (Kitchen Finks)  
-- **Scavenging Ooze**: `{G}` activate exile from a graveyard (prefers challenge GY)  
-- **Maelstrom Pulse**: same-name wipe on challenge creatures  
-- Spirit ETB pump, Spirits-have-flash, Silvergill surcharge, Merfolk lords, etc.  
+- Land / creature / instant / sorcery / **enchantment** / **artifact (Clue)** / **planeswalker**
+- Journey / Banishing: **linked exile**
+- Clue: `{2}`, sac, draw
+- Planeswalkers: loyalty, one activation/turn, damage → loyalty, ≤0 to GY
+- **Legendary rule**; **Goyf** GY-type CDA; **cascade**
 
 ### Challenge half-board
 
 | Challenge | Status |
 | --- | --- |
-| Face the Hydra (`tfth`) | Heads, breath, Hide, Hero's Reward, Swallow, elite triggers wired |
-| Battle the Horde (`tbth`) | Delay, mill, Horde casts; combat more abstract than player combat |
-| Defeat a God (`tdag`) | Xenagos / Revelers, blockers & trample; Impulsive Destruction adapted for Constructed |
+| Face the Hydra (`tfth`) | Heads, breath, Hide, Hero's Reward, Swallow, elites |
+| Battle the Horde (`tbth`) | Delay, mill; combat with FS/deathtouch steps |
+| Defeat a God (`tdag`) | Xenagos / Revelers, blockers & trample |
 
-Tests: `src/game/__tests__/rulesFidelity.test.ts`, `playerAbilities.test.ts`
+Tests under `src/game/__tests__/`.
 
 ---
 
 ## Per-deck coverage & honest gaps
 
-Legend: **Solid** ≈ core list effects wired; **Approx** = remaining print approximations (noted on cards).
-
-| Deck | Coverage | Typical remaining approximations |
+| Deck | Coverage | Typical remaining notes |
 | --- | --- | --- |
-| Wildfire Host | Solid | Fixed monstrosity costs; land-sac / protection triggers omitted on some dragons |
-| UB Terror | Solid | Bounce has no challenge “hand” |
-| Ember Barrage | Solid | Guide land → library bottom (not hand); burn targeting slightly loose |
-| Azure Skies | Solid + approx | Journey / Banishing ≈ destroy; no return-when-leaves |
-| Pearl Trident | Solid + approx | Islandwalk omitted; Trickster lose-abilities approx; bounce → library top |
-| Akroan Legion | Solid | Bestow / heroic wired; Journey-style still destroy-approx |
+| Wildfire Host | Solid | Some dragon extras omitted; Polukranos auto-max X |
+| UB Terror | Solid | Bounce → challenge library top |
+| Ember Barrage | Solid | Guide land → library bottom (no challenge hand) |
+| Azure Skies | Solid | — |
+| Pearl Trident | Solid | Bounce → library top; Trickster approx |
+| Akroan Legion | Solid | — |
 | Nessian Wilds | Solid | — |
-| Parish Host | Solid + approx | Investigate ≈ ETB draw; protection from multicolored omitted |
-| Spectral Chorus | Solid + approx | No stack counter; Rattlechains ETB hexproof omitted |
-| Bloodbraid Barrens | Solid + approx | Cascade ≈ ETB draw 1; Goyf sticky +2/+2 CDA approx |
+| Parish Host | Solid | Multicolor cast life trigger weak |
+| Spectral Chorus | Solid | Counter only on challenge reveal window |
+| Bloodbraid Barrens | Solid | — |
 
 ---
 
-## Intentionally not built (needs full CR)
+## Intentionally not built
 
-- Real stack, priority, soft-counter windows  
-- Full continuous layers / Goyf card-type CDA  
-- Full cascade (exile and cast in order)  
-- Clue token economy, real protection / hexproof prevention  
-- Launching `/classic-decks` lists straight into Digital Play  
+- Import `/classic-decks` into Digital Play  
+- Full Commander; default multiplayer Challenge  
+- Full layers 1–7; universal Counterspell ecology  
+- Destructive UI / layout rewrites  
 
 ---
 
@@ -109,19 +106,18 @@ Legend: **Solid** ≈ core list effects wired; **Approx** = remaining print appr
 | Area | Path |
 | --- | --- |
 | Deck registry / `PlayerEffect` | `src/game/playerDecks.ts` |
-| Cast & activate | `src/game/playerCast.ts` |
-| Anthems / blocking / can-activate | `src/game/playerAbilities.ts` |
-| Bestow / heroic helpers | `src/game/playerExtras.ts` |
-| Death (bestow falloff, persist) | `src/game/helpers.ts` → `buryPlayerCreatures` |
-| Player combat | `src/game/combat.ts` |
-| Simplified badge detection | `src/game/simplifiedOracle.ts` |
+| Cast / activate | `src/game/playerCast.ts` |
+| Limited stack | `src/game/stack.ts` |
+| Cascade / Goyf / legend | `src/game/cascadeGoyf.ts` |
+| Horde combat | `src/game/horde.ts` |
+| Simplified badge | `src/game/simplifiedOracle.ts` |
 
 ---
 
-## When updating
+## Update checklist
 
-If site player lists or Digital Play rules change in a user-visible way:
+When player-visible Challenge behavior changes:
 
-1. Update this file and the Chinese counterpart  
-2. Sync [USER_GUIDE.en.md](./USER_GUIDE.en.md) / [USER_GUIDE.zh.md](./USER_GUIDE.zh.md)  
-3. Refresh README blurbs and `src/data/cards/README.md` when needed
+1. Update this file and the ZH twin  
+2. Sync USER_GUIDE EN/ZH  
+3. README / `src/data/cards/README.md` if needed

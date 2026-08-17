@@ -48,7 +48,7 @@
     },
     {
       "id": "2a844b96-6616-4c39-8f4f-5d14a3b2bd55",
-      "quantity": 12,
+      "quantity": 11,
       "name": "Mountain",
       "nameZh": "山脉",
       "typeLine": "Basic Land — Mountain",
@@ -187,7 +187,7 @@
       "nameZh": "吞世者波洛克拉诺斯",
       "typeLine": "Legendary Creature — Hydra",
       "typeLineZh": "传奇生物～多头龙",
-      "oracleText": "Trample\nMonstrosity X — {X}{G}{G}: If this creature isn't monstrous, put X +1/+1 counters on it and it becomes monstrous. Then it fights up to X target creatures.\n(Challenge: double-click with {4}{G}{G} for +4/+4, then fight one challenge creature.)",
+      "oracleText": "Trample\nMonstrosity X — {X}{G}{G}: If this creature isn't monstrous, put X +1/+1 counters on it and it becomes monstrous. Then it fights up to X target creatures.\n(Challenge: double-click spends max affordable X for {X}{G}{G}, then fight up to X challenge creatures.)",
       "oracleTextZh": "践踏\n庞大化X—{X}{G}{G}：若此生物未庞大化，在其上放置X个+1/+1指示物且它成为庞大化。然后它与至多X个目标生物互斗。（挑战：双击支付{4}{G}{G}得+4/+4，然后与一个挑战生物互斗。）",
       "manaCost": "{2}{G}{G}",
       "cmc": 4,
@@ -199,10 +199,11 @@
       "kind": "creature",
       "effect": {
         "type": "activate_monstrosity",
-        "manaCost": "{4}{G}{G}",
-        "power": 4,
-        "toughness": 4,
-        "thenFight": true
+        "manaCost": "{G}{G}",
+        "power": 0,
+        "toughness": 0,
+        "variableX": true,
+        "thenFightUpToX": true
       },
       "image": "assets/cards/player/4979cc1b-9c1a-47e4-ae37-7c41798eb89a-normal.jpg"
     },
@@ -314,6 +315,42 @@
         "toughness": 3
       },
       "image": "assets/cards/player/fd1f95bf-48ea-455a-8a6c-0249b11c8900-normal.jpg"
+    },
+    {
+      "id": "9a7a5bbc-9d5a-461b-a5d7-a3f2e9b383be",
+      "quantity": 1,
+      "name": "Domri Rade",
+      "nameZh": "多米利·雷德",
+      "typeLine": "Legendary Planeswalker — Domri",
+      "typeLineZh": "传奇鹏洛客",
+      "oracleText": "+1: (Challenge ability)\\n-2: (Challenge ability)",
+      "oracleTextZh": "（挑战：简化忠诚异能；每回合限一次。）",
+      "manaCost": "{1}{R}{G}",
+      "cmc": 3,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "planeswalker",
+      "effect": {
+        "type": "none"
+      },
+      "startingLoyalty": 3,
+      "loyaltyAbilities": [
+        {
+          "cost": 1,
+          "effect": {
+            "type": "draw",
+            "amount": 1
+          }
+        },
+        {
+          "cost": -2,
+          "effect": {
+            "type": "fight"
+          }
+        }
+      ],
+      "image": "assets/cards/player/9a7a5bbc-9d5a-461b-a5d7-a3f2e9b383be-normal.jpg"
     }
   ]
 }

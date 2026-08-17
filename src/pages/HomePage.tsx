@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { getDeckIndex, getSharedRules } from '../data/deckRegistry'
 import { deckMetaEn, deckMetaZh } from '../data/locale/deckMeta'
 import { CardImage, useResolvedCardImageUrl } from '../hooks/useCardImageSrc'
+import { HomeOrbitArt } from '../components/HomeOrbitArt'
 import { PageSection } from '../components/ui'
 import { assetUrl } from '../utils/assetUrl'
 
@@ -61,18 +62,13 @@ export function HomePage() {
             <h1 className="reveal delay-1">{t('home.title')}</h1>
             <p className="lede reveal delay-2">{t('home.lead')}</p>
           </div>
-          <div className="home-hero-art" aria-hidden="true">
-            {deckPreviews.map((deck, i) => (
-              <CardImage
-                key={deck.code}
-                className={`orbit-card orbit-${i}`}
-                localPath={deck.thumb}
-                kind="normal"
-                alt=""
-                fetchPriority={i === 0 ? 'high' : undefined}
-              />
-            ))}
-          </div>
+          <HomeOrbitArt
+            decks={deckPreviews.map((d) => ({
+              code: d.code,
+              thumb: d.thumb,
+              localizedName: d.localizedName,
+            }))}
+          />
         </section>
 
         <PageSection

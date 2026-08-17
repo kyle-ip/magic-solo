@@ -10,16 +10,27 @@ import {
   type HeroInstance,
 } from './heroes'
 import { DEFAULT_PLAYER_DECK } from './playerDecks'
-import { buildPlayerLibrary, drawCards } from './playerDraw'
+import {
+  buildPlayerLibrary,
+  discardCardById,
+  drawCards,
+  MAX_HAND_SIZE,
+  putHandCardOnBottom,
+  shuffleHandIntoLibrary,
+} from './playerDraw'
 import { emptyManaPool } from './mana'
 import { makePlayerCardInstance } from './playerDraw'
 import { findCardDef } from './playerDecks'
+import { refreshGoyfStats } from './cascadeGoyf'
 import type {
   CardInstance,
   ChallengeCode,
   GameState,
+  PlayerArtifact,
   PlayerCardInstance,
   PlayerCreature,
+  PlayerEnchantment,
+  PlayerPlaneswalker,
   SetupConfig,
 } from './types'
 import { pushLog } from './log'
@@ -166,6 +177,265 @@ export function buryPlayerCreatures(
   if (toGy.length) {
     next = pushLog(next, 'yourCreaturesDie', 'bad', { n: toGy.length })
   }
+  return refreshGoyfStats(next)
+}
+
+function planeswalkerToGyCard(
+  pw: PlayerPlaneswalker,
+  deckId?: string,
+): PlayerCardInstance {
+  const def = findCardDef(pw.defId, deckId)
+  if (def) return { ...makePlayerCardInstance(def), instanceId: pw.instanceId }
+  return {
+    instanceId: pw.instanceId,
+    defId: pw.defId,
+    name: pw.name,
+    nameZh: pw.name,
+    typeLine: 'Planeswalker',
+    typeLineZh: '',
+    oracleText: '',
+    oracleTextZh: '',
+    manaCost: '',
+    cmc: 0,
+    power: null,
+    toughness: null,
+    keywords: [...pw.keywords],
+    kind: 'planeswalker',
+    image: pw.image,
+    effect: pw.effect,
+    loyaltyAbilities: pw.loyaltyAbilities.map((a) => ({ ...a, effect: { ...a.effect } })),
+    startingLoyalty: pw.loyalty,
+  }
+}
+
+/** Move planeswalkers with loyalty ≤ 0 (or listed ids) to the graveyard. */
+export function buryPlayerPlaneswalkers(
+  state: GameState,
+  deadIds: string[],
+): GameState {
+  const ids = [...new Set(deadIds)]
+  if (!ids.length) return state
+  const dead = state.player.planeswalkers.filter((p) =>
+    ids.includes(p.instanceId),
+  )
+  if (!dead.length) return state
+  const toGy = dead.map((p) => planeswalkerToGyCard(p, state.playerDeckId))
+  let next: GameState = {
+    ...state,
+    player: {
+      ...state.player,
+      planeswalkers: state.player.planeswalkers.filter(
+        (p) => !ids.includes(p.instanceId),
+      ),
+      graveyard: [...toGy, ...state.player.graveyard],
+    },
+  }
+  next = pushLog(next, 'planeswalkerDies', 'bad', {
+    n: dead.length,
+    name: dead[0]?.name ?? '',
+  })
+  return next
+}
+
+/** SBA: loyalty ≤ 0 → graveyard. */
+export function checkPlaneswalkerSba(state: GameState): GameState {
+  const deadIds = state.player.planeswalkers
+    .filter((p) => p.loyalty <= 0)
+    .map((p) => p.instanceId)
+  if (!deadIds.length) return state
+  return buryPlayerPlaneswalkers(state, deadIds)
+}
+
+function enchantmentToGy(
+  e: PlayerEnchantment,
+  deckId: string,
+): PlayerCardInstance {
+  const def = findCardDef(e.defId, deckId)
+  if (def) {
+    const inst = makePlayerCardInstance(def)
+    return { ...inst, instanceId: e.instanceId }
+  }
+  return {
+    instanceId: e.instanceId,
+    defId: e.defId,
+    name: e.name,
+    nameZh: e.name,
+    typeLine: 'Enchantment',
+    typeLineZh: '',
+    oracleText: '',
+    oracleTextZh: '',
+    manaCost: '',
+    cmc: 0,
+    power: null,
+    toughness: null,
+    keywords: [],
+    kind: 'enchantment',
+    image: e.image,
+    effect: { type: 'none' },
+  }
+}
+
+function artifactToGy(a: PlayerArtifact): PlayerCardInstance {
+  return {
+    instanceId: a.instanceId,
+    defId: a.defId,
+    name: a.name,
+    nameZh: a.nameZh ?? a.name,
+    typeLine: a.typeLine,
+    typeLineZh: '',
+    oracleText: '',
+    oracleTextZh: '',
+    manaCost: '',
+    cmc: 0,
+    power: null,
+    toughness: null,
+    keywords: [],
+    kind: 'artifact',
+    image: a.image,
+    effect: a.effect,
+  }
+}
+
+function isChallengeExileable(card: CardInstance): boolean {
+  if (card.isGod) return false
+  return (
+    card.power != null ||
+    card.isHead ||
+    card.isReveler ||
+    card.isMinotaur ||
+    card.isArtifact ||
+    card.isEnchantment
+  )
+}
+
+/** Move a challenge permanent to linked exile and store the link on the enchantment. */
+export function linkExileChallengePermanent(
+  state: GameState,
+  targetId: string,
+  enchantmentInstanceId: string,
+): GameState {
+  const card = state.challenge.battlefield.find((c) => c.instanceId === targetId)
+  if (!card || !isChallengeExileable(card)) {
+    return pushLog(state, 'invalidTarget', 'info')
+  }
+  const hasEnch = state.player.enchantments.some(
+    (e) => e.instanceId === enchantmentInstanceId,
+  )
+  if (!hasEnch) return state
+
+  let next: GameState = {
+    ...state,
+    challenge: {
+      ...state.challenge,
+      battlefield: state.challenge.battlefield.filter(
+        (c) => c.instanceId !== targetId,
+      ),
+      exile: [card, ...state.challenge.exile],
+    },
+    player: {
+      ...state.player,
+      enchantments: state.player.enchantments.map((e) =>
+        e.instanceId === enchantmentInstanceId
+          ? { ...e, exiledInstanceId: targetId }
+          : e,
+      ),
+    },
+  }
+  next = pushLog(next, 'exileUntilLeaves', 'good', { name: card.name })
+  next = addFxPop(next, { targetId, kind: 'status', label: '✧' }, 'status')
+  return next
+}
+
+/** Enchantment leaves BF → GY; return any linked challenge card from exile. */
+export function leavePlayerEnchantments(
+  state: GameState,
+  deadIds: string[],
+): GameState {
+  const ids = [...new Set(deadIds)]
+  if (!ids.length) return state
+  const dead = state.player.enchantments.filter((e) => ids.includes(e.instanceId))
+  if (!dead.length) return state
+
+  let next: GameState = {
+    ...state,
+    player: {
+      ...state.player,
+      enchantments: state.player.enchantments.filter(
+        (e) => !ids.includes(e.instanceId),
+      ),
+      graveyard: [
+        ...dead.map((e) => enchantmentToGy(e, state.playerDeckId)),
+        ...state.player.graveyard,
+      ],
+    },
+  }
+
+  for (const e of dead) {
+    if (!e.exiledInstanceId) continue
+    const exiled = next.challenge.exile.find(
+      (c) => c.instanceId === e.exiledInstanceId,
+    )
+    if (!exiled) continue
+    next = {
+      ...next,
+      challenge: {
+        ...next.challenge,
+        exile: next.challenge.exile.filter(
+          (c) => c.instanceId !== e.exiledInstanceId,
+        ),
+        battlefield: [...next.challenge.battlefield, { ...exiled }],
+      },
+    }
+    next = pushLog(next, 'exileReturn', 'good', { name: exiled.name })
+  }
+
+  next = pushLog(next, 'enchantmentLeaves', 'info', { n: dead.length })
+  return next
+}
+
+export function sacrificePlayerArtifact(
+  state: GameState,
+  artifactId: string,
+): GameState {
+  const art = state.player.artifacts.find((a) => a.instanceId === artifactId)
+  if (!art) return state
+  return {
+    ...state,
+    player: {
+      ...state.player,
+      artifacts: state.player.artifacts.filter((a) => a.instanceId !== artifactId),
+      graveyard: art.isClue
+        ? state.player.graveyard
+        : [artifactToGy(art), ...state.player.graveyard],
+    },
+  }
+}
+
+export function createClueToken(state: GameState): GameState {
+  const clue: PlayerArtifact = {
+    instanceId: nextId('clue'),
+    defId: 'token:clue',
+    name: 'Clue',
+    nameZh: '线索',
+    typeLine: 'Token Artifact — Clue',
+    image: '',
+    tapped: false,
+    isClue: true,
+    effect: { type: 'activate_clue' },
+  }
+  let next: GameState = {
+    ...state,
+    player: {
+      ...state.player,
+      artifacts: [...state.player.artifacts, clue],
+    },
+  }
+  next = pushLog(next, 'investigateClue', 'good')
+  next = addFxPop(
+    next,
+    { targetId: clue.instanceId, kind: 'status', label: 'Clue' },
+    'status',
+  )
   return next
 }
 
@@ -559,13 +829,22 @@ function clearEotPlayerEffects(state: GameState): GameState {
     ...state,
     player: {
       ...state.player,
-      creatures: state.player.creatures.map((c) => ({
-        ...c,
-        power: c.power - (c.tempPower ?? 0),
-        toughness: Math.max(0, c.toughness - (c.tempToughness ?? 0)),
-        tempPower: 0,
-        tempToughness: 0,
-      })),
+      creatures: state.player.creatures.map((c) => {
+        const tempKw = c.tempKeywords ?? []
+        const keywords =
+          tempKw.length === 0
+            ? c.keywords
+            : c.keywords.filter((k) => !tempKw.includes(k))
+        return {
+          ...c,
+          power: c.power - (c.tempPower ?? 0),
+          toughness: Math.max(0, c.toughness - (c.tempToughness ?? 0)),
+          tempPower: 0,
+          tempToughness: 0,
+          tempKeywords: [],
+          keywords,
+        }
+      }),
       manaPool: emptyManaPool(),
       landsPlayedThisTurn: 0,
     },
@@ -611,6 +890,10 @@ export function beginPlayerTurn(state: GameState): GameState {
         tapped: false,
         summoningSickness: false,
         markedDamage: 0,
+      })),
+      planeswalkers: next.player.planeswalkers.map((p) => ({
+        ...p,
+        loyaltyActivatedThisTurn: false,
       })),
     },
   }
@@ -718,6 +1001,9 @@ export function baseState(
       hand,
       lands: [],
       creatures: [],
+      planeswalkers: [],
+      enchantments: [],
+      artifacts: [],
       graveyard: [],
       exile: [],
       heroes: buildHeroes(config, code),
@@ -728,6 +1014,7 @@ export function baseState(
       library: [],
       battlefield: [],
       graveyard: [],
+      exile: [],
     },
     flags: {
       ...emptyFlags(),
@@ -736,6 +1023,8 @@ export function baseState(
     },
     log: [],
     prompt: null,
+    mulliganCount: 0,
+    stack: [],
     selectedAttackers: [],
     attackAssignments: {},
     blockAssignments: {},
@@ -743,6 +1032,136 @@ export function baseState(
     fx: null,
     resultKey: null,
   }
+}
+
+/** Opening-hand London mulligan prompt (keep / mulligan). */
+export function offerOpeningMulligan(state: GameState): GameState {
+  return {
+    ...state,
+    prompt: {
+      id: `mulligan-${Date.now()}`,
+      kind: 'choose_mulligan',
+      titleKey: 'mulliganTitle',
+      messageKey: 'mulliganMsg',
+      messageParams: { n: state.mulliganCount },
+      resume: 'opening_mulligan',
+      options: [
+        { id: 'keep', labelKey: 'mulliganKeep' },
+        { id: 'mulligan', labelKey: 'mulliganTake' },
+      ],
+    },
+  }
+}
+
+function openMulliganBottomPrompt(state: GameState, remaining: number): GameState {
+  const left = Math.min(remaining, state.player.hand.length)
+  if (left <= 0) return offerOpeningMulligan(state)
+  return {
+    ...state,
+    prompt: {
+      id: `mulligan-bottom-${Date.now()}`,
+      kind: 'choose_discard_hand',
+      titleKey: 'mulliganBottomTitle',
+      messageKey: 'mulliganBottomMsg',
+      messageParams: { n: left, left },
+      resume: `mulligan_bottom:${left}`,
+      options: state.player.hand.map((c) => ({
+        id: c.instanceId,
+        labelKey: 'mulliganBottomOpt',
+        name: c.name,
+      })),
+    },
+  }
+}
+
+/** Cleanup step: choose cards to discard until hand size is MAX_HAND_SIZE. */
+export function openDiscardToHandSizePrompt(state: GameState): GameState {
+  const excess = state.player.hand.length - MAX_HAND_SIZE
+  if (excess <= 0) return { ...state, prompt: null }
+  return {
+    ...state,
+    playerPhase: 'end',
+    phase: 'end',
+    prompt: {
+      id: `discard-hand-${Date.now()}`,
+      kind: 'choose_discard_hand',
+      titleKey: 'discardHandTitle',
+      messageKey: 'discardHandMsg',
+      messageParams: { n: excess, left: excess, max: MAX_HAND_SIZE },
+      resume: 'end_turn',
+      options: state.player.hand.map((c) => ({
+        id: c.instanceId,
+        labelKey: 'discardHandOpt',
+        name: c.name,
+      })),
+    },
+  }
+}
+
+export function resolveMulliganPrompt(
+  state: GameState,
+  optionId: string,
+): GameState {
+  if (!state.prompt || state.prompt.kind !== 'choose_mulligan') return state
+
+  if (optionId === 'keep') {
+    let next: GameState = { ...state, prompt: null }
+    next = pushLog(next, 'mulliganKeep', 'info', { n: next.mulliganCount })
+    return beginPlayerTurn(next)
+  }
+
+  if (optionId === 'mulligan') {
+    const mulliganCount = state.mulliganCount + 1
+    let next: GameState = {
+      ...state,
+      prompt: null,
+      mulliganCount,
+    }
+    next = shuffleHandIntoLibrary(next)
+    next = drawCards(next, MAX_HAND_SIZE)
+    if (next.status !== 'playing') return next
+    next = pushLog(next, 'mulliganTaken', 'info', { n: mulliganCount })
+    if (mulliganCount > 0) {
+      return openMulliganBottomPrompt(next, mulliganCount)
+    }
+    return offerOpeningMulligan(next)
+  }
+
+  return state
+}
+
+export function resolveDiscardHandPrompt(
+  state: GameState,
+  optionId: string,
+): GameState {
+  if (!state.prompt || state.prompt.kind !== 'choose_discard_hand') return state
+  const resume = state.prompt.resume
+
+  const bottomMatch = /^mulligan_bottom:(\d+)$/.exec(resume)
+  if (bottomMatch) {
+    const left = Number(bottomMatch[1])
+    if (!state.player.hand.some((c) => c.instanceId === optionId)) return state
+    let next = putHandCardOnBottom(state, optionId)
+    const remaining = left - 1
+    if (remaining > 0 && next.player.hand.length > 0) {
+      return openMulliganBottomPrompt(next, remaining)
+    }
+    next = { ...next, prompt: null }
+    return offerOpeningMulligan(next)
+  }
+
+  if (resume === 'end_turn') {
+    if (!state.player.hand.some((c) => c.instanceId === optionId)) return state
+    let next = discardCardById(state, optionId)
+    if (next.player.hand.length > MAX_HAND_SIZE) {
+      return openDiscardToHandSizePrompt(next)
+    }
+    next = { ...next, prompt: null }
+    // Caller (reducer) finishes the end-turn transition.
+    return next
+  }
+
+  return { ...state, prompt: null }
 }
 
 export function damagePlayerCreatures(

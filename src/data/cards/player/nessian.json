@@ -257,7 +257,7 @@
     },
     {
       "id": "dce15387-4114-4b3e-91aa-5b42b45c44ac",
-      "quantity": 24,
+      "quantity": 23,
       "name": "Forest",
       "nameZh": "树林",
       "typeLine": "Basic Land — Forest",
@@ -277,6 +277,44 @@
         "type": "none"
       },
       "image": "assets/cards/player/dce15387-4114-4b3e-91aa-5b42b45c44ac-normal.jpg"
+    },
+    {
+      "id": "4a37fbca-32db-40cc-9fd3-4764c7fd81e2",
+      "quantity": 1,
+      "name": "Nissa, Worldwaker",
+      "nameZh": "唤世者妮莎",
+      "typeLine": "Legendary Planeswalker — Nissa",
+      "typeLineZh": "传奇鹏洛客",
+      "oracleText": "+1: (Challenge ability)\\n-2: (Challenge ability)",
+      "oracleTextZh": "（挑战：简化忠诚异能；每回合限一次。）",
+      "manaCost": "{3}{G}{G}",
+      "cmc": 5,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "planeswalker",
+      "effect": {
+        "type": "none"
+      },
+      "startingLoyalty": 3,
+      "loyaltyAbilities": [
+        {
+          "cost": 1,
+          "effect": {
+            "type": "draw",
+            "amount": 1
+          }
+        },
+        {
+          "cost": -2,
+          "effect": {
+            "type": "pump_target",
+            "power": 3,
+            "toughness": 3
+          }
+        }
+      ],
+      "image": "assets/cards/player/4a37fbca-32db-40cc-9fd3-4764c7fd81e2-normal.jpg"
     }
   ]
 }

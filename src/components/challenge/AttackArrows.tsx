@@ -92,6 +92,14 @@ export function AttackArrows({
           `[data-instance-id="${CSS.escape(link.to)}"]`,
         )
         if (!fromEl || !toEl) continue
+        if (
+          fromEl.classList.contains('is-flight-hidden') ||
+          toEl.classList.contains('is-flight-hidden') ||
+          fromEl.classList.contains('is-dying') ||
+          toEl.classList.contains('is-dying')
+        ) {
+          continue
+        }
         const rawFrom = centerOf(fromEl, rr)
         const rawTo = centerOf(toEl, rr)
         const { from, to } = shorten(rawFrom, rawTo, pad)

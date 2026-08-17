@@ -8,8 +8,11 @@ import {
   effectiveToughness,
   headsOf,
   isIndestructible,
+  offerOpeningMulligan,
 } from './helpers'
 import { pushLog } from './log'
+import { addFxPop } from './fx'
+import { canOpponentTargetPlayerCreature } from './playerAbilities'
 import type { CardDef, CardInstance, GameState, PlayerCreature, SetupConfig } from './types'
 import { expandLibrary, resetIdSeq } from './buildDeck'
 import { baseState } from './helpers'
@@ -45,14 +48,14 @@ export function startHydra(
       library: filtered,
       battlefield: heads,
       graveyard: [],
+      exile: [],
     },
   }
   state = pushLog(state, 'hydraStart', 'info', { n: starting })
   if (state.player.heroes.length) {
     state = pushLog(state, 'heroesReady', 'info', { n: state.player.heroes.length })
   }
-  state = beginPlayerTurn(state)
-  return state
+  return offerOpeningMulligan(state)
 }
 
 export function castHydraCard(state: GameState, card: CardInstance): GameState {
@@ -292,11 +295,14 @@ export function castHydraCard(state: GameState, card: CardInstance): GameState {
           graveyard: [card, ...next.challenge.graveyard],
         },
       }
-      if (next.player.creatures.length === 0) {
+      const legal = next.player.creatures.filter((c) =>
+        canOpponentTargetPlayerCreature(c),
+      )
+      if (legal.length === 0) {
         return pushLog(next, 'swallowNoCreatures', 'info')
       }
-      if (next.player.creatures.length === 1) {
-        return exilePlayerCreature(next, next.player.creatures[0].instanceId)
+      if (legal.length === 1) {
+        return exilePlayerCreature(next, legal[0].instanceId)
       }
       next = {
         ...next,
@@ -306,7 +312,7 @@ export function castHydraCard(state: GameState, card: CardInstance): GameState {
           titleKey: 'swallowHero',
           messageKey: 'exileCreatureMsg',
           resume: 'swallow',
-          options: next.player.creatures.map((c) => ({
+          options: legal.map((c) => ({
             id: c.instanceId,
             labelKey: 'exileCreatureOpt',
             labelParams: { pt: `${c.power}/${c.toughness}` },
@@ -386,6 +392,9 @@ function exilePlayerCreature(state: GameState, id: string): GameState {
   if (creature.keywords.some((k) => /ward/i.test(k))) {
     return pushLog(state, 'wardBlocked', 'good', { name: creature.name })
   }
+  if (!canOpponentTargetPlayerCreature(creature)) {
+    return pushLog(state, 'hexproofPrevented', 'good', { name: creature.name })
+  }
   let next: GameState = {
     ...state,
     player: {
@@ -395,6 +404,7 @@ function exilePlayerCreature(state: GameState, id: string): GameState {
     },
     flags: { ...state.flags, swallowExileActive: true },
   }
+  next = addFxPop(next, { targetId: id, kind: 'status', label: '✧' }, 'status')
   return pushLog(next, 'exiledSwallow', 'bad', { name: creature.name })
 }
 

@@ -45,7 +45,10 @@ export function computeCmc(manaCost: string): number {
 export function inferKind(typeLine: string, power: string | null): PlayerCardKind {
   const t = typeLine.toLowerCase()
   if (/\bland\b/.test(t)) return 'land'
+  if (/\bplaneswalker\b/.test(t)) return 'planeswalker'
   if (/\bcreature\b/.test(t) || power != null) return 'creature'
+  if (/\benchantment\b/.test(t)) return 'enchantment'
+  if (/\bartifact\b/.test(t)) return 'artifact'
   if (/\binstant\b/.test(t)) return 'instant'
   if (/\bsorcery\b/.test(t)) return 'sorcery'
   return 'instant'

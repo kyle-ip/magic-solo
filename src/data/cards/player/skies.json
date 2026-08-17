@@ -173,16 +173,16 @@
       "nameZh": "渺无人烟之旅",
       "typeLine": "Enchantment",
       "typeLineZh": "结界",
-      "oracleText": "When this enchantment enters, exile target creature.\nWhen this enchantment leaves the battlefield, return the exiled card to the battlefield under its owner's control.\n(Challenge: exile is treated as destroying the challenge permanent.)",
-      "oracleTextZh": "当未知旅程进战场时，放逐目标生物。\n当未知旅程离开战场时，将所放逐的牌在其拥有者的操控下移回战场。\n（挑战：放逐按消灭挑战永久物处理。）",
+      "oracleText": "When this enchantment enters, exile target creature.\nWhen this enchantment leaves the battlefield, return the exiled card to the battlefield under its owner's control.",
+      "oracleTextZh": "当未知旅程进战场时，放逐目标生物。\n当未知旅程离开战场时，将所放逐的牌在其拥有者的操控下移回战场。",
       "manaCost": "{1}{W}",
       "cmc": 2,
       "power": null,
       "toughness": null,
       "keywords": [],
-      "kind": "sorcery",
+      "kind": "enchantment",
       "effect": {
-        "type": "destroy_creature"
+        "type": "etb_exile_until_leaves"
       },
       "image": "assets/cards/player/4686b51c-e02b-48c1-bafe-e8d08a5407b9-normal.jpg"
     },
@@ -193,16 +193,16 @@
       "nameZh": "放逐之光",
       "typeLine": "Enchantment",
       "typeLineZh": "结界",
-      "oracleText": "When this enchantment enters, exile target nonland permanent an opponent controls until this enchantment leaves the battlefield.\n(Challenge: exile is treated as destroying the challenge permanent.)",
-      "oracleTextZh": "当驱逐明光进战场时，放逐目标由对手操控的非地永久物，直到驱逐明光离开战场为止。\n（挑战：放逐按消灭挑战永久物处理。）",
+      "oracleText": "When this enchantment enters, exile target nonland permanent an opponent controls until this enchantment leaves the battlefield.",
+      "oracleTextZh": "当驱逐明光进战场时，放逐目标由对手操控的非地永久物，直到驱逐明光离开战场为止。",
       "manaCost": "{2}{W}",
       "cmc": 3,
       "power": null,
       "toughness": null,
       "keywords": [],
-      "kind": "sorcery",
+      "kind": "enchantment",
       "effect": {
-        "type": "destroy_creature"
+        "type": "etb_exile_until_leaves"
       },
       "image": "assets/cards/player/d53c7e49-745d-48ba-bc50-240472a4f039-normal.jpg"
     },
@@ -251,6 +251,43 @@
       "image": "assets/cards/player/b5545882-6963-4729-b2c6-fb4bdc75ffcc-normal.jpg"
     },
     {
+      "id": "806d4e61-004f-4e52-b2e8-ba11b922cc7d",
+      "quantity": 1,
+      "name": "Jace Beleren",
+      "nameZh": "杰斯贝连",
+      "typeLine": "Legendary Planeswalker — Jace",
+      "typeLineZh": "传奇鹏洛客 ～杰斯",
+      "oracleText": "+1: Draw a card.\\n−2: Draw two cards.\\n(Challenge: simplified loyalty abilities; once per turn.)",
+      "oracleTextZh": "+1：抓一张牌。\\n−2：抓两张牌。\\n（挑战：简化忠诚异能；每回合限一次。）",
+      "manaCost": "{1}{U}{U}",
+      "cmc": 3,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "planeswalker",
+      "effect": {
+        "type": "none"
+      },
+      "startingLoyalty": 3,
+      "loyaltyAbilities": [
+        {
+          "cost": 1,
+          "effect": {
+            "type": "draw",
+            "amount": 1
+          }
+        },
+        {
+          "cost": -2,
+          "effect": {
+            "type": "draw",
+            "amount": 2
+          }
+        }
+      ],
+      "image": "assets/cards/player/806d4e61-004f-4e52-b2e8-ba11b922cc7d-normal.jpg"
+    },
+    {
       "id": "8ab0f4c0-b331-4c57-b68f-2e24bb5ba06c",
       "quantity": 12,
       "name": "Plains",
@@ -275,7 +312,7 @@
     },
     {
       "id": "f3cc07cd-cc79-4745-b0b7-eade60175cc3",
-      "quantity": 12,
+      "quantity": 11,
       "name": "Island",
       "nameZh": "海岛",
       "typeLine": "Basic Land — Island",

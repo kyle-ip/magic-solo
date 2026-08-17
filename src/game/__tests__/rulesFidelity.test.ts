@@ -1,5 +1,6 @@
 import { castGodCard, resolveGodCombat } from '../god'
 import { resolvePlayerCombat } from '../combat'
+import { resolveHordeCombat } from '../horde'
 import { describe, expect, it } from 'vitest'
 import type { CardInstance, GameState } from '../types'
 import {
@@ -64,16 +65,21 @@ function basePlaying(code: GameState['code'] = 'tfth'): GameState {
       hand: [],
       lands: [],
       creatures: [],
+      planeswalkers: [],
+      enchantments: [],
+      artifacts: [],
       graveyard: [],
       exile: [],
       heroes: [],
       landsPlayedThisTurn: 0,
       manaPool: emptyManaPool(),
     },
-    challenge: { library: [], battlefield: [], graveyard: [] },
+    challenge: { library: [], battlefield: [], graveyard: [], exile: [] },
     flags: { ...emptyFlags() },
     log: [],
     prompt: null,
+    mulliganCount: 0,
+    stack: [],
     selectedAttackers: [],
     attackAssignments: {},
     blockAssignments: {},
@@ -143,7 +149,7 @@ describe('A3/A4 Heroâ€™s Reward', () => {
       power: null,
       toughness: null,
       oracleText:
-        "Hero's Reward â€” When Refreshing Elixir is put into a graveyard from anywhere, each player gains 5 life.",
+        "Hero's Reward â€?When Refreshing Elixir is put into a graveyard from anywhere, each player gains 5 life.",
     })
     state = applyHeroReward(state, elixir)
     expect(state.player.life).toBe(25)
@@ -159,7 +165,7 @@ describe('A3/A4 Heroâ€™s Reward', () => {
       power: null,
       toughness: null,
       oracleText:
-        "Hero's Reward â€” When Plundered Statue is put into a graveyard from anywhere, each player draws a card.",
+        "Hero's Reward â€?When Plundered Statue is put into a graveyard from anywhere, each player draws a card.",
     })
     state = applyHeroReward(state, statue)
     expect(state.player.hand).toHaveLength(1)
@@ -175,7 +181,7 @@ describe('A3/A4 Heroâ€™s Reward', () => {
       power: null,
       toughness: null,
       oracleText:
-        "Hero's Reward â€” When Refreshing Elixir is put into a graveyard from anywhere, each player gains 5 life.",
+        "Hero's Reward â€?When Refreshing Elixir is put into a graveyard from anywhere, each player gains 5 life.",
     })
     const fillers = Array.from({ length: 6 }, (_, i) =>
       card({ name: `Filler ${i}`, instanceId: `f-${i}`, isMinotaur: true }),
@@ -187,7 +193,7 @@ describe('A3/A4 Heroâ€™s Reward', () => {
       power: null,
       toughness: null,
       oracleText:
-        "Hero's Reward â€” When Massacre Totem is put into a graveyard from anywhere, put the top seven cards of the Horde's library into its graveyard.",
+        "Hero's Reward â€?When Massacre Totem is put into a graveyard from anywhere, put the top seven cards of the Horde's library into its graveyard.",
     })
     state = applyHeroReward(state, totem)
     expect(state.challenge.library).toHaveLength(0)
@@ -259,13 +265,18 @@ describe('C Hydra win timing', () => {
 describe('Constructed player deck', () => {
   it('starts with 60-card library then 7-card hand', () => {
     const setup = createInitialSetup('tfth')
-    const started = gameReducer(setup, {
+    let started = gameReducer(setup, {
       type: 'START',
       config: { code: 'tfth', startingHeads: 2, playerDeckId: 'wildfire' },
     })
+    expect(started.prompt?.kind).toBe('choose_mulligan')
     expect(started.player.hand).toHaveLength(7)
     expect(started.player.library).toHaveLength(53)
+    expect(started.turnNumber).toBe(0)
+    started = gameReducer(started, { type: 'ANSWER_PROMPT', optionId: 'keep' })
+    expect(started.prompt).toBeNull()
     expect(started.turnNumber).toBe(1)
+    expect(started.player.hand).toHaveLength(7)
   })
 
   it.each(['merfolk', 'akroan', 'nessian', 'humans', 'spirits', 'jund'] as const)(
@@ -273,7 +284,7 @@ describe('Constructed player deck', () => {
     (deckId) => {
       for (const code of ['tfth', 'tbth', 'tdag'] as const) {
         const setup = createInitialSetup(code)
-        const started = gameReducer(setup, {
+        let started = gameReducer(setup, {
           type: 'START',
           config: {
             code,
@@ -283,9 +294,12 @@ describe('Constructed player deck', () => {
           },
         })
         expect(started.status).toBe('playing')
+        expect(started.prompt?.kind).toBe('choose_mulligan')
+        started = gameReducer(started, { type: 'ANSWER_PROMPT', optionId: 'keep' })
         expect(started.playerDeckId).toBe(deckId)
         expect(started.player.hand).toHaveLength(7)
         expect(started.player.library).toHaveLength(53)
+        expect(started.turnNumber).toBe(1)
       }
     },
   )
@@ -428,7 +442,7 @@ describe('God combat blocker damage', () => {
     ]
     state.blockAssignments = { b1: 'atk' }
     state = resolveGodCombat(state)
-    // 3 damage into 2 remaining toughness â†’ blocker dies
+    // 3 damage into 2 remaining toughness â†?blocker dies
     expect(state.player.creatures).toHaveLength(0)
     expect(state.player.graveyard.some((c) => c.name === 'Wall')).toBe(true)
   })
@@ -564,7 +578,7 @@ describe('Player combat first/double strike and trample', () => {
     state.attackAssignments = { a1: 'h1' }
     state = resolvePlayerCombat(state)
     const remaining = state.challenge.battlefield
-    // h1 lethal (2) â†’ destroyed; excess 3 on h2
+    // h1 lethal (2) â†?destroyed; excess 3 on h2
     expect(remaining.find((c) => c.instanceId === 'h1')).toBeUndefined()
     expect(remaining.find((c) => c.instanceId === 'h2')?.markedDamage).toBe(3)
   })
@@ -606,5 +620,108 @@ describe('Player combat first/double strike and trample', () => {
     state = resolvePlayerCombat(state)
     expect(state.challenge.battlefield.find((c) => c.instanceId === 'r1')).toBeUndefined()
     expect(state.challenge.battlefield.find((c) => c.instanceId === 'x1')?.markedDamage).toBe(3)
+  })
+})
+
+describe('Horde combat first strike and deathtouch', () => {
+  it('Descend first strike kills a blocker before it deals damage back', () => {
+    let state = basePlaying('tbth')
+    state.activeSide = 'challenge'
+    state.flags = { ...state.flags, descendPrey: true }
+    const atk = card({
+      name: 'Minotaur',
+      instanceId: 'm1',
+      isMinotaur: true,
+      power: 2,
+      toughness: 3,
+    })
+    state.challenge.battlefield = [atk]
+    state.player.creatures = [
+      {
+        instanceId: 'b1',
+        defId: 'b1',
+        name: 'Bear',
+        power: 5,
+        toughness: 2,
+        markedDamage: 0,
+        tapped: false,
+        summoningSickness: false,
+        keywords: [],
+        image: '',
+      },
+    ]
+    state.blockAssignments = { b1: 'm1' }
+    state = resolveHordeCombat(state)
+    expect(state.player.creatures).toHaveLength(0)
+    expect(state.challenge.battlefield.some((c) => c.instanceId === 'm1')).toBe(
+      true,
+    )
+    expect(state.player.life).toBe(20)
+  })
+
+  it('Touch deathtouch kills a larger blocker with 1 damage assigned', () => {
+    let state = basePlaying('tbth')
+    state.activeSide = 'challenge'
+    state.flags = { ...state.flags, touchHorned: true }
+    const atk = card({
+      name: 'Minotaur',
+      instanceId: 'm1',
+      isMinotaur: true,
+      power: 1,
+      toughness: 3,
+    })
+    state.challenge.battlefield = [atk]
+    state.player.creatures = [
+      {
+        instanceId: 'b1',
+        defId: 'b1',
+        name: 'Wall',
+        power: 0,
+        toughness: 5,
+        markedDamage: 0,
+        tapped: false,
+        summoningSickness: false,
+        keywords: [],
+        image: '',
+      },
+    ]
+    state.blockAssignments = { b1: 'm1' }
+    state = resolveHordeCombat(state)
+    expect(state.player.creatures).toHaveLength(0)
+    expect(state.challenge.battlefield.some((c) => c.instanceId === 'm1')).toBe(
+      true,
+    )
+  })
+
+  it('blocker first strike can kill the Minotaur before normal damage', () => {
+    let state = basePlaying('tbth')
+    state.activeSide = 'challenge'
+    const atk = card({
+      name: 'Minotaur',
+      instanceId: 'm1',
+      isMinotaur: true,
+      power: 4,
+      toughness: 2,
+    })
+    state.challenge.battlefield = [atk]
+    state.player.creatures = [
+      {
+        instanceId: 'b1',
+        defId: 'b1',
+        name: 'Spear',
+        power: 2,
+        toughness: 1,
+        markedDamage: 0,
+        tapped: false,
+        summoningSickness: false,
+        keywords: ['first strike'],
+        image: '',
+      },
+    ]
+    state.blockAssignments = { b1: 'm1' }
+    state = resolveHordeCombat(state)
+    expect(state.challenge.battlefield.find((c) => c.instanceId === 'm1')).toBeUndefined()
+    expect(state.player.creatures).toHaveLength(1)
+    expect(state.player.life).toBe(20)
   })
 })

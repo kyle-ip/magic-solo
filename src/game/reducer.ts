@@ -2,39 +2,47 @@ import { getDeck } from '../data/deckStore'
 import { resolvePlayerCombat } from './combat'
 import {
   advanceChallenge,
-  beginChallengeTurn,
   continueAfterPrompt,
+  continueAfterStackResolve,
+  endPlayerTurn,
   resolveGodCombat,
   resolveHordeCombat,
 } from './challengeTurn'
+import { resolveStackPriorityAnswer } from './stack'
+import { addFxPop } from './fx'
 import { DEFAULT_PLAYER_DECK } from './playerDecks'
 import {
   castFromHand,
   activateCreature,
+  activatePlaneswalker,
   castFlashback,
   resolveScryPrompt,
   resolveBrainstormPrompt,
   resolveEdictPrompt,
   resolveCrawlPrompt,
   resolveMonstrousFight,
+  grantTempKeyword,
 } from './playerCast'
 import { destroyFlyingChallenge } from './playerExtras'
 import { emptyManaPool } from './mana'
 import { defsFromDeck, type ChallengeCode, type GameState, type SetupConfig } from './types'
 import {
   applyHeadDamageChoice,
+  castHydraCard,
   resolveHydraPrompt,
   startHydra,
 } from './hydra'
-import { startHorde } from './horde'
-import { startGod } from './god'
+import { castHordeCard, startHorde } from './horde'
+import { castGodCard, startGod } from './god'
 import {
-  beginPlayerTurn,
-  checkHydraWin,
   damagePlayer,
   dealDamageToChallengeCreature,
   emptyFlags,
+  leavePlayerEnchantments,
+  resolveDiscardHandPrompt,
+  resolveMulliganPrompt,
   returnCreatureFromGraveyard,
+  sacrificePlayerArtifact,
 } from './helpers'
 import { ensureLogSeqAtLeast, maxLogSeqFromIds, pushLog } from './log'
 import { canBlockAttacker } from './playerAbilities'
@@ -69,12 +77,16 @@ function collectGameInstanceIds(state: GameState): string[] {
   for (const c of state.player.hand) push(c.instanceId)
   for (const c of state.player.lands) push(c.instanceId)
   for (const c of state.player.creatures) push(c.instanceId)
+  for (const c of state.player.planeswalkers ?? []) push(c.instanceId)
+  for (const c of state.player.enchantments) push(c.instanceId)
+  for (const c of state.player.artifacts) push(c.instanceId)
   for (const c of state.player.graveyard) push(c.instanceId)
   for (const c of state.player.exile) push(c.instanceId)
   for (const c of state.player.heroes) push(c.instanceId)
   for (const c of state.challenge.library) push(c.instanceId)
   for (const c of state.challenge.battlefield) push(c.instanceId)
   for (const c of state.challenge.graveyard) push(c.instanceId)
+  for (const c of state.challenge.exile ?? []) push(c.instanceId)
   for (const c of state.castQueue) push(c.instanceId)
   for (const c of state.revealed) push(c.instanceId)
   return ids
@@ -105,16 +117,21 @@ export function createInitialSetup(code: ChallengeCode): GameState {
       hand: [],
       lands: [],
       creatures: [],
+      planeswalkers: [],
+      enchantments: [],
+      artifacts: [],
       graveyard: [],
       exile: [],
       heroes: [],
       landsPlayedThisTurn: 0,
       manaPool: emptyManaPool(),
     },
-    challenge: { library: [], battlefield: [], graveyard: [] },
+    challenge: { library: [], battlefield: [], graveyard: [], exile: [] },
     flags: { ...emptyFlags(), playerTurnsRemaining: 3 },
     log: [],
     prompt: null,
+    mulliganCount: 0,
+    stack: [],
     selectedAttackers: [],
     attackAssignments: {},
     blockAssignments: {},
@@ -159,7 +176,18 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'ACTIVATE': {
       if (state.status !== 'playing' || state.activeSide !== 'player') return state
-      return activateCreature(state, action.creatureId, { targetId: action.targetId })
+      if (
+        state.player.planeswalkers.some(
+          (p) => p.instanceId === action.creatureId,
+        )
+      ) {
+        return activatePlaneswalker(state, action.creatureId, {
+          targetId: action.targetId,
+        })
+      }
+      return activateCreature(state, action.creatureId, {
+        targetId: action.targetId,
+      })
     }
 
     case 'CANCEL_PENDING':
@@ -207,6 +235,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case 'ASSIGN_TARGET': {
       if (state.pendingCast) {
         const p = state.pendingCast
+        if ('activatePlaneswalkerId' in p && p.activatePlaneswalkerId) {
+          return activatePlaneswalker(state, p.activatePlaneswalkerId, {
+            targetId: action.targetId,
+            abilityIndex: p.loyaltyAbilityIndex,
+          })
+        }
         if ('activateCreatureId' in p && p.activateCreatureId) {
           return activateCreature(state, p.activateCreatureId, {
             targetId: action.targetId,
@@ -231,6 +265,11 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
               ),
             },
           }
+          next = addFxPop(
+            next,
+            { targetId: action.targetId, kind: 'debuff', label: '⟳' },
+            'debuff',
+          )
           return pushLog(next, 'etbTapOpp', 'good', { name: enemy.name })
         }
         if (p.mode === 'bestow' || p.mode === 'bloodrush') {
@@ -264,23 +303,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'END_TURN': {
-      if (state.status !== 'playing' || state.activeSide !== 'player') return state
-
-      if (state.code === 'tfth') {
-        const checked = checkHydraWin(state)
-        if (checked.status !== 'playing') return checked
-        return beginChallengeTurn(checked)
-      }
-
-      if (state.code === 'tbth') {
-        if (state.flags.playerTurnsRemaining > 0) {
-          const next = pushLog(state, 'hordeNotAwake', 'info')
-          return beginPlayerTurn(next)
-        }
-        return beginChallengeTurn(state)
-      }
-
-      return beginChallengeTurn(state)
+      return endPlayerTurn(state)
     }
 
     case 'ADVANCE':
@@ -290,6 +313,37 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       if (!state.prompt) return state
       const resume = state.prompt.resume
       const kind = state.prompt.kind
+
+      if (kind === 'choose_mulligan') {
+        return resolveMulliganPrompt(state, action.optionId)
+      }
+
+      if (kind === 'choose_discard_hand') {
+        let next = resolveDiscardHandPrompt(state, action.optionId)
+        if (
+          resume === 'end_turn' &&
+          !next.prompt &&
+          next.status === 'playing' &&
+          next.activeSide === 'player'
+        ) {
+          next = endPlayerTurn(next)
+        }
+        return next
+      }
+
+      if (kind === 'choose_stack_priority') {
+        const castSpell = (s: GameState, card: import('./types').CardInstance) => {
+          let n = s
+          if (n.code === 'tfth') n = castHydraCard(n, card)
+          else if (n.code === 'tbth') n = castHordeCard(n, card)
+          else n = castGodCard(n, card)
+          return n
+        }
+        let next = resolveStackPriorityAnswer(state, action.optionId, castSpell)
+        if (next.prompt) return next
+        if (next.status !== 'playing') return next
+        return continueAfterStackResolve(next)
+      }
 
       if (kind === 'scry') {
         return resolveScryPrompt(state, action.optionId)
@@ -305,6 +359,15 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
       if (kind === 'choose_crawl' || kind === 'choose_crawl_zombie') {
         return resolveCrawlPrompt(state, action.optionId)
+      }
+
+      if (kind === 'choose_loyalty' && resume) {
+        const idx = Number(action.optionId)
+        return activatePlaneswalker(
+          { ...state, prompt: null },
+          resume,
+          { abilityIndex: Number.isFinite(idx) ? idx : 0 },
+        )
       }
 
       if (kind === 'bestow_mode' && resume) {
@@ -336,7 +399,22 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       }
 
       if (kind === 'choose_monstrous_fight' && resume) {
-        return resolveMonstrousFight({ ...state, prompt: null }, resume, action.optionId)
+        const [fighterId, remStr] = resume.split(':')
+        const remaining = remStr ? Number(remStr) : 1
+        return resolveMonstrousFight(
+          { ...state, prompt: null },
+          fighterId,
+          action.optionId,
+          remaining,
+        )
+      }
+
+      if (kind === 'choose_rattlechains_hexproof') {
+        return grantTempKeyword(
+          { ...state, prompt: null },
+          action.optionId,
+          'hexproof',
+        )
       }
 
       if (kind === 'vitality_return') {
@@ -405,9 +483,17 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
       if (kind === 'impulsive_destruction') {
         let next: GameState = { ...state, prompt: null }
-        // Only damage path today (no player artifact/enchantment permanents).
         if (action.optionId === 'damage') {
           next = damagePlayer(next, 3)
+        } else if (action.optionId.startsWith('ench:')) {
+          next = leavePlayerEnchantments(next, [action.optionId.slice(5)])
+        } else if (action.optionId.startsWith('art:')) {
+          next = sacrificePlayerArtifact(next, action.optionId.slice(4))
+          next = pushLog(next, 'sacArtifactEnchantment', 'info', {
+            name:
+              state.player.artifacts.find((a) => a.instanceId === action.optionId.slice(4))
+                ?.name ?? 'Artifact',
+          })
         }
         if (next.activeSide === 'challenge' && !next.prompt && next.status === 'playing') {
           next = continueAfterPrompt(next)
@@ -452,7 +538,23 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       if (action.state.code !== state.code || action.state.status !== 'playing') {
         return state
       }
-      const next = { ...action.state, fx: null }
+      const hydrated = action.state
+      const next = {
+        ...hydrated,
+        player: {
+          ...hydrated.player,
+          planeswalkers: hydrated.player.planeswalkers ?? [],
+          enchantments: hydrated.player.enchantments ?? [],
+          artifacts: hydrated.player.artifacts ?? [],
+        },
+        challenge: {
+          ...hydrated.challenge,
+          exile: hydrated.challenge.exile ?? [],
+        },
+        fx: null,
+        mulliganCount: hydrated.mulliganCount ?? 0,
+        stack: hydrated.stack ?? [],
+      }
       syncSeqsFromGameState(next)
       return next
     }

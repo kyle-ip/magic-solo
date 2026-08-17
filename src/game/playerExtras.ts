@@ -1,3 +1,4 @@
+import { addBuffPops, addFxPop } from './fx'
 import { findCardDef, type PlayerEffect } from './playerDecks'
 import {
   creatureHasFlying,
@@ -15,14 +16,19 @@ export function bounceChallengeCreature(
 ): GameState {
   const card = state.challenge.battlefield.find((c) => c.instanceId === targetId)
   if (!card || card.isGod) return pushLog(state, 'invalidTarget', 'info')
-  const next: GameState = {
-    ...state,
+  let next: GameState = addFxPop(
+    state,
+    { targetId, kind: 'status', label: '↑' },
+    'status',
+  )
+  next = {
+    ...next,
     challenge: {
-      ...state.challenge,
-      battlefield: state.challenge.battlefield.filter((c) => c.instanceId !== targetId),
+      ...next.challenge,
+      battlefield: next.challenge.battlefield.filter((c) => c.instanceId !== targetId),
       library: [
         { ...card, markedDamage: 0, tapped: false },
-        ...state.challenge.library,
+        ...next.challenge.library,
       ],
     },
   }
@@ -50,6 +56,11 @@ export function applyHeroicTriggers(
         ),
       },
     }
+    next = addFxPop(
+      next,
+      { targetId: target.instanceId, kind: 'buff', label: '+1/+1' },
+      'buff',
+    )
     next = pushLog(next, 'heroicSelf', 'good', { name: target.name })
   }
   if (eff?.type === 'heroic_team') {
@@ -70,6 +81,11 @@ export function applyHeroicTriggers(
         })),
       },
     }
+    next = addBuffPops(
+      next,
+      next.player.creatures.map((c) => c.instanceId),
+      `+${eff.power}/+${eff.toughness}`,
+    )
     next = pushLog(next, 'heroicTeam', 'good', {
       pt: `+${eff.power}/+${eff.toughness}`,
     })
@@ -86,7 +102,7 @@ export function attachBestowPaid(
 ): GameState {
   const host = state.player.creatures.find((c) => c.instanceId === hostId)
   if (!host) return pushLog(state, 'invalidTarget', 'info')
-  const next: GameState = {
+  let next: GameState = {
     ...state,
     pendingCast: null,
     player: {
@@ -118,6 +134,15 @@ export function attachBestowPaid(
       ),
     },
   }
+  next = addFxPop(
+    next,
+    {
+      targetId: hostId,
+      kind: 'buff',
+      label: `+${bestow.power}/+${bestow.toughness}`,
+    },
+    'buff',
+  )
   return pushLog(next, 'bestowAttach', 'good', {
     aura: card.name,
     name: host.name,
@@ -156,7 +181,11 @@ export function applySpiritEtbPumps(
       ),
     },
   }
-  return pushLog(next, 'spiritEtbPump', 'good', { n: pumps.length })
+  return addBuffPops(
+    pushLog(next, 'spiritEtbPump', 'good', { n: pumps.length }),
+    [...ids],
+    '+1/+1',
+  )
 }
 
 export function refreshSpiritsHaveFlash(state: GameState): GameState {

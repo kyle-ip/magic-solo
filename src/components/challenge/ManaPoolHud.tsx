@@ -5,18 +5,29 @@ import { ManaSymbol } from '../ManaCost'
 const ORDER = ['W', 'U', 'B', 'R', 'G', 'C'] as const
 
 /** Compact floating mana pool readout for the player dock. */
-export function ManaPoolHud({ pool }: { pool: ManaPool }) {
+export function ManaPoolHud({
+  pool,
+  emptyLabel = '0',
+}: {
+  pool: ManaPool
+  /** Shown when the pool is empty so it is not mistaken for another zone count. */
+  emptyLabel?: string
+}) {
   const total = poolTotal(pool)
   if (total <= 0) {
     return (
-      <div className="mana-pool-hud is-empty" aria-label="Mana pool empty">
-        <span className="mana-pool-hud-label">0</span>
+      <div
+        className="mana-pool-hud is-empty"
+        aria-label={emptyLabel}
+        title={emptyLabel}
+      >
+        <span className="mana-pool-hud-label">{emptyLabel}</span>
       </div>
     )
   }
 
   return (
-    <div className="mana-pool-hud" aria-label={`Mana pool ${total}`}>
+    <div className="mana-pool-hud" aria-label={`Mana pool ${total}`} title={`Mana pool ${total}`}>
       {ORDER.map((c) =>
         pool[c] > 0 ? (
           <span key={c} className={`mana-pool-pip is-${c}`}>

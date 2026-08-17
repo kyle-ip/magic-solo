@@ -1,7 +1,12 @@
 import type { DeckCard, DeckTheme } from '../types'
 import type { HeroInstance } from './heroes'
 import type { ManaPool } from './mana'
-import type { PlayerCardKind, PlayerEffect, FlashbackSpec } from './playerDecks'
+import type {
+  PlayerCardKind,
+  PlayerEffect,
+  FlashbackSpec,
+  LoyaltyAbility,
+} from './playerDecks'
 
 export type { HeroInstance } from './heroes'
 export type { ManaPool } from './mana'
@@ -63,7 +68,21 @@ export interface PlayerCardInstance {
   produces?: Array<'W' | 'U' | 'B' | 'R' | 'G' | 'C'>
   effect: PlayerEffect
   flashback?: FlashbackSpec
+  startingLoyalty?: number
+  loyaltyAbilities?: LoyaltyAbility[]
   image: string
+}
+
+export interface PlayerPlaneswalker {
+  instanceId: string
+  defId: string
+  name: string
+  loyalty: number
+  loyaltyActivatedThisTurn: boolean
+  image: string
+  keywords: string[]
+  effect: PlayerEffect
+  loyaltyAbilities: LoyaltyAbility[]
 }
 
 export interface PlayerCreature {
@@ -83,9 +102,11 @@ export interface PlayerCreature {
   /** Until-EOT pumps to clear on turn begin */
   tempPower?: number
   tempToughness?: number
+  /** Until-EOT keyword grants (e.g. Rattlechains hexproof). */
+  tempKeywords?: string[]
   /** Monstrosity resolved at least once */
   monstrous?: boolean
-  /** −1/−1 counters (Persist tracking) */
+  /** �?/�? counters (Persist tracking) */
   minusOneCounters?: number
   /** Bestow aura attached to this creature */
   bestowed?: {
@@ -118,6 +139,29 @@ export interface PlayerLand {
   isLand: true
 }
 
+/** Noncreature enchantment permanent (Journey / Banishing Light). */
+export interface PlayerEnchantment {
+  instanceId: string
+  defId: string
+  name: string
+  image: string
+  /** Challenge permanent exiled until this leaves the battlefield. */
+  exiledInstanceId?: string
+}
+
+/** Artifact permanent; Clue tokens use activate_clue. */
+export interface PlayerArtifact {
+  instanceId: string
+  defId: string
+  name: string
+  nameZh?: string
+  typeLine: string
+  image: string
+  tapped: boolean
+  isClue?: boolean
+  effect: PlayerEffect
+}
+
 export type PendingCast =
   | {
       handInstanceId: string
@@ -133,6 +177,8 @@ export type PendingCast =
         | 'etb_tap'
       fromGraveyard?: boolean
       activateCreatureId?: string
+      activatePlaneswalkerId?: string
+      loyaltyAbilityIndex?: number
       kicked?: boolean
     }
   | {
@@ -178,17 +224,30 @@ export type PromptKind =
   | 'bloodrush_mode'
   | 'choose_monstrous_flyer'
   | 'choose_monstrous_fight'
+  | 'choose_rattlechains_hexproof'
+  | 'choose_loyalty'
+  | 'choose_mulligan'
+  | 'choose_discard_hand'
+  | 'choose_stack_priority'
 
 export type LogTone = 'info' | 'good' | 'bad' | 'cast'
 
 export type LogParams = Record<string, string | number>
+
+/** Object on the limited Challenge stack (awaiting priority). */
+export interface StackObject {
+  id: string
+  source: 'challenge' | 'player'
+  name: string
+  challengeCard?: CardInstance
+}
 
 export interface PromptOption {
   id: string
   /** i18n key under challenge.prompt.* */
   labelKey: string
   labelParams?: LogParams
-  /** English card/creature name — localized in UI when present */
+  /** English card/creature name �?localized in UI when present */
   name?: string
 }
 
@@ -236,7 +295,14 @@ export type ChallengePhase =
   | 'breath'
   | 'done'
 
-export type FxPopKind = 'damage' | 'attack' | 'heal' | 'mill'
+export type FxPopKind =
+  | 'damage'
+  | 'attack'
+  | 'heal'
+  | 'mill'
+  | 'buff'
+  | 'debuff'
+  | 'status'
 
 /** Per-unit floater / hit cue tied to a battlefield or chrome target. */
 export interface FxPop {
@@ -245,6 +311,8 @@ export interface FxPop {
   targetId: string
   kind: FxPopKind
   amount?: number
+  /** Override floater text (e.g. "+2/+2", "Fog") */
+  label?: string
 }
 
 export interface AttackLink {
@@ -256,7 +324,16 @@ export interface AttackLink {
 
 export interface FxPulse {
   id: string
-  kind: 'damage' | 'heal' | 'mill' | 'cast' | 'enter' | 'attack'
+  kind:
+    | 'damage'
+    | 'heal'
+    | 'mill'
+    | 'cast'
+    | 'enter'
+    | 'attack'
+    | 'buff'
+    | 'debuff'
+    | 'status'
   amount?: number
   label?: string
   pops?: FxPop[]
@@ -287,6 +364,9 @@ export interface GameState {
     hand: PlayerCardInstance[]
     lands: PlayerLand[]
     creatures: PlayerCreature[]
+    planeswalkers: PlayerPlaneswalker[]
+    enchantments: PlayerEnchantment[]
+    artifacts: PlayerArtifact[]
     graveyard: PlayerCardInstance[]
     exile: Array<PlayerCardInstance | PlayerCreature>
     heroes: HeroInstance[]
@@ -297,6 +377,8 @@ export interface GameState {
     library: CardInstance[]
     battlefield: CardInstance[]
     graveyard: CardInstance[]
+    /** Linked exile (Journey / Banishing Light), separate from player exile. */
+    exile: CardInstance[]
   }
   flags: {
     playerTurnsRemaining: number
@@ -327,6 +409,10 @@ export interface GameState {
   }
   log: LogEntry[]
   prompt: PromptState | null
+  /** London mulligans taken this game (0 before first mulligan). */
+  mulliganCount: number
+  /** Limited spell stack — challenge casts await player priority. */
+  stack: StackObject[]
   selectedAttackers: string[]
   attackAssignments: Record<string, string>
   blockAssignments: Record<string, string>

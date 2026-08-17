@@ -45,6 +45,8 @@ interface ArenaCardProps {
   counters?: ReadonlyArray<ArenaCounterBadge> | null
   power?: number | null
   toughness?: number | null
+  /** Planeswalker loyalty — shown instead of P/T when set */
+  loyalty?: number | null
   markedDamage?: number
   tapped?: boolean
   selected?: boolean
@@ -62,7 +64,14 @@ interface ArenaCardProps {
   /** Transient combat VFX */
   hitFx?: boolean
   strikeFx?: boolean
-  floater?: { kind: 'damage' | 'attack' | 'heal' | 'mill'; amount?: number } | null
+  buffFx?: boolean
+  debuffFx?: boolean
+  statusFx?: boolean
+  floater?: {
+    kind: 'damage' | 'attack' | 'heal' | 'mill' | 'buff' | 'debuff' | 'status'
+    amount?: number
+    label?: string
+  } | null
   /** Free-form note overlay on the card. */
   note?: string | null
   /** Play destroy / leave-battlefield exit animation */
@@ -110,6 +119,7 @@ function ArenaCardInner({
   counters,
   power,
   toughness,
+  loyalty,
   markedDamage = 0,
   tapped,
   selected,
@@ -123,6 +133,9 @@ function ArenaCardInner({
   showPt = false,
   hitFx,
   strikeFx,
+  buffFx,
+  debuffFx,
+  statusFx,
   floater,
   note,
   dying,
@@ -251,6 +264,9 @@ function ArenaCardInner({
     dimmed ? 'is-dimmed' : '',
     hitFx ? 'is-hit' : '',
     strikeFx ? 'is-striking' : '',
+    buffFx ? 'is-buff-fx' : '',
+    debuffFx ? 'is-debuff-fx' : '',
+    statusFx ? 'is-status-fx' : '',
     enhancement ? 'is-enhanced' : '',
     boardKeywords.length ? 'has-keywords' : '',
     boardCounters.length ? 'has-counters' : '',
@@ -267,18 +283,28 @@ function ArenaCardInner({
   const damaged = toughness != null && markedDamage > 0
   const forcePt = showPt || isBoard
   const displayPt =
-    toughness != null && (forcePt || damaged || Boolean(enhancement))
-      ? `${power ?? 0}/${Math.max(0, toughness - markedDamage)}`
-      : null
+    loyalty != null
+      ? String(loyalty)
+      : toughness != null && (forcePt || damaged || Boolean(enhancement))
+        ? `${power ?? 0}/${Math.max(0, toughness - markedDamage)}`
+        : null
 
   const floaterText =
-    floater?.amount != null
-      ? floater.kind === 'heal'
-        ? `+${floater.amount}`
-        : floater.kind === 'attack'
-          ? `${floater.amount}`
-          : `−${floater.amount}`
-      : null
+    floater?.label != null && floater.label !== ''
+      ? floater.label
+      : floater?.amount != null
+        ? floater.kind === 'heal' || floater.kind === 'buff'
+          ? `+${floater.amount}`
+          : floater.kind === 'attack'
+            ? `${floater.amount}`
+            : floater.kind === 'debuff' || floater.kind === 'mill' || floater.kind === 'damage'
+              ? `−${floater.amount}`
+              : `${floater.amount}`
+        : floater?.kind === 'damage'
+          ? '✖'
+          : floater?.kind === 'status'
+            ? '✦'
+            : null
 
   const imageKind = 'normal'
 

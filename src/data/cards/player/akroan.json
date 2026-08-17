@@ -34,8 +34,8 @@
       "nameZh": "阿喀洛斯重装步兵",
       "typeLine": "Creature — Human Soldier",
       "typeLineZh": "生物～人类／士兵",
-      "oracleText": "Whenever this creature attacks, it gets +X/+0 until end of turn, where X is the number of attacking creatures you control.\n(Challenge: when this attacks, it gets +1/+0 until end of turn for each attacking creature you control.)",
-      "oracleTextZh": "每当阿喀洛斯重装步兵攻击时，它得+X/+0直到回合结束，X为由你操控且进行攻击的生物数量。\n（挑战：当此生物攻击时，攻击中由你操控的生物每有一个，它便得+1/+0直到回合结束。）",
+      "oracleText": "Whenever this creature attacks, it gets +X/+0 until end of turn, where X is the number of attacking creatures you control.",
+      "oracleTextZh": "每当阿喀洛斯重装步兵攻击时，它得+X/+0直到回合结束，X为由你操控且进行攻击的生物数量。",
       "manaCost": "{R}{W}",
       "cmc": 2,
       "power": 1,
@@ -183,8 +183,8 @@
       "nameZh": "波洛斯精兵",
       "typeLine": "Creature — Human Soldier",
       "typeLineZh": "生物 — 人类／士兵",
-      "oracleText": "Battalion — Whenever this creature and at least two other creatures attack, this creature gets +2/+2 until end of turn.\n(Challenge: Battalion — when this and at least two other creatures attack, it gets +2/+2 until end of turn.)",
-      "oracleTextZh": "协战～每当波洛斯精兵与至少两个其他生物攻击时，波洛斯精兵得+2/+2直到回合结束。\n（挑战：营队——当此生物与至少两个其他生物攻击时，它得+2/+2直到回合结束。）",
+      "oracleText": "Battalion — Whenever this creature and at least two other creatures attack, this creature gets +2/+2 until end of turn.",
+      "oracleTextZh": "协战～每当波洛斯精兵与至少两个其他生物攻击时，波洛斯精兵得+2/+2直到回合结束。",
       "manaCost": "{W}",
       "cmc": 1,
       "power": 1,
@@ -248,22 +248,22 @@
       "nameZh": "未知旅程",
       "typeLine": "Enchantment",
       "typeLineZh": "结界",
-      "oracleText": "When this enchantment enters, exile target creature.\nWhen this enchantment leaves the battlefield, return the exiled card to the battlefield under its owner's control.\n(Challenge: exile is treated as destroying the challenge permanent.)",
-      "oracleTextZh": "当未知旅程进战场时，放逐目标生物。\n当未知旅程离开战场时，将所放逐的牌在其拥有者的操控下移回战场。\n（挑战：放逐按消灭挑战永久物处理。）",
+      "oracleText": "When this enchantment enters, exile target creature.\nWhen this enchantment leaves the battlefield, return the exiled card to the battlefield under its owner's control.",
+      "oracleTextZh": "当未知旅程进战场时，放逐目标生物。\n当未知旅程离开战场时，将所放逐的牌在其拥有者的操控下移回战场。",
       "manaCost": "{1}{W}",
       "cmc": 2,
       "power": null,
       "toughness": null,
       "keywords": [],
-      "kind": "sorcery",
+      "kind": "enchantment",
       "effect": {
-        "type": "destroy_creature"
+        "type": "etb_exile_until_leaves"
       },
       "image": "assets/cards/player/4686b51c-e02b-48c1-bafe-e8d08a5407b9-normal.jpg"
     },
     {
       "id": "8ab0f4c0-b331-4c57-b68f-2e24bb5ba06c",
-      "quantity": 13,
+      "quantity": 12,
       "name": "Plains",
       "nameZh": "平原",
       "typeLine": "Basic Land — Plains",
@@ -306,6 +306,42 @@
         "type": "none"
       },
       "image": "assets/cards/player/2a844b96-6616-4c39-8f4f-5d14a3b2bd55-normal.jpg"
+    },
+    {
+      "id": "46dc2519-2729-4bbd-8892-fab6186bf116",
+      "quantity": 1,
+      "name": "Elspeth, Sun's Champion",
+      "nameZh": "太阳斗士艾紫培",
+      "typeLine": "Legendary Planeswalker — Elspeth",
+      "typeLineZh": "传奇鹏洛客",
+      "oracleText": "+1: (Challenge ability)\\n-3: (Challenge ability)",
+      "oracleTextZh": "（挑战：简化忠诚异能；每回合限一次。）",
+      "manaCost": "{4}{W}{W}",
+      "cmc": 6,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "planeswalker",
+      "effect": {
+        "type": "none"
+      },
+      "startingLoyalty": 4,
+      "loyaltyAbilities": [
+        {
+          "cost": 1,
+          "effect": {
+            "type": "draw",
+            "amount": 1
+          }
+        },
+        {
+          "cost": -3,
+          "effect": {
+            "type": "destroy_creature"
+          }
+        }
+      ],
+      "image": "assets/cards/player/46dc2519-2729-4bbd-8892-fab6186bf116-normal.jpg"
     }
   ]
 }

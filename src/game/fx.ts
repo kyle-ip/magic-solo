@@ -8,6 +8,16 @@ function popId(): string {
   return `pop-${Math.random().toString(36).slice(2, 8)}`
 }
 
+function pulseKindForPop(pop: Omit<FxPop, 'id'>): FxPulse['kind'] {
+  if (pop.kind === 'heal') return 'heal'
+  if (pop.kind === 'attack') return 'attack'
+  if (pop.kind === 'buff') return 'buff'
+  if (pop.kind === 'debuff') return 'debuff'
+  if (pop.kind === 'mill') return 'mill'
+  if (pop.kind === 'status') return 'status'
+  return 'damage'
+}
+
 /** Start or replace the active FX pulse (clears prior pops). */
 export function setFx(
   state: GameState,
@@ -36,7 +46,7 @@ export function setFx(
 export function addFxPop(
   state: GameState,
   pop: Omit<FxPop, 'id'>,
-  kind: FxPulse['kind'] = pop.kind === 'heal' ? 'heal' : pop.kind === 'attack' ? 'attack' : 'damage',
+  kind: FxPulse['kind'] = pulseKindForPop(pop),
 ): GameState {
   const existing = state.fx
   const pulse: FxPulse = existing
@@ -55,8 +65,23 @@ export function addFxPop(
   return { ...state, fx: pulse }
 }
 
+/** Soft multi-target buff floaters (prowess / battalion / heroic team). */
+export function addBuffPops(
+  state: GameState,
+  targetIds: string[],
+  label = '+1/+1',
+): GameState {
+  let next = state
+  for (const targetId of targetIds) {
+    next = addFxPop(next, { targetId, kind: 'buff', label }, 'buff')
+  }
+  return next
+}
+
 export const FX_PLAYER_LIFE = 'player-life'
 export const FX_HORDE = 'horde-library'
+export const FX_PLAYER_LIBRARY = 'player-library'
+export const FX_CHALLENGE_LIBRARY = 'challenge-library'
 
 /** Challenge attackers → blockers, or → player life if unblocked. */
 export function challengeAttackLinks(

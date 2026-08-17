@@ -62,7 +62,7 @@ Without an AI API key, the site works fully; AI entry points stay hidden except 
 
 ### Home (`/`)
 
-Overview of the three Challenge Decks; links go to each deck hub.
+Overview of the three Challenge Decks; links go to each deck hub. The hero’s three floating cards start in a triangle fan and can be dragged to rearrange (positions reset on refresh).
 
 ### Deck page (`/decks/:setCode`)
 
@@ -78,7 +78,7 @@ Overview of the three Challenge Decks; links go to each deck hub.
 
 Route: `/challenge/:setCode`
 
-A simplified solo PvE board (Arena-inspired), not a full Comprehensive Rules engine.
+A solo PvE board aiming for **official Challenge-loop fidelity** plus curated Constructed; **not** a full Arena / arbitrary-deck engine.
 
 ### Setup
 
@@ -94,40 +94,39 @@ A simplified solo PvE board (Arena-inspired), not a full Comprehensive Rules eng
 
 | Id | Name | Colors / role |
 | --- | --- | --- |
-| `wildfire` | Wildfire Host | RG midrange |
-| `terror` | UB Terror | UB tempo (delve / Terror-style removal) |
-| `burn` | Ember Barrage | R aggro / burn |
-| `skies` | Azure Skies | WU flyers + removal |
-| `merfolk` | Pearl Trident | U tribal tempo / lords |
-| `akroan` | Akroan Legion | WR soldiers (first strike) |
-| `nessian` | Nessian Wilds | G beasts (reach / trample) |
-| `humans` | Parish Host | W Human tribal |
-| `spirits` | Spectral Chorus | WU Spirit flyers |
-| `jund` | Bloodbraid Barrens | BRG midrange |
+| `wildfire` | Wildfire Host | RG midrange + Domri |
+| `terror` | UB Terror | UB tempo + Liliana |
+| `burn` | Ember Barrage | R aggro / burn + Chandra |
+| `skies` | Azure Skies | WU flyers + removal + Jace |
+| `merfolk` | Pearl Trident | U tribal tempo / lords + Kiora |
+| `akroan` | Akroan Legion | WR soldiers (first strike) + Elspeth |
+| `nessian` | Nessian Wilds | G beasts (reach / trample) + Nissa |
+| `humans` | Parish Host | W Human tribal + Gideon |
+| `spirits` | Spectral Chorus | WU Spirit flyers + Teferi |
+| `jund` | Bloodbraid Barrens | BRG midrange + Vraska |
 
-Only **implemented** abilities fire (supported evergreen today: haste, flash, vigilance, lifelink, prowess, flyer anthem, type anthem, flying/reach blocking, deathtouch, **first / double strike as combat damage steps**; player-side **trample** spills excess — Hydra → another Head, God → Xenagos, Horde → continue milling. Also Fog, fight, burn-to-any, mill/draw, flashback, delve discount, attack-reveal triggers, attack pump per attacker, battalion, Parish counters, limited monstrosity activation, **bestow** (attach + falloff to creature), **heroic** (including spells that bestow onto the creature), Persist, Scavenge Ooze activate, Maelstrom Pulse same-name wipe, and choice prompts). Many printed cards are still approximated (roster **Simplified** badge). Azure Skies uses white removal you can actually pay with W/U mana.
+Only **implemented** abilities fire. Current mechanics include evergreen keywords (haste, flash, vigilance, lifelink, prowess, anthems, flying/reach, deathtouch, first/double strike, trample, islandwalk, etc.), Fog, fight, burn-to-any, bounce → challenge library top, bestow/heroic, bloodrush, battalion, Parish/lieutenant, monstrosity (incl. X), Persist, Scavenge Ooze, Maelstrom Pulse, **linked exile enchantments**, **Clue tokens**, **cascade**, **Goyf CDA**, **legendary rule**, **planeswalkers**, and a **limited stack** on challenge reveals (pass / Mausoleum Wanderer counter / Fog). Some cards still carry honest `(Challenge:…)` notes.
 
 ### During play
 
-- Your hand, lands, creatures, and the challenge half-board
-- Challenge reveals/casts cards one by one
-- Declare attackers, assign targets (where applicable), resolve combat (first-strike step → normal damage step)
-- Toggle **coach tips** and a floating **battle log**
-- Win / loss **settlement** with match stats (and optional AI battle report)
-- Leave to the deck hub or use header **Challenges** (when chrome is visible) to open another challenge
+- Hand, lands, creatures, enchantments/artifacts, planeswalkers, and the challenge half-board; tap hand/board cards for details (on touch landscape a compact sheet hugs art + text); tap **graveyard / exile** to inspect; the “Mana 0” beside the library is the mana pool (not exile)
+- Opening **mulligan** (London rule: see the hand first; after a mulligan still draw 7, then bottom cards equal to mulligans taken); end-of-turn discard to 7 when over hand size
+- Challenge reveal → **stack priority** (auto-resolves when Pass is the only option) → resolve
+- Declare attackers, assign targets, combat (first-strike → normal damage); short non-blocking floaters for hits / pumps / Fog / loyalty; destroyed cards crack then fly to the graveyard, bounces to library, exiles to exile
+- Coach tips, battle log, settlement screen
 
 ### Challenge vs official Challenge Decks
 
 | Official | This Challenge |
 | --- | --- |
-| Any Constructed deck | Ten curated lists; only implemented abilities fire |
-| Full stack / priority | Spells resolve immediately (Fog still stops breath / combat damage) |
-| All Theros mechanics | Evergreen + selected effects (bestow attach/falloff, heroic, limited monstrosity) |
+| Any Constructed deck | Ten curated lists (incl. a few planeswalkers) |
+| Full stack / priority | Limited stack (challenge reveal window) |
+| All Theros mechanics | Evergreen + wired list effects |
 | Multiplayer variants | Solo only |
 
 For an arbitrary paper deck, use the [Game Assistant](#4-game-assistant) instead.
 
-**Implementation inventory** (what each list wires vs still approximates): [CHALLENGE_IMPLEMENTATION.en.md](./CHALLENGE_IMPLEMENTATION.en.md).
+**Implementation inventory**: [CHALLENGE_IMPLEMENTATION.en.md](./CHALLENGE_IMPLEMENTATION.en.md).
 
 ---
 

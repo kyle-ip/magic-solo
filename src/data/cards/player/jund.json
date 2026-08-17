@@ -35,8 +35,8 @@
       "nameZh": "血辫妖精",
       "typeLine": "Creature — Elf Berserker",
       "typeLineZh": "生物 ～妖精／狂战士",
-      "oracleText": "Haste (This creature can attack and {T} as soon as it comes under your control.)\nCascade (When you cast this spell, exile cards from the top of your library until you exile a nonland card that costs less. You may cast it without paying its mana cost. Put the exiled cards on the bottom in a random order.)\n(Challenge: cascade approximated as draw a card on ETB.)",
-      "oracleTextZh": "敏捷\n倾曳（当你施放此咒语时，从你的牌库顶开始放逐牌，直到放逐一张费用比此咒语低的非地牌为止。你可以施放该牌，且不需支付其法术力费用。将所放逐的牌以随机顺序置于你的牌库底。）\n（挑战：倾曳近似为进场抓一张牌。）",
+      "oracleText": "Haste\nCascade (When you cast this spell, exile cards from the top of your library until you exile a nonland card that costs less. You may cast it without paying its mana cost. Put the exiled cards on the bottom in a random order.)",
+      "oracleTextZh": "敏捷\n倾曳（当你施放此咒语时，从你的牌库顶开始放逐牌，直到放逐一张费用比此咒语低的非地牌为止。你可以施放该牌，且不需支付其法术力费用。将所放逐的牌以随机顺序置于你的牌库底。）",
       "manaCost": "{2}{R}{G}",
       "cmc": 4,
       "power": 3,
@@ -46,8 +46,7 @@
       ],
       "kind": "creature",
       "effect": {
-        "type": "draw",
-        "amount": 1
+        "type": "cascade"
       },
       "image": "assets/cards/player/e2f12f6f-9383-47e6-a44f-2834ad130e51-normal.jpg"
     },
@@ -58,19 +57,16 @@
       "nameZh": "塔莫耶夫",
       "typeLine": "Creature — Lhurgoyf",
       "typeLineZh": "生物 — 拉高耶夫",
-      "oracleText": "Tarmogoyf's power is equal to the number of card types among cards in all graveyards and its toughness is equal to that number plus 1.\n(Challenge: enters as 2/3 then sticky +2/+2 — approximate CDAs without counting types.)",
-      "oracleTextZh": "搜掠死亡爪的力量等同于所有坟墓场中牌的牌张类别数量，其防御力等同于该数量加1。\n（挑战：以 2/3 进场并永久 +2/+2 近似——不按牌类计数。）",
+      "oracleText": "Tarmogoyf's power is equal to the number of card types among cards in all graveyards and its toughness is equal to that number plus 1.",
+      "oracleTextZh": "塔莫耶夫的力量等同于所有坟墓场中牌的牌张类别数量，其防御力等同于该数量加1。",
       "manaCost": "{1}{G}",
       "cmc": 2,
-      "power": 2,
-      "toughness": 3,
+      "power": 0,
+      "toughness": 1,
       "keywords": [],
       "kind": "creature",
       "effect": {
-        "type": "etb_self_pump",
-        "power": 2,
-        "toughness": 2,
-        "untilEndOfTurn": false
+        "type": "goyf_cda"
       },
       "image": "assets/cards/player/69daba76-96e8-4bcc-ab79-2f00189ad8fb-normal.jpg"
     },
@@ -165,8 +161,8 @@
       "nameZh": "涡心鼓动",
       "typeLine": "Sorcery",
       "typeLineZh": "法术",
-      "oracleText": "Destroy target nonland permanent and all other permanents with the same name as that permanent.\n(Challenge: challenge creatures only; same-name wipe included.)",
-      "oracleTextZh": "消灭目标非地永久物和所有与之同名的其他永久物。\n（挑战：仅挑战生物；含同名清场。）",
+      "oracleText": "Destroy target nonland permanent and all other permanents with the same name as that permanent.",
+      "oracleTextZh": "消灭目标非地永久物，以及与该永久物同名的所有其他永久物。",
       "manaCost": "{1}{B}{G}",
       "cmc": 3,
       "power": null,
@@ -243,8 +239,44 @@
       "image": "assets/cards/player/08b9a296-3b76-4f8f-9d71-7c9af92bb3b4-normal.jpg"
     },
     {
+      "id": "a36d3ea7-0f18-4865-b47b-755673db065e",
+      "quantity": 1,
+      "name": "Vraska, Golgari Queen",
+      "nameZh": "葛加理女皇瓦丝卡",
+      "typeLine": "Legendary Planeswalker — Vraska",
+      "typeLineZh": "传奇鹏洛客 ～瓦丝卡",
+      "oracleText": "+1: Draw a card.\\n−3: Destroy target challenge creature.\\n(Challenge: simplified loyalty abilities; once per turn.)",
+      "oracleTextZh": "+1：抓一张牌。\\n−3：消灭目标挑战侧生物。\\n（挑战：简化忠诚异能；每回合限一次。）",
+      "manaCost": "{2}{B}{G}",
+      "cmc": 4,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "planeswalker",
+      "effect": {
+        "type": "none"
+      },
+      "startingLoyalty": 4,
+      "loyaltyAbilities": [
+        {
+          "cost": 1,
+          "effect": {
+            "type": "draw",
+            "amount": 1
+          }
+        },
+        {
+          "cost": -3,
+          "effect": {
+            "type": "destroy_creature"
+          }
+        }
+      ],
+      "image": "assets/cards/player/a36d3ea7-0f18-4865-b47b-755673db065e-normal.jpg"
+    },
+    {
       "id": "b7387103-1df1-4fd0-9e91-1544509792c7",
-      "quantity": 8,
+      "quantity": 7,
       "name": "Swamp",
       "nameZh": "沼泽",
       "typeLine": "Basic Land — Swamp",

@@ -33,8 +33,8 @@
       "nameZh": "亚特兰提斯领主",
       "typeLine": "Creature — Merfolk",
       "typeLineZh": "Creature — Merfolk",
-      "oracleText": "Other Merfolk get +1/+1 and have islandwalk. (They can't be blocked as long as defending player controls an Island.)\n(Challenge: other Merfolk you control get +1/+1; islandwalk omitted.)",
-      "oracleTextZh": "其他人鱼得+1/+1且具有海岛行者异能。\n（挑战：由你操控的其他人鱼得+1/+1；海岛行省略。）",
+      "oracleText": "Other Merfolk get +1/+1 and have islandwalk. (They can't be blocked as long as defending player controls an Island.)",
+      "oracleTextZh": "其他人鱼得+1/+1且具有海岛行者异能。",
       "manaCost": "{U}{U}",
       "cmc": 2,
       "power": 2,
@@ -45,7 +45,10 @@
         "type": "anthem_creature_type",
         "creatureType": "Merfolk",
         "power": 1,
-        "toughness": 1
+        "toughness": 1,
+        "grantKeywords": [
+          "islandwalk"
+        ]
       },
       "image": "assets/cards/player/a9407b60-8921-4531-bdbe-9a82aaa38d28-normal.jpg"
     },
@@ -56,8 +59,8 @@
       "nameZh": "珍珠三叉戟大师",
       "typeLine": "Creature — Merfolk",
       "typeLineZh": "生物 ～人鱼",
-      "oracleText": "Other Merfolk creatures you control get +1/+1 and have islandwalk. (They can't be blocked as long as defending player controls an Island.)\n(Challenge: other Merfolk you control get +1/+1; islandwalk omitted.)",
-      "oracleTextZh": "由你操控的其他人鱼生物得+1/+1且具有海岛行者异能。（只要防御牌手操控海岛，它们便不能被阻挡。）\n（挑战：由你操控的其他人鱼得+1/+1；海岛行省略。）",
+      "oracleText": "Other Merfolk creatures you control get +1/+1 and have islandwalk. (They can't be blocked as long as defending player controls an Island.)",
+      "oracleTextZh": "由你操控的其他人鱼生物得+1/+1且具有海岛行者异能。（只要防御牌手操控海岛，它们便不能被阻挡。）",
       "manaCost": "{U}{U}",
       "cmc": 2,
       "power": 2,
@@ -68,7 +71,10 @@
         "type": "anthem_creature_type",
         "creatureType": "Merfolk",
         "power": 1,
-        "toughness": 1
+        "toughness": 1,
+        "grantKeywords": [
+          "islandwalk"
+        ]
       },
       "image": "assets/cards/player/6b48dc56-667c-4fde-8175-952463e233cc-normal.jpg"
     },
@@ -226,7 +232,7 @@
     },
     {
       "id": "f3cc07cd-cc79-4745-b0b7-eade60175cc3",
-      "quantity": 25,
+      "quantity": 24,
       "name": "Island",
       "nameZh": "海岛",
       "typeLine": "Basic Land — Island",
@@ -246,6 +252,42 @@
         "type": "none"
       },
       "image": "assets/cards/player/f3cc07cd-cc79-4745-b0b7-eade60175cc3-normal.jpg"
+    },
+    {
+      "id": "0c5c6b15-b72d-4341-92c2-7469210452da",
+      "quantity": 1,
+      "name": "Kiora, the Crashing Wave",
+      "nameZh": "碎浪奇奥拉",
+      "typeLine": "Legendary Planeswalker — Kiora",
+      "typeLineZh": "传奇鹏洛客",
+      "oracleText": "+1: (Challenge ability)\\n-2: (Challenge ability)",
+      "oracleTextZh": "（挑战：简化忠诚异能；每回合限一次。）",
+      "manaCost": "{2}{G}{U}",
+      "cmc": 4,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "planeswalker",
+      "effect": {
+        "type": "none"
+      },
+      "startingLoyalty": 2,
+      "loyaltyAbilities": [
+        {
+          "cost": 1,
+          "effect": {
+            "type": "draw",
+            "amount": 1
+          }
+        },
+        {
+          "cost": -2,
+          "effect": {
+            "type": "bounce_creature"
+          }
+        }
+      ],
+      "image": "assets/cards/player/0c5c6b15-b72d-4341-92c2-7469210452da-normal.jpg"
     }
   ]
 }

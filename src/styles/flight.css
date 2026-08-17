@@ -3,7 +3,7 @@
 .card-flight-layer {
   position: fixed;
   inset: 0;
-  z-index: 95;
+  z-index: 42;
   pointer-events: none;
   overflow: hidden;
 }
@@ -19,9 +19,10 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.4);
   will-change: transform, opacity;
   transform: translate3d(-9999px, 0, 0);
+  opacity: 0.92;
 }
 
 .card-flight-trail {

@@ -59,8 +59,8 @@
       "nameZh": "陵墓游灵",
       "typeLine": "Creature — Spirit",
       "typeLineZh": "生物～精怪",
-      "oracleText": "Flying\nWhenever another Spirit you control enters, this creature gets +1/+1 until end of turn.\n(Challenge: counter ability omitted — no stack.)",
-      "oracleTextZh": "飞行\n每当另一个由你操控的精怪进场时，此生物得+1/+1直到回合结束。\n（挑战：省略反击异能——无堆叠。）",
+      "oracleText": "Flying\nWhenever another Spirit you control enters, this creature gets +1/+1 until end of turn.\nSacrifice Mausoleum Wanderer: Counter target spell with mana value X or less, where X is this creature's power.\n(Challenge: use stack priority when a challenge spell is revealed.)",
+      "oracleTextZh": "飞行\n每当另一个由你操控的精怪进场时，此生物得+1/+1直到回合结束。\n牺牲陵墓游灵：反击目标法术力值等于或小于X的咒语，X为此生物的力量。\n（挑战：挑战咒语揭示时通过堆叠优先权窗口反击。）",
       "manaCost": "{U}",
       "cmc": 1,
       "power": 1,
@@ -81,8 +81,8 @@
       "nameZh": "缀链灵",
       "typeLine": "Creature — Spirit",
       "typeLineZh": "生物 ～精怪",
-      "oracleText": "Flash\nFlying\nYou may cast Spirit spells as though they had flash.\n(Challenge: ETB hexproof grant omitted.)",
-      "oracleTextZh": "闪现\n飞行\n你可以将精怪咒语视同具有闪现来施放。\n（挑战：省略进场赋予辟邪。）",
+      "oracleText": "Flash\nFlying\nYou may cast Spirit spells as though they had flash.",
+      "oracleTextZh": "闪现\n飞行\n你可以将精怪咒语视同具有闪现来施放。",
       "manaCost": "{1}{U}",
       "cmc": 2,
       "power": 2,
@@ -195,16 +195,16 @@
       "nameZh": "未知旅程",
       "typeLine": "Enchantment",
       "typeLineZh": "结界",
-      "oracleText": "When this enchantment enters, exile target creature.\nWhen this enchantment leaves the battlefield, return the exiled card to the battlefield under its owner's control.\n(Challenge: exile is treated as destroying the challenge permanent.)",
-      "oracleTextZh": "当未知旅程进战场时，放逐目标生物。\n当未知旅程离开战场时，将所放逐的牌在其拥有者的操控下移回战场。\n（挑战：放逐按消灭挑战永久物处理。）",
+      "oracleText": "When this enchantment enters, exile target creature.\nWhen this enchantment leaves the battlefield, return the exiled card to the battlefield under its owner's control.",
+      "oracleTextZh": "当未知旅程进战场时，放逐目标生物。\n当未知旅程离开战场时，将所放逐的牌在其拥有者的操控下移回战场。",
       "manaCost": "{1}{W}",
       "cmc": 2,
       "power": null,
       "toughness": null,
       "keywords": [],
-      "kind": "sorcery",
+      "kind": "enchantment",
       "effect": {
-        "type": "destroy_creature"
+        "type": "etb_exile_until_leaves"
       },
       "image": "assets/cards/player/4686b51c-e02b-48c1-bafe-e8d08a5407b9-normal.jpg"
     },
@@ -257,7 +257,7 @@
     },
     {
       "id": "f3cc07cd-cc79-4745-b0b7-eade60175cc3",
-      "quantity": 15,
+      "quantity": 14,
       "name": "Island",
       "nameZh": "海岛",
       "typeLine": "Basic Land — Island",
@@ -277,6 +277,42 @@
         "type": "none"
       },
       "image": "assets/cards/player/f3cc07cd-cc79-4745-b0b7-eade60175cc3-normal.jpg"
+    },
+    {
+      "id": "662fe50f-d75c-422c-8c6c-1f9b5c4ba21f",
+      "quantity": 1,
+      "name": "Teferi, Time Raveler",
+      "nameZh": "时光旅人泰菲力",
+      "typeLine": "Legendary Planeswalker — Teferi",
+      "typeLineZh": "传奇鹏洛客",
+      "oracleText": "+1: (Challenge ability)\\n-3: (Challenge ability)",
+      "oracleTextZh": "（挑战：简化忠诚异能；每回合限一次。）",
+      "manaCost": "{1}{W}{U}",
+      "cmc": 3,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "planeswalker",
+      "effect": {
+        "type": "none"
+      },
+      "startingLoyalty": 4,
+      "loyaltyAbilities": [
+        {
+          "cost": 1,
+          "effect": {
+            "type": "draw",
+            "amount": 1
+          }
+        },
+        {
+          "cost": -3,
+          "effect": {
+            "type": "bounce_creature"
+          }
+        }
+      ],
+      "image": "assets/cards/player/662fe50f-d75c-422c-8c6c-1f9b5c4ba21f-normal.jpg"
     }
   ]
 }

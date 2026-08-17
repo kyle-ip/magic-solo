@@ -145,7 +145,7 @@
 .deck-hero-card {
   position: relative;
   justify-self: end;
-  width: min(100%, 340px);
+  width: min(100%, 240px);
   border-radius: var(--card-radius);
   overflow: hidden;
   background: var(--card-face-bg);
@@ -1071,13 +1071,9 @@
 
   .home-hero-art {
     order: -1;
-    height: auto;
-    min-height: 0;
+    height: min(38vh, 280px);
+    min-height: 200px;
     overflow: visible;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    gap: 0;
     padding: 0.35rem 0.25rem 0.15rem;
     perspective: none;
   }
@@ -1101,35 +1097,26 @@
 
   .deck-hero-card {
     justify-self: center;
-    width: min(280px, 58vw);
+    width: min(210px, 48vw);
   }
 
-  /* Keep a gentle float on phones — was animation:none, which made home feel static */
+  /* Keep a gentle float on phones — absolute cluster stays draggable */
   .orbit-card {
-    position: relative;
-    left: auto;
-    right: auto;
-    top: auto;
-    bottom: auto;
-    width: min(44%, 11rem);
-    margin-inline: -1.95rem;
+    position: absolute;
+    width: min(40%, 9.75rem);
+    margin-inline: 0;
     animation: floaty-mobile 7.5s ease-in-out infinite;
   }
 
   .orbit-0 {
-    transform: rotate(-7deg) translateY(0.3rem);
-    z-index: 1;
+    animation-delay: 0s;
   }
 
   .orbit-1 {
-    transform: rotate(6deg) translateY(0.3rem);
-    z-index: 3;
     animation-delay: -2.2s;
   }
 
   .orbit-2 {
-    transform: rotate(1deg) translateY(-0.1rem);
-    z-index: 2;
     animation-delay: -4.4s;
   }
 

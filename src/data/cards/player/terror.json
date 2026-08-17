@@ -274,8 +274,44 @@
       "image": "assets/cards/player/cedd44eb-f381-46e1-bcb0-88416b4ce33d-normal.jpg"
     },
     {
+      "id": "efbb7256-9337-4183-8bda-a419f3f2c501",
+      "quantity": 1,
+      "name": "Liliana of the Veil",
+      "nameZh": "帷幕丽莲",
+      "typeLine": "Legendary Planeswalker — Liliana",
+      "typeLineZh": "传奇鹏洛客 ～丽莲",
+      "oracleText": "+1: Draw a card.\\n−2: Destroy target challenge creature.\\n(Challenge: simplified loyalty abilities; once per turn.)",
+      "oracleTextZh": "+1：抓一张牌。\\n−2：消灭目标挑战侧生物。\\n（挑战：简化忠诚异能；每回合限一次。）",
+      "manaCost": "{1}{B}{B}",
+      "cmc": 3,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "planeswalker",
+      "effect": {
+        "type": "none"
+      },
+      "startingLoyalty": 3,
+      "loyaltyAbilities": [
+        {
+          "cost": 1,
+          "effect": {
+            "type": "draw",
+            "amount": 1
+          }
+        },
+        {
+          "cost": -2,
+          "effect": {
+            "type": "destroy_creature"
+          }
+        }
+      ],
+      "image": "assets/cards/player/efbb7256-9337-4183-8bda-a419f3f2c501-normal.jpg"
+    },
+    {
       "id": "f3cc07cd-cc79-4745-b0b7-eade60175cc3",
-      "quantity": 12,
+      "quantity": 11,
       "name": "Island",
       "nameZh": "海岛",
       "typeLine": "Basic Land — Island",

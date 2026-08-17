@@ -25,7 +25,14 @@ export type PlayerDeckId =
 
 export type PlayerDeckArchetype = 'aggro' | 'midrange' | 'control' | 'tempo'
 
-export type PlayerCardKind = 'land' | 'creature' | 'instant' | 'sorcery'
+export type PlayerCardKind =
+  | 'land'
+  | 'creature'
+  | 'instant'
+  | 'sorcery'
+  | 'enchantment'
+  | 'artifact'
+  | 'planeswalker'
 
 export type PlayerEffect =
   | { type: 'none' }
@@ -61,6 +68,16 @@ export type PlayerEffect =
   | { type: 'delve' }
   | { type: 'etb_gain_life'; amount: number; persist?: boolean }
   | { type: 'etb_exile_opp_graveyard' }
+  /** Bloodbraid Elf — cascade when cast. */
+  | { type: 'cascade' }
+  /** Tarmogoyf — P/T from card types in all graveyards. */
+  | { type: 'goyf_cda' }
+  /** Journey / Banishing Light: ETB exile challenge permanent until this leaves BF. */
+  | { type: 'etb_exile_until_leaves' }
+  /** Investigate: create a Clue artifact token. */
+  | { type: 'etb_investigate' }
+  /** Clue token: {2}, sacrifice this → draw 1. */
+  | { type: 'activate_clue' }
   /** Scavenging Ooze: {G} exile a GY card; if creature, +1/+1 and gain 1 life. */
   | { type: 'scavenge_ooze'; manaCost: string }
   | { type: 'activate_sac_damage'; amount: number }
@@ -71,10 +88,14 @@ export type PlayerEffect =
       manaCost: string
       power: number
       toughness: number
+      /** Monstrosity X — pay {X} plus manaCost; counters = X. */
+      variableX?: boolean
       /** After becoming monstrous, destroy a flying challenge creature. */
       thenDestroyFlyer?: boolean
       /** After becoming monstrous, fight one challenge creature. */
       thenFight?: boolean
+      /** Fight up to X challenge creatures (requires variableX). */
+      thenFightUpToX?: boolean
     }
   | { type: 'anthem_other_flyers'; power: number; toughness: number }
   | {
@@ -82,6 +103,8 @@ export type PlayerEffect =
       creatureType: string
       power: number
       toughness: number
+      /** Keywords granted to other creatures of this type (e.g. islandwalk). */
+      grantKeywords?: string[]
     }
   | { type: 'anthem_other_creatures'; power: number; toughness: number }
   | { type: 'attack_guide' }
@@ -131,6 +154,12 @@ export type PlayerEffect =
   /** Silvergill: extra {3} unless another Merfolk is in hand; ETB draw. */
   | { type: 'silvergill_draw' }
 
+export interface LoyaltyAbility {
+  /** Loyalty cost: +1 = +1, -2 = -2, -8 = -8 */
+  cost: number
+  effect: PlayerEffect
+}
+
 export interface FlashbackSpec {
   manaCost: string
   payLife?: number
@@ -154,6 +183,10 @@ export interface ConstructedCardDef {
   produces?: ManaColor[]
   effect: PlayerEffect
   flashback?: FlashbackSpec
+  /** Planeswalker starting loyalty (printed). */
+  startingLoyalty?: number
+  /** Planeswalker loyalty abilities (simplified scripted effects). */
+  loyaltyAbilities?: LoyaltyAbility[]
   image: string
 }
 

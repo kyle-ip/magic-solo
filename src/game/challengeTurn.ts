@@ -10,16 +10,26 @@ import {
   destroyChallengePermanent,
   headsOf,
   minotaursOf,
+  openDiscardToHandSizePrompt,
   revelersOf,
   tickHydraHide,
 } from './helpers'
-import { discardCards } from './playerDraw'
-import { castHydraCard } from './hydra'
-import { castHordeCard, resolveHordeCombat } from './horde'
-import { castGodCard, resolveGodCombat } from './god'
+import { discardCards, MAX_HAND_SIZE } from './playerDraw'
+import { resolveHordeCombat } from './horde'
+import { resolveGodCombat } from './god'
 import { challengeAttackLinks, setFx } from './fx'
 import { pushLog } from './log'
+import { castGodCard } from './god'
+import { castHordeCard } from './horde'
+import { castHydraCard } from './hydra'
+import { offerStackPriority } from './stack'
 import type { CardInstance, GameState } from './types'
+
+function resolveChallengeSpell(state: GameState, card: CardInstance): GameState {
+  if (state.code === 'tfth') return castHydraCard(state, card)
+  if (state.code === 'tbth') return castHordeCard(state, card)
+  return castGodCard(state, card)
+}
 
 function nextFx(
   state: GameState,
@@ -28,6 +38,35 @@ function nextFx(
   label?: string,
 ): GameState {
   return setFx(state, kind, { amount, label })
+}
+
+/**
+ * End the player's turn: cleanup discard to 7, then pass to challenge
+ * (or next player turn while Horde still sleeps).
+ */
+export function endPlayerTurn(state: GameState): GameState {
+  if (state.status !== 'playing' || state.activeSide !== 'player') return state
+  if (state.prompt) return state
+
+  if (state.player.hand.length > MAX_HAND_SIZE) {
+    return openDiscardToHandSizePrompt(state)
+  }
+
+  if (state.code === 'tfth') {
+    const checked = checkHydraWin(state)
+    if (checked.status !== 'playing') return checked
+    return beginChallengeTurn(checked)
+  }
+
+  if (state.code === 'tbth') {
+    if (state.flags.playerTurnsRemaining > 0) {
+      const next = pushLog(state, 'hordeNotAwake', 'info')
+      return beginPlayerTurn(next)
+    }
+    return beginChallengeTurn(state)
+  }
+
+  return beginChallengeTurn(state)
 }
 
 /** Begin challenge turn: untap / build cast queue / show first reveal. */
@@ -168,21 +207,19 @@ function resolveCurrentReveal(state: GameState): GameState {
   const card = state.revealed[0]
   if (!card) return afterCasts(state)
 
-  let next: GameState = {
-    ...state,
-    awaitingAdvance: false,
-    challengePhase: 'resolve',
-  }
-
-  if (next.code === 'tfth') next = castHydraCard(next, card)
-  else if (next.code === 'tbth') next = castHordeCard(next, card)
-  else next = castGodCard(next, card)
-
+  // Push onto limited stack; auto-resolves when the only option is Pass.
+  const next = offerStackPriority(state, card, resolveChallengeSpell)
   if (next.prompt) return next
   if (next.status !== 'playing') return next
+  return continueAfterStackResolve(next)
+}
 
-  if (next.castQueue.length > 0) return presentNextCast(next)
-  return afterCasts(next)
+/** After stack priority resolves a challenge spell (or counters it). */
+export function continueAfterStackResolve(state: GameState): GameState {
+  if (state.prompt) return state
+  if (state.status !== 'playing') return state
+  if (state.castQueue.length > 0) return presentNextCast(state)
+  return afterCasts(state)
 }
 
 function afterCasts(state: GameState): GameState {

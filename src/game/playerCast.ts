@@ -24,9 +24,20 @@ import {
   millHorde,
   checkHordeWin,
   checkWinLoss,
+  buryPlayerCreatures,
+  checkPlaneswalkerSba,
+  createClueToken,
+  linkExileChallengePermanent,
+  sacrificePlayerArtifact,
 } from './helpers'
-import { addFxPop, FX_HORDE, FX_PLAYER_LIFE } from './fx'
-import { applyProwessPumps, creatureHasDeathtouch, creatureHasType, effectivePower } from './playerAbilities'
+import { addFxPop, addBuffPops, FX_HORDE, FX_PLAYER_LIFE, FX_PLAYER_LIBRARY, setFx } from './fx'
+import {
+  applyProwessPumps,
+  creatureHasDeathtouch,
+  creatureHasType,
+  effectivePower,
+} from './playerAbilities'
+import { checkLegendarySba, refreshGoyfStats, resolveCascade } from './cascadeGoyf'
 import {
   applyHeroicTriggers,
   applySpiritEtbPumps,
@@ -35,7 +46,6 @@ import {
   destroyFlyingChallenge,
   refreshSpiritsHaveFlash,
 } from './playerExtras'
-import { buryPlayerCreatures } from './helpers'
 
 function cardToGy(card: PlayerCardInstance | PlayerCreature | PlayerLand): PlayerCardInstance {
   if ('kind' in card && card.kind) {
@@ -129,6 +139,34 @@ export function canAfford(state: GameState, manaCost: string): boolean {
 export function canAffordCard(state: GameState, card: PlayerCardInstance): boolean {
   const prepared = prepareCastCost(state, card, false)
   return autoTapForCost(prepared.state, prepared.manaCost) != null
+}
+
+/** Why a hand card cannot be played right now (i18n key under challenge.*). */
+export function getHandCardCastBlockReason(
+  state: GameState,
+  card: PlayerCardInstance,
+  opts?: { matchOver?: boolean },
+): { key: string; params?: Record<string, string | number> } | null {
+  if (opts?.matchOver) return { key: 'castBlock.matchOver' }
+  if (state.activeSide !== 'player') return { key: 'castBlock.notYourTurn' }
+  if (state.flags.cannotCastSpells) return { key: 'castBlock.cannotCastSpells' }
+  if (card.kind === 'land') {
+    if (state.playerPhase !== 'main') return { key: 'castBlock.landMainOnly' }
+    if (state.player.landsPlayedThisTurn >= 1) return { key: 'castBlock.landDropUsed' }
+    return null
+  }
+  if (card.kind === 'sorcery' && state.playerPhase !== 'main') {
+    return { key: 'castBlock.sorceryMainOnly' }
+  }
+  if (
+    card.kind !== 'instant' &&
+    state.playerPhase !== 'main' &&
+    state.playerPhase !== 'combat'
+  ) {
+    return { key: 'castBlock.wrongPhase' }
+  }
+  if (!canAffordCard(state, card)) return { key: 'castBlock.cantAfford' }
+  return null
 }
 
 function millOwnLibrary(state: GameState, n: number): GameState {
@@ -326,6 +364,21 @@ function applyDamageAny(
       },
     }
   }
+  const pw = next.player.planeswalkers.find((p) => p.instanceId === targetId)
+  if (pw) {
+    next = addFxPop(next, { targetId, kind: 'damage', amount }, 'damage')
+    const loyalty = pw.loyalty - amount
+    next = {
+      ...next,
+      player: {
+        ...next.player,
+        planeswalkers: next.player.planeswalkers.map((p) =>
+          p.instanceId === targetId ? { ...p, loyalty } : p,
+        ),
+      },
+    }
+    return checkPlaneswalkerSba(next)
+  }
   return pushLog(next, 'invalidTarget', 'info')
 }
 
@@ -361,6 +414,9 @@ function resolveEffect(
     case 'etb_tap_opp':
     case 'silvergill_draw':
     case 'scavenge_ooze':
+    case 'etb_exile_until_leaves':
+    case 'etb_investigate':
+    case 'activate_clue':
       return next
     case 'bounce_creature': {
       if (!opts.targetId) return pushLog(next, 'needTarget', 'info')
@@ -391,6 +447,15 @@ function resolveEffect(
           ),
         },
       }
+      next = addFxPop(
+        next,
+        {
+          targetId: opts.selfId,
+          kind: 'buff',
+          label: `+${effect.power}/+${effect.toughness}`,
+        },
+        'buff',
+      )
       return pushLog(next, 'etbPump', 'good', {
         n: effect.power,
         name:
@@ -407,6 +472,11 @@ function resolveEffect(
         ...next,
         flags: { ...next.flags, preventCombatDamageThisTurn: true },
       }
+      next = addFxPop(
+        next,
+        { targetId: FX_PLAYER_LIFE, kind: 'status', label: 'Fog' },
+        'status',
+      )
       return pushLog(next, 'castFog', 'good')
     }
     case 'pump_target': {
@@ -430,9 +500,15 @@ function resolveEffect(
           ),
         },
       }
+      const pt = `+${effect.power}/+${effect.toughness}`
+      next = addFxPop(
+        next,
+        { targetId: opts.targetId, kind: 'buff', label: pt },
+        'buff',
+      )
       next = pushLog(next, 'pumpCreature', 'good', {
         name: mine.name,
-        pt: `+${effect.power}/+${effect.toughness}`,
+        pt,
       })
       return applyHeroicTriggers(next, opts.targetId)
     }
@@ -442,7 +518,17 @@ function resolveEffect(
       const enemy = next.challenge.battlefield.find((c) => c.instanceId === opts.targetId)
       if (!fighter || !enemy) return pushLog(next, 'invalidTarget', 'info')
       next = pushLog(next, 'fight', 'info', { a: fighter.name, b: enemy.name })
-      next = applyDamageAny(next, effectivePower(next, fighter), enemy.instanceId, {
+      const fightPower = effectivePower(next, fighter)
+      next = setFx(next, 'attack', {
+        links: [
+          { from: fighter.instanceId, to: enemy.instanceId, tone: 'player' },
+          { from: enemy.instanceId, to: fighter.instanceId, tone: 'challenge' },
+        ],
+        pops: [
+          { targetId: fighter.instanceId, kind: 'attack', amount: fightPower },
+        ],
+      })
+      next = applyDamageAny(next, fightPower, enemy.instanceId, {
         deathtouch: creatureHasDeathtouch(fighter),
       })
       const enemyPower = enemy.power ?? 0
@@ -455,6 +541,13 @@ function resolveEffect(
     }
     case 'mill_draw': {
       next = millOwnLibrary(next, effect.mill)
+      if (effect.mill > 0) {
+        next = addFxPop(
+          next,
+          { targetId: FX_PLAYER_LIBRARY, kind: 'mill', amount: effect.mill },
+          'mill',
+        )
+      }
       next = pushLog(next, 'millSelf', 'info', { n: effect.mill })
       next = drawCards(next, effect.draw)
       return pushLog(next, 'drawCards', 'good', { n: effect.draw })
@@ -513,15 +606,35 @@ function resolveEffect(
       if (!opts.targetId) return pushLog(next, 'needTarget', 'info')
       const enemy = next.challenge.battlefield.find((c) => c.instanceId === opts.targetId)
       if (!enemy || enemy.isGod) return pushLog(next, 'invalidTarget', 'info')
+      // Nonland permanents: creatures, artifacts, enchantments (Heads/Revelers included).
+      const isPermanent =
+        enemy.power != null ||
+        enemy.isHead ||
+        enemy.isReveler ||
+        enemy.isMinotaur ||
+        enemy.isArtifact ||
+        enemy.isEnchantment
+      if (!isPermanent) return pushLog(next, 'invalidTarget', 'info')
       if (effect.nonlegendary && /legendary/i.test(enemy.typeLine)) {
         return pushLog(next, 'castDownLegendary', 'info', { name: enemy.name })
       }
       const wipeIds = effect.sameName
         ? next.challenge.battlefield
-            .filter((c) => !c.isGod && c.name === enemy.name)
+            .filter((c) => {
+              if (c.isGod || c.name !== enemy.name) return false
+              return (
+                c.power != null ||
+                c.isHead ||
+                c.isReveler ||
+                c.isMinotaur ||
+                c.isArtifact ||
+                c.isEnchantment
+              )
+            })
             .map((c) => c.instanceId)
         : [opts.targetId]
       for (const id of wipeIds) {
+        next = addFxPop(next, { targetId: id, kind: 'damage' }, 'damage')
         next = destroyChallengePermanent(next, id)
       }
       if (effect.sameName && wipeIds.length > 1) {
@@ -585,6 +698,11 @@ function resolveEffect(
           ),
         },
       }
+      next = addFxPop(
+        next,
+        { targetId: opts.targetId, kind: 'buff', label: '+1/+1' },
+        'buff',
+      )
       return applyHeroicTriggers(
         pushLog(next, 'fangs', 'good', { name: mine.name }),
         opts.targetId,
@@ -629,6 +747,13 @@ function resolveEffect(
       if (!opts.selfId) return next
       const milled = next.player.library.slice(0, effect.mill)
       const restLib = next.player.library.slice(milled.length)
+      if (effect.mill > 0) {
+        next = addFxPop(
+          next,
+          { targetId: FX_PLAYER_LIBRARY, kind: 'mill', amount: milled.length },
+          'mill',
+        )
+      }
       // Printed: may take a noncreature, nonland card; else +1/+1 counter.
       const loot = milled.find((c) => c.kind !== 'creature' && c.kind !== 'land')
       if (loot) {
@@ -659,6 +784,11 @@ function resolveEffect(
           ),
         },
       }
+      next = addFxPop(
+        next,
+        { targetId: opts.selfId, kind: 'buff', label: '+1/+1' },
+        'buff',
+      )
       return pushLog(next, 'fallajiCounter', 'good')
     }
     case 'etb_gain_life': {
@@ -666,6 +796,11 @@ function resolveEffect(
         ...next,
         player: { ...next.player, life: next.player.life + effect.amount },
       }
+      next = addFxPop(
+        next,
+        { targetId: FX_PLAYER_LIFE, kind: 'heal', amount: effect.amount },
+        'heal',
+      )
       return pushLog(next, 'etbGainLife', 'good', { n: effect.amount })
     }
     case 'etb_exile_opp_graveyard': {
@@ -679,6 +814,53 @@ function resolveEffect(
     default:
       return next
   }
+}
+
+/** Cast a cascade-exiled card without paying mana (not from hand). */
+function castCascadedCard(
+  state: GameState,
+  card: PlayerCardInstance,
+): GameState {
+  if (card.kind === 'creature') {
+    const hasHaste = card.keywords.some((k) => /haste/i.test(k))
+    const creature = applyHeroCreatureMods(state, {
+      instanceId: nextIdKeep(card.instanceId),
+      defId: card.defId,
+      templateId: card.defId,
+      name: card.name,
+      power: card.power ?? 0,
+      toughness: card.toughness ?? 0,
+      markedDamage: 0,
+      tapped: false,
+      summoningSickness: !hasHaste,
+      keywords: [...card.keywords],
+      image: card.image,
+      produces: card.produces ? [...card.produces] : undefined,
+      tempPower: 0,
+      tempToughness: 0,
+    })
+    let next: GameState = {
+      ...state,
+      player: {
+        ...state.player,
+        creatures: [...state.player.creatures, creature],
+      },
+    }
+    next = pushLog(next, 'cascadeCast', 'good', { name: card.name })
+    if (card.effect.type === 'goyf_cda') next = refreshGoyfStats(next)
+    return checkLegendarySba(next)
+  }
+  // Instant/sorcery — resolve effect then GY
+  let next = resolveEffect(state, card.effect, {})
+  next = {
+    ...next,
+    player: {
+      ...next.player,
+      graveyard: [card, ...next.player.graveyard],
+    },
+  }
+  next = pushLog(next, 'cascadeCast', 'good', { name: card.name })
+  return refreshGoyfStats(next)
 }
 
 export function castFromHand(
@@ -704,7 +886,14 @@ export function castFromHand(
   if (card.kind === 'sorcery' && state.playerPhase !== 'main') {
     return pushLog(state, 'sorceryMainOnly', 'info')
   }
-  if (card.kind === 'creature' && !hasFlash && state.playerPhase !== 'main') {
+  if (
+    (card.kind === 'creature' ||
+      card.kind === 'enchantment' ||
+      card.kind === 'artifact' ||
+      card.kind === 'planeswalker') &&
+    !hasFlash &&
+    state.playerPhase !== 'main'
+  ) {
     return pushLog(state, 'sorceryMainOnly', 'info')
   }
   if (
@@ -796,6 +985,9 @@ export function castFromHand(
   if (effect.type === 'destroy_creature' && !opts.targetId) {
     return { ...state, pendingCast: { handInstanceId: handId, mode: 'destroy' } }
   }
+  if (effect.type === 'etb_exile_until_leaves' && !opts.targetId) {
+    return { ...state, pendingCast: { handInstanceId: handId, mode: 'destroy' } }
+  }
   if (effect.type === 'bounce_creature' && !opts.targetId) {
     const kicked =
       effect.kicker && canAfford(state, `${card.manaCost}${effect.kicker.manaCost}`)
@@ -875,10 +1067,18 @@ export function castFromHand(
       },
     }
     return applyHeroicTriggers(
-      pushLog(next, 'bloodrush', 'good', {
-        name: card.name,
-        pt: `+${effect.power}/+${effect.toughness}`,
-      }),
+      addFxPop(
+        pushLog(next, 'bloodrush', 'good', {
+          name: card.name,
+          pt: `+${effect.power}/+${effect.toughness}`,
+        }),
+        {
+          targetId: opts.targetId,
+          kind: 'buff',
+          label: `+${effect.power}/+${effect.toughness}`,
+        },
+        'buff',
+      ),
       opts.targetId,
     )
   }
@@ -961,16 +1161,28 @@ export function castFromHand(
       effect.type === 'draw' ||
       effect.type === 'silvergill_draw' ||
       effect.type === 'etb_gain_life' ||
-      effect.type === 'etb_exile_opp_graveyard'
+      effect.type === 'etb_exile_opp_graveyard' ||
+      effect.type === 'etb_investigate'
     ) {
       if (effect.type === 'silvergill_draw') {
         next = resolveEffect(next, { type: 'draw', amount: 1 }, {
           selfId: creature.instanceId,
         })
+      } else if (effect.type === 'etb_investigate') {
+        next = createClueToken(next)
       } else {
         next = resolveEffect(next, effect, { selfId: creature.instanceId })
       }
     }
+    if (effect.type === 'goyf_cda') {
+      next = refreshGoyfStats(next)
+    }
+    if (effect.type === 'cascade') {
+      next = resolveCascade(next, card.cmc, (s, freeCard) =>
+        castCascadedCard(s, freeCard),
+      )
+    }
+    next = checkLegendarySba(next)
     if (effect.type === 'etb_tap_opp') {
       next = {
         ...next,
@@ -1009,27 +1221,146 @@ export function castFromHand(
         for (const p of growers) {
           next = pushLog(next, 'parishCounters', 'good', { name: p.name })
         }
+        next = addBuffPops(
+          next,
+          growers.map((g) => g.instanceId),
+          '+1/+1',
+        )
       }
     }
     // Lieutenant ETB: +1/+1 on each other Human
     if (effect.type === 'human_lieutenant') {
+      const humanIds = next.player.creatures
+        .filter(
+          (c) =>
+            c.instanceId !== creature.instanceId &&
+            creatureHasType(c, 'Human', next.playerDeckId),
+        )
+        .map((c) => c.instanceId)
       next = {
         ...next,
         player: {
           ...next.player,
           creatures: next.player.creatures.map((c) =>
-            c.instanceId !== creature.instanceId &&
-            creatureHasType(c, 'Human', next.playerDeckId)
+            humanIds.includes(c.instanceId)
               ? { ...c, power: c.power + 1, toughness: c.toughness + 1 }
               : c,
           ),
         },
       }
+      next = addBuffPops(next, humanIds, '+1/+1')
       next = pushLog(next, 'lieutenantEtb', 'good', { name: creature.name })
     }
     next = applySpiritEtbPumps(next, creature.instanceId)
     next = refreshSpiritsHaveFlash(next)
+    // Rattlechains: when it enters, a Spirit you control gains hexproof until EOT.
+    if (effect.type === 'spirits_have_flash') {
+      const spirits = next.player.creatures.filter((c) =>
+        creatureHasType(c, 'Spirit', next.playerDeckId),
+      )
+      if (spirits.length === 1) {
+        next = grantTempKeyword(next, spirits[0].instanceId, 'hexproof')
+      } else if (spirits.length > 1) {
+        next = {
+          ...next,
+          prompt: {
+            id: `rattle-${creature.instanceId}`,
+            kind: 'choose_rattlechains_hexproof',
+            titleKey: 'monstrousFightTitle',
+            messageKey: 'monstrousFightMsg',
+            resume: creature.instanceId,
+            options: spirits.map((s) => ({
+              id: s.instanceId,
+              labelKey: 'pumpTarget',
+              name: s.name,
+            })),
+          },
+        }
+      }
+    }
     return next
+  }
+
+  if (card.kind === 'enchantment') {
+    const enchantment = {
+      instanceId: nextIdKeep(card.instanceId),
+      defId: card.defId,
+      name: card.name,
+      image: card.image,
+    }
+    next = {
+      ...next,
+      player: {
+        ...next.player,
+        enchantments: [...next.player.enchantments, enchantment],
+      },
+    }
+    next = pushLog(next, 'castEnchantment', 'good', { name: card.name })
+    if (effect.type === 'etb_exile_until_leaves') {
+      if (!opts.targetId) {
+        return pushLog(next, 'needTarget', 'info')
+      }
+      next = linkExileChallengePermanent(next, opts.targetId, enchantment.instanceId)
+    }
+    next = applyProwessPumps(next)
+    return checkWinLoss(next)
+  }
+
+  if (card.kind === 'artifact') {
+    const artifact = {
+      instanceId: nextIdKeep(card.instanceId),
+      defId: card.defId,
+      name: card.name,
+      nameZh: card.nameZh,
+      typeLine: card.typeLine,
+      image: card.image,
+      tapped: false,
+      effect: card.effect,
+    }
+    next = {
+      ...next,
+      player: {
+        ...next.player,
+        artifacts: [...next.player.artifacts, artifact],
+      },
+    }
+    next = pushLog(next, 'castArtifact', 'good', { name: card.name })
+    if (effect.type === 'etb_investigate') {
+      next = createClueToken(next)
+    }
+    next = applyProwessPumps(next)
+    return checkWinLoss(next)
+  }
+
+  if (card.kind === 'planeswalker') {
+    const abilities = (card.loyaltyAbilities ?? []).map((a) => ({
+      cost: a.cost,
+      effect: { ...a.effect },
+    }))
+    const pw = {
+      instanceId: nextIdKeep(card.instanceId),
+      defId: card.defId,
+      name: card.name,
+      loyalty: card.startingLoyalty ?? 1,
+      loyaltyActivatedThisTurn: false,
+      image: card.image,
+      keywords: [...card.keywords],
+      effect: card.effect,
+      loyaltyAbilities: abilities,
+    }
+    next = {
+      ...next,
+      player: {
+        ...next.player,
+        planeswalkers: [...next.player.planeswalkers, pw],
+      },
+    }
+    next = pushLog(next, 'castPlaneswalker', 'good', {
+      name: card.name,
+      n: pw.loyalty,
+    })
+    next = applyProwessPumps(next)
+    return checkWinLoss(next)
   }
 
   next = resolveEffect(next, effect, opts)
@@ -1228,6 +1559,30 @@ export function resolveCrawlPrompt(
   return state
 }
 
+/** Activate a battlefield artifact (Clue: {2}, sac, draw). */
+export function activateArtifact(
+  state: GameState,
+  artifactId: string,
+): GameState {
+  if (state.status !== 'playing' || state.activeSide !== 'player') return state
+  if (state.playerPhase !== 'main' && state.playerPhase !== 'combat') {
+    return pushLog(state, 'cannotActivate', 'info')
+  }
+  const art = state.player.artifacts.find((a) => a.instanceId === artifactId)
+  if (!art) return pushLog(state, 'cannotActivate', 'info')
+
+  if (art.effect.type === 'activate_clue' || art.isClue) {
+    const paid = autoTapForCost(state, '{2}')
+    if (!paid) return pushLog(state, 'notEnoughMana', 'info')
+    let next = sacrificePlayerArtifact(paid, artifactId)
+    next = drawCards(next, 1)
+    next = pushLog(next, 'activateClue', 'good')
+    return checkWinLoss(next)
+  }
+
+  return pushLog(state, 'cannotActivate', 'info')
+}
+
 /** Double-click / activate a battlefield creature ability. */
 export function activateCreature(
   state: GameState,
@@ -1235,6 +1590,12 @@ export function activateCreature(
   opts: { targetId?: string } = {},
 ): GameState {
   if (state.status !== 'playing' || state.activeSide !== 'player') return state
+
+  const asArtifact = state.player.artifacts.find((a) => a.instanceId === creatureId)
+  if (asArtifact) {
+    return activateArtifact(state, creatureId)
+  }
+
   const creature = state.player.creatures.find((c) => c.instanceId === creatureId)
   if (!creature) {
     return pushLog(state, 'cannotActivate', 'info')
@@ -1297,7 +1658,24 @@ export function activateCreature(
 
   if (effect.type === 'activate_monstrosity') {
     if (creature.monstrous) return pushLog(state, 'alreadyMonstrous', 'info')
-    const paid = autoTapForCost(state, effect.manaCost)
+
+    let xValue = effect.power
+    let payCost = effect.manaCost
+    if (effect.variableX) {
+      let maxX = 0
+      for (let x = 20; x >= 0; x -= 1) {
+        const trial =
+          x > 0 ? `{${x}}${effect.manaCost}` : effect.manaCost
+        if (canAfford(state, trial)) {
+          maxX = x
+          break
+        }
+      }
+      xValue = maxX
+      payCost = maxX > 0 ? `{${maxX}}${effect.manaCost}` : effect.manaCost
+    }
+
+    const paid = autoTapForCost(state, payCost)
     if (!paid) return pushLog(state, 'notEnoughMana', 'info')
     let next: GameState = {
       ...paid,
@@ -1307,8 +1685,8 @@ export function activateCreature(
           c.instanceId === creatureId
             ? {
                 ...c,
-                power: c.power + effect.power,
-                toughness: c.toughness + effect.toughness,
+                power: c.power + xValue,
+                toughness: c.toughness + xValue,
                 monstrous: true,
                 tapped: true,
               }
@@ -1318,8 +1696,17 @@ export function activateCreature(
     }
     next = pushLog(next, 'monstrosity', 'good', {
       name: creature.name,
-      pt: `+${effect.power}/+${effect.toughness}`,
+      pt: `+${xValue}/+${xValue}`,
     })
+    next = addFxPop(
+      next,
+      {
+        targetId: creatureId,
+        kind: 'buff',
+        label: `M +${xValue}/+${xValue}`,
+      },
+      'buff',
+    )
     if (effect.thenDestroyFlyer) {
       const flyers = next.challenge.battlefield.filter(
         (c) =>
@@ -1347,14 +1734,22 @@ export function activateCreature(
         }
       }
     }
-    if (effect.thenFight) {
-      const foes = next.challenge.battlefield.filter((c) => !c.isGod && c.power != null)
-      if (foes.length === 1) {
+    const fightCount = effect.thenFightUpToX
+      ? xValue
+      : effect.thenFight
+        ? 1
+        : 0
+    if (fightCount > 0) {
+      const foes = next.challenge.battlefield.filter(
+        (c) => !c.isGod && c.power != null,
+      )
+      if (foes.length === 1 || (foes.length > 0 && fightCount === 1 && foes.length === 1)) {
         next = resolveEffect(next, { type: 'fight' }, {
           fighterId: creatureId,
           targetId: foes[0].instanceId,
         })
-      } else if (foes.length > 1) {
+      } else if (foes.length > 0) {
+        const remaining = Math.min(fightCount, foes.length)
         next = {
           ...next,
           prompt: {
@@ -1362,12 +1757,17 @@ export function activateCreature(
             kind: 'choose_monstrous_fight',
             titleKey: 'monstrousFightTitle',
             messageKey: 'monstrousFightMsg',
-            resume: creatureId,
-            options: foes.map((f) => ({
-              id: f.instanceId,
-              labelKey: 'fightTarget',
-              name: f.name,
-            })),
+            resume: `${creatureId}:${remaining}`,
+            options: [
+              ...foes.map((f) => ({
+                id: f.instanceId,
+                labelKey: 'fightTarget',
+                name: f.name,
+              })),
+              ...(remaining > 1
+                ? [{ id: 'done', labelKey: 'resolveCombat' as const }]
+                : []),
+            ],
           },
         }
       }
@@ -1426,6 +1826,16 @@ export function activateCreature(
       }
       next = pushLog(next, 'scavengeExile', 'good', { name: chPick.name })
       if (wasCreature) {
+        next = addFxPop(
+          next,
+          { targetId: creatureId, kind: 'buff', label: '+1/+1' },
+          'buff',
+        )
+        next = addFxPop(
+          next,
+          { targetId: FX_PLAYER_LIFE, kind: 'heal', amount: 1 },
+          'heal',
+        )
         next = pushLog(next, 'scavengeGrow', 'good', { name: creature.name })
       }
       return next
@@ -1452,12 +1862,151 @@ export function activateCreature(
     }
     next = pushLog(next, 'scavengeExile', 'good', { name: plPick.name })
     if (wasCreature) {
+      next = addFxPop(
+        next,
+        { targetId: creatureId, kind: 'buff', label: '+1/+1' },
+        'buff',
+      )
+      next = addFxPop(
+        next,
+        { targetId: FX_PLAYER_LIFE, kind: 'heal', amount: 1 },
+        'heal',
+      )
       next = pushLog(next, 'scavengeGrow', 'good', { name: creature.name })
     }
     return next
   }
 
   return pushLog(state, 'cannotActivate', 'info')
+}
+
+function loyaltyEffectNeedsTarget(effect: PlayerEffect): boolean {
+  return (
+    effect.type === 'damage_any' ||
+    effect.type === 'destroy_creature' ||
+    effect.type === 'pump_target' ||
+    effect.type === 'bounce_creature' ||
+    effect.type === 'fangs' ||
+    effect.type === 'etb_exile_until_leaves'
+  )
+}
+
+function formatLoyaltyCost(cost: number): string {
+  return cost > 0 ? `+${cost}` : `${cost}`
+}
+
+/** Double-click / activate a planeswalker loyalty ability (once per turn, main). */
+export function activatePlaneswalker(
+  state: GameState,
+  planeswalkerId: string,
+  opts: { targetId?: string; abilityIndex?: number } = {},
+): GameState {
+  if (state.status !== 'playing' || state.activeSide !== 'player') return state
+  if (state.playerPhase !== 'main') {
+    return pushLog(state, 'planeswalkerMainOnly', 'info')
+  }
+  const pw = state.player.planeswalkers.find(
+    (p) => p.instanceId === planeswalkerId,
+  )
+  if (!pw) return pushLog(state, 'cannotActivate', 'info')
+  if (pw.loyaltyActivatedThisTurn) {
+    return pushLog(state, 'planeswalkerAlreadyActivated', 'info', {
+      name: pw.name,
+    })
+  }
+  const abilities = pw.loyaltyAbilities
+  if (!abilities.length) return pushLog(state, 'cannotActivate', 'info')
+
+  let abilityIndex = opts.abilityIndex
+  if (abilityIndex == null) {
+    if (abilities.length > 1 && !opts.targetId) {
+      return {
+        ...state,
+        prompt: {
+          id: `loyalty-${planeswalkerId}`,
+          kind: 'choose_loyalty',
+          titleKey: 'loyaltyTitle',
+          messageKey: 'loyaltyMsg',
+          messageParams: { name: pw.name },
+          resume: planeswalkerId,
+          options: abilities.map((a, i) => ({
+            id: String(i),
+            labelKey: 'loyaltyOpt',
+            name: `${formatLoyaltyCost(a.cost)}`,
+            labelParams: { cost: formatLoyaltyCost(a.cost) },
+          })),
+        },
+      }
+    }
+    abilityIndex = 0
+  }
+
+  const ability = abilities[abilityIndex]
+  if (!ability) return pushLog(state, 'cannotActivate', 'info')
+  if (ability.cost < 0 && pw.loyalty < -ability.cost) {
+    return pushLog(state, 'notEnoughLoyalty', 'info', { name: pw.name })
+  }
+
+  if (loyaltyEffectNeedsTarget(ability.effect) && !opts.targetId) {
+    const mode =
+      ability.effect.type === 'destroy_creature'
+        ? 'destroy'
+        : ability.effect.type === 'pump_target' || ability.effect.type === 'fangs'
+          ? ability.effect.type === 'fangs'
+            ? 'fangs'
+            : 'pump'
+          : ability.effect.type === 'bounce_creature'
+            ? 'bounce'
+            : 'damage'
+    return {
+      ...state,
+      prompt: null,
+      pendingCast: {
+        handInstanceId: planeswalkerId,
+        mode,
+        activatePlaneswalkerId: planeswalkerId,
+        loyaltyAbilityIndex: abilityIndex,
+      },
+    }
+  }
+
+  let next: GameState = {
+    ...state,
+    prompt: null,
+    pendingCast: null,
+    player: {
+      ...state.player,
+      planeswalkers: state.player.planeswalkers.map((p) =>
+        p.instanceId === planeswalkerId
+          ? {
+              ...p,
+              loyalty: p.loyalty + ability.cost,
+              loyaltyActivatedThisTurn: true,
+            }
+          : p,
+      ),
+    },
+  }
+  next = pushLog(next, 'activateLoyalty', 'good', {
+    name: pw.name,
+    cost: formatLoyaltyCost(ability.cost),
+  })
+  next = addFxPop(
+    next,
+    {
+      targetId: planeswalkerId,
+      kind: ability.cost >= 0 ? 'buff' : 'debuff',
+      label: formatLoyaltyCost(ability.cost),
+      amount: Math.abs(ability.cost),
+    },
+    ability.cost >= 0 ? 'buff' : 'debuff',
+  )
+  next = resolveEffect(next, ability.effect, {
+    targetId: opts.targetId,
+    selfId: planeswalkerId,
+  })
+  next = checkPlaneswalkerSba(next)
+  return checkWinLoss(next)
 }
 
 /** Cast a flashback card from the graveyard. */
@@ -1580,8 +2129,58 @@ export function resolveMonstrousFight(
   state: GameState,
   fighterId: string,
   targetId: string,
+  remainingAfter = 0,
 ): GameState {
-  return resolveEffect(state, { type: 'fight' }, { fighterId, targetId })
+  if (targetId === 'done') {
+    return { ...state, prompt: null }
+  }
+  let next = resolveEffect(state, { type: 'fight' }, { fighterId, targetId })
+  const left = remainingAfter - 1
+  if (left <= 0) return next
+  const foes = next.challenge.battlefield.filter(
+    (c) => !c.isGod && c.power != null && c.instanceId !== targetId,
+  )
+  if (foes.length === 0) return next
+  return {
+    ...next,
+    prompt: {
+      id: `mfight-${fighterId}-${left}`,
+      kind: 'choose_monstrous_fight',
+      titleKey: 'monstrousFightTitle',
+      messageKey: 'monstrousFightMsg',
+      resume: `${fighterId}:${left}`,
+      options: [
+        ...foes.map((f) => ({
+          id: f.instanceId,
+          labelKey: 'fightTarget' as const,
+          name: f.name,
+        })),
+        { id: 'done', labelKey: 'resolveCombat' as const },
+      ],
+    },
+  }
+}
+
+export function grantTempKeyword(
+  state: GameState,
+  creatureId: string,
+  keyword: string,
+): GameState {
+  return {
+    ...state,
+    prompt: null,
+    player: {
+      ...state.player,
+      creatures: state.player.creatures.map((c) => {
+        if (c.instanceId !== creatureId) return c
+        const keywords = c.keywords.includes(keyword)
+          ? c.keywords
+          : [...c.keywords, keyword]
+        const tempKeywords = [...(c.tempKeywords ?? []), keyword]
+        return { ...c, keywords, tempKeywords }
+      }),
+    },
+  }
 }
 
 export function clearTempPumps(state: GameState): GameState {

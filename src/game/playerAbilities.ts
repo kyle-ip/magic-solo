@@ -1,5 +1,6 @@
 import { findCardDef, type PlayerEffect } from './playerDecks'
 import { heroBoost } from './heroes'
+import { addBuffPops, addFxPop } from './fx'
 import { pushLog } from './log'
 import type { GameState, PlayerCreature } from './types'
 
@@ -106,9 +107,32 @@ export function anthemBonus(
   return { power, toughness }
 }
 
-export function creatureKeywords(creature: PlayerCreature): string[] {
-  if (!creature.bestowed?.keywords?.length) return creature.keywords
-  return [...new Set([...creature.keywords, ...creature.bestowed.keywords])]
+export function creatureKeywords(
+  creature: PlayerCreature,
+  state?: GameState,
+): string[] {
+  const set = new Set(creature.keywords)
+  if (creature.bestowed?.keywords?.length) {
+    for (const k of creature.bestowed.keywords) set.add(k)
+  }
+  if (creature.tempKeywords?.length) {
+    for (const k of creature.tempKeywords) set.add(k)
+  }
+  if (state) {
+    for (const other of state.player.creatures) {
+      if (other.instanceId === creature.instanceId) continue
+      const def = findCardDef(other.defId, state.playerDeckId)
+      const eff = def?.effect
+      if (eff?.type === 'anthem_creature_type' && eff.grantKeywords?.length) {
+        if (
+          creatureHasType(creature, eff.creatureType, state.playerDeckId)
+        ) {
+          for (const k of eff.grantKeywords) set.add(k)
+        }
+      }
+    }
+  }
+  return [...set]
 }
 
 export function effectivePower(state: GameState, creature: PlayerCreature): number {
@@ -120,6 +144,44 @@ export function effectiveToughness(
   creature: PlayerCreature,
 ): number {
   return creature.toughness + anthemBonus(state, creature).toughness
+}
+
+export function hasProtectionFromMulticolored(creature: PlayerCreature): boolean {
+  return creatureKeywords(creature).some((k) =>
+    /protection from multicolored/i.test(k),
+  )
+}
+
+export function hasHexproof(creature: PlayerCreature): boolean {
+  return creatureKeywords(creature).some((k) => /hexproof/i.test(k))
+}
+
+/** True when a challenge source counts as multicolored (2+ colors). */
+export function challengeSourceIsMulticolored(source: {
+  keywords?: string[]
+  oracleText?: string
+  typeLine?: string
+}): boolean {
+  // Challenge cards are typically colorless; treat as multicolored only if
+  // oracle explicitly mentions multiple colors in a cost-like way — rare.
+  // Fallback: cards with no color identity are not multicolored.
+  void source
+  return false
+}
+
+/**
+ * Opponent effects cannot target this creature (hexproof / protection).
+ * Challenge sources are the opponent.
+ */
+export function canOpponentTargetPlayerCreature(
+  creature: PlayerCreature,
+  source?: { multicolored?: boolean },
+): boolean {
+  if (hasHexproof(creature)) return false
+  if (source?.multicolored && hasProtectionFromMulticolored(creature)) {
+    return false
+  }
+  return true
 }
 
 export function applyProwessPumps(state: GameState): GameState {
@@ -142,7 +204,11 @@ export function applyProwessPumps(state: GameState): GameState {
       ),
     },
   }
-  return pushLog(next, 'prowessTrigger', 'good', { n: pumps.length })
+  return addBuffPops(
+    pushLog(next, 'prowessTrigger', 'good', { n: pumps.length }),
+    pumps.map((c) => c.instanceId),
+    '+1/+1',
+  )
 }
 
 /** Goblin Guide–style attack trigger vs challenge library + attack pumps. */
@@ -177,6 +243,11 @@ export function applyAttackTriggers(
           name: a.name,
           n: pump,
         })
+        next = addFxPop(
+          next,
+          { targetId: a.instanceId, kind: 'buff', label: `+${pump}/+0` },
+          'buff',
+        )
       }
       continue
     }
@@ -204,6 +275,15 @@ export function applyAttackTriggers(
           name: a.name,
           pt: `+${eff.power}/+${eff.toughness}`,
         })
+        next = addFxPop(
+          next,
+          {
+            targetId: a.instanceId,
+            kind: 'buff',
+            label: `+${eff.power}/+${eff.toughness}`,
+          },
+          'buff',
+        )
       }
       continue
     }
@@ -241,7 +321,8 @@ export function isActivatableEffect(effect: PlayerEffect): boolean {
     effect.type === 'activate_draw' ||
     effect.type === 'activate_monstrosity' ||
     effect.type === 'activate_sac_exile_gy' ||
-    effect.type === 'scavenge_ooze'
+    effect.type === 'scavenge_ooze' ||
+    effect.type === 'activate_clue'
   )
 }
 
@@ -259,6 +340,12 @@ export function canActivateCreature(
   if (state.status !== 'playing' || state.activeSide !== 'player') return false
   if (state.pendingCast || state.prompt) return false
   if (state.playerPhase !== 'main' && state.playerPhase !== 'combat') return false
+
+  const art = state.player.artifacts.find((x) => x.instanceId === creatureId)
+  if (art) {
+    return art.effect.type === 'activate_clue' || Boolean(art.isClue)
+  }
+
   const c = state.player.creatures.find((x) => x.instanceId === creatureId)
   if (!c || c.tapped || c.summoningSickness) return false
   const effect = getCreatureEffect(state, c)
@@ -274,6 +361,20 @@ export function canActivateCreature(
     return true
   }
   return true
+}
+
+export function canActivatePlaneswalker(
+  state: GameState,
+  planeswalkerId: string,
+): boolean {
+  if (state.status !== 'playing' || state.activeSide !== 'player') return false
+  if (state.pendingCast || state.prompt) return false
+  if (state.playerPhase !== 'main') return false
+  const pw = state.player.planeswalkers.find(
+    (p) => p.instanceId === planeswalkerId,
+  )
+  if (!pw || pw.loyaltyActivatedThisTurn) return false
+  return pw.loyaltyAbilities.length > 0
 }
 
 function textHasKeyword(
@@ -340,11 +441,23 @@ export function formatEnhancementLabel(
   return parts.join(' ')
 }
 
-/** True when blocker can legally block this attacker (flying/reach). */
+/** True when blocker can legally block this attacker (flying/reach/islandwalk). */
 export function canBlockAttacker(
   blocker: { keywords: string[]; oracleText?: string },
-  attacker: { keywords: string[]; oracleText?: string },
+  attacker: {
+    keywords: string[]
+    oracleText?: string
+  },
+  defendingLands?: Array<{ typeLine: string }>,
 ): boolean {
+  const atkKw = [
+    ...(attacker.keywords ?? []),
+    ...(attacker.oracleText ? [attacker.oracleText] : []),
+  ].join(' ')
+  if (/islandwalk/i.test(atkKw) && defendingLands) {
+    const hasIsland = defendingLands.some((l) => /island/i.test(l.typeLine))
+    if (hasIsland) return false
+  }
   if (!creatureHasFlying(attacker)) return true
   return creatureHasFlying(blocker) || creatureHasReach(blocker)
 }

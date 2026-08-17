@@ -4,6 +4,8 @@ import { shuffle } from './shuffle'
 import type { GameState, PlayerCardInstance } from './types'
 import { pushLog } from './log'
 
+export const MAX_HAND_SIZE = 7
+
 export function makePlayerCardInstance(def: ConstructedCardDef): PlayerCardInstance {
   return {
     instanceId: nextId('pl'),
@@ -23,6 +25,13 @@ export function makePlayerCardInstance(def: ConstructedCardDef): PlayerCardInsta
     produces: def.produces ? [...def.produces] : undefined,
     effect: def.effect,
     flashback: def.flashback ? { ...def.flashback } : undefined,
+    startingLoyalty: def.startingLoyalty,
+    loyaltyAbilities: def.loyaltyAbilities
+      ? def.loyaltyAbilities.map((a) => ({
+          cost: a.cost,
+          effect: { ...a.effect },
+        }))
+      : undefined,
     image: def.image,
   }
 }
@@ -87,4 +96,47 @@ export function discardCards(state: GameState, n: number): GameState {
     next = pushLog(next, 'discardShort', 'info', { n: remaining })
   }
   return next
+}
+
+/** Discard one specific hand card to the graveyard. */
+export function discardCardById(state: GameState, instanceId: string): GameState {
+  const card = state.player.hand.find((c) => c.instanceId === instanceId)
+  if (!card) return state
+  let next: GameState = {
+    ...state,
+    player: {
+      ...state.player,
+      hand: state.player.hand.filter((c) => c.instanceId !== instanceId),
+      graveyard: [card, ...state.player.graveyard],
+    },
+  }
+  return pushLog(next, 'youDiscard', 'bad', { n: 1 })
+}
+
+/** Put one hand card on the bottom of the library. */
+export function putHandCardOnBottom(state: GameState, instanceId: string): GameState {
+  const card = state.player.hand.find((c) => c.instanceId === instanceId)
+  if (!card) return state
+  let next: GameState = {
+    ...state,
+    player: {
+      ...state.player,
+      hand: state.player.hand.filter((c) => c.instanceId !== instanceId),
+      library: [...state.player.library, card],
+    },
+  }
+  return pushLog(next, 'mulliganBottom', 'info', { name: card.name })
+}
+
+/** Shuffle the entire hand into the library (London mulligan). */
+export function shuffleHandIntoLibrary(state: GameState): GameState {
+  if (state.player.hand.length === 0) return state
+  return {
+    ...state,
+    player: {
+      ...state.player,
+      library: shuffle([...state.player.hand, ...state.player.library]),
+      hand: [],
+    },
+  }
 }

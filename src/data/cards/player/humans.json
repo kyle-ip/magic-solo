@@ -33,8 +33,8 @@
       "nameZh": "教区斗士",
       "typeLine": "Creature — Human Soldier",
       "typeLineZh": "生物～人类／士兵",
-      "oracleText": "Whenever another Human you control enters, put a +1/+1 counter on this creature.\n(Challenge: whenever another Human you control enters, this gets a +1/+1 counter.)",
-      "oracleTextZh": "每当另一个人类在你的操控下进战场时，在教区斗士上放置一个+1/+1指示物。\n（挑战：每当另一个由你操控的人类进场时，此生物获得一个+1/+1指示物。）",
+      "oracleText": "Whenever another Human you control enters, put a +1/+1 counter on this creature.",
+      "oracleTextZh": "每当另一个人类在你的操控下进战场时，在教区斗士上放置一个+1/+1指示物。",
       "manaCost": "{W}",
       "cmc": 1,
       "power": 1,
@@ -75,13 +75,15 @@
       "nameZh": "万神殿卫",
       "typeLine": "Creature — Human Soldier",
       "typeLineZh": "生物～人类／士兵",
-      "oracleText": "Protection from multicolored\nWhenever an opponent casts a multicolored spell, you gain 1 life.\n(Challenge: protection from multicolored omitted — 2/1 Human body.)",
-      "oracleTextZh": "反多色保护\n每当任一对手施放多色咒语时，你获得1点生命。\n（挑战：省略防多色——仅 2/1 人类身材。）",
+      "oracleText": "Protection from multicolored\nWhenever an opponent casts a multicolored spell, you gain 1 life.",
+      "oracleTextZh": "防多色保护\n每当对手施放多色咒语时，你获得1点生命。",
       "manaCost": "{W}",
       "cmc": 1,
       "power": 2,
       "toughness": 1,
-      "keywords": [],
+      "keywords": [
+        "protection from multicolored"
+      ],
       "kind": "creature",
       "effect": {
         "type": "none"
@@ -115,8 +117,8 @@
       "nameZh": "瑟班巡检官",
       "typeLine": "Creature — Human Soldier",
       "typeLineZh": "生物 — 人类／士兵",
-      "oracleText": "When this creature enters, investigate. (Create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")\n(Challenge: Clue omitted — enters and draws a card.)",
-      "oracleTextZh": "当瑟班巡检官进战场时，探查。（派出一个线索衍生物。它是具有「{2}，牺牲此神器：抓一张牌」的神器。）\n（挑战：省略线索——进场抓一张牌。）",
+      "oracleText": "When this creature enters, investigate. (Create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")",
+      "oracleTextZh": "当瑟班巡检官进战场时，探查。（派出一个线索衍生物。它是具有「{2}，牺牲此神器：抓一张牌」的神器。）",
       "manaCost": "{W}",
       "cmc": 1,
       "power": 1,
@@ -124,8 +126,7 @@
       "keywords": [],
       "kind": "creature",
       "effect": {
-        "type": "draw",
-        "amount": 1
+        "type": "etb_investigate"
       },
       "image": "assets/cards/player/08a5007f-06a0-40fa-a252-c38baa6b5c6f-normal.jpg"
     },
@@ -158,16 +159,16 @@
       "nameZh": "未知旅程",
       "typeLine": "Enchantment",
       "typeLineZh": "结界",
-      "oracleText": "When this enchantment enters, exile target creature.\nWhen this enchantment leaves the battlefield, return the exiled card to the battlefield under its owner's control.\n(Challenge: exile is treated as destroying the challenge permanent.)",
-      "oracleTextZh": "当未知旅程进战场时，放逐目标生物。\n当未知旅程离开战场时，将所放逐的牌在其拥有者的操控下移回战场。\n（挑战：放逐按消灭挑战永久物处理。）",
+      "oracleText": "When this enchantment enters, exile target creature.\nWhen this enchantment leaves the battlefield, return the exiled card to the battlefield under its owner's control.",
+      "oracleTextZh": "当未知旅程进战场时，放逐目标生物。\n当未知旅程离开战场时，将所放逐的牌在其拥有者的操控下移回战场。",
       "manaCost": "{1}{W}",
       "cmc": 2,
       "power": null,
       "toughness": null,
       "keywords": [],
-      "kind": "sorcery",
+      "kind": "enchantment",
       "effect": {
-        "type": "destroy_creature"
+        "type": "etb_exile_until_leaves"
       },
       "image": "assets/cards/player/4686b51c-e02b-48c1-bafe-e8d08a5407b9-normal.jpg"
     },
@@ -178,22 +179,22 @@
       "nameZh": "驱逐明光",
       "typeLine": "Enchantment",
       "typeLineZh": "结界",
-      "oracleText": "When this enchantment enters, exile target nonland permanent an opponent controls until this enchantment leaves the battlefield.\n(Challenge: exile is treated as destroying the challenge permanent.)",
-      "oracleTextZh": "当驱逐明光进战场时，放逐目标由对手操控的非地永久物，直到驱逐明光离开战场为止。\n（挑战：放逐按消灭挑战永久物处理。）",
+      "oracleText": "When this enchantment enters, exile target nonland permanent an opponent controls until this enchantment leaves the battlefield.",
+      "oracleTextZh": "当驱逐明光进战场时，放逐目标由对手操控的非地永久物，直到驱逐明光离开战场为止。",
       "manaCost": "{2}{W}",
       "cmc": 3,
       "power": null,
       "toughness": null,
       "keywords": [],
-      "kind": "sorcery",
+      "kind": "enchantment",
       "effect": {
-        "type": "destroy_creature"
+        "type": "etb_exile_until_leaves"
       },
       "image": "assets/cards/player/d53c7e49-745d-48ba-bc50-240472a4f039-normal.jpg"
     },
     {
       "id": "8ab0f4c0-b331-4c57-b68f-2e24bb5ba06c",
-      "quantity": 30,
+      "quantity": 29,
       "name": "Plains",
       "nameZh": "平原",
       "typeLine": "Basic Land — Plains",
@@ -213,6 +214,44 @@
         "type": "none"
       },
       "image": "assets/cards/player/8ab0f4c0-b331-4c57-b68f-2e24bb5ba06c-normal.jpg"
+    },
+    {
+      "id": "187e887c-c39d-4d25-a506-cdc95fc70316",
+      "quantity": 1,
+      "name": "Gideon, Ally of Zendikar",
+      "nameZh": "赞迪卡盟友基定",
+      "typeLine": "Legendary Planeswalker — Gideon",
+      "typeLineZh": "传奇鹏洛客",
+      "oracleText": "+1: (Challenge ability)\\n-2: (Challenge ability)",
+      "oracleTextZh": "（挑战：简化忠诚异能；每回合限一次。）",
+      "manaCost": "{2}{W}{W}",
+      "cmc": 4,
+      "power": null,
+      "toughness": null,
+      "keywords": [],
+      "kind": "planeswalker",
+      "effect": {
+        "type": "none"
+      },
+      "startingLoyalty": 4,
+      "loyaltyAbilities": [
+        {
+          "cost": 1,
+          "effect": {
+            "type": "draw",
+            "amount": 1
+          }
+        },
+        {
+          "cost": -2,
+          "effect": {
+            "type": "pump_target",
+            "power": 2,
+            "toughness": 2
+          }
+        }
+      ],
+      "image": "assets/cards/player/187e887c-c39d-4d25-a506-cdc95fc70316-normal.jpg"
     }
   ]
 }

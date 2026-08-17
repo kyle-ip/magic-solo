@@ -42,7 +42,7 @@ import {
 import { getCardZh } from '../data/locale/cardsZh'
 import { deckMetaEn, deckMetaZh } from '../data/locale/deckMeta'
 import { coachTipKey } from '../game/coachTip'
-import { challengeAttackLinks, FX_HORDE, FX_PLAYER_LIFE } from '../game/fx'
+import { challengeAttackLinks, FX_HORDE, FX_PLAYER_LIFE, FX_PLAYER_LIBRARY } from '../game/fx'
 import {
   DEFAULT_PLAYER_DECK,
   findCardDef,
@@ -51,10 +51,11 @@ import {
   type PlayerDeckId,
 } from '../game/playerDecks'
 import { ManaCost } from '../components/ManaCost'
-import { canAffordCard } from '../game/playerCast'
+import { getHandCardCastBlockReason } from '../game/playerCast'
 import { HERO_DEFS, maxHeroesFor } from '../game/heroes'
 import {
   canActivateCreature,
+  canActivatePlaneswalker,
   canBlockAttacker,
   creatureEnhancement,
   effectivePower,
@@ -97,10 +98,7 @@ import {
   preloadChallengeImages,
   type ChallengePreloadProgress,
 } from '../utils/preloadChallengeImages'
-import {
-  useBoardExitGhosts,
-  type BoardExitGhost,
-} from '../hooks/useBoardExitGhosts'
+import { useBoardExitGhosts, BOARD_EXIT_MS, type BoardExitGhost } from '../hooks/useBoardExitGhosts'
 import {
   rectFromElement,
   useCardFlight,
@@ -118,7 +116,7 @@ import {
   playerLandsRowRect,
   zonePileRect,
 } from '../utils/cardFlightDom'
-import { isCoarsePointer } from '../utils/motionPrefs'
+import { isCoarsePointer, prefersReducedMotion } from '../utils/motionPrefs'
 import { setHideSiteChrome } from '../utils/siteChrome'
 import { clampPreviewPosition } from '../utils/previewFollow'
 import type { ArenaCounterBadge } from '../components/challenge/ArenaCard'
@@ -368,6 +366,26 @@ function resolvePromptPickCard(
         .join('\n'),
     }
   }
+  if (kind === 'choose_discard_hand') {
+    const card = state.player.hand.find((c) => c.instanceId === optionId)
+    if (!card) return null
+    return {
+      image: card.image,
+      name: card.name,
+      nameZh: card.nameZh || card.name,
+      text: [
+        zh ? card.typeLineZh || card.typeLine : card.typeLine,
+        card.kind === 'land'
+          ? ''
+          : card.power != null
+            ? `${card.power}/${card.toughness} · ${card.manaCost}`
+            : card.manaCost,
+        zh ? card.oracleTextZh || card.oracleText : card.oracleText,
+      ]
+        .filter(Boolean)
+        .join('\n'),
+    }
+  }
   if (kind === 'choose_crawl') {
     const card = state.player.graveyard.find((c) => c.instanceId === optionId)
     if (!card) return null
@@ -472,11 +490,14 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
     image: string
     name: string
     text?: string
+    hint?: string
     instanceId?: string
   } | null>(null)
   const [previewZoom, setPreviewZoom] = useState(false)
   const [previewPos, setPreviewPos] = useState({ x: 16, y: 72 })
-  const [inspect, setInspect] = useState<'graveyard' | 'player-graveyard' | null>(null)
+  const [inspect, setInspect] = useState<
+    'graveyard' | 'player-graveyard' | 'player-exile' | 'challenge-exile' | null
+  >(null)
   const [coachOn, setCoachOn] = useState(readCoachEnabled)
   const [logModalOpen, setLogModalOpen] = useState(false)
   const hasLlmKey = useHasLlmApiKey()
@@ -511,7 +532,11 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
     !over
   const landStacks = groupLandStacks(state.player.lands)
   const boardDensity = computeBoardDensity({
-    creatureCount: state.player.creatures.length,
+    creatureCount:
+      state.player.creatures.length +
+      (state.player.enchantments?.length ?? 0) +
+      (state.player.artifacts?.length ?? 0) +
+      (state.player.planeswalkers?.length ?? 0),
     landCount: state.player.lands.length,
     landStackCount: landStacks.length,
     opponentCount: state.challenge.battlefield.length,
@@ -555,10 +580,26 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
     }
   }, [playing])
 
+  const handOverPrompt =
+    state.prompt?.kind === 'choose_mulligan' ||
+    (state.prompt?.kind === 'choose_discard_hand' &&
+      String(state.prompt.resume ?? '').startsWith('mulligan_bottom:'))
+
+  // Opening mulligan / bottoming: keep the hand visible above the prompt.
+  useEffect(() => {
+    if (!playing || !handOverPrompt) return
+    setHandOpen(true)
+    if (!touchHandUi) setHandPinned(true)
+  }, [playing, handOverPrompt, touchHandUi, state.prompt?.id])
+
   useEffect(() => {
     if (!handOpen && !handPinned && !preview) return
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
+        if (handOverPrompt) {
+          setPreview(null)
+          return
+        }
         setHandOpen(false)
         setHandPinned(false)
         setPreview(null)
@@ -566,10 +607,11 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [handOpen, handPinned, preview])
+  }, [handOpen, handPinned, preview, handOverPrompt])
 
   useEffect(() => {
     if (!handOpen || handPinned || !touchHandUi) return
+    if (handOverPrompt) return
     const onPointerDown = (event: PointerEvent) => {
       const target = event.target as Node | null
       if (target && handShellRef.current?.contains(target)) return
@@ -579,7 +621,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
     }
     document.addEventListener('pointerdown', onPointerDown, true)
     return () => document.removeEventListener('pointerdown', onPointerDown, true)
-  }, [handOpen, handPinned, touchHandUi, preview])
+  }, [handOpen, handPinned, touchHandUi, preview, handOverPrompt])
 
   const toggleHandPin = useCallback(() => {
     if (handPinned) {
@@ -1081,9 +1123,17 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
   }, [postAsk, hasLlmKey, postAskLoading, state, formatLog, i18n.language, t])
 
   const attackLinks = useMemo(() => {
+    const liveEndpoints = new Set<string>([FX_HORDE, FX_PLAYER_LIFE])
+    for (const c of state.player.creatures) liveEndpoints.add(c.instanceId)
+    for (const c of state.challenge.battlefield) liveEndpoints.add(c.instanceId)
+    for (const p of state.player.planeswalkers) liveEndpoints.add(p.instanceId)
+
     const links: AttackLink[] = []
     const seen = new Set<string>()
     const push = (link: AttackLink) => {
+      // Drop arrows as soon as an endpoint leaves the battlefield so they do not
+      // linger on exit ghosts / flight-hidden cards.
+      if (!liveEndpoints.has(link.from) || !liveEndpoints.has(link.to)) return
       const key = `${link.from}->${link.to}:${link.tone ?? 'player'}`
       if (seen.has(key)) return
       seen.add(key)
@@ -1130,7 +1180,10 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
     state.activeSide,
     state.playerPhase,
     state.challengePhase,
-    state.prompt,
+    state.prompt?.kind,
+    state.player.creatures,
+    state.challenge.battlefield,
+    state.player.planeswalkers,
   ])
 
   const toggleCoach = useCallback(() => {
@@ -1202,6 +1255,14 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
   usePreviewCopyWheel(Boolean(preview), previewPaneRef)
 
   useEffect(() => {
+    const on = Boolean(preview && touchHandUi)
+    document.documentElement.classList.toggle('is-card-preview-open', on)
+    return () => {
+      document.documentElement.classList.remove('is-card-preview-open')
+    }
+  }, [preview, touchHandUi])
+
+  useEffect(() => {
     if (!preview || !touchHandUi) return
     const onPointerDown = (e: PointerEvent) => {
       const el = e.target
@@ -1255,9 +1316,11 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
 
   useEffect(() => {
     if (!state.fx) return
-    const t = window.setTimeout(() => act({ type: 'CLEAR_FX' }), 1150)
+    // Attack arrows resolve briefly; clear sooner so they do not outlive board exits.
+    const ms = state.fx.kind === 'attack' ? 720 : 1400
+    const t = window.setTimeout(() => act({ type: 'CLEAR_FX' }), ms)
     return () => window.clearTimeout(t)
-  }, [state.fx?.id, act])
+  }, [state.fx?.id, state.fx?.kind, act])
 
   useEffect(() => {
     if (state.status === 'setup') return
@@ -1388,6 +1451,14 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
     boardExitLive,
     state.status === 'playing',
   )
+
+  const softExitIds = useMemo(() => {
+    const ids = new Set<string>()
+    for (const c of state.challenge.exile) ids.add(c.instanceId)
+    for (const c of state.player.exile) ids.add(c.instanceId)
+    for (const c of state.challenge.library.slice(0, 8)) ids.add(c.instanceId)
+    return ids
+  }, [state.challenge.exile, state.player.exile, state.challenge.library])
 
   const { flights, enqueue } = useCardFlight()
   const [flightHiddenIds, setFlightHiddenIds] = useState<Set<string>>(
@@ -1561,7 +1632,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
     clearFlightHidden,
   ])
 
-  // Clear / leave board → owning side's graveyard
+  // Clear / leave board → route by destination (GY crack, bounce↑, exile)
   useEffect(() => {
     if (state.status !== 'playing') {
       prevBoardIdsRef.current = new Set(boardExitLive.map((c) => c.id))
@@ -1572,6 +1643,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
     const liveIds = new Set(boardExitLive.map((c) => c.id))
     const gone = [...prev].filter((id) => !liveIds.has(id))
     prevBoardIdsRef.current = liveIds
+    const reduced = prefersReducedMotion()
     for (const id of gone) {
       if (seenExitFlightRef.current.has(id)) continue
       seenExitFlightRef.current.add(id)
@@ -1579,20 +1651,55 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
       const meta = boardMetaCacheRef.current.get(id)
       const ghost = exitGhosts.find((g) => g.id === id)
       const image = ghost?.image ?? meta?.image
-      const zone = ghost?.zone ?? meta?.zone
-      if (!from || !image || !zone) continue
-      const toPlayer = zone.startsWith('player-')
-      enqueue({
-        id: `exit-${id}`,
-        imageUrl: flightImageUrl(image),
-        from,
-        to: () =>
-          zonePileRect(toPlayer ? 'player-graveyard' : 'challenge-graveyard'),
-        durationMs: isCoarsePointer() ? 280 : 380,
-        trail: false,
-      })
+      if (!from || !image) continue
+
+      const inChExile = state.challenge.exile.some((c) => c.instanceId === id)
+      const inPlExile = state.player.exile.some((c) => c.instanceId === id)
+      const inChLib = state.challenge.library.some((c) => c.instanceId === id)
+      const toPlayerSide = (meta?.zone ?? ghost?.zone ?? '').startsWith('player-')
+
+      let toZone: string
+      let crackMs: number
+      if (inChExile) {
+        toZone = 'challenge-exile'
+        crackMs = reduced ? 0 : 180
+      } else if (inPlExile) {
+        toZone = 'player-exile'
+        crackMs = reduced ? 0 : 180
+      } else if (inChLib) {
+        toZone = 'challenge-library'
+        crackMs = reduced ? 0 : 120
+      } else {
+        toZone = toPlayerSide ? 'player-graveyard' : 'challenge-graveyard'
+        crackMs = reduced
+          ? 0
+          : Math.min(420, Math.floor(BOARD_EXIT_MS * 0.55))
+      }
+
+      window.setTimeout(() => {
+        hideDuringFlight(id)
+        enqueue({
+          id: `exit-${id}`,
+          imageUrl: flightImageUrl(image),
+          from,
+          to: () => zonePileRect(toZone),
+          durationMs: isCoarsePointer() ? 280 : toZone.includes('graveyard') ? 480 : 360,
+          trail: !isCoarsePointer() && !toZone.includes('graveyard'),
+          onComplete: () => clearFlightHidden(id),
+        })
+      }, crackMs)
     }
-  }, [boardExitLive, exitGhosts, state.status, enqueue])
+  }, [
+    boardExitLive,
+    exitGhosts,
+    state.status,
+    state.challenge.exile,
+    state.player.exile,
+    state.challenge.library,
+    enqueue,
+    hideDuringFlight,
+    clearFlightHidden,
+  ])
 
   // Opponent cast: challenge library → battlefield
   useEffect(() => {
@@ -1908,9 +2015,16 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                   targetable={targetable}
                   hitFx={pop?.kind === 'damage'}
                   strikeFx={pop?.kind === 'attack'}
+                  buffFx={pop?.kind === 'buff'}
+                  debuffFx={pop?.kind === 'debuff'}
+                  statusFx={pop?.kind === 'status'}
                   floater={
                     pop
-                      ? { kind: pop.kind, amount: pop.amount }
+                      ? {
+                          kind: pop.kind,
+                          amount: pop.amount,
+                          label: pop.label,
+                        }
                       : null
                   }
                   badge={
@@ -1950,11 +2064,15 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
               )
             })}
                   {exitGhosts
-                    .filter((g) => g.zone === 'challenge-creatures')
+                    .filter(
+                      (g) =>
+                        g.zone === 'challenge-creatures' && !softExitIds.has(g.id),
+                    )
                     .map((g) => (
                       <ArenaCard
                         key={`exit-${g.id}`}
                         variant="board"
+                        instanceId={g.id}
                         dying
                         image={g.image}
                         name={g.name}
@@ -1981,11 +2099,15 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                   />
                 ))}
                 {exitGhosts
-                  .filter((g) => g.zone === 'challenge-others')
+                  .filter(
+                    (g) =>
+                      g.zone === 'challenge-others' && !softExitIds.has(g.id),
+                  )
                   .map((g) => (
                     <ArenaCard
                       key={`exit-${g.id}`}
                       variant="board"
+                      instanceId={g.id}
                       dying
                       image={g.image}
                       name={g.name}
@@ -2060,11 +2182,10 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                 {state.player.creatures.map((c) => {
               const selected = state.selectedAttackers.includes(c.instanceId)
               const aimed = Boolean(state.attackAssignments[c.instanceId])
-              const blocking = state.prompt?.kind === 'choose_blockers'
               const canDeclare =
                 state.activeSide === 'player' &&
                 !over &&
-                !blocking &&
+                state.prompt?.kind !== 'choose_blockers' &&
                 !c.tapped &&
                 !c.summoningSickness
               const label = zh
@@ -2078,7 +2199,8 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                 canDeclare &&
                 !selected &&
                 (inCombat || state.playerPhase === 'main')
-              const badge = blocking
+              const badge =
+                state.prompt?.kind === 'choose_blockers'
                 ? null
                 : pendingMine
                   ? t('challenge.badge.target')
@@ -2093,7 +2215,9 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
               const power = effectivePower(state, c)
               const toughness = effectiveToughness(state, c)
               const canAct =
-                canActivateCreature(state, c.instanceId) && !pendingMine && !blocking
+                canActivateCreature(state, c.instanceId) &&
+                !pendingMine &&
+                state.prompt?.kind !== 'choose_blockers'
               const enh = creatureEnhancement(state, c)
               const enhLabel = enh ? formatEnhancementLabel(enh) : null
               const def = findCardDef(c.defId, state.playerDeckId)
@@ -2139,10 +2263,17 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                   dimmed={c.summoningSickness || (c.tapped && !selected)}
                   hitFx={pop?.kind === 'damage'}
                   strikeFx={pop?.kind === 'attack'}
+                  buffFx={pop?.kind === 'buff'}
+                  debuffFx={pop?.kind === 'debuff'}
+                  statusFx={pop?.kind === 'status'}
                   enhancement={enhLabel}
                   floater={
                     pop
-                      ? { kind: pop.kind, amount: pop.amount }
+                      ? {
+                          kind: pop.kind,
+                          amount: pop.amount,
+                          label: pop.label,
+                        }
                       : null
                   }
                   badge={
@@ -2169,7 +2300,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                       })
                       return
                     }
-                    if (blocking) {
+                    if (state.prompt?.kind === 'choose_blockers') {
                       const attackers = state.revealed
                       if (!attackers.length) return
                       const legal = attackers.filter((a) => canBlockAttacker(c, a))
@@ -2230,12 +2361,213 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                 />
               )
             })}
+                {(state.player.enchantments ?? []).map((e) => {
+                  const label = zh
+                    ? (findCardDef(e.defId, state.playerDeckId)?.nameZh ?? e.name)
+                    : e.name
+                  const def = findCardDef(e.defId, state.playerDeckId)
+                  const linked = e.exiledInstanceId
+                    ? state.challenge.exile.find((c) => c.instanceId === e.exiledInstanceId)
+                    : undefined
+                  return (
+                    <ArenaCard
+                      key={e.instanceId}
+                      variant="board"
+                      instanceId={e.instanceId}
+                      image={e.image}
+                      name={label}
+                      manaCost={def?.manaCost}
+                      keywords={def?.keywords}
+                      zhLabels={zh}
+                      showPt={false}
+                      badge={linked ? (zh ? '放逐' : 'Exile') : null}
+                      note={
+                        linked
+                          ? zh
+                            ? `放逐：${linked.name}`
+                            : `Exiling: ${linked.name}`
+                          : null
+                      }
+                      onMouseEnter={
+                        touchHandUi
+                          ? undefined
+                          : (ev) => {
+                              placePreview(
+                                {
+                                  image: e.image,
+                                  name: label,
+                                  text: def
+                                    ? `${zh ? def.typeLineZh : def.typeLine}\n${
+                                        zh ? def.oracleTextZh : def.oracleText
+                                      }`
+                                    : '',
+                                  instanceId: e.instanceId,
+                                },
+                                ev,
+                              )
+                            }
+                      }
+                      onMouseLeave={touchHandUi ? undefined : clearPreview}
+                    />
+                  )
+                })}
+                {(state.player.artifacts ?? []).map((a) => {
+                  const label = zh ? (a.nameZh ?? a.name) : a.name
+                  const blockingNow = state.prompt?.kind === 'choose_blockers'
+                  const canAct =
+                    canActivateCreature(state, a.instanceId) && !blockingNow
+                  return (
+                    <ArenaCard
+                      key={a.instanceId}
+                      variant="board"
+                      instanceId={a.instanceId}
+                      image={a.image}
+                      name={label}
+                      zhLabels={zh}
+                      showPt={false}
+                      tapped={a.tapped}
+                      badge={canAct ? t('challenge.badge.activate') : null}
+                      note={canAct ? t('challenge.activateHint') : null}
+                      onDoubleClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        if (over) return
+                        if (canActivateCreature(state, a.instanceId)) {
+                          act({ type: 'ACTIVATE', creatureId: a.instanceId })
+                        }
+                      }}
+                      onMouseEnter={
+                        touchHandUi
+                          ? undefined
+                          : (ev) => {
+                              placePreview(
+                                {
+                                  image: a.image,
+                                  name: label,
+                                  text: a.typeLine,
+                                  instanceId: a.instanceId,
+                                },
+                                ev,
+                              )
+                            }
+                      }
+                      onMouseLeave={touchHandUi ? undefined : clearPreview}
+                    />
+                  )
+                })}
+                {state.player.planeswalkers.map((pw) => {
+                  const label = zh
+                    ? (findCardDef(pw.defId, state.playerDeckId)?.nameZh ?? pw.name)
+                    : pw.name
+                  const pendingDamage = state.pendingCast?.mode === 'damage'
+                  const canAct =
+                    canActivatePlaneswalker(state, pw.instanceId) && !pendingDamage
+                  const pop = fxFor(pw.instanceId)
+                  const def = findCardDef(pw.defId, state.playerDeckId)
+                  return (
+                    <ArenaCard
+                      key={pw.instanceId}
+                      variant="board"
+                      instanceId={pw.instanceId}
+                      image={pw.image}
+                      name={label}
+                      manaCost={def?.manaCost}
+                      keywords={pw.keywords?.length ? pw.keywords : def?.keywords}
+                      zhLabels={zh}
+                      loyalty={pw.loyalty}
+                      showPt
+                      targetable={pendingDamage}
+                      dimmed={pw.loyaltyActivatedThisTurn}
+                      hitFx={pop?.kind === 'damage'}
+                      buffFx={pop?.kind === 'buff'}
+                      debuffFx={pop?.kind === 'debuff'}
+                      statusFx={pop?.kind === 'status'}
+                      floater={
+                        pop
+                          ? {
+                              kind: pop.kind,
+                              amount: pop.amount,
+                              label: pop.label,
+                            }
+                          : null
+                      }
+                      badge={
+                        canAct
+                          ? t('challenge.badge.activate')
+                          : pendingDamage
+                            ? t('challenge.badge.target')
+                            : null
+                      }
+                      note={canAct ? t('challenge.activateHint') : null}
+                      onDoubleClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        if (over) return
+                        if (canActivatePlaneswalker(state, pw.instanceId)) {
+                          act({ type: 'ACTIVATE', creatureId: pw.instanceId })
+                        }
+                      }}
+                      onClick={() => {
+                        if (over) return
+                        if (state.pendingCast?.mode === 'damage') {
+                          act({
+                            type: 'ASSIGN_TARGET',
+                            attackerId: '',
+                            targetId: pw.instanceId,
+                          })
+                        }
+                      }}
+                      onMouseEnter={
+                        touchHandUi
+                          ? undefined
+                          : (e) => {
+                              const tpl = findCardDef(pw.defId, state.playerDeckId)
+                              placePreview(
+                                {
+                                  image: pw.image,
+                                  name: label,
+                                  text: tpl
+                                    ? `${zh ? tpl.typeLineZh : tpl.typeLine}\n${pw.loyalty}\n${
+                                        zh ? tpl.oracleTextZh : tpl.oracleText
+                                      }`
+                                    : String(pw.loyalty),
+                                  instanceId: pw.instanceId,
+                                },
+                                e,
+                              )
+                            }
+                      }
+                      onMouseLeave={touchHandUi ? undefined : clearPreview}
+                      onLongPress={
+                        touchHandUi
+                          ? () => {
+                              const tpl = findCardDef(pw.defId, state.playerDeckId)
+                              toggleTouchPreview({
+                                image: pw.image,
+                                name: label,
+                                text: tpl
+                                  ? `${zh ? tpl.typeLineZh : tpl.typeLine}\n${pw.loyalty}\n${
+                                      zh ? tpl.oracleTextZh : tpl.oracleText
+                                    }`
+                                  : String(pw.loyalty),
+                                instanceId: pw.instanceId,
+                              })
+                            }
+                          : undefined
+                      }
+                    />
+                  )
+                })}
                 {exitGhosts
-                  .filter((g) => g.zone === 'player-creatures')
+                  .filter(
+                    (g) =>
+                      g.zone === 'player-creatures' && !softExitIds.has(g.id),
+                  )
                   .map((g) => (
                     <ArenaCard
                       key={`exit-${g.id}`}
                       variant="board"
+                      instanceId={g.id}
                       dying
                       image={g.image}
                       name={g.name}
@@ -2267,11 +2599,14 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                     )
                   })}
                   {exitGhosts
-                    .filter((g) => g.zone === 'player-lands')
+                    .filter(
+                      (g) => g.zone === 'player-lands' && !softExitIds.has(g.id),
+                    )
                     .map((g) => (
                       <ArenaCard
                         key={`exit-${g.id}`}
                         variant="board"
+                        instanceId={g.id}
                         dying
                         image={g.image}
                         name={g.name}
@@ -2343,6 +2678,13 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
             kind="graveyard"
             dataZone="challenge-graveyard"
             onClick={() => setInspect('graveyard')}
+          />
+          <ZonePile
+            label={t('challenge.exile')}
+            count={state.challenge.exile.length}
+            kind="exile"
+            dataZone="challenge-exile"
+            onClick={() => setInspect('challenge-exile')}
           />
           <div className="zone-pile-wrap" data-instance-id={FX_HORDE}>
             <ZonePile
@@ -2429,7 +2771,13 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
         </AppOverlay>
       ) : null}
 
-      {state.fx ? (
+      {state.fx &&
+      (state.fx.kind === 'damage' ||
+        state.fx.kind === 'attack' ||
+        state.fx.kind === 'heal' ||
+        state.fx.kind === 'mill' ||
+        state.fx.kind === 'cast' ||
+        state.fx.kind === 'enter') ? (
         <div className={`fx-toast kind-${state.fx.kind}`} key={state.fx.id}>
           {state.fx.label ?? state.fx.kind}
           {state.fx.amount != null ? ` ${state.fx.amount}` : ''}
@@ -2442,7 +2790,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
         </CoachTipPanel>
       ) : null}
 
-      <div className="player-dock">
+      <div className={`player-dock${handOverPrompt ? ' is-above-prompt' : ''}`}>
         <div className="arena-player-chrome is-you challenge-zone-piles">
           <div className="player-life-stack">
             <PlayerPhaseMark
@@ -2463,7 +2811,12 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
             <div
               className={`life-orb is-you ${
                 fxFor(FX_PLAYER_LIFE)?.kind === 'damage' ? 'is-hit' : ''
-              }`}
+              }${
+                fxFor(FX_PLAYER_LIFE)?.kind === 'status' ||
+                state.flags.preventCombatDamageThisTurn
+                  ? ' is-fog-fx'
+                  : ''
+              }${fxFor(FX_PLAYER_LIFE)?.kind === 'heal' ? ' is-heal-fx' : ''}`}
               data-instance-id={FX_PLAYER_LIFE}
             >
               <span className="life-orb-label">{t('challenge.life')}</span>
@@ -2475,8 +2828,13 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                 <span
                   className={`combat-floater kind-${fxFor(FX_PLAYER_LIFE)!.kind} chrome-floater`}
                 >
-                  {fxFor(FX_PLAYER_LIFE)!.kind === 'heal' ? '+' : '−'}
-                  {fxFor(FX_PLAYER_LIFE)!.amount ?? 0}
+                  {fxFor(FX_PLAYER_LIFE)!.label
+                    ? fxFor(FX_PLAYER_LIFE)!.label
+                    : fxFor(FX_PLAYER_LIFE)!.kind === 'heal'
+                      ? `+${fxFor(FX_PLAYER_LIFE)!.amount ?? 0}`
+                      : fxFor(FX_PLAYER_LIFE)!.kind === 'status'
+                        ? 'Fog'
+                        : `−${fxFor(FX_PLAYER_LIFE)!.amount ?? 0}`}
                 </span>
               ) : null}
             </div>
@@ -2493,6 +2851,13 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                 : undefined
             }
           />
+          <ZonePile
+            label={t('challenge.exile')}
+            count={state.player.exile.length}
+            kind="exile"
+            dataZone="player-exile"
+            onClick={() => setInspect('player-exile')}
+          />
           <div className="zone-pile-wrap">
             <ZonePile
               label={t('challenge.library')}
@@ -2500,8 +2865,16 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
               kind="library"
               dataZone="player-library"
             />
+            {fxFor(FX_PLAYER_LIBRARY) ? (
+              <span className="combat-floater kind-mill chrome-floater">
+                −{fxFor(FX_PLAYER_LIBRARY)!.amount ?? 0}
+              </span>
+            ) : null}
           </div>
-          <ManaPoolHud pool={state.player.manaPool} />
+          <ManaPoolHud
+            pool={state.player.manaPool}
+            emptyLabel={t('challenge.manaPoolEmpty')}
+          />
         </div>
 
         <div
@@ -2540,20 +2913,20 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
               }
             >
               {state.player.hand.map((card, i) => {
-                const unaffordable =
-                  !canAffordCard(state, card) ||
-                  state.flags.cannotCastSpells ||
-                  state.activeSide !== 'player' ||
-                  over ||
-                  (card.kind === 'sorcery' && state.playerPhase !== 'main') ||
-                  (card.kind === 'land' &&
-                    (state.playerPhase !== 'main' || state.player.landsPlayedThisTurn >= 1)) ||
-                  (card.kind !== 'instant' &&
-                    card.kind !== 'land' &&
-                    state.playerPhase !== 'main' &&
-                    state.playerPhase !== 'combat')
+                const discardPick =
+                  state.prompt?.kind === 'choose_discard_hand' &&
+                  state.prompt.options?.some((o) => o.id === card.instanceId)
+                const block = discardPick
+                  ? null
+                  : getHandCardCastBlockReason(state, card, { matchOver: over })
+                const unaffordable = block != null
                 const pending = state.pendingCast?.handInstanceId === card.instanceId
                 const selected = preview?.instanceId === card.instanceId
+                const castHint = block
+                  ? t(`challenge.prompt.${block.key}`, block.params)
+                  : discardPick
+                    ? t('challenge.prompt.mulliganBottomHandHint')
+                    : undefined
                 const previewPayload = {
                   image: card.image,
                   name: zh ? card.nameZh : card.name,
@@ -2568,6 +2941,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                   ]
                     .filter(Boolean)
                     .join('\n'),
+                  hint: castHint,
                   instanceId: card.instanceId,
                 }
                 return (
@@ -2575,13 +2949,18 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                     key={card.instanceId}
                     index={i}
                     instanceId={card.instanceId}
-                    unaffordable={unaffordable}
+                    unaffordable={unaffordable && !discardPick}
                     pending={pending}
                     selected={selected}
                     touchUi={touchHandUi}
                     flightHidden={flightHiddenIds.has(card.instanceId)}
                     image={card.image}
                     onCast={(from) => {
+                      if (discardPick) {
+                        dismissPreview()
+                        act({ type: 'ANSWER_PROMPT', optionId: card.instanceId })
+                        return
+                      }
                       if (pending) {
                         castFromRectRef.current.delete(card.instanceId)
                         castMetaRef.current.delete(card.instanceId)
@@ -2727,6 +3106,9 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                   {preview.text ? (
                     <p className="card-preview-text">{preview.text}</p>
                   ) : null}
+                  {preview.hint ? (
+                    <p className="card-preview-hint">{preview.hint}</p>
+                  ) : null}
                 </div>
               </div>
             </aside>,
@@ -2793,15 +3175,20 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
       />
 
       {state.prompt ? (
-        <div className="prompt-backdrop">
+        <div className={`prompt-backdrop${handOverPrompt ? ' is-hand-visible' : ''}`}>
           <div
             className={`prompt-shell${
               state.prompt.kind === 'scry' ? ' prompt-shell-scry' : ''
             }${
+              state.prompt.kind === 'choose_mulligan'
+                ? ' prompt-shell-cards prompt-shell-mulligan'
+                : ''
+            }${
               state.prompt.kind === 'brainstorm' ||
               state.prompt.kind === 'choose_crawl' ||
               state.prompt.kind === 'choose_crawl_zombie' ||
-              state.prompt.kind === 'choose_edict'
+              state.prompt.kind === 'choose_edict' ||
+              state.prompt.kind === 'choose_discard_hand'
                 ? ' prompt-shell-cards'
                 : ''
             }`}
@@ -2850,6 +3237,59 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                 )}
               </p>
             )}
+            {state.prompt.kind === 'choose_mulligan' ? (
+              <div
+                className="prompt-mulligan-hand"
+                role="list"
+                aria-label={t('challenge.prompt.mulliganHandLabel')}
+              >
+                {state.player.hand.map((card) => {
+                  const label = zh ? card.nameZh || card.name : card.name
+                  const text = [
+                    zh ? card.typeLineZh : card.typeLine,
+                    card.kind === 'land'
+                      ? t('challenge.land')
+                      : card.power != null
+                        ? `${card.power}/${card.toughness} · ${card.manaCost}`
+                        : card.manaCost,
+                    zh ? card.oracleTextZh : card.oracleText,
+                  ]
+                    .filter(Boolean)
+                    .join('\n')
+                  return (
+                    <button
+                      key={card.instanceId}
+                      type="button"
+                      className="prompt-pick-card"
+                      role="listitem"
+                      aria-label={label}
+                      onMouseEnter={(e) =>
+                        placePreview(
+                          { image: card.image, name: label, text },
+                          e,
+                        )
+                      }
+                      onMouseLeave={clearPreview}
+                      onClick={() =>
+                        placePreview({
+                          image: card.image,
+                          name: label,
+                          text,
+                        })
+                      }
+                    >
+                      <CardImage
+                        localPath={card.image}
+                        kind="normal"
+                        alt=""
+                        draggable={false}
+                      />
+                      <span className="prompt-pick-card-name">{label}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            ) : null}
             {state.prompt.kind === 'choose_blockers' && state.revealed.length > 0 ? (
               <div className="block-panel">
                 <p className="block-panel-label">{t('challenge.attackers')}</p>
@@ -2866,7 +3306,8 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
             {state.prompt.kind === 'brainstorm' ||
             state.prompt.kind === 'choose_crawl' ||
             state.prompt.kind === 'choose_crawl_zombie' ||
-            state.prompt.kind === 'choose_edict' ? (
+            state.prompt.kind === 'choose_edict' ||
+            state.prompt.kind === 'choose_discard_hand' ? (
               <div className="prompt-card-picker" role="listbox">
                 {(state.prompt.options ?? []).map((opt) => {
                   const picked = resolvePromptPickCard(
@@ -3100,6 +3541,131 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                   onClick={touchHandUi ? () => previewChallengeCard(c) : undefined}
                 />
               ))}
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {inspect === 'challenge-exile' ? (
+        <div
+          className="prompt-backdrop"
+          onClick={() => {
+            clearPreview()
+            setInspect(null)
+          }}
+        >
+          <div className="prompt-shell inspect-shell" onClick={(e) => e.stopPropagation()}>
+            <header className="inspect-shell-head">
+              <h2>{t('challenge.exile')}</h2>
+              <PackHeadIconButton
+                icon="close"
+                label={t('deck.close')}
+                onClick={() => setInspect(null)}
+              />
+            </header>
+            <div className="inspect-grid">
+              {state.challenge.exile.length === 0 ? (
+                <p className="inspect-shell-hint">{t('challenge.exileEmpty')}</p>
+              ) : (
+                state.challenge.exile.map((c) => (
+                  <ArenaCard
+                    key={c.instanceId}
+                    image={c.image}
+                    name={localizeName(c.name)}
+                    {...bindCardPreview(c)}
+                    onClick={touchHandUi ? () => previewChallengeCard(c) : undefined}
+                  />
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {inspect === 'player-exile' ? (
+        <div
+          className="prompt-backdrop"
+          onClick={() => {
+            clearPreview()
+            setInspect(null)
+          }}
+        >
+          <div className="prompt-shell inspect-shell" onClick={(e) => e.stopPropagation()}>
+            <header className="inspect-shell-head">
+              <h2>{t('challenge.exile')}</h2>
+              <PackHeadIconButton
+                icon="close"
+                label={t('deck.close')}
+                onClick={() => setInspect(null)}
+              />
+            </header>
+            <div className="inspect-grid">
+              {state.player.exile.length === 0 ? (
+                <p className="inspect-shell-hint">{t('challenge.exileEmpty')}</p>
+              ) : (
+                state.player.exile.map((c) => {
+                  const asCard = c as {
+                    name: string
+                    nameZh?: string
+                    oracleText?: string
+                    oracleTextZh?: string
+                    image: string
+                    instanceId: string
+                    power?: number | null
+                    toughness?: number | null
+                  }
+                  const label =
+                    zh && asCard.nameZh ? asCard.nameZh : asCard.name
+                  const oracle = (
+                    zh
+                      ? asCard.oracleTextZh || asCard.oracleText
+                      : asCard.oracleText
+                  )?.trim()
+                  return (
+                    <ArenaCard
+                      key={asCard.instanceId}
+                      image={asCard.image}
+                      name={label}
+                      power={
+                        typeof asCard.power === 'number'
+                          ? asCard.power
+                          : undefined
+                      }
+                      toughness={
+                        typeof asCard.toughness === 'number'
+                          ? asCard.toughness
+                          : undefined
+                      }
+                      onMouseEnter={
+                        touchHandUi
+                          ? undefined
+                          : (e) =>
+                              placePreview(
+                                {
+                                  image: asCard.image,
+                                  name: label,
+                                  text: oracle || undefined,
+                                  instanceId: asCard.instanceId,
+                                },
+                                e,
+                              )
+                      }
+                      onMouseLeave={touchHandUi ? undefined : clearPreview}
+                      onClick={
+                        touchHandUi
+                          ? () =>
+                              placePreview({
+                                image: asCard.image,
+                                name: label,
+                                text: oracle || undefined,
+                                instanceId: asCard.instanceId,
+                              })
+                          : undefined
+                      }
+                    />
+                  )
+                })
+              )}
             </div>
           </div>
         </div>

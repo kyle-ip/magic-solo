@@ -5,6 +5,7 @@ import {
   buryPlayerCreatures,
   damagePlayer,
   destroyChallengePermanent,
+  offerOpeningMulligan,
   revelersOf,
 } from './helpers'
 import { challengeAttackLinks, setFx } from './fx'
@@ -48,10 +49,11 @@ export function startGod(
       library,
       battlefield: [xenagos, ...throngs],
       graveyard: [],
+      exile: [],
     },
   }
   state = pushLog(state, 'godStart', 'info')
-  return beginPlayerTurn(state)
+  return offerOpeningMulligan(state)
 }
 
 function enterGodPermanent(state: GameState, card: CardInstance): GameState {
@@ -120,9 +122,29 @@ export function castGodCard(state: GameState, card: CardInstance): GameState {
       }
       return pushLog(next, 'impulsiveCharge', 'bad')
 
-    case 'Impulsive Destruction':
-      // Official: sac an artifact or enchantment, or take 3. Player Constructed
-      // lists have no artifact/enchantment permanents — only the damage choice.
+    case 'Impulsive Destruction': {
+      // Official: sac an artifact or enchantment, or take 3.
+      const options: Array<{
+        id: string
+        labelKey: 'take3Damage' | 'sacEnchantment' | 'sacArtifact'
+        name?: string
+      }> = [{ id: 'damage', labelKey: 'take3Damage' }]
+      for (const e of next.player.enchantments) {
+        options.push({
+          id: `ench:${e.instanceId}`,
+          labelKey: 'sacEnchantment',
+          name: e.name,
+        })
+      }
+      for (const a of next.player.artifacts) {
+        options.push({
+          id: `art:${a.instanceId}`,
+          labelKey: 'sacArtifact',
+          name: a.name,
+        })
+      }
+      const hasPerms =
+        next.player.enchantments.length > 0 || next.player.artifacts.length > 0
       return {
         ...next,
         challenge: {
@@ -133,11 +155,14 @@ export function castGodCard(state: GameState, card: CardInstance): GameState {
           id: `p-${Date.now()}`,
           kind: 'impulsive_destruction',
           titleKey: 'impulsiveDestruction',
-          messageKey: 'impulsiveDestructionMsg',
+          messageKey: hasPerms
+            ? 'impulsiveDestructionChoiceMsg'
+            : 'impulsiveDestructionMsg',
           resume: 'impulsive_destruction',
-          options: [{ id: 'damage', labelKey: 'take3Damage' }],
+          options,
         },
       }
+    }
 
     case 'Impulsive Return': {
       next = {

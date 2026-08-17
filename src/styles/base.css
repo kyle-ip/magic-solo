@@ -963,14 +963,14 @@ h2 {
 
 .home-hero-art {
   position: relative;
-  height: min(78vh, 720px);
-  min-height: 420px;
+  height: min(58vh, 500px);
+  min-height: 300px;
   perspective: 1100px;
 }
 
 .orbit-card {
   position: absolute;
-  width: min(62%, 360px);
+  width: min(46%, 250px);
   aspect-ratio: 744 / 1040;
   border-radius: var(--card-radius);
   overflow: hidden;
@@ -985,25 +985,27 @@ h2 {
   transform: scale(var(--card-img-scale));
   transform-origin: center center;
   will-change: transform;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.orbit-card.is-dragging {
+  animation: none;
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(224, 180, 90, 0.45);
 }
 
 .orbit-0 {
-  left: 4%;
-  top: 8%;
-  transform: rotate(-8deg) scale(var(--card-img-scale));
+  animation-delay: 0s;
 }
 
 .orbit-1 {
-  right: 2%;
-  top: 22%;
-  transform: rotate(7deg) scale(var(--card-img-scale));
   animation-delay: -2s;
 }
 
 .orbit-2 {
-  left: 26%;
-  bottom: 2%;
-  transform: rotate(2deg) scale(var(--card-img-scale));
   animation-delay: -4s;
 }
 
@@ -1401,8 +1403,7 @@ h2 {
   }
 
   .orbit-card {
-    width: min(48%, 11.5rem);
-    margin-inline: -1.15rem;
+    width: min(42%, 9.5rem);
   }
 
   .shared-rules,
@@ -1437,7 +1438,7 @@ h2 {
   }
 
   .deck-hero-card {
-    width: min(240px, 64vw);
+    width: min(190px, 52vw);
   }
 
   .cta-row {
@@ -1747,12 +1748,11 @@ h2 {
   }
 
   .orbit-card {
-    width: min(46%, 12rem);
-    margin-inline: -1.75rem;
+    width: min(40%, 10rem);
   }
 
   .deck-hero-card {
-    width: min(260px, 58vw);
+    width: min(210px, 48vw);
   }
 }
 
