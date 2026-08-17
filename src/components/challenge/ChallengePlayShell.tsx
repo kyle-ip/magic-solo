@@ -21,6 +21,7 @@ export function ChallengePlayShell({
       className={`arena-root is-playing is-challenge-fit theme-${theme}`}
       style={style}
     >
+      <div className="arena-scene-veil" aria-hidden="true" />
       {children}
     </main>
   )

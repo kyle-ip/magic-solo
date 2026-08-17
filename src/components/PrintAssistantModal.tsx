@@ -188,6 +188,7 @@ function settingsKey(s: PrintAssistantSettings): string {
     s.bleedMm,
     s.fillEmpty ? 1 : 0,
     s.flushCut ? 1 : 0,
+    s.showCutGuides ? 1 : 0,
   ].join('|')
 }
 
@@ -357,6 +358,7 @@ export function PrintAssistantModal({
         images,
         bleedMm: layoutOpts.bleedMm,
         fillEmpty: layoutOpts.fillEmpty,
+        showCutGuides: layoutOpts.showCutGuides,
         signal,
         onProgress: (done, total) => {
           setBakeDone(done)
@@ -581,6 +583,7 @@ export function PrintAssistantModal({
         layout: draftLayout,
         bleedMm: settings.bleedMm,
         fillEmpty: settings.fillEmpty,
+        showCutGuides: settings.showCutGuides,
       })
       // Drop print-only PNG blobs; keep preview normals for the open modal.
       deferRevokePrintImageStore(printStore, imageStore)
@@ -812,6 +815,16 @@ export function PrintAssistantModal({
                       }
                     />
                     <span>{t('printAssistant.fillEmpty')}</span>
+                  </label>
+                  <label className="print-assistant-option">
+                    <input
+                      type="checkbox"
+                      checked={settings.showCutGuides}
+                      onChange={(e) =>
+                        patchSettings({ showCutGuides: e.target.checked })
+                      }
+                    />
+                    <span>{t('printAssistant.showCutGuides')}</span>
                   </label>
                 </div>
               ) : null}

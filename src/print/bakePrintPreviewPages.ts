@@ -7,7 +7,7 @@ import {
   cardBleedRectMm,
   cardRectMm,
   cardsPerPage,
-  cutMarkLines,
+  cutGuideLines,
   emptySlotIndicesOnPage,
   indicesOnPage,
   pageCount,
@@ -20,6 +20,8 @@ export type BakePreviewOptions = {
   images: FetchedPrintImage[]
   bleedMm?: number
   fillEmpty?: boolean
+  /** Draw continuous cut guides (default true). */
+  showCutGuides?: boolean
   /** Target CSS width of the preview sheet (px). */
   cssWidth?: number
   signal?: AbortSignal
@@ -78,6 +80,7 @@ export async function bakePrintPreviewPages(
     images,
     bleedMm = 0,
     fillEmpty = true,
+    showCutGuides = true,
     cssWidth = 560,
     signal,
     onProgress,
@@ -92,7 +95,7 @@ export async function bakePrintPreviewPages(
   const sx = pxW / layout.pageW
   const sy = pxH / layout.pageH
   const pages = pageCount(images.length, layout)
-  const marks = cutMarkLines(layout)
+  const marks = showCutGuides ? cutGuideLines(layout) : []
   const per = Math.max(1, cardsPerPage(layout))
 
   onProgress?.(0, pages)
@@ -169,14 +172,20 @@ export async function bakePrintPreviewPages(
       }
     }
 
-    ctx.strokeStyle = 'rgba(80,80,80,0.85)'
-    ctx.lineWidth = Math.max(1, 0.35 * sx)
-    ctx.beginPath()
-    for (const line of marks) {
-      ctx.moveTo(line.x1 * sx, line.y1 * sy)
-      ctx.lineTo(line.x2 * sx, line.y2 * sy)
+    if (marks.length > 0) {
+      ctx.strokeStyle = 'rgba(170,170,170,0.85)'
+      ctx.lineWidth = Math.max(1, 0.4 * sx)
+      const dash = Math.max(2, 2 * sx)
+      const gap = Math.max(1.5, 1.5 * sx)
+      ctx.setLineDash([dash, gap])
+      ctx.beginPath()
+      for (const line of marks) {
+        ctx.moveTo(line.x1 * sx, line.y1 * sy)
+        ctx.lineTo(line.x2 * sx, line.y2 * sy)
+      }
+      ctx.stroke()
+      ctx.setLineDash([])
     }
-    ctx.stroke()
 
     const blob = await new Promise<Blob | null>((resolve) => {
       canvas.toBlob((b) => resolve(b), 'image/jpeg', 0.82)

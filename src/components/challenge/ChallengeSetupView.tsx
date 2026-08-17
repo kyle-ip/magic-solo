@@ -20,6 +20,7 @@ export function ChallengeSetupView({
   zh,
   assetLoading,
   assetProgress,
+  assetsReady = false,
   heads,
   hordeDelay,
   heroIds,
@@ -39,6 +40,8 @@ export function ChallengeSetupView({
   zh: boolean
   assetLoading: boolean
   assetProgress: { done: number; total: number }
+  /** Soft-warm finished for current setup config (Begin can enter immediately). */
+  assetsReady?: boolean
   heads: number
   hordeDelay: number
   heroIds: string[]
@@ -58,6 +61,7 @@ export function ChallengeSetupView({
       ? Math.round((assetProgress.done / assetProgress.total) * 100)
       : 0
   const maxHeroes = maxHeroesFor(code)
+  const warming = !assetsReady && assetProgress.total > 0
 
   return (
     <main className={`arena-root theme-${theme}`}>
@@ -66,10 +70,17 @@ export function ChallengeSetupView({
       <section className={`arena-setup${assetLoading ? ' is-preloading' : ''}`}>
         {assetLoading ? (
           <div className="setup-preload" role="status" aria-live="polite">
+            <div className="setup-preload-fx" aria-hidden="true">
+              <span className="setup-preload-card" />
+              <span className="setup-preload-card" />
+              <span className="setup-preload-card" />
+            </div>
+            <p className="setup-preload-title">{t('challenge.loadingTitle')}</p>
             <p>
               {t('challenge.loadingAssets', {
                 done: assetProgress.done,
                 total: assetProgress.total || '…',
+                pct: preloadPct,
               })}
             </p>
             <div className="setup-preload-bar" aria-hidden="true">
@@ -245,14 +256,21 @@ export function ChallengeSetupView({
             heroIds={heroIds}
             playerDeckId={playerDeckId}
           />
-          <button
-            type="button"
-            className={`btn primary${assetLoading ? ' is-busy' : ''}`}
-            disabled={assetLoading}
-            onClick={onBegin}
-          >
-            {assetLoading ? t('challenge.beginLoading') : t('challenge.begin')}
-          </button>
+          <div className="setup-cta-begin">
+            {warming && !assetLoading ? (
+              <p className="setup-warm-hint" role="status">
+                {t('challenge.warmingAssets', { pct: preloadPct })}
+              </p>
+            ) : null}
+            <button
+              type="button"
+              className={`btn primary${assetLoading ? ' is-busy' : ''}`}
+              disabled={assetLoading}
+              onClick={onBegin}
+            >
+              {assetLoading ? t('challenge.beginLoading') : t('challenge.begin')}
+            </button>
+          </div>
         </div>
       </section>
       {rosterModal}

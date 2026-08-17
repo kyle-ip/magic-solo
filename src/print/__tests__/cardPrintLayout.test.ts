@@ -6,6 +6,7 @@ import {
   cardRectMm,
   cardsPerPage,
   computeLayout,
+  cutGuideLines,
   cutMarkLines,
   emptySlotIndicesOnPage,
   indicesOnPage,
@@ -148,10 +149,73 @@ describe('cardPrintLayout', () => {
     }
   })
 
-  it('emits cut marks for grid corners', () => {
-    const a4 = computeLayout({ paper: 'a4', pageMargin: 7 })
-    expect(cutMarkLines(a4).length).toBeGreaterThan(0)
+  it('emits cut guides that span the full page for zero-gap grid', () => {
+    const a4 = computeLayout({ paper: 'a4', pageMargin: 7, gap: 0 })
+    expect(a4.cols).toBe(3)
+    expect(a4.rows).toBe(3)
+    const lines = cutGuideLines(a4)
+    // (rows+1) horizontals + (cols+1) verticals, each to page edge
+    expect(lines).toHaveLength(a4.rows + 1 + a4.cols + 1)
+
+    const horizontals = lines.filter((l) => l.y1 === l.y2)
+    const verticals = lines.filter((l) => l.x1 === l.x2)
+    expect(horizontals).toHaveLength(a4.rows + 1)
+    expect(verticals).toHaveLength(a4.cols + 1)
+
+    for (const h of horizontals) {
+      expect(h.x1).toBe(0)
+      expect(h.x2).toBeCloseTo(a4.pageW)
+    }
+    for (const v of verticals) {
+      expect(v.y1).toBe(0)
+      expect(v.y2).toBeCloseTo(a4.pageH)
+    }
+    expect(
+      verticals.some((v) => Math.abs(v.x1 - (a4.originX + a4.cardW)) < 1e-9),
+    ).toBe(true)
+    expect(
+      horizontals.some((h) => Math.abs(h.y1 - (a4.originY + a4.cardH)) < 1e-9),
+    ).toBe(true)
+
+    expect(cutMarkLines(a4)).toEqual(lines)
+  })
+
+  it('emits full-page guides at each card edge when gap > 0', () => {
     const gapped = computeLayout({ paper: 'a4', pageMargin: 7, gap: 2 })
-    expect(cutMarkLines(gapped).length).toBeGreaterThan(0)
+    const lines = cutGuideLines(gapped)
+    const xs = new Set<number>()
+    const ys = new Set<number>()
+    const per = cardsPerPage(gapped)
+    for (let i = 0; i < per; i++) {
+      const rect = cardRectMm(i, gapped)
+      xs.add(rect.x)
+      xs.add(rect.x + rect.w)
+      ys.add(rect.y)
+      ys.add(rect.y + rect.h)
+    }
+    expect(lines).toHaveLength(xs.size + ys.size)
+
+    for (const y of ys) {
+      expect(
+        lines.some(
+          (l) =>
+            Math.abs(l.y1 - y) < 1e-9 &&
+            Math.abs(l.y2 - y) < 1e-9 &&
+            l.x1 === 0 &&
+            Math.abs(l.x2 - gapped.pageW) < 1e-9,
+        ),
+      ).toBe(true)
+    }
+    for (const x of xs) {
+      expect(
+        lines.some(
+          (l) =>
+            Math.abs(l.x1 - x) < 1e-9 &&
+            Math.abs(l.x2 - x) < 1e-9 &&
+            l.y1 === 0 &&
+            Math.abs(l.y2 - gapped.pageH) < 1e-9,
+        ),
+      ).toBe(true)
+    }
   })
 })

@@ -4,6 +4,8 @@ import { getPlayerDeck, type PlayerDeckId } from '../game/playerDecks'
 import { defsFromDeck, type ChallengeCode } from '../game/types'
 import { preloadImage } from './imageCache'
 import {
+  assetCandidates,
+  preferredAssetUrl,
   resolveAssetUrl,
   type CardImageKind,
 } from './remoteAsset'
@@ -22,8 +24,10 @@ type PreloadJob = {
 }
 
 const CONCURRENCY = 8
+/** Faces used in challenge / assistant play (board, hand, preview, hero, BG). */
 const KINDS_PLAY: CardImageKind[] = ['art_crop', 'normal', 'png']
 const KINDS_DECK_WARM: CardImageKind[] = ['art_crop', 'normal', 'png']
+const CLASSIC_CARD_BACK = 'assets/cards/mtg-card-back.jpg'
 
 function pushJob(
   jobs: PreloadJob[],
@@ -53,6 +57,10 @@ function pushChallengeDeckJobs(
     }
     if (def.artCrop) pushJob(jobs, seen, def.artCrop, 'art_crop')
   }
+  for (const card of challenge.cards) {
+    pushJob(jobs, seen, card.images.back, 'card_back')
+  }
+  pushJob(jobs, seen, CLASSIC_CARD_BACK, 'card_back')
 }
 
 /** Collect unique image jobs for challenge play (challenge + player + heroes). */
@@ -101,11 +109,19 @@ export function collectDeckPageWarmJobs(code: ChallengeCode): PreloadJob[] {
   return jobs
 }
 
+/**
+ * Warm every URL CardImage / RemoteArt may hit for this path:
+ * resolve cache + sync primary + fallback (avoids post-enter cold loads).
+ */
 async function runPathJob(job: PreloadJob): Promise<void> {
   try {
-    const url = await resolveAssetUrl(job.path, { kind: job.kind })
-    if (!url) return
-    await preloadImage(url)
+    const { primary, fallback } = assetCandidates(job.path, { kind: job.kind })
+    const resolved = await resolveAssetUrl(job.path, { kind: job.kind })
+    const urls = [resolved, primary, fallback].filter(Boolean)
+    const unique = [...new Set(urls)]
+    await Promise.all(
+      unique.map((url) => preloadImage(url).catch(() => undefined)),
+    )
   } catch {
     /* best-effort */
   }
@@ -201,4 +217,9 @@ export async function preloadUrlList(
 
   await Promise.all(workers)
   return { done, total }
+}
+
+/** Classic card-back URL used by library stacks when a deck omits a back. */
+export function classicCardBackUrl(): string {
+  return preferredAssetUrl(CLASSIC_CARD_BACK, { kind: 'card_back' })
 }

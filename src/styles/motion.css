@@ -4,12 +4,105 @@
   --motion-fast: 140ms;
   --motion-med: 220ms;
   --motion-slow: 420ms;
+  --motion-rise: 640ms;
   --motion-ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
   --motion-ease-in-out: cubic-bezier(0.45, 0.05, 0.55, 0.95);
 }
 
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes modal-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-shell-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes scene-veil-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
 .reveal {
-  animation: rise var(--motion-slow) var(--motion-ease-out) both;
+  animation: rise var(--motion-rise) var(--motion-ease-out) both;
+}
+
+.delay-1 {
+  animation-delay: 80ms;
+}
+.delay-2 {
+  animation-delay: 160ms;
+}
+.delay-3 {
+  animation-delay: 240ms;
+}
+
+/* Shared modal enter — dialogs keep their own size/layout */
+.modal-backdrop,
+.references-backdrop,
+.llm-modal-backdrop,
+.assistant-modal-backdrop,
+.print-assistant-backdrop,
+.print-export-backdrop,
+.pack-draw-backdrop,
+.pack-confirm-backdrop,
+.prompt-backdrop {
+  animation: modal-fade-in var(--motion-med) var(--motion-ease-out) both;
+}
+
+.modal-shell,
+.references-modal,
+.llm-modal-shell,
+.assistant-modal,
+.print-assistant-shell,
+.print-export-shell,
+.pack-confirm-dialog,
+.prompt-shell,
+.arena-log-modal {
+  animation: modal-shell-in var(--motion-med) var(--motion-ease-out) both;
+}
+
+/* Pack open / collection keep their own stage FX — backdrop fade only */
+.pack-draw-modal {
+  animation: none;
+}
+
+.arena-scene-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 45;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 40%, rgba(40, 28, 18, 0.35), transparent 55%),
+    rgba(10, 8, 6, 0.78);
+  animation: scene-veil-out var(--motion-slow) var(--motion-ease-out) forwards;
 }
 
 @media (hover: none), (pointer: coarse) {
@@ -20,5 +113,45 @@
   .home-atmosphere-bg {
     /* Static atmosphere on phones — continuous blur+scale is expensive */
     filter: blur(14px) saturate(1.05) brightness(1.06);
+  }
+
+  .modal-shell,
+  .references-modal,
+  .llm-modal-shell,
+  .assistant-modal,
+  .print-assistant-shell,
+  .print-export-shell,
+  .pack-confirm-dialog,
+  .prompt-shell,
+  .arena-log-modal {
+    /* Sheet lift instead of scale on touch devices */
+    animation-name: modal-fade-in;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .path-band,
+  .modal-backdrop,
+  .references-backdrop,
+  .llm-modal-backdrop,
+  .assistant-modal-backdrop,
+  .print-assistant-backdrop,
+  .print-export-backdrop,
+  .pack-draw-backdrop,
+  .pack-confirm-backdrop,
+  .prompt-backdrop,
+  .modal-shell,
+  .references-modal,
+  .llm-modal-shell,
+  .assistant-modal,
+  .print-assistant-shell,
+  .print-export-shell,
+  .pack-confirm-dialog,
+  .prompt-shell,
+  .arena-log-modal,
+  .arena-scene-veil,
+  .card-grid > .card-tile {
+    animation: none !important;
   }
 }

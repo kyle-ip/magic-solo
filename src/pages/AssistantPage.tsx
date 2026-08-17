@@ -103,7 +103,10 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
     done: 0,
     total: 0,
   })
+  const [assetsReady, setAssetsReady] = useState(false)
   const assetLoadGenRef = useRef(0)
+  const assetsReadyRef = useRef(false)
+  const warmPromiseRef = useRef<Promise<ImagePreloadProgress> | null>(null)
   const arenaRef = useRef<HTMLElement | null>(null)
   const boardStageRef = useRef<HTMLDivElement | null>(null)
   const boardPanRef = useRef<HTMLDivElement | null>(null)
@@ -120,22 +123,46 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
     }
   }, [playing])
 
+  const warmAssistantAssets = useCallback(() => {
+    const gen = ++assetLoadGenRef.current
+    assetsReadyRef.current = false
+    setAssetsReady(false)
+    setAssetProgress({ done: 0, total: 0 })
+    const run = preloadAssistantImages(code, (progress) => {
+      if (gen !== assetLoadGenRef.current) return
+      setAssetProgress(progress)
+    })
+    warmPromiseRef.current = run
+    void run.finally(() => {
+      if (gen !== assetLoadGenRef.current) return
+      assetsReadyRef.current = true
+      setAssetsReady(true)
+      warmPromiseRef.current = null
+    })
+    return run
+  }, [code])
+
+  useEffect(() => {
+    if (state.status !== 'setup') return
+    warmAssistantAssets()
+  }, [state.status, warmAssistantAssets])
+
   const beginAssistant = useCallback(async () => {
     if (assetLoading) return
-    const gen = ++assetLoadGenRef.current
     setAssetLoading(true)
-    setAssetProgress({ done: 0, total: 0 })
     try {
-      await preloadAssistantImages(code, (progress) => {
-        if (gen !== assetLoadGenRef.current) return
-        setAssetProgress(progress)
-      })
-    } finally {
-      if (gen !== assetLoadGenRef.current) return
-      setAssetLoading(false)
+      if (!assetsReadyRef.current) {
+        await (warmPromiseRef.current ?? warmAssistantAssets())
+      }
+      if (!assetsReadyRef.current) {
+        await warmAssistantAssets()
+      }
+      if (!assetsReadyRef.current) return
       act({ type: 'START' })
+    } finally {
+      setAssetLoading(false)
     }
-  }, [act, assetLoading, code])
+  }, [act, assetLoading, warmAssistantAssets])
 
   const [previewPos, setPreviewPos] = useState({ x: 16, y: 72 })
   const localizeName = useCallback(
@@ -627,10 +654,17 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
         <div className={`assistant-setup arena-setup${assetLoading ? ' is-preloading' : ''}`}>
           {assetLoading ? (
             <div className="setup-preload" role="status" aria-live="polite">
+              <div className="setup-preload-fx" aria-hidden="true">
+                <span className="setup-preload-card" />
+                <span className="setup-preload-card" />
+                <span className="setup-preload-card" />
+              </div>
+              <p className="setup-preload-title">{t('assistant.loadingTitle')}</p>
               <p>
                 {t('assistant.loadingAssets', {
                   done: assetProgress.done,
                   total: assetProgress.total || '…',
+                  pct: preloadPct,
                 })}
               </p>
               <div className="setup-preload-bar" aria-hidden="true">
@@ -680,14 +714,21 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
             </label>
           ) : null}
 
-          <button
-            type="button"
-            className={`btn primary${assetLoading ? ' is-busy' : ''}`}
-            disabled={assetLoading}
-            onClick={() => void beginAssistant()}
-          >
-            {assetLoading ? t('assistant.beginLoading') : t('assistant.begin')}
-          </button>
+          <div className="setup-cta-begin">
+            {!assetsReady && assetProgress.total > 0 && !assetLoading ? (
+              <p className="setup-warm-hint" role="status">
+                {t('assistant.warmingAssets', { pct: preloadPct })}
+              </p>
+            ) : null}
+            <button
+              type="button"
+              className={`btn primary${assetLoading ? ' is-busy' : ''}`}
+              disabled={assetLoading}
+              onClick={() => void beginAssistant()}
+            >
+              {assetLoading ? t('assistant.beginLoading') : t('assistant.begin')}
+            </button>
+          </div>
         </div>
       </main>
     )
@@ -947,6 +988,7 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
         drag ? ' is-dragging' : ''
       }${boardPan.dragging ? ' is-board-panning' : ''}`}
     >
+      <div className="arena-scene-veil" aria-hidden="true" />
       <CardFlightLayer flights={flights} />
       <RemoteArtBackground className="arena-bg" localPath={heroArt} kind="art_crop" />
       <div className="arena-bg-veil" />

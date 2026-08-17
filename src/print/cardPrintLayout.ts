@@ -195,7 +195,7 @@ export function cardRectMm(index: number, layout: PrintLayout): RectMm {
   }
 }
 
-/** Bleed-expanded draw rect (same center as card; cut marks stay on nominal edge). */
+/** Bleed-expanded draw rect (same center as card; cut guides stay on nominal edge). */
 export function cardBleedRectMm(
   index: number,
   layout: PrintLayout,
@@ -243,51 +243,48 @@ export function emptySlotIndicesOnPage(
   return out
 }
 
-const CUT_MARK_MM = 3
-
-function pushCutCorner(lines: LineMm[], x: number, y: number, mark: number) {
-  lines.push({ x1: x - mark, y1: y, x2: x + mark, y2: y })
-  lines.push({ x1: x, y1: y - mark, x2: x, y2: y + mark })
-}
-
 /**
- * Cut marks at each card cell corner (outside the art / empty outline).
- * When gap is 0, shared corners are drawn once.
+ * Cut guides at nominal card edges, extended to the page boundary so you can
+ * cut inward from the paper edge (guillotine / ruler).
+ * Unique X/Y cut positions become full-page vertical/horizontal lines.
  */
-export function cutMarkLines(layout: PrintLayout): LineMm[] {
+export function cutGuideLines(layout: PrintLayout): LineMm[] {
   const lines: LineMm[] = []
-  const mark = CUT_MARK_MM
-  const { cols, rows, cardW, cardH, gap, originX, originY } = layout
+  const { cols, rows, cardW, cardH, gap, originX, originY, pageW, pageH } =
+    layout
   if (cols <= 0 || rows <= 0) return lines
 
+  const xs = new Set<number>()
+  const ys = new Set<number>()
+
   if (gap === 0) {
-    for (let row = 0; row <= rows; row++) {
-      for (let col = 0; col <= cols; col++) {
-        const x = originX + col * cardW
-        const y = originY + row * cardH
-        // Short ticks that stop at the corner (do not cross into card art)
-        if (col > 0) lines.push({ x1: x - mark, y1: y, x2: x, y2: y })
-        if (col < cols) lines.push({ x1: x, y1: y, x2: x + mark, y2: y })
-        if (row > 0) lines.push({ x1: x, y1: y - mark, x2: x, y2: y })
-        if (row < rows) lines.push({ x1: x, y1: y, x2: x, y2: y + mark })
+    for (let col = 0; col <= cols; col++) xs.add(originX + col * cardW)
+    for (let row = 0; row <= rows; row++) ys.add(originY + row * cardH)
+  } else {
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        const left = originX + col * (cardW + gap)
+        const top = originY + row * (cardH + gap)
+        xs.add(left)
+        xs.add(left + cardW)
+        ys.add(top)
+        ys.add(top + cardH)
       }
     }
-    return lines
   }
 
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
-      const left = originX + col * (cardW + gap)
-      const top = originY + row * (cardH + gap)
-      const right = left + cardW
-      const bottom = top + cardH
-      pushCutCorner(lines, left, top, mark)
-      pushCutCorner(lines, right, top, mark)
-      pushCutCorner(lines, left, bottom, mark)
-      pushCutCorner(lines, right, bottom, mark)
-    }
+  for (const y of ys) {
+    lines.push({ x1: 0, y1: y, x2: pageW, y2: y })
+  }
+  for (const x of xs) {
+    lines.push({ x1: x, y1: 0, x2: x, y2: pageH })
   }
   return lines
+}
+
+/** @deprecated Prefer cutGuideLines — continuous edge guides. */
+export function cutMarkLines(layout: PrintLayout): LineMm[] {
+  return cutGuideLines(layout)
 }
 
 export function mmToPoints(mm: number): number {

@@ -2,7 +2,7 @@ import { PDFDocument, rgb } from 'pdf-lib'
 import {
   cardBleedRectMm,
   cardRectMm,
-  cutMarkLines,
+  cutGuideLines,
   emptySlotIndicesOnPage,
   indicesOnPage,
   mmToPoints,
@@ -13,10 +13,12 @@ import type { FetchedPrintImage } from './fetchPrintImages'
 
 export type BuildPdfOptions = {
   layout: PrintLayout
-  /** Expand image beyond cut edge (mm). Cut marks stay on nominal card edge. */
+  /** Expand image beyond cut edge (mm). Cut guides stay on nominal card edge. */
   bleedMm?: number
   /** Draw empty outlines for unused slots on each page (default true). */
   fillEmpty?: boolean
+  /** Draw continuous cut guides (default true). */
+  showCutGuides?: boolean
 }
 
 async function embedImage(
@@ -46,13 +48,15 @@ export async function buildCardPrintPdf(
   const { layout } = options
   const bleedMm = Math.max(0, options.bleedMm ?? 0)
   const fillEmpty = options.fillEmpty !== false
+  const showCutGuides = options.showCutGuides !== false
   const pageW = mmToPoints(layout.pageW)
   const pageH = mmToPoints(layout.pageH)
   const doc = await PDFDocument.create()
   const pages = pageCount(images.length, layout)
-  const marks = cutMarkLines(layout)
-  const markColor = rgb(0.55, 0.55, 0.55)
+  const marks = showCutGuides ? cutGuideLines(layout) : []
+  const markColor = rgb(0.72, 0.72, 0.72)
   const markWidth = 0.4
+  const markDash = [mmToPoints(2), mmToPoints(1.5)]
   const emptyStroke = rgb(0.72, 0.72, 0.72)
 
   // Cache embeds by object URL / shared bytes identity
@@ -108,6 +112,7 @@ export async function buildCardPrintPdf(
         },
         thickness: markWidth,
         color: markColor,
+        dashArray: markDash,
       })
     }
   }

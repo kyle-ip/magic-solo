@@ -48,9 +48,12 @@
   font-size: 0.82rem;
   letter-spacing: 0.02em;
   padding: 0.35rem 0.75rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   cursor: pointer;
-  transition: color 140ms ease, border-color 140ms ease, background 140ms ease;
+  transition:
+    color var(--motion-fast) ease,
+    border-color var(--motion-fast) ease,
+    background var(--motion-fast) ease;
 }
 
 .classic-format-chip:hover {
@@ -81,14 +84,13 @@
   padding: 1.1rem 1.15rem 1.2rem;
   text-decoration: none;
   color: inherit;
-  background:
-    linear-gradient(160deg, rgba(58, 46, 34, 0.72), rgba(40, 32, 24, 0.58));
-  border: 1px solid rgba(184, 137, 58, 0.22);
-  border-radius: 0.35rem;
+  background: var(--catalog-card-bg);
+  border: var(--catalog-card-border);
+  border-radius: var(--catalog-card-radius);
   transition:
-    border-color 160ms ease,
-    transform 160ms ease,
-    box-shadow 160ms ease;
+    border-color var(--motion-fast) ease,
+    transform var(--motion-fast) var(--motion-ease-out),
+    box-shadow var(--motion-fast) ease;
 }
 
 .classic-deck-card:hover {

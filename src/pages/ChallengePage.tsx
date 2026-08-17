@@ -445,7 +445,10 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
     done: 0,
     total: 0,
   })
+  const [assetsReady, setAssetsReady] = useState(false)
   const assetLoadGenRef = useRef(0)
+  const assetsReadyRef = useRef(false)
+  const warmPromiseRef = useRef<Promise<ChallengePreloadProgress> | null>(null)
   const [focusAttacker, setFocusAttacker] = useState<string | null>(null)
   const [preview, setPreview] = useState<{
     image: string
@@ -453,6 +456,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
     text?: string
     instanceId?: string
   } | null>(null)
+  const [previewZoom, setPreviewZoom] = useState(false)
   const [previewPos, setPreviewPos] = useState({ x: 16, y: 72 })
   const [inspect, setInspect] = useState<'graveyard' | 'player-graveyard' | null>(null)
   const [coachOn, setCoachOn] = useState(readCoachEnabled)
@@ -571,22 +575,48 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
 
   const act = useCallback((action: GameAction) => dispatch(action), [])
 
+  const warmChallengeAssets = useCallback(() => {
+    const gen = ++assetLoadGenRef.current
+    assetsReadyRef.current = false
+    setAssetsReady(false)
+    setAssetProgress({ done: 0, total: 0 })
+
+    const run = preloadChallengeImages(
+      { code, playerDeckId, heroIds },
+      (progress) => {
+        if (gen !== assetLoadGenRef.current) return
+        setAssetProgress(progress)
+      },
+    )
+    warmPromiseRef.current = run
+
+    void run.finally(() => {
+      if (gen !== assetLoadGenRef.current) return
+      assetsReadyRef.current = true
+      setAssetsReady(true)
+      warmPromiseRef.current = null
+    })
+
+    return run
+  }, [code, heroIds, playerDeckId])
+
+  // Soft-warm while the player configures setup (overlay only on Begin).
+  useEffect(() => {
+    if (state.status !== 'setup') return
+    warmChallengeAssets()
+  }, [state.status, warmChallengeAssets])
+
   const beginChallenge = useCallback(async () => {
     if (assetLoading) return
-    const gen = ++assetLoadGenRef.current
     setAssetLoading(true)
-    setAssetProgress({ done: 0, total: 0 })
     try {
-      await preloadChallengeImages(
-        { code, playerDeckId, heroIds },
-        (progress) => {
-          if (gen !== assetLoadGenRef.current) return
-          setAssetProgress(progress)
-        },
-      )
-    } finally {
-      if (gen !== assetLoadGenRef.current) return
-      setAssetLoading(false)
+      if (!assetsReadyRef.current) {
+        await (warmPromiseRef.current ?? warmChallengeAssets())
+      }
+      if (!assetsReadyRef.current) {
+        await warmChallengeAssets()
+      }
+      if (!assetsReadyRef.current) return
       act({
         type: 'START',
         config: {
@@ -597,6 +627,8 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
           heroIds,
         },
       })
+    } finally {
+      setAssetLoading(false)
     }
   }, [
     act,
@@ -606,6 +638,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
     heroIds,
     hordeDelay,
     playerDeckId,
+    warmChallengeAssets,
   ])
 
   const advance = useCallback(() => act({ type: 'ADVANCE' }), [act])
@@ -617,12 +650,16 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
   const clearPreview = useCallback(() => {
     window.clearTimeout(clearPreviewTimer.current)
     // Delay hide so moving between cards does not flash the preview away
-    clearPreviewTimer.current = window.setTimeout(() => setPreview(null), 160)
+    clearPreviewTimer.current = window.setTimeout(() => {
+      setPreview(null)
+      setPreviewZoom(false)
+    }, 160)
   }, [])
 
   const dismissPreview = useCallback(() => {
     window.clearTimeout(clearPreviewTimer.current)
     setPreview(null)
+    setPreviewZoom(false)
   }, [])
 
   const placePreview = useCallback(
@@ -648,6 +685,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
 
   const toggleTouchPreview = useCallback(
     (next: { image: string; name: string; text?: string; instanceId?: string }) => {
+      setPreviewZoom(false)
       setPreview((prev) => {
         window.clearTimeout(clearPreviewTimer.current)
         if (next.instanceId && prev?.instanceId === next.instanceId) return null
@@ -1060,6 +1098,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
       const el = e.target
       if (!(el instanceof Element)) return
       if (el.closest('.challenge-preview-pane')) return
+      if (el.closest('.card-preview-zoom')) return
       if (el.closest('.hand-card')) return
       if (el.closest('.arena-card')) return
       if (el.closest('.hand-dock-hotzone')) return
@@ -1584,6 +1623,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
         zh={zh}
         assetLoading={assetLoading}
         assetProgress={assetProgress}
+        assetsReady={assetsReady}
         heads={heads}
         hordeDelay={hordeDelay}
         heroIds={heroIds}
@@ -2490,7 +2530,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
               ]
                 .filter(Boolean)
                 .join(' ')}
-              aria-hidden="true"
+              aria-label={preview.name}
               style={
                 touchHandUi
                   ? undefined
@@ -2511,15 +2551,33 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                 key={`${preview.image}|${preview.name}`}
               >
                 {preview.image ? (
-                  <div className="card-preview-art">
-                    <CardImage
-                      localPath={preview.image}
-                      kind="png"
-                      alt={preview.name}
-                    />
-                  </div>
+                  touchHandUi ? (
+                    <button
+                      type="button"
+                      className="card-preview-art is-zoomable"
+                      onClick={() => setPreviewZoom(true)}
+                      aria-label={t('challenge.previewOpenLarge')}
+                    >
+                      <CardImage
+                        localPath={preview.image}
+                        kind="png"
+                        alt={preview.name}
+                      />
+                    </button>
+                  ) : (
+                    <div className="card-preview-art">
+                      <CardImage
+                        localPath={preview.image}
+                        kind="png"
+                        alt={preview.name}
+                      />
+                    </div>
+                  )
                 ) : null}
-                <div className="card-preview-copy" key={`copy-${preview.instanceId ?? preview.name}`}>
+                <div
+                  className="card-preview-copy"
+                  key={`copy-${preview.instanceId ?? preview.name}`}
+                >
                   <p className="card-preview-name">{preview.name}</p>
                   {preview.text ? (
                     <p className="card-preview-text">{preview.text}</p>
@@ -2527,6 +2585,37 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                 </div>
               </div>
             </aside>,
+            document.body,
+          )
+        : null}
+
+      {previewZoom && preview?.image
+        ? createPortal(
+            <div
+              className="card-preview-zoom"
+              role="dialog"
+              aria-modal="true"
+              aria-label={preview.name}
+              onClick={() => setPreviewZoom(false)}
+            >
+              <div
+                className="card-preview-zoom-frame"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <CardImage
+                  localPath={preview.image}
+                  kind="png"
+                  alt={preview.name}
+                />
+              </div>
+              <button
+                type="button"
+                className="btn ghost card-preview-zoom-close"
+                onClick={() => setPreviewZoom(false)}
+              >
+                {t('llm.close')}
+              </button>
+            </div>,
             document.body,
           )
         : null}

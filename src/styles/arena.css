@@ -629,13 +629,80 @@ html.is-arena-playing body {
   z-index: 40;
   display: grid;
   place-content: center;
-  gap: 0.85rem;
+  justify-items: center;
+  gap: 0.75rem;
   padding: 1.5rem;
-  background: rgba(10, 8, 6, 0.72);
-  backdrop-filter: blur(6px);
+  background:
+    radial-gradient(ellipse at 50% 42%, rgba(48, 32, 18, 0.45), transparent 55%),
+    rgba(8, 6, 5, 0.82);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   color: rgba(245, 232, 210, 0.95);
   text-align: center;
   pointer-events: all;
+  animation: modal-fade-in var(--motion-med) var(--motion-ease-out) both;
+}
+
+.setup-preload-fx {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.55rem;
+  height: 4.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.setup-preload-card {
+  width: 2.35rem;
+  height: 3.3rem;
+  border-radius: 0.28rem;
+  border: 1px solid rgba(224, 180, 90, 0.45);
+  background:
+    linear-gradient(145deg, rgba(90, 68, 40, 0.9), rgba(28, 20, 14, 0.95)),
+    repeating-linear-gradient(
+      -18deg,
+      transparent,
+      transparent 6px,
+      rgba(224, 180, 90, 0.08) 6px,
+      rgba(224, 180, 90, 0.08) 7px
+    );
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.4);
+  animation: setup-preload-float 1.6s var(--motion-ease-in-out) infinite;
+}
+
+.setup-preload-card:nth-child(1) {
+  transform: rotate(-12deg) translateY(6px);
+  animation-delay: 0ms;
+}
+.setup-preload-card:nth-child(2) {
+  width: 2.55rem;
+  height: 3.55rem;
+  animation-delay: 120ms;
+}
+.setup-preload-card:nth-child(3) {
+  transform: rotate(12deg) translateY(6px);
+  animation-delay: 240ms;
+}
+
+@keyframes setup-preload-float {
+  0%,
+  100% {
+    filter: brightness(1);
+    translate: 0 0;
+  }
+  50% {
+    filter: brightness(1.12);
+    translate: 0 -5px;
+  }
+}
+
+.setup-preload-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #f3e6c8;
 }
 
 .setup-preload p {
@@ -646,19 +713,58 @@ html.is-arena-playing body {
 
 .setup-preload-bar {
   width: min(18rem, 70vw);
-  height: 0.35rem;
-  margin: 0 auto;
+  height: 0.4rem;
+  margin: 0.15rem auto 0;
   border-radius: 999px;
   background: rgba(245, 232, 210, 0.16);
   overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(224, 180, 90, 0.12);
 }
 
 .setup-preload-bar > span {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: color-mix(in srgb, var(--accent, #d4a24a) 85%, #fff 10%);
-  transition: width 120ms ease-out;
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--accent, #d4a24a) 70%, #fff 5%),
+      color-mix(in srgb, var(--accent, #d4a24a) 95%, #fff 18%),
+      color-mix(in srgb, var(--accent, #d4a24a) 70%, #fff 5%)
+    );
+  background-size: 200% 100%;
+  transition: width var(--motion-fast) ease-out;
+  animation: setup-preload-sheen 1.4s linear infinite;
+}
+
+@keyframes setup-preload-sheen {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+.setup-cta-begin {
+  display: grid;
+  gap: 0.35rem;
+  justify-items: stretch;
+}
+
+.setup-warm-hint {
+  margin: 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.03em;
+  color: rgba(231, 215, 184, 0.62);
+  text-align: right;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .setup-preload-card,
+  .setup-preload-bar > span {
+    animation: none;
+  }
 }
 
 .setup-param {
@@ -2035,10 +2141,14 @@ html.is-arena-playing body {
   position: relative;
   cursor: default;
   box-shadow: var(--card-shadow);
-  transition: transform 180ms ease, box-shadow 180ms ease, opacity 180ms ease, filter 180ms ease,
-    border-color 180ms ease;
+  transition:
+    transform var(--motion-fast) var(--motion-ease-out),
+    box-shadow var(--motion-fast) ease,
+    opacity var(--motion-fast) ease,
+    filter var(--motion-fast) ease,
+    border-color var(--motion-fast) ease;
   /* Do not use fill-mode:both ? it freezes transform:none and breaks tapped rotation */
-  animation: card-enter 380ms ease;
+  animation: card-enter var(--motion-slow) var(--motion-ease-out);
   isolation: isolate;
   line-height: 0;
   flex: 0 0 auto;
@@ -2422,8 +2532,8 @@ button.arena-card {
   gap: 0.15rem;
   cursor: pointer;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
-  transition: transform 160ms ease;
-  animation: card-enter 380ms ease;
+  transition: transform var(--motion-fast) var(--motion-ease-out);
+  animation: card-enter var(--motion-slow) var(--motion-ease-out);
 }
 
 .token-arena strong {
@@ -3992,7 +4102,7 @@ button.arena-card {
 
 .assistant-setup h1 {
   margin: 0;
-  font-family: Cinzel, serif;
+  font-family: var(--font-display);
   font-size: clamp(1.8rem, 4vw, 2.6rem);
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -4708,7 +4818,7 @@ button.arena-card {
   width: min(1040px, 100%);
   max-height: min(88dvh, 900px);
   overflow: auto;
-  padding: 1rem 1.15rem 1.25rem;
+  padding: var(--modal-shell-pad);
   border: var(--modal-shell-border);
   border-radius: var(--modal-shell-radius);
   background: var(--modal-shell-bg);
@@ -4817,7 +4927,7 @@ button.arena-card {
   justify-content: space-between;
   gap: 0.5rem;
   margin-bottom: 0.55rem;
-  font-family: Cinzel, serif;
+  font-family: var(--font-display);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   font-size: 0.82rem;
@@ -4892,7 +5002,8 @@ html.is-arena-playing,
   aspect-ratio: 744 / 1040;
   max-width: none;
   max-height: none;
-  animation: card-enter 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  border-radius: var(--card-radius-arena);
+  animation: card-enter var(--motion-slow) var(--motion-ease-out);
 }
 
 .arena-card.is-board .arena-card-art {
@@ -5871,8 +5982,8 @@ html.is-challenge-fit .card-preview-pane.is-follow {
 }
 
 /*
- * Touch challenge card details — not gated only on coarse media so it still
- * shows when matchMedia / CSS hover differ. Compact art + oracle, centered.
+ * Touch challenge card details — large sheet with full card face + oracle.
+ * Tap the card art to open a fullscreen zoom.
  */
 html.is-challenge-fit.is-touch-ui .challenge-preview-pane.card-preview-pane.is-text-only,
 html.is-challenge-fit .challenge-preview-pane.card-preview-pane.is-text-only {
@@ -5882,37 +5993,52 @@ html.is-challenge-fit .challenge-preview-pane.card-preview-pane.is-text-only {
   position: fixed;
   left: 50%;
   right: auto;
-  top: max(0.65rem, calc(var(--safe-top, 0px) + 0.45rem));
+  top: max(0.45rem, calc(var(--safe-top, 0px) + 0.3rem));
   bottom: auto;
   transform: translateX(-50%);
-  width: min(26rem, calc(100vw - 1.25rem));
-  max-height: min(
-    48dvh,
+  width: min(46rem, calc(100vw - 0.85rem));
+  height: min(
+    50dvh,
     calc(
       100dvh - var(--safe-top, 0px) - var(--safe-bottom, 0px) -
-        var(--hand-full, 10.5rem) - 3.5rem
+        var(--hand-full, 10.5rem) - 2rem
+    )
+  );
+  max-height: min(
+    52dvh,
+    calc(
+      100dvh - var(--safe-top, 0px) - var(--safe-bottom, 0px) -
+        var(--hand-full, 10.5rem) - 1.75rem
     )
   );
   z-index: 200;
   pointer-events: none;
-  padding: 0.45rem 0.5rem 0.5rem;
-  gap: 0.55rem;
+  padding: 0.45rem 0.55rem;
+  gap: 0.65rem;
   overflow: hidden;
   color: var(--parchment, #f0e6d2);
-  background: rgba(12, 9, 6, 0.94);
-  border: 1px solid rgba(224, 180, 90, 0.48);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55);
+  background: rgba(12, 9, 6, 0.95);
+  border: 1px solid rgba(224, 180, 90, 0.5);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.58);
+  border-radius: var(--modal-shell-radius, 10px);
 }
 
 html.is-challenge-fit:has(.hand-dock-shell.is-hand-open)
   .challenge-preview-pane.card-preview-pane.is-text-only,
 html.is-challenge-fit:has(.hand-dock-shell.is-hand-pinned)
   .challenge-preview-pane.card-preview-pane.is-text-only {
-  max-height: min(
-    42dvh,
+  height: min(
+    50dvh,
     calc(
       100dvh - var(--safe-top, 0px) - var(--safe-bottom, 0px) -
-        var(--hand-full, 10.5rem) - 3rem
+        var(--hand-full, 10.5rem) - 1.75rem
+    )
+  );
+  max-height: min(
+    52dvh,
+    calc(
+      100dvh - var(--safe-top, 0px) - var(--safe-bottom, 0px) -
+        var(--hand-full, 10.5rem) - 1.5rem
     )
   );
 }
@@ -5921,26 +6047,57 @@ html.is-challenge-fit .challenge-preview-pane.is-text-only .card-preview-swap {
   display: flex;
   flex-direction: row;
   align-items: stretch;
-  gap: 0.55rem;
+  gap: 0.65rem;
   min-height: 0;
   min-width: 0;
   flex: 1 1 auto;
   overflow: hidden;
 }
 
+/* Size by pane height so the full 744∶1040 face fits (no cover crop). */
 html.is-challenge-fit .challenge-preview-pane.is-text-only .card-preview-art {
   display: block;
+  position: relative;
   flex: 0 0 auto;
-  width: min(5.75rem, 22vw);
-  max-height: 100%;
+  height: 100%;
+  width: auto;
+  max-width: min(15rem, 40vw);
   aspect-ratio: 744 / 1040;
-  align-self: center;
+  max-height: none;
+  align-self: stretch;
+  pointer-events: auto;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: #0a0806;
+  border-radius: var(--card-radius, 4.75% / 3.5%);
+  overflow: hidden;
+  cursor: zoom-in;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+  isolation: isolate;
+}
+
+html.is-challenge-fit .challenge-preview-pane.is-text-only .card-preview-art.is-zoomable:active {
+  filter: brightness(1.06);
+}
+
+html.is-challenge-fit .challenge-preview-pane.is-text-only .card-preview-art img,
+html.is-challenge-fit .challenge-preview-pane.is-text-only .card-preview-art.card-preview-art img {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  object-fit: contain;
+  object-position: center;
+  /* Do not use gallery corner-hide scale — it crops the face */
+  transform: none;
+  display: block;
 }
 
 html.is-challenge-fit .challenge-preview-pane.is-text-only .card-preview-copy {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 0.28rem;
   flex: 1 1 auto;
   min-width: 0;
   min-height: 0;
@@ -5950,19 +6107,101 @@ html.is-challenge-fit .challenge-preview-pane.is-text-only .card-preview-copy {
   padding: 0.1rem 0.15rem 0.05rem;
 }
 
+/* Match chrome chrome labels (life / phase ~0.58–0.68rem) */
 html.is-challenge-fit .challenge-preview-pane.is-text-only .card-preview-name {
-  font-size: 0.95rem;
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
   line-height: 1.25;
   margin: 0;
   color: #fff4dc;
 }
 
 html.is-challenge-fit .challenge-preview-pane.is-text-only .card-preview-text {
-  font-size: 0.74rem;
+  font-size: 0.64rem;
   line-height: 1.4;
   margin: 0;
   white-space: pre-line;
-  color: rgba(231, 215, 184, 0.88);
+  color: rgba(231, 215, 184, 0.86);
+}
+
+.card-preview-zoom {
+  position: fixed;
+  inset: 0;
+  z-index: 260;
+  display: grid;
+  place-items: center;
+  padding:
+    max(0.75rem, var(--safe-top, 0px))
+    max(0.75rem, var(--safe-right, 0px))
+    max(3.5rem, calc(var(--safe-bottom, 0px) + 2.75rem))
+    max(0.75rem, var(--safe-left, 0px));
+  background: rgba(6, 4, 3, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: modal-fade-in var(--motion-med, 220ms) var(--motion-ease-out, ease-out) both;
+}
+
+.card-preview-zoom-frame {
+  width: auto;
+  height: min(86dvh, calc(100dvh - 5rem));
+  max-width: min(92vw, calc(min(86dvh, 100dvh - 5rem) * 744 / 1040));
+  aspect-ratio: 744 / 1040;
+  border-radius: var(--card-radius, 4.75% / 3.5%);
+  overflow: hidden;
+  background: #0a0806;
+  box-shadow: 0 22px 56px rgba(0, 0, 0, 0.55);
+  animation: modal-shell-in var(--motion-med, 220ms) var(--motion-ease-out, ease-out) both;
+}
+
+.card-preview-zoom-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  transform: none;
+  display: block;
+}
+
+.card-preview-zoom-close {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: max(0.85rem, calc(var(--safe-bottom, 0px) + 0.55rem));
+  z-index: 261;
+  min-width: 7rem;
+}
+
+@media (orientation: portrait) and (max-width: 720px) {
+  html.is-challenge-fit .challenge-preview-pane.card-preview-pane.is-text-only {
+    flex-direction: column;
+    width: min(22rem, calc(100vw - 1rem));
+    height: min(54dvh, 58vh);
+    max-height: min(54dvh, 58vh);
+  }
+
+  html.is-challenge-fit .challenge-preview-pane.is-text-only .card-preview-swap {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  html.is-challenge-fit .challenge-preview-pane.is-text-only .card-preview-art {
+    height: min(58%, 18rem);
+    width: auto;
+    max-width: min(12rem, 56vw);
+  }
+
+  html.is-challenge-fit .challenge-preview-pane.is-text-only .card-preview-copy {
+    width: 100%;
+    max-height: min(12rem, 22dvh);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-preview-zoom,
+  .card-preview-zoom-frame {
+    animation: none;
+  }
 }
 
 /* Full row visible when revealed (no 3/4 tuck) */

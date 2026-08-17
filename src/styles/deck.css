@@ -493,12 +493,18 @@
 }
 
 .deck-page .card-tile {
-  animation: none;
+  animation: card-in var(--motion-med) var(--motion-ease-out) both;
 }
 
 @keyframes card-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .card-tile-frame {
@@ -510,7 +516,8 @@
   background: var(--card-face-bg);
   border: var(--card-border);
   box-shadow: var(--card-shadow);
-  transition: transform 180ms ease, border-color 180ms ease;
+  transition: transform var(--motion-fast) var(--motion-ease-out),
+    border-color var(--motion-fast) ease;
   line-height: 0;
   isolation: isolate;
 }
@@ -1680,7 +1687,7 @@ body.is-hand-casting {
   background: var(--modal-shell-bg);
   border: var(--modal-shell-border);
   border-radius: var(--modal-shell-radius);
-  padding: 1.4rem 1.35rem 1.25rem;
+  padding: var(--modal-shell-pad);
   box-shadow: var(--modal-shell-shadow);
   color: var(--parchment);
 }

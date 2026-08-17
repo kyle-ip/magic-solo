@@ -11,7 +11,14 @@ export function preloadImage(src: string): Promise<void> {
   const promise = new Promise<void>((resolve, reject) => {
     const img = new Image()
     img.decoding = 'async'
-    img.onload = () => resolve()
+    img.onload = () => {
+      const finish = () => resolve()
+      if (typeof img.decode === 'function') {
+        void img.decode().then(finish).catch(finish)
+      } else {
+        finish()
+      }
+    }
     img.onerror = () => {
       cache.delete(src)
       reject(new Error(`Failed to load ${src}`))

@@ -23,9 +23,11 @@ export type PrintAssistantSettings = {
   bleedMm: number
   fillEmpty: boolean
   flushCut: boolean
+  /** Draw continuous cut guides on preview + PDF (default true). */
+  showCutGuides: boolean
 }
 
-/** Precise 63×88 cut marks + 1 mm bleed for trim tolerance. */
+/** Precise 63×88 cut guides + 1 mm bleed for trim tolerance. */
 export const DEFAULT_PRINT_SETTINGS: PrintAssistantSettings = {
   paper: 'a4',
   cardW: CARD_W_MM,
@@ -35,6 +37,7 @@ export const DEFAULT_PRINT_SETTINGS: PrintAssistantSettings = {
   bleedMm: 1,
   fillEmpty: true,
   flushCut: false,
+  showCutGuides: true,
 }
 
 const PAPERS: PaperSizeId[] = ['a4', 'a3', 'b4', 'letter', 'photo6']
@@ -90,6 +93,7 @@ export function loadPrintSettings(): PrintAssistantSettings {
       ),
       fillEmpty: parsed.fillEmpty !== false,
       flushCut: Boolean(parsed.flushCut),
+      showCutGuides: parsed.showCutGuides !== false,
     }
   } catch {
     return { ...DEFAULT_PRINT_SETTINGS }

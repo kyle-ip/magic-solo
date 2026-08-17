@@ -1,7 +1,8 @@
 .card-editor-page {
-  width: min(1180px, calc(100% - 2rem));
+  width: var(--page-width);
+  max-width: var(--page-max);
   margin: 0 auto 3rem;
-  padding: 1.25rem 0 2rem;
+  padding: 1.25rem 0 calc(2rem + var(--safe-bottom));
 }
 
 .card-editor-hero {
@@ -37,8 +38,8 @@
   padding: 0.85rem 1rem;
   margin-bottom: 0.85rem;
   border: 1px solid rgba(184, 137, 58, 0.28);
-  border-radius: 10px;
-  background: rgba(18, 16, 14, 0.55);
+  border-radius: var(--btn-radius);
+  background: var(--chrome-bg);
 }
 
 .card-editor-toolbar-row {
@@ -59,9 +60,9 @@
 .card-editor-inline-label select {
   font: inherit;
   color: #f0e6d2;
-  background: rgba(8, 7, 6, 0.65);
+  background: var(--input-bg);
   border: 1px solid rgba(184, 137, 58, 0.28);
-  border-radius: 6px;
+  border-radius: var(--btn-radius-sm);
   padding: 0.4rem 0.55rem;
 }
 
@@ -81,7 +82,7 @@
 .card-editor-status {
   margin: 0 0 0.75rem;
   padding: 0.45rem 0.7rem;
-  border-radius: 6px;
+  border-radius: var(--btn-radius-sm);
   background: rgba(111, 155, 76, 0.15);
   color: rgba(231, 215, 184, 0.9);
   font-size: 0.88rem;
@@ -106,11 +107,14 @@
   width: 100%;
   text-align: left;
   padding: 0.4rem 0.55rem;
-  border-radius: 8px;
+  border-radius: var(--btn-radius-sm);
   border: 1px solid rgba(184, 137, 58, 0.22);
   background: rgba(12, 11, 10, 0.55);
   color: inherit;
   cursor: pointer;
+  transition:
+    border-color var(--motion-fast) ease,
+    background var(--motion-fast) ease;
 }
 
 .card-editor-hit img {
@@ -150,7 +154,7 @@
   display: block;
   width: 100%;
   height: auto;
-  border-radius: 12px;
+  border-radius: var(--card-radius);
   box-shadow:
     0 12px 40px rgba(0, 0, 0, 0.45),
     0 0 0 1px rgba(184, 137, 58, 0.2);
@@ -165,8 +169,8 @@
 .card-editor-panel {
   padding: 0.85rem 1rem 1rem;
   border: 1px solid rgba(184, 137, 58, 0.22);
-  border-radius: 10px;
-  background: rgba(14, 12, 10, 0.5);
+  border-radius: var(--btn-radius);
+  background: var(--chrome-bg);
 }
 
 .card-editor-panel h3 {

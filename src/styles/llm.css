@@ -19,7 +19,7 @@
   background: var(--modal-shell-bg);
   border: var(--modal-shell-border);
   border-radius: var(--modal-shell-radius);
-  padding: 1.35rem 1.4rem 1.25rem;
+  padding: var(--modal-shell-pad);
   position: relative;
   box-shadow: var(--modal-shell-shadow);
   color: var(--parchment);
