@@ -14,6 +14,12 @@
     "rulesAttribution": "",
     "help": "帮助"
   },
+  "sessionResume": {
+    "title": "继续未完成的对局？",
+    "body": "发现此前未结束的进度。继续将恢复上次场面；重新开局会清除存档。",
+    "continue": "继续",
+    "restart": "重新开局"
+  },
   "llm": {
     "openSettings": "AI 助手设置",
     "eyebrow": "可选",
@@ -314,10 +320,12 @@
     "historyAsk": "问：{{q}}",
     "historyDelete": "删除",
     "historyClear": "清空历史",
+    "historyClearTitle": "清空历史",
     "historyClearConfirm": "删除本挑战下全部已保存战报？",
     "historyOpen": "查看",
     "historyTurns": "{{n}} 回合",
-    "historyLife": "生命 {{n}}"
+    "historyLife": "生命 {{n}}",
+    "cancel": "取消"
   },
   "challenge": {
     "eyebrow": "挑战",
@@ -399,6 +407,7 @@
     "victory": "胜利",
     "defeat": "败北",
     "playAgain": "再来",
+    "backPage": "回到上页",
     "challengeSide": "挑战方战场",
     "yourForces": "你的部队",
     "graveyard": "坟场",
@@ -548,6 +557,7 @@
   },
   "assistant": {
     "eyebrow": "游戏助手",
+    "back": "返回",
     "backDeck": "返回套牌",
     "setupLead": "挑战方在线上，你的牌组在线下；手动操作挑战半场。",
     "setupBlank": "空白牌库",

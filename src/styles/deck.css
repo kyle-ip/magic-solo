@@ -58,6 +58,37 @@
     radial-gradient(ellipse 70% 55% at 70% 18%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 68%);
 }
 
+/* TBTH art crop is very bright — crush luminance behind white hero titles */
+.deck-page.theme-horde .deck-atmosphere-bg {
+  filter: blur(20px) saturate(0.75) contrast(1.12) brightness(0.28);
+}
+
+.deck-page.theme-horde .deck-atmosphere-veil {
+  background-color: rgba(8, 4, 3, 0.4);
+  background-image:
+    linear-gradient(
+      90deg,
+      rgba(2, 1, 1, 0.9) 0%,
+      rgba(4, 2, 2, 0.75) 26%,
+      rgba(6, 3, 2, 0.4) 48%,
+      transparent 70%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(4, 2, 2, 0.72) 0%,
+      rgba(6, 3, 2, 0.5) 40%,
+      rgba(8, 4, 3, 0.48) 100%
+    );
+}
+
+.deck-page.theme-horde .deck-hero-copy h1,
+.deck-page.theme-horde .deck-hero-copy .lede,
+.deck-page.theme-horde .deck-hero-copy p {
+  text-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.95),
+    0 0 32px rgba(0, 0, 0, 0.65);
+}
+
 .deck-hero {
   position: relative;
   z-index: 1;
@@ -516,8 +547,11 @@
   background: var(--card-face-bg);
   border: var(--card-border);
   box-shadow: var(--card-shadow);
-  transition: transform var(--motion-fast) var(--motion-ease-out),
-    border-color var(--motion-fast) ease;
+  transition:
+    transform var(--motion-fx-fast, var(--motion-fast)) var(--motion-ease-out),
+    border-color var(--motion-fx-fast, var(--motion-fast)) ease,
+    box-shadow var(--motion-fx-fast, var(--motion-fast)) ease,
+    filter var(--motion-fx-fast, var(--motion-fast)) ease;
   line-height: 0;
   isolation: isolate;
 }
@@ -542,6 +576,13 @@
 .card-tile:hover .card-tile-frame,
 .card-tile:focus-visible .card-tile-frame {
   transform: translateY(-4px);
+  box-shadow: var(--elevation-2, 0 12px 28px rgba(0, 0, 0, 0.32));
+  filter: brightness(1.04);
+}
+
+.card-tile:active .card-tile-frame {
+  transform: translateY(-1px) scale(var(--press-scale, 0.97));
+  filter: brightness(0.98);
 }
 
 .card-tile:hover .card-tile-frame:not([class*='rarity-frame-']),
@@ -1439,6 +1480,14 @@ body.is-hand-casting {
 @media (hover: none), (pointer: coarse) {
   .arena-root.is-playing.is-challenge-fit .hand-card {
     touch-action: none;
+  }
+}
+
+/* Desktop drag-to-cast: avoid image/text selection fighting the gesture */
+@media (hover: hover) and (pointer: fine) {
+  .arena-root.is-playing.is-challenge-fit .hand-card.is-playable {
+    touch-action: none;
+    user-select: none;
   }
 }
 

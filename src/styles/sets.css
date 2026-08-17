@@ -6,14 +6,13 @@
 }
 
 .sets-hero {
+  width: 100%;
   max-width: 42rem;
-  margin-bottom: 1.75rem;
+  margin: 0 0 1.75rem;
+  padding: 0;
 }
 
-.sets-hero h1 {
-  margin: 0.2rem 0 0.65rem;
-  font-size: clamp(1.85rem, 3.2vw, 2.55rem);
-  letter-spacing: 0.01em;
+.sets-hero .page-hero-title {
   color: #f3e6c8;
 }
 
@@ -170,35 +169,22 @@
   gap: 1rem;
 }
 
-.sets-card {
+.sets-card.catalog-tile {
   display: grid;
   grid-template-columns: 4.25rem minmax(0, 1fr);
   gap: 0.9rem;
   align-items: center;
   min-height: 100%;
   padding: 1rem 1.05rem;
-  text-decoration: none;
-  color: inherit;
-  background: var(--catalog-card-bg);
-  border: var(--catalog-card-border);
-  border-radius: var(--catalog-card-radius);
-  transition:
-    border-color var(--motion-fast) ease,
-    transform var(--motion-fast) var(--motion-ease-out),
-    box-shadow var(--motion-fast) ease;
+  flex-direction: unset;
 }
 
-.sets-card:hover {
-  border-color: rgba(240, 212, 138, 0.45);
-  transform: translateY(-2px);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
-}
-
-.sets-card-icon {
+.sets-card .catalog-tile-media {
   display: grid;
   place-items: center;
   width: 4.25rem;
   height: 4.25rem;
+  aspect-ratio: auto;
   border-radius: 0.3rem;
   background:
     radial-gradient(circle at 40% 30%, rgba(240, 212, 138, 0.18), transparent 60%),
@@ -206,17 +192,40 @@
   border: 1px solid rgba(184, 137, 58, 0.2);
 }
 
-.sets-card-icon img {
+.sets-card .catalog-tile-media img {
   width: 2.6rem;
   height: 2.6rem;
   object-fit: contain;
   filter: invert(0.92) sepia(0.35) saturate(1.2) hue-rotate(5deg);
 }
 
+.sets-card .catalog-tile-body {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.sets-card .catalog-tile-title {
+  font-size: 1rem;
+}
+
+.sets-card .catalog-tile-meta {
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .sets-card-icon-fallback {
   font-size: 0.78rem;
   letter-spacing: 0.06em;
   color: rgba(240, 212, 138, 0.85);
+}
+
+.sets-card .catalog-tile-media .sets-card-icon-fallback {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
 }
 
 .sets-card-body {

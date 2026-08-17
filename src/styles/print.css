@@ -259,25 +259,47 @@
   background: rgba(0, 0, 0, 0.16);
 }
 
-.print-assistant-list-thumb {
+.print-assistant-list-thumb-wrap {
+  --card-img-scale: 1.08;
   width: 36px;
   height: 50px;
+  border-radius: var(--card-radius);
+  overflow: hidden;
+  background: #050403;
+  flex-shrink: 0;
+  isolation: isolate;
+  box-shadow: inset 0 0 0 1px rgba(5, 4, 3, 0.85);
+}
+
+.print-assistant-list-thumb {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
+  object-position: center;
   display: block;
+  /* Crop JPG square-corner fringing inside the rounded clip */
+  transform: scale(var(--card-img-scale));
+  transform-origin: center;
   background: #2a241c;
 }
 
 .print-assistant-list-thumb--empty {
-  border: 1px dashed rgba(184, 137, 58, 0.35);
+  border: none;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px rgba(184, 137, 58, 0.35);
+  transform: none;
 }
 
 .print-assistant-list-info {
   min-width: 0;
-  display: grid;
-  gap: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
 }
 
 .print-assistant-list-name {
+  flex: 1 1 auto;
+  min-width: 0;
   font-size: 0.78rem;
   line-height: 1.25;
   white-space: nowrap;
@@ -286,19 +308,25 @@
 }
 
 .print-assistant-list-qty {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   gap: 0.2rem;
+  margin-left: auto;
 }
 
 .print-assistant-list-qty .btn {
   min-width: 1.7rem;
+  min-height: 0;
+  height: 1.7rem;
   padding: 0.15rem 0.35rem;
   font-size: 0.85rem;
+  box-shadow: none;
 }
 
 .print-assistant-list-qty input {
   width: 2.6rem;
+  height: 1.7rem;
   text-align: center;
   padding: 0.2rem;
   /* Custom +/- already provide step controls — hide native spinners. */
@@ -321,9 +349,12 @@
 
 .print-assistant-list-move .btn {
   min-width: 1.7rem;
+  min-height: 0;
+  height: 1.45rem;
   padding: 0.1rem 0.3rem;
   font-size: 0.75rem;
   line-height: 1.1;
+  box-shadow: none;
 }
 
 .print-assistant-progress {

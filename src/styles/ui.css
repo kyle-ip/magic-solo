@@ -1,0 +1,484 @@
+/*
+ * Shared UI primitives — AppModal / AppSheet / PageHero / CatalogTile / IconFab.
+ * Visual identity stays parchment / bronze; sizes stay per-instance.
+ */
+
+/* —— App modal / sheet chrome —— */
+.app-overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: max(var(--space-4), var(--safe-top)) max(var(--space-4), var(--safe-right))
+    max(var(--space-4), var(--safe-bottom)) max(var(--space-4), var(--safe-left));
+  background: var(--modal-backdrop-bg);
+  backdrop-filter: blur(var(--modal-backdrop-blur));
+  -webkit-backdrop-filter: blur(var(--modal-backdrop-blur));
+}
+
+.app-overlay-shell {
+  position: relative;
+  width: min(100%, 36rem);
+  max-height: min(88dvh, 52rem);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--modal-shell-bg);
+  border: var(--modal-shell-border);
+  border-radius: var(--modal-shell-radius);
+  box-shadow: var(--modal-shell-shadow);
+  padding: var(--modal-shell-pad);
+  color: var(--parchment);
+}
+
+.app-overlay-shell.is-wide {
+  width: min(100%, 52rem);
+}
+
+.app-overlay-shell.is-narrow {
+  width: min(100%, 28rem);
+}
+
+.app-overlay-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-shrink: 0;
+  margin-bottom: var(--space-3);
+}
+
+.app-overlay-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  letter-spacing: 0.04em;
+  color: var(--bronze-bright);
+}
+
+.app-overlay-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.app-overlay-foot {
+  flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: flex-end;
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid rgba(184, 137, 58, 0.22);
+}
+
+/* Vaul drawer skin */
+.app-sheet-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: var(--modal-backdrop-bg);
+  backdrop-filter: blur(var(--modal-backdrop-blur));
+  -webkit-backdrop-filter: blur(var(--modal-backdrop-blur));
+}
+
+.app-sheet-content {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 81;
+  display: flex;
+  flex-direction: column;
+  max-height: min(92dvh, 44rem);
+  padding: var(--space-3) var(--space-4) max(var(--space-4), var(--safe-bottom));
+  background: var(--modal-shell-bg);
+  border: var(--modal-shell-border);
+  border-bottom: none;
+  border-radius: var(--modal-sheet-radius);
+  box-shadow: var(--elevation-3);
+  color: var(--parchment);
+  outline: none;
+}
+
+.app-sheet-handle {
+  width: 2.5rem;
+  height: 0.28rem;
+  margin: 0.15rem auto 0.85rem;
+  border-radius: var(--radius-pill);
+  background: rgba(224, 180, 90, 0.35);
+  flex-shrink: 0;
+}
+
+/* —— Page hero / section —— */
+.page-hero {
+  position: relative;
+  width: var(--page-width);
+  max-width: 100%;
+  margin: 0 auto;
+  padding: clamp(1.25rem, 3vw, 2rem) 0 clamp(1rem, 2vw, 1.5rem);
+}
+
+.page-hero-inner {
+  display: grid;
+  gap: var(--space-5);
+  align-items: center;
+}
+
+@media (min-width: 860px) {
+  .page-hero-inner.is-split {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  }
+}
+
+.page-hero-kicker {
+  margin: 0 0 var(--space-2);
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(224, 180, 90, 0.78);
+}
+
+.page-hero-title {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-display);
+  font-size: clamp(1.65rem, 3.2vw, 2.35rem);
+  line-height: 1.15;
+  letter-spacing: 0.03em;
+  color: var(--parchment);
+}
+
+.page-hero-lead {
+  margin: 0;
+  max-width: 42rem;
+  font-size: 0.98rem;
+  line-height: 1.55;
+  color: rgba(231, 215, 184, 0.82);
+}
+
+.page-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.page-section {
+  width: var(--page-width);
+  max-width: 100%;
+  margin: 0 auto;
+  padding: var(--space-5) 0;
+}
+
+.page-section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.page-section-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  letter-spacing: 0.04em;
+  color: var(--bronze-bright);
+}
+
+.page-section-desc {
+  margin: 0.35rem 0 0;
+  font-size: 0.9rem;
+  color: rgba(231, 215, 184, 0.72);
+}
+
+/* —— Catalog tiles —— */
+.catalog-tile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--catalog-card-radius);
+  background: var(--catalog-card-bg);
+  border: var(--catalog-card-border);
+  text-decoration: none;
+  color: inherit;
+  box-shadow: var(--elevation-1);
+  transition:
+    transform var(--motion-ui-fast) var(--motion-ease-out),
+    border-color var(--motion-ui-fast) ease,
+    box-shadow var(--motion-ui-fast) ease,
+    filter var(--motion-ui-fast) ease;
+}
+
+.catalog-tile:hover {
+  transform: translateY(-3px);
+  border-color: rgba(224, 180, 90, 0.42);
+  box-shadow: var(--elevation-2);
+  filter: brightness(1.04);
+}
+
+.catalog-tile:active {
+  transform: translateY(-1px) scale(var(--press-scale));
+}
+
+.catalog-tile:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring), var(--elevation-2);
+}
+
+.catalog-tile-media {
+  position: relative;
+  overflow: hidden;
+  border-radius: calc(var(--catalog-card-radius) - 2px);
+  background: var(--card-face-bg);
+  aspect-ratio: 16 / 9;
+}
+
+.catalog-tile-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.catalog-tile-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  letter-spacing: 0.03em;
+  color: var(--parchment);
+}
+
+.catalog-tile-meta {
+  margin: 0;
+  font-size: 0.82rem;
+  color: rgba(231, 215, 184, 0.68);
+}
+
+/* —— Icon FAB —— */
+.icon-fab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  min-width: var(--touch-min);
+  min-height: var(--touch-min);
+  padding: 0;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(224, 180, 90, 0.38);
+  color: var(--parchment);
+  background: var(--control-bg);
+  box-shadow: var(--elevation-1), inset 0 1px 0 rgba(224, 180, 90, 0.1);
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    transform var(--motion-ui-fast) var(--motion-ease-out),
+    filter var(--motion-ui-fast) ease,
+    border-color var(--motion-ui-fast) ease,
+    box-shadow var(--motion-ui-fast) ease;
+}
+
+.icon-fab svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.icon-fab:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.07);
+  border-color: rgba(240, 212, 138, 0.55);
+  box-shadow: var(--elevation-2);
+}
+
+.icon-fab:active {
+  transform: scale(var(--press-scale));
+  filter: brightness(0.96);
+}
+
+.icon-fab:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring), var(--elevation-2);
+}
+
+.icon-fab:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  filter: none;
+}
+
+.icon-fab.is-configured {
+  border-color: rgba(240, 212, 138, 0.55);
+}
+
+.icon-fab.is-configured::after {
+  content: '';
+  position: absolute;
+  top: 0.35rem;
+  right: 0.35rem;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: #7dcea0;
+  box-shadow: 0 0 0 2px rgba(30, 22, 16, 0.85);
+}
+
+.icon-fab {
+  position: relative;
+}
+
+/* —— Page enter (motion fallback / CSS) —— */
+.page-enter {
+  will-change: opacity, transform;
+}
+
+/* —— Shared focus for legacy .btn —— */
+.btn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring), 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.btn.primary:focus-visible {
+  box-shadow: var(--focus-ring), 0 8px 20px rgba(140, 90, 20, 0.34);
+}
+
+.app-overlay-shell.references-modal,
+.app-overlay-shell.battle-history-panel,
+.app-overlay-shell.assistant-modal,
+.app-overlay-shell.print-export-shell,
+.app-overlay-shell.prompt-shell,
+.app-overlay-shell.deck-roster-shell,
+.app-overlay-shell.pack-draw-modal {
+  margin: 0;
+}
+
+.app-overlay-shell.battle-history-panel {
+  width: min(68rem, 98vw);
+  max-width: min(68rem, 98vw);
+}
+
+.app-overlay-shell.assistant-modal {
+  width: min(1040px, 100%);
+  max-width: min(1040px, 100%);
+}
+
+.app-overlay-shell.print-export-shell {
+  width: min(420px, 94vw);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.app-overlay-shell.print-assistant-shell {
+  width: min(1100px, 100%);
+  max-width: min(1100px, 98vw);
+  max-height: min(94dvh, 56rem);
+}
+
+.app-overlay-shell.pack-confirm-dialog {
+  width: min(100%, 22rem);
+  max-width: min(100%, 22rem);
+  padding: 1.25rem 1.35rem 1.2rem;
+}
+
+.app-overlay-shell.pack-confirm-dialog .app-overlay-title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  letter-spacing: 0.02em;
+  color: var(--parchment);
+}
+
+.app-overlay-shell.pack-confirm-dialog .app-overlay-body > p {
+  margin: 0;
+  color: rgba(231, 215, 184, 0.78);
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.app-overlay-shell.pack-confirm-dialog .pack-confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.55rem 0.75rem;
+  margin-top: 1.15rem;
+}
+
+.app-overlay-shell.pack-confirm-dialog .pack-confirm-actions .btn {
+  min-height: 2.35rem;
+  padding-inline: 1.05rem;
+}
+
+/* Card inspect stays on pack-draw-backdrop portal — do not route through AppOverlay.
+   Keep this block only as a guard if a shell accidentally gets these classes. */
+.app-overlay-shell.pack-draw-modal.is-collection {
+  display: flex;
+  flex-direction: column;
+  width: min(1180px, 100%);
+  max-width: min(1180px, 100%);
+  height: min(90dvh, 90vh);
+  max-height: min(90dvh, 90vh);
+  padding: 1.1rem 1.35rem 1.15rem;
+  overflow: hidden;
+  background: #000;
+  /* Override legacy .modal-shell two-column grid if that class is present */
+  grid-template-columns: none;
+}
+
+.app-overlay-shell.pack-draw-modal.is-collection .app-overlay-head {
+  flex-shrink: 0;
+  margin-bottom: 0.35rem;
+  padding: 0;
+  align-items: center;
+}
+
+.app-overlay-shell.pack-draw-modal.is-collection .app-overlay-title {
+  font-size: clamp(1.25rem, 2.4vw, 1.55rem);
+}
+
+.app-overlay-shell.pack-draw-modal.is-collection .app-overlay-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;
+}
+
+.app-overlay-shell.pack-draw-modal.is-collection .app-overlay-body > .pack-collection {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+.app-overlay-shell.arena-log-modal {
+  width: min(28rem, 94vw);
+  max-height: min(70dvh, 36rem);
+}
+
+.assistant-search-lead {
+  margin: 0 0 0.85rem;
+  color: rgba(232, 214, 180, 0.72);
+  font-size: 0.92rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .catalog-tile,
+  .icon-fab,
+  .page-enter,
+  .pack-collection-tile,
+  .arena-play-actions .arena-primary-action,
+  .arena-play-actions .arena-secondary-action {
+    transition: none !important;
+  }
+
+  .pack-collection-tile:hover,
+  .card-tile:hover .card-tile-frame {
+    transform: none;
+    filter: none;
+  }
+}

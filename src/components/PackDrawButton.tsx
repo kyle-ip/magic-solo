@@ -37,6 +37,7 @@ import {
 import { CardDetailsBody } from './CardDetailsBody'
 import { PackHeadIconButton } from './PackHeadIconButton'
 import { PrintAssistantModal } from './PrintAssistantModal'
+import { AppOverlay, UiButton } from './ui'
 import { collectionPeerNames } from '../llm/context/cardBrief'
 import { printItemsFromDrawn } from '../print/printCards'
 import { rarityFrameClass } from '../utils/rarityFrame'
@@ -1858,43 +1859,32 @@ export function PackDrawButton() {
                 </div>
               )}
               {clearConfirmOpen ? (
-                <div
+                <AppOverlay
+                  open
+                  nested
+                  mode="modal"
+                  onClose={() => setClearConfirmOpen(false)}
+                  title={t('packDraw.clearTitle')}
+                  titleId="pack-clear-title"
                   className="pack-confirm-backdrop"
-                  role="presentation"
-                  onMouseDown={(e) => {
-                    if (e.target === e.currentTarget) setClearConfirmOpen(false)
-                  }}
+                  shellClassName="pack-confirm-dialog"
+                  size="narrow"
                 >
-                  <div
-                    className="pack-confirm-dialog"
-                    role="alertdialog"
-                    aria-modal="true"
-                    aria-labelledby="pack-clear-title"
-                    aria-describedby="pack-clear-desc"
-                    onMouseDown={(e) => e.stopPropagation()}
-                  >
-                    <h3 id="pack-clear-title">{t('packDraw.clearTitle')}</h3>
-                    <p id="pack-clear-desc">
-                      {t('packDraw.clearConfirm', { n: collection.length })}
-                    </p>
-                    <div className="pack-confirm-actions">
-                      <button
-                        type="button"
-                        className="btn ghost"
-                        onClick={() => setClearConfirmOpen(false)}
-                      >
-                        {t('packDraw.cancel')}
-                      </button>
-                      <button
-                        type="button"
-                        className="btn primary"
-                        onClick={confirmClearCollection}
-                      >
-                        {t('packDraw.clearAll')}
-                      </button>
-                    </div>
+                  <p id="pack-clear-desc">
+                    {t('packDraw.clearConfirm', { n: collection.length })}
+                  </p>
+                  <div className="pack-confirm-actions">
+                    <UiButton
+                      variant="ghost"
+                      onClick={() => setClearConfirmOpen(false)}
+                    >
+                      {t('packDraw.cancel')}
+                    </UiButton>
+                    <UiButton variant="primary" onClick={confirmClearCollection}>
+                      {t('packDraw.clearAll')}
+                    </UiButton>
                   </div>
-                </div>
+                </AppOverlay>
               ) : null}
             </div>
           </div>,

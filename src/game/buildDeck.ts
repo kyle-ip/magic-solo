@@ -12,6 +12,23 @@ export function resetIdSeq(): void {
   seq = 0
 }
 
+/** Raise the module counter so future nextId() values stay above restored ids. */
+export function ensureIdSeqAtLeast(n: number): void {
+  if (n > seq) seq = n
+}
+
+/** Parse numeric seq from ids shaped like `prefix-123-abcde` or `seat-12`. */
+export function maxSeqFromIds(ids: Iterable<string>): number {
+  let max = 0
+  for (const id of ids) {
+    const parts = id.split('-')
+    if (parts.length < 2) continue
+    const n = Number(parts[1])
+    if (Number.isFinite(n) && n > max) max = n
+  }
+  return max
+}
+
 export function makeInstance(def: CardDef): CardInstance {
   const type = def.typeLine.toLowerCase()
   return {

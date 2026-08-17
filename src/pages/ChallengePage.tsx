@@ -10,7 +10,7 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from 'react'
 import { createPortal } from 'react-dom'
-import { Link, Navigate, useParams } from 'react-router-dom'
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import '../styles/arena.css'
 import '../styles/llm.css'
@@ -28,11 +28,17 @@ import { PrimaryActionBar } from '../components/challenge/PrimaryActionBar'
 import { PlayerPhaseMark } from '../components/challenge/PlayerPhaseMark'
 import { ZonePile } from '../components/challenge/ZonePile'
 import { computeBoardDensity } from '../challenge/boardDensity'
-import { groupLandStacks } from '../challenge/landStacks'
+import { groupLandStacks, landStackKey } from '../challenge/landStacks'
 import { resolvePrimaryAction } from '../challenge/primaryAction'
 import { LanguageSwitch } from '../components/LanguageSwitch'
 import { PackHeadIconButton } from '../components/PackHeadIconButton'
+import { AppOverlay, UiButton } from '../components/ui'
 import { getDeck } from '../data/deckStore'
+import {
+  clearChallengeSave,
+  loadChallengeSave,
+  saveChallengeSave,
+} from '../data/sessionSave'
 import { getCardZh } from '../data/locale/cardsZh'
 import { deckMetaEn, deckMetaZh } from '../data/locale/deckMeta'
 import { coachTipKey } from '../game/coachTip'
@@ -107,6 +113,8 @@ import {
   flightImageUrl,
   handDockFallbackRect,
   instanceRect,
+  landStackCardRect,
+  playerLandsRowRect,
   zonePileRect,
 } from '../utils/cardFlightDom'
 import { isCoarsePointer } from '../utils/motionPrefs'
@@ -196,10 +204,10 @@ function ChallengeHandCard({
     rectFromElement(target)
 
   const onPointerDown = (e: ReactPointerEvent<HTMLButtonElement>) => {
-    if (!touchUi || e.button > 0) return
-    // Unaffordable: tap for detail only — no cast drag.
+    if (e.button > 0) return
+    // Unaffordable: tap/click for detail only — no cast drag.
     if (unaffordable && !pending) return
-    // Touch: press+drag out to cast; tap selects / shows detail.
+    // Press+drag out of hand to cast (desktop + touch). Touch tap still only previews.
     e.stopPropagation()
     const target = e.currentTarget
     dragRef.current = {
@@ -429,12 +437,19 @@ export function ChallengePage() {
 
 function ChallengeGame({ code }: { code: ChallengeCode }) {
   const { t, i18n } = useTranslation()
+  const navigate = useNavigate()
   const deck = getDeck(code)
   const metaTable = i18n.language.startsWith('zh') ? deckMetaZh : deckMetaEn
   const meta = metaTable[code]
   const zh = i18n.language.startsWith('zh')
 
   const [state, dispatch] = useReducer(gameReducer, code, createInitialSetup)
+  const stateRef = useRef(state)
+  stateRef.current = state
+  const pendingResumeRef = useRef(loadChallengeSave(code))
+  const [resumePromptOpen, setResumePromptOpen] = useState(
+    () => pendingResumeRef.current != null,
+  )
   const [heads, setHeads] = useState(2)
   const [hordeDelay, setHordeDelay] = useState(3)
   const [playerDeckId, setPlayerDeckId] = useState<PlayerDeckId>(DEFAULT_PLAYER_DECK)
@@ -573,7 +588,42 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
     setHandPinned(true)
   }, [handPinned])
 
-  const act = useCallback((action: GameAction) => dispatch(action), [])
+  const act = useCallback(
+    (action: GameAction) => {
+      if (action.type === 'RESET') clearChallengeSave(code)
+      dispatch(action)
+    },
+    [code],
+  )
+
+  useEffect(() => {
+    if (state.status !== 'playing') return
+    const timer = window.setTimeout(() => {
+      saveChallengeSave(code, state)
+    }, 300)
+    return () => window.clearTimeout(timer)
+  }, [state, code])
+
+  useEffect(() => {
+    if (state.status === 'won' || state.status === 'lost') {
+      clearChallengeSave(code)
+    }
+  }, [state.status, code])
+
+  useEffect(() => {
+    return () => {
+      if (stateRef.current.status === 'playing') {
+        saveChallengeSave(code, stateRef.current)
+      }
+    }
+  }, [code])
+
+  const discardResume = useCallback(() => {
+    if (assetLoading) return
+    clearChallengeSave(code)
+    pendingResumeRef.current = null
+    setResumePromptOpen(false)
+  }, [assetLoading, code])
 
   const warmChallengeAssets = useCallback(() => {
     const gen = ++assetLoadGenRef.current
@@ -640,6 +690,42 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
     playerDeckId,
     warmChallengeAssets,
   ])
+
+  const resumeChallenge = useCallback(async () => {
+    const saved = pendingResumeRef.current
+    if (!saved || assetLoading) return
+    const resumeDeckId = getPlayerDeck(saved.playerDeckId).id
+    const resumeHeroIds = saved.player.heroes.map((h) => h.defId)
+    // Keep the resume dialog mounted until HYDRATE leaves setup — closing it first
+    // flashes the setup page (AnimatePresence exit + warm restart).
+    setAssetLoading(true)
+    try {
+      const gen = ++assetLoadGenRef.current
+      assetsReadyRef.current = false
+      setAssetProgress({ done: 0, total: 0 })
+      const run = preloadChallengeImages(
+        { code, playerDeckId: resumeDeckId, heroIds: resumeHeroIds },
+        (progress) => {
+          if (gen !== assetLoadGenRef.current) return
+          setAssetProgress(progress)
+        },
+      )
+      warmPromiseRef.current = run
+      await run
+      if (gen !== assetLoadGenRef.current) return
+      assetsReadyRef.current = true
+      setAssetsReady(true)
+      warmPromiseRef.current = null
+      // Sync setup knobs after preload so warmChallengeAssets does not re-fire mid-resume.
+      setPlayerDeckId(resumeDeckId)
+      setHeroIds(resumeHeroIds)
+      pendingResumeRef.current = null
+      setResumePromptOpen(false)
+      act({ type: 'HYDRATE', state: saved })
+    } finally {
+      setAssetLoading(false)
+    }
+  }, [act, assetLoading, code])
 
   const advance = useCallback(() => act({ type: 'ADVANCE' }), [act])
 
@@ -1410,18 +1496,32 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
       const meta = castMetaRef.current.get(id)
       castMetaRef.current.delete(id)
       if (!meta) continue
+      const boardLand = state.player.lands.find((c) => c.instanceId === id)
       const onBoard =
-        state.player.creatures.some((c) => c.instanceId === id) ||
-        state.player.lands.some((c) => c.instanceId === id)
+        state.player.creatures.some((c) => c.instanceId === id) || !!boardLand
       hideDuringFlight(id)
       enqueue({
         id: `cast-${id}`,
         imageUrl: flightImageUrl(meta.image),
         from,
-        to: () =>
-          onBoard
-            ? instanceRect(id) ?? zonePileRect('player-graveyard')
-            : zonePileRect('player-graveyard'),
+        to: () => {
+          if (!onBoard) return zonePileRect('player-graveyard')
+          const own = instanceRect(id)
+          if (own) return own
+          // Stacked lands only expose stack.top — fly to that card face, not the
+          // stack's tapped footprint (near-square box crops the flight ghost).
+          if (boardLand) {
+            const stack = groupLandStacks(state.player.lands).find((s) =>
+              s.lands.some((l) => l.instanceId === id),
+            )
+            return (
+              (stack ? instanceRect(stack.top.instanceId) : null) ??
+              landStackCardRect(landStackKey(boardLand)) ??
+              playerLandsRowRect()
+            )
+          }
+          return zonePileRect('player-graveyard')
+        },
         durationMs: isCoarsePointer() ? 300 : 420,
         trail: !isCoarsePointer(),
         onComplete: () => clearFlightHidden(id),
@@ -1616,45 +1716,73 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
 
   if (state.status === 'setup') {
     return (
-      <ChallengeSetupView
-        code={code}
-        theme={deck.theme}
-        title={meta?.name ?? deck.name}
-        zh={zh}
-        assetLoading={assetLoading}
-        assetProgress={assetProgress}
-        assetsReady={assetsReady}
-        heads={heads}
-        hordeDelay={hordeDelay}
-        heroIds={heroIds}
-        playerDeckId={playerDeckId}
-        background={
-          <RemoteArtBackground className="arena-bg" localPath={heroArt} kind="art_crop" />
-        }
-        onHeads={setHeads}
-        onHordeDelay={setHordeDelay}
-        onToggleHero={(id) => {
-          setHeroIds((prev) => {
-            if (prev.includes(id)) return prev.filter((x) => x !== id)
-            if (prev.length >= maxHeroesFor(code)) return prev
-            return [...prev, id]
-          })
-        }}
-        onPickDeck={setPlayerDeckId}
-        onViewRoster={setRosterModalId}
-        onBegin={() => void beginChallenge()}
-        rosterModal={
-          rosterModalId ? (
-            <DeckRosterModal
-              deckId={rosterModalId}
-              code={code}
-              zh={zh}
-              onClose={() => setRosterModalId(null)}
-              onSelect={setPlayerDeckId}
-            />
-          ) : null
-        }
-      />
+      <>
+        <ChallengeSetupView
+          code={code}
+          theme={deck.theme}
+          title={meta?.name ?? deck.name}
+          zh={zh}
+          assetLoading={assetLoading}
+          assetProgress={assetProgress}
+          assetsReady={assetsReady}
+          heads={heads}
+          hordeDelay={hordeDelay}
+          heroIds={heroIds}
+          playerDeckId={playerDeckId}
+          background={
+            <RemoteArtBackground className="arena-bg" localPath={heroArt} kind="art_crop" />
+          }
+          onHeads={setHeads}
+          onHordeDelay={setHordeDelay}
+          onToggleHero={(id) => {
+            setHeroIds((prev) => {
+              if (prev.includes(id)) return prev.filter((x) => x !== id)
+              if (prev.length >= maxHeroesFor(code)) return prev
+              return [...prev, id]
+            })
+          }}
+          onPickDeck={setPlayerDeckId}
+          onViewRoster={setRosterModalId}
+          onBegin={() => void beginChallenge()}
+          rosterModal={
+            rosterModalId ? (
+              <DeckRosterModal
+                deckId={rosterModalId}
+                code={code}
+                zh={zh}
+                onClose={() => setRosterModalId(null)}
+                onSelect={setPlayerDeckId}
+              />
+            ) : null
+          }
+        />
+        {resumePromptOpen ? (
+          <AppOverlay
+            open
+            mode="modal"
+            onClose={discardResume}
+            closeOnBackdrop={false}
+            title={t('sessionResume.title')}
+            titleId="challenge-resume-title"
+            shellClassName="pack-confirm-dialog"
+            size="narrow"
+          >
+            <p id="challenge-resume-desc">{t('sessionResume.body')}</p>
+            <div className="pack-confirm-actions">
+              <UiButton variant="ghost" onClick={discardResume} disabled={assetLoading}>
+                {t('sessionResume.restart')}
+              </UiButton>
+              <UiButton
+                variant="primary"
+                onClick={() => void resumeChallenge()}
+                disabled={assetLoading}
+              >
+                {assetLoading ? t('challenge.beginLoading') : t('sessionResume.continue')}
+              </UiButton>
+            </div>
+          </AppOverlay>
+        ) : null}
+      </>
     )
   }
 
@@ -2249,39 +2377,35 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
       </div>
 
       {logModalOpen ? (
-        <div
+        <AppOverlay
+          open
+          mode="modal"
+          onClose={() => setLogModalOpen(false)}
+          title={t('challenge.log')}
+          titleId="arena-log-modal-title"
           className="arena-log-overlay"
-          role="presentation"
-          onClick={() => setLogModalOpen(false)}
+          shellClassName="arena-log-modal"
+          size="narrow"
+          headerActions={
+            <PackHeadIconButton
+              icon="close"
+              label={t('challenge.logClose')}
+              onClick={() => setLogModalOpen(false)}
+            />
+          }
         >
-          <div
-            className="arena-log-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="arena-log-modal-title"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="arena-log-modal-head">
-              <h2 id="arena-log-modal-title">{t('challenge.log')}</h2>
-              <PackHeadIconButton
-                icon="close"
-                label={t('challenge.logClose')}
-                onClick={() => setLogModalOpen(false)}
-              />
-            </div>
-            <ul className="arena-log-modal-list">
-              {state.log.length === 0 ? (
-                <li className="tone-info">{t('challenge.logEmpty')}</li>
-              ) : (
-                state.log.map((e) => (
-                  <li key={e.id} className={`tone-${e.tone ?? 'info'}`}>
-                    {formatLog(e)}
-                  </li>
-                ))
-              )}
-            </ul>
-          </div>
-        </div>
+          <ul className="arena-log-modal-list">
+            {state.log.length === 0 ? (
+              <li className="tone-info">{t('challenge.logEmpty')}</li>
+            ) : (
+              state.log.map((e) => (
+                <li key={e.id} className={`tone-${e.tone ?? 'info'}`}>
+                  {formatLog(e)}
+                </li>
+              ))
+            )}
+          </ul>
+        </AppOverlay>
       ) : null}
 
       {state.fx ? (
@@ -2891,6 +3015,20 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                 onClick={() => act({ type: 'RESET' })}
               >
                 {t('challenge.playAgain')}
+              </button>
+              <button
+                type="button"
+                className="btn ghost"
+                onClick={() => {
+                  const idx = window.history.state?.idx
+                  if (typeof idx === 'number' && idx > 0) {
+                    navigate(-1)
+                    return
+                  }
+                  navigate(`/decks/${code}`)
+                }}
+              >
+                {t('challenge.backPage')}
               </button>
               {hasLlmKey ? (
                 <button

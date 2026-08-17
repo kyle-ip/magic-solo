@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { PackHeadIconButton } from './PackHeadIconButton'
+import { AppOverlay, UiButton } from './ui'
 
 type PrintExportDialogProps = {
   open: boolean
@@ -83,7 +83,10 @@ export function PrintExportDialog({
     }
   }, [])
 
-  if (!open || !pdfUrl) return null
+  const handleClose = () => {
+    if (busy === 'print' || busy === 'share') return
+    onClose()
+  }
 
   const printPdf = () => {
     if (busy) return
@@ -95,7 +98,7 @@ export function PrintExportDialog({
           window.alert(t('printAssistant.exportMobilePrintWarn'))
         }
         const iframe = iframeRef.current
-        if (!iframe) {
+        if (!iframe || !pdfUrl) {
           window.alert(t('printAssistant.exportPrintFailed'))
           return
         }
@@ -117,7 +120,7 @@ export function PrintExportDialog({
   }
 
   const savePdf = () => {
-    if (busy) return
+    if (busy || !pdfUrl) return
     void (async () => {
       setBusy('save')
       await yieldToPaint()
@@ -139,7 +142,7 @@ export function PrintExportDialog({
   }
 
   const sharePdf = async () => {
-    if (busy) return
+    if (busy || !pdfUrl) return
     setBusy('share')
     await yieldToPaint()
     try {
@@ -157,87 +160,71 @@ export function PrintExportDialog({
     }
   }
 
-  const handleClose = () => {
-    if (busy === 'print' || busy === 'share') return
-    // Parent unmounts this dialog first; PDF URL teardown is deferred there.
-    onClose()
-  }
-
-  return createPortal(
-    <div
+  return (
+    <AppOverlay
+      open={open && !!pdfUrl}
+      onClose={handleClose}
+      title={t('printAssistant.exportReadyTitle')}
+      titleId="print-export-title"
       className="print-export-backdrop"
-      role="presentation"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) handleClose()
-      }}
-    >
-      <div
-        className="print-export-shell"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="print-export-title"
-        aria-busy={busy != null}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <header className="print-export-head">
-          <h3 id="print-export-title">{t('printAssistant.exportReadyTitle')}</h3>
-          <div className="print-export-head-actions">
-            <PackHeadIconButton
-              icon="close"
-              label={t('printAssistant.close')}
-              disabled={busy === 'print' || busy === 'share'}
-              onClick={handleClose}
-            />
-          </div>
-        </header>
-        <p className="print-export-lead">
-          {t('printAssistant.exportReadyLead')}
-        </p>
-        <p className="print-export-tip">{t('printAssistant.printTip')}</p>
-        <div className="print-export-actions">
-          <button
-            type="button"
-            className={`btn primary${busy === 'print' ? ' is-busy' : ''}`}
-            disabled={busy != null && busy !== 'print'}
-            aria-busy={busy === 'print'}
-            onClick={printPdf}
-          >
-            {busy === 'print'
-              ? t('printAssistant.exportPrinting')
-              : t('printAssistant.exportPrint')}
-          </button>
-          <button
-            type="button"
-            className={`btn ghost${busy === 'save' ? ' is-busy' : ''}`}
-            disabled={busy != null && busy !== 'save'}
-            aria-busy={busy === 'save'}
-            onClick={savePdf}
-          >
-            {busy === 'save'
-              ? t('printAssistant.exportSaving')
-              : t('printAssistant.exportSave')}
-          </button>
-          {canShare ? (
-            <button
-              type="button"
-              className={`btn ghost${busy === 'share' ? ' is-busy' : ''}`}
-              disabled={busy != null && busy !== 'share'}
-              aria-busy={busy === 'share'}
-              onClick={() => void sharePdf()}
-            >
-              {busy === 'share'
-                ? t('printAssistant.exportSharing')
-                : t('printAssistant.exportShare')}
-            </button>
-          ) : null}
-        </div>
-        <iframe
-          ref={iframeRef}
-          className="print-export-iframe"
-          title={t('printAssistant.exportReadyTitle')}
+      shellClassName="print-export-shell"
+      size="narrow"
+      closeOnBackdrop={busy !== 'print' && busy !== 'share'}
+      headerActions={
+        <PackHeadIconButton
+          icon="close"
+          label={t('printAssistant.close')}
+          disabled={busy === 'print' || busy === 'share'}
+          onClick={handleClose}
         />
+      }
+    >
+      <p className="print-export-lead">
+        {t('printAssistant.exportReadyLead')}
+      </p>
+      <p className="print-export-tip">{t('printAssistant.printTip')}</p>
+      <div className="print-export-actions">
+        <UiButton
+          variant="primary"
+          className={busy === 'print' ? 'is-busy' : undefined}
+          disabled={busy != null && busy !== 'print'}
+          aria-busy={busy === 'print'}
+          onClick={printPdf}
+        >
+          {busy === 'print'
+            ? t('printAssistant.exportPrinting')
+            : t('printAssistant.exportPrint')}
+        </UiButton>
+        <UiButton
+          variant="ghost"
+          className={busy === 'save' ? 'is-busy' : undefined}
+          disabled={busy != null && busy !== 'save'}
+          aria-busy={busy === 'save'}
+          onClick={savePdf}
+        >
+          {busy === 'save'
+            ? t('printAssistant.exportSaving')
+            : t('printAssistant.exportSave')}
+        </UiButton>
+        {canShare ? (
+          <UiButton
+            variant="ghost"
+            className={busy === 'share' ? 'is-busy' : undefined}
+            disabled={busy != null && busy !== 'share'}
+            aria-busy={busy === 'share'}
+            onClick={() => void sharePdf()}
+          >
+            {busy === 'share'
+              ? t('printAssistant.exportSharing')
+              : t('printAssistant.exportShare')}
+          </UiButton>
+        ) : null}
       </div>
-    </div>,
-    document.body,
+      <iframe
+        ref={iframeRef}
+        className="print-export-iframe"
+        title={t('printAssistant.exportReadyTitle')}
+      />
+    </AppOverlay>
   )
 }

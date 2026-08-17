@@ -21,6 +21,7 @@ export function LandStack({
   return (
     <div
       className={`land-stack${allTapped ? ' is-all-tapped' : ''}${mixed ? ' is-mixed' : ''}`}
+      data-land-stack-key={stack.key}
       data-count={stack.count}
       style={{ '--stack-n': Math.min(stack.count, 4) } as CSSProperties}
     >

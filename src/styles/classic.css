@@ -6,13 +6,38 @@
   flex: 1 0 auto;
 }
 
-.classic-decks-hero,
-.classic-detail-hero {
+.classic-decks-hero.page-hero,
+.classic-detail-hero.page-hero {
+  width: 100%;
   max-width: 42rem;
-  margin-bottom: 1.75rem;
+  margin: 0 0 1.75rem;
+  padding: 0;
 }
 
-.classic-decks-hero h1,
+.classic-detail-section.page-section {
+  width: 100%;
+  max-width: none;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.classic-detail-hero.page-hero {
+  max-width: 42rem;
+}
+
+.classic-detail-hero .page-hero-title .classic-title-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.classic-detail-hero .page-hero-title .classic-title-link:hover {
+  color: #f0d48a;
+}
+
+.classic-decks-hero .page-hero-title,
+.classic-detail-hero .page-hero-title,
 .classic-detail-hero h1 {
   margin: 0.2rem 0 0.65rem;
   font-size: clamp(1.85rem, 3.2vw, 2.55rem);
@@ -76,33 +101,33 @@
   gap: 1rem;
 }
 
-.classic-deck-card {
-  display: flex;
-  flex-direction: column;
+.classic-deck-card.catalog-tile {
   gap: 0.35rem;
   min-height: 100%;
   padding: 1.1rem 1.15rem 1.2rem;
-  text-decoration: none;
-  color: inherit;
-  background: var(--catalog-card-bg);
-  border: var(--catalog-card-border);
-  border-radius: var(--catalog-card-radius);
-  transition:
-    border-color var(--motion-fast) ease,
-    transform var(--motion-fast) var(--motion-ease-out),
-    box-shadow var(--motion-fast) ease;
 }
 
-.classic-deck-card:hover {
-  border-color: rgba(240, 212, 138, 0.45);
-  transform: translateY(-2px);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+.classic-deck-card .catalog-tile-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
 }
 
-.classic-deck-card h2 {
+.classic-deck-card .classic-deck-card-top {
+  order: -1;
+}
+
+.classic-deck-card h2,
+.classic-deck-card .catalog-tile-title {
   margin: 0.15rem 0 0;
   font-size: 1.28rem;
   color: #f3e6c8;
+}
+
+.classic-deck-card .catalog-tile-meta {
+  order: -1;
+  margin: 0;
 }
 
 .classic-deck-card-top {

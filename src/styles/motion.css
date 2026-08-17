@@ -7,6 +7,14 @@
   --motion-rise: 640ms;
   --motion-ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
   --motion-ease-in-out: cubic-bezier(0.45, 0.05, 0.55, 0.95);
+  /* Shell / nav / forms (native app feel) */
+  --motion-ui-fast: 120ms;
+  --motion-ui-med: 220ms;
+  --motion-ui-page: 280ms;
+  /* Card / pack / arena FX (heavier game feel) */
+  --motion-fx-fast: 160ms;
+  --motion-fx-med: 320ms;
+  --motion-fx-slow: 520ms;
 }
 
 @keyframes rise {
@@ -64,29 +72,30 @@
   animation-delay: 240ms;
 }
 
-/* Shared modal enter — dialogs keep their own size/layout */
+/* Shared modal enter — dialogs keep their own size/layout.
+ * .app-overlay-* uses motion/react — omit CSS enter to avoid double animation. */
 .modal-backdrop,
 .references-backdrop,
-.llm-modal-backdrop,
+.llm-modal-backdrop:not(.app-overlay-backdrop),
 .assistant-modal-backdrop,
 .print-assistant-backdrop,
 .print-export-backdrop,
 .pack-draw-backdrop,
 .pack-confirm-backdrop,
 .prompt-backdrop {
-  animation: modal-fade-in var(--motion-med) var(--motion-ease-out) both;
+  animation: modal-fade-in var(--motion-ui-med, var(--motion-med)) var(--motion-ease-out) both;
 }
 
 .modal-shell,
 .references-modal,
-.llm-modal-shell,
+.llm-modal-shell:not(.app-overlay-shell),
 .assistant-modal,
 .print-assistant-shell,
 .print-export-shell,
 .pack-confirm-dialog,
 .prompt-shell,
 .arena-log-modal {
-  animation: modal-shell-in var(--motion-med) var(--motion-ease-out) both;
+  animation: modal-shell-in var(--motion-ui-med, var(--motion-med)) var(--motion-ease-out) both;
 }
 
 /* Pack open / collection keep their own stage FX — backdrop fade only */

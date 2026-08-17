@@ -19,6 +19,10 @@ export function nextValueId(prefix = 'v'): string {
   return `${prefix}-${valueSeq}-${Math.random().toString(36).slice(2, 6)}`
 }
 
+export function ensureValueSeqAtLeast(n: number): void {
+  if (n > valueSeq) valueSeq = n
+}
+
 export function withNote(card: ReturnType<typeof makeInstance>): AssistantCard {
   return { ...card, note: '' }
 }

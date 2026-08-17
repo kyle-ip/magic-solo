@@ -4,6 +4,7 @@ import type { DragPayload } from '../../assistant/dnd'
 import { ArenaCard } from '../challenge/ArenaCard'
 import { CardImage } from '../../hooks/useCardImageSrc'
 import { PackHeadIconButton } from '../PackHeadIconButton'
+import { AppOverlay, UiButton } from '../ui'
 
 type Props = {
   library: AssistantCard[]
@@ -31,72 +32,72 @@ export function LibrarySearchModal({
   const { t } = useTranslation()
 
   return (
-    <div className="assistant-modal-backdrop" role="presentation" onClick={onClose}>
-      <div
-        className="assistant-modal"
-        role="dialog"
-        aria-labelledby="assistant-search-title"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <header className="assistant-modal-head">
-          <div>
-            <h2 id="assistant-search-title">{t('assistant.searchTitle')}</h2>
-            <p>{t('assistant.searchHint')}</p>
-          </div>
-          <PackHeadIconButton
-            icon="close"
-            label={t('assistant.closeSearch')}
-            onClick={onClose}
-          />
-        </header>
-        <div className="assistant-search-grid">
-          {library.length === 0 ? (
-            <p className="assistant-empty">{t('assistant.zoneEmpty')}</p>
-          ) : (
-            library.map((card, index) => (
-              <div
-                key={card.instanceId}
-                className="assistant-search-card"
-                data-drop-zone="search"
-                data-drop-index={String(index)}
+    <AppOverlay
+      open
+      onClose={onClose}
+      mode="modal"
+      title={t('assistant.searchTitle')}
+      titleId="assistant-search-title"
+      className="assistant-modal-backdrop"
+      shellClassName="assistant-modal"
+      size="wide"
+      headerActions={
+        <PackHeadIconButton
+          icon="close"
+          label={t('assistant.closeSearch')}
+          onClick={onClose}
+        />
+      }
+    >
+      <p className="assistant-search-lead">{t('assistant.searchHint')}</p>
+      <div className="assistant-search-grid">
+        {library.length === 0 ? (
+          <p className="assistant-empty">{t('assistant.zoneEmpty')}</p>
+        ) : (
+          library.map((card, index) => (
+            <div
+              key={card.instanceId}
+              className="assistant-search-card"
+              data-drop-zone="search"
+              data-drop-index={String(index)}
+            >
+              <span className="assistant-search-index">{index + 1}</span>
+              <ArenaCard
+                image={card.image}
+                name={localizeName(card.name)}
+                instanceId={card.instanceId}
+                compact
+                onClick={() => onPlay(card.instanceId)}
+                onMouseEnter={() => onHoverCard?.(card)}
+                onMouseLeave={onLeaveCard}
+                onPointerDown={(e) =>
+                  onStartDrag(
+                    e,
+                    {
+                      instanceId: card.instanceId,
+                      source: { zone: 'search', index },
+                    },
+                    { image: card.image, name: localizeName(card.name) },
+                  )
+                }
+              />
+              <UiButton
+                variant="ghost"
+                size="compact"
+                className="tiny"
+                onClick={() => onPlay(card.instanceId)}
               >
-                <span className="assistant-search-index">{index + 1}</span>
-                <ArenaCard
-                  image={card.image}
-                  name={localizeName(card.name)}
-                  instanceId={card.instanceId}
-                  compact
-                  onClick={() => onPlay(card.instanceId)}
-                  onMouseEnter={() => onHoverCard?.(card)}
-                  onMouseLeave={onLeaveCard}
-                  onPointerDown={(e) =>
-                    onStartDrag(
-                      e,
-                      {
-                        instanceId: card.instanceId,
-                        source: { zone: 'search', index },
-                      },
-                      { image: card.image, name: localizeName(card.name) },
-                    )
-                  }
-                />
-                <button
-                  type="button"
-                  className="btn ghost tiny"
-                  onClick={() => onPlay(card.instanceId)}
-                >
-                  {t('assistant.playToBattlefield')}
-                </button>
-              </div>
-            ))
-          )}
-        </div>
-        {library[0] ? (
-          <div className="assistant-search-preview" aria-hidden="true">
-            <CardImage localPath={library[0].image} kind="png" alt="" />
-          </div>
-        ) : null}
+                {t('assistant.playToBattlefield')}
+              </UiButton>
+            </div>
+          ))
+        )}
       </div>
-    </div>
+      {library[0] ? (
+        <div className="assistant-search-preview" aria-hidden="true">
+          <CardImage localPath={library[0].image} kind="png" alt="" />
+        </div>
+      ) : null}
+    </AppOverlay>
   )
 }

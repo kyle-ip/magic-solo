@@ -93,21 +93,23 @@ const PrintListRow = memo(function PrintListRow({
 }: PrintListRowProps) {
   return (
     <div className="print-assistant-list-row" role="listitem">
-      {thumbUrl ? (
-        <img
-          className="print-assistant-list-thumb"
-          src={thumbUrl}
-          alt=""
-          loading="lazy"
-          decoding="async"
-          draggable={false}
-        />
-      ) : (
-        <div
-          className="print-assistant-list-thumb print-assistant-list-thumb--empty"
-          aria-hidden
-        />
-      )}
+      <div className="print-assistant-list-thumb-wrap">
+        {thumbUrl ? (
+          <img
+            className="print-assistant-list-thumb"
+            src={thumbUrl}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            draggable={false}
+          />
+        ) : (
+          <div
+            className="print-assistant-list-thumb print-assistant-list-thumb--empty"
+            aria-hidden
+          />
+        )}
+      </div>
       <div className="print-assistant-list-info">
         <span className="print-assistant-list-name">{entry.name}</span>
         <div className="print-assistant-list-qty">

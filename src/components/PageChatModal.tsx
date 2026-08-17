@@ -1,5 +1,4 @@
 import { useEffect, useId, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
 import { useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { chatCompletion, LlmError, type ChatMessage } from '../llm/client'
@@ -8,6 +7,7 @@ import { pageChatSystemPrompt } from '../llm/prompts'
 import { useHasLlmApiKey } from '../hooks/useLlmSettings'
 import { LlmRichText } from './LlmRichText'
 import { PackHeadIconButton } from './PackHeadIconButton'
+import { AppOverlay, UiButton } from './ui'
 import '../styles/llm.css'
 
 type Turn = { role: 'user' | 'assistant'; content: string }
@@ -44,15 +44,6 @@ export function PageChatModal({ open, onClose }: PageChatModalProps) {
   }, [open, pathname])
 
   useEffect(() => {
-    if (!open) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [open, onClose])
-
-  useEffect(() => {
     return () => abortRef.current?.abort()
   }, [])
 
@@ -61,8 +52,6 @@ export function PageChatModal({ open, onClose }: PageChatModalProps) {
     if (!el) return
     el.scrollTop = el.scrollHeight
   }, [turns, loading, open])
-
-  if (!open) return null
 
   const brief = briefRef.current
 
@@ -126,90 +115,79 @@ export function PageChatModal({ open, onClose }: PageChatModalProps) {
     }
   }
 
-  return createPortal(
-    <div
+  return (
+    <AppOverlay
+      open={open}
+      onClose={onClose}
+      title={t('llm.chatTitle')}
+      titleId={titleId}
       className="llm-modal-backdrop"
-      role="presentation"
-      onClick={onClose}
+      shellClassName="llm-modal-shell llm-page-chat-shell"
+      headerActions={
+        <PackHeadIconButton
+          icon="close"
+          label={t('llm.close')}
+          onClick={onClose}
+        />
+      }
     >
-      <div
-        className="llm-modal-shell llm-page-chat-shell"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <header className="llm-modal-head">
-          <div className="llm-modal-head-copy">
-            <h2 id={titleId}>{t('llm.chatTitle')}</h2>
-          </div>
-          <div className="llm-modal-head-actions">
-            <PackHeadIconButton
-              icon="close"
-              label={t('llm.close')}
-              onClick={onClose}
-            />
-          </div>
-        </header>
-        <p className="llm-modal-lead">{t('llm.chatLead')}</p>
+      <p className="llm-modal-lead">{t('llm.chatLead')}</p>
 
-        <div className="llm-page-chat-thread" ref={listRef} role="log">
-          {turns.length === 0 && !loading ? (
-            <p className="llm-page-chat-empty">{t('llm.chatEmpty')}</p>
-          ) : null}
-          {turns.map((turn, i) => (
-            <div
-              key={`${turn.role}-${i}`}
-              className={`llm-page-chat-bubble is-${turn.role}${
-                error && i === turns.length - 1 && turn.role === 'assistant'
-                  ? ' is-error'
-                  : ''
-              }`}
-            >
-              {turn.role === 'assistant' ? (
-                <LlmRichText text={turn.content} />
-              ) : (
-                <p>{turn.content}</p>
-              )}
-            </div>
-          ))}
-          {loading ? (
-            <p className="llm-page-chat-status" role="status">
-              {t('llm.rulesLoading')}
-            </p>
-          ) : null}
-        </div>
-
-        <form
-          className="llm-page-chat-form"
-          onSubmit={(e) => {
-            e.preventDefault()
-            void send()
-          }}
-        >
-          <input
-            ref={inputRef}
-            type="text"
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            placeholder={t('llm.chatPlaceholder')}
-            disabled={loading || !hasKey}
-            aria-label={t('llm.chatPlaceholder')}
-            autoComplete="off"
-          />
-          <button
-            type="submit"
-            className="btn primary"
-            disabled={loading || !hasKey || !draft.trim()}
+      <div className="llm-page-chat-thread" ref={listRef} role="log">
+        {turns.length === 0 && !loading ? (
+          <p className="llm-page-chat-empty">{t('llm.chatEmpty')}</p>
+        ) : null}
+        {turns.map((turn, i) => (
+          <div
+            key={`${turn.role}-${i}`}
+            className={`llm-page-chat-bubble is-${turn.role}${
+              error && i === turns.length - 1 && turn.role === 'assistant'
+                ? ' is-error'
+                : ''
+            }`}
           >
-            {t('llm.chatSend')}
-          </button>
-        </form>
-        {!hasKey ? (
-          <p className="llm-page-chat-need-key">{t('llm.needKey')}</p>
+            {turn.role === 'assistant' ? (
+              <LlmRichText text={turn.content} />
+            ) : (
+              <p>{turn.content}</p>
+            )}
+          </div>
+        ))}
+        {loading ? (
+          <p className="llm-page-chat-status" role="status">
+            {t('llm.rulesLoading')}
+          </p>
         ) : null}
       </div>
-    </div>,
-    document.body,
+
+      <form
+        className="llm-page-chat-form"
+        onSubmit={(e) => {
+          e.preventDefault()
+          void send()
+        }}
+      >
+        <input
+          ref={inputRef}
+          type="text"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          placeholder={t('llm.chatPlaceholder')}
+          disabled={loading || !hasKey}
+          aria-label={t('llm.chatPlaceholder')}
+          autoComplete="off"
+        />
+        <UiButton
+          type="submit"
+          variant="primary"
+          disabled={loading || !hasKey || !draft.trim()}
+        >
+          {t('llm.chatSend')}
+        </UiButton>
+      </form>
+      {!hasKey ? (
+        <p className="llm-page-chat-need-key">{t('llm.needKey')}</p>
+      ) : null}
+    </AppOverlay>
   )
 }

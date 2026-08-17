@@ -1,6 +1,8 @@
+import { ensureIdSeqAtLeast, maxSeqFromIds } from '../game/buildDeck'
 import { shuffle } from '../game/shuffle'
 import type { CardDef } from '../game/types'
 import {
+  ensureBoardCellSeqAtLeast,
   MAX_BOARD_CELLS,
   MAX_BOARD_COLS,
   MAX_BOARD_ROWS,
@@ -8,7 +10,12 @@ import {
   nextBoardCellId,
   type BoardCell,
 } from './layouts'
-import { buildAssistantStart, createInitialSetup, nextValueId } from './setup'
+import {
+  buildAssistantStart,
+  createInitialSetup,
+  ensureValueSeqAtLeast,
+  nextValueId,
+} from './setup'
 import {
   type AssistantAction,
   type AssistantCard,
@@ -19,6 +26,24 @@ import {
 } from './types'
 
 type BoardDirection = 'up' | 'down' | 'left' | 'right'
+
+function collectAssistantInstanceIds(state: AssistantState): string[] {
+  const ids: string[] = []
+  for (const c of state.library) ids.push(c.instanceId)
+  if (state.staging) ids.push(state.staging.instanceId)
+  for (const c of state.battlefield) {
+    if (c) ids.push(c.instanceId)
+  }
+  for (const c of state.graveyard) ids.push(c.instanceId)
+  for (const c of state.exile) ids.push(c.instanceId)
+  return ids
+}
+
+function syncSeqsFromAssistantState(state: AssistantState): void {
+  ensureIdSeqAtLeast(maxSeqFromIds(collectAssistantInstanceIds(state)))
+  ensureBoardCellSeqAtLeast(maxSeqFromIds(state.boardCells.map((c) => c.id)))
+  ensureValueSeqAtLeast(maxSeqFromIds(state.playerValues.map((v) => v.id)))
+}
 
 function sortBoardPairs(
   cells: BoardCell[],
@@ -352,6 +377,13 @@ export function createAssistantReducer(ctx: AssistantReducerContext) {
         )
       case 'RESET':
         return createInitialSetup(state.code, state.theme, ctx.lifeLabel)
+      case 'HYDRATE': {
+        if (action.state.code !== state.code || action.state.status !== 'playing') {
+          return state
+        }
+        syncSeqsFromAssistantState(action.state)
+        return action.state
+      }
       case 'SHUFFLE_LIBRARY':
         return { ...state, library: shuffle(state.library) }
       case 'DRAW': {

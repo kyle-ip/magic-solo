@@ -7,7 +7,7 @@ import {
   useState,
   type CSSProperties,
 } from 'react'
-import { Link, Navigate, useParams } from 'react-router-dom'
+import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import '../styles/arena.css'
 import '../styles/cursors.css'
@@ -37,7 +37,13 @@ import {
   arenaToolIcons,
 } from '../components/ArenaToolButton'
 import { LanguageSwitch } from '../components/LanguageSwitch'
+import { AppOverlay, UiButton } from '../components/ui'
 import { getDeck } from '../data/deckStore'
+import {
+  clearAssistantSave,
+  loadAssistantSave,
+  saveAssistantSave,
+} from '../data/sessionSave'
 import { getCardZh } from '../data/locale/cardsZh'
 import { deckMetaEn, deckMetaZh } from '../data/locale/deckMeta'
 import type { ChallengeCode } from '../game/types'
@@ -52,6 +58,7 @@ import {
 } from '../hooks/useCardFlight'
 import { usePreviewCopyWheel } from '../hooks/usePreviewCopyWheel'
 import { preferredAssetUrl } from '../utils/remoteAsset'
+import { setHideSiteChrome } from '../utils/siteChrome'
 import {
   flightImageUrl,
   instanceRect,
@@ -75,6 +82,7 @@ export function AssistantPage() {
 
 function AssistantGame({ code }: { code: ChallengeCode }) {
   const { t, i18n } = useTranslation()
+  const navigate = useNavigate()
   const deck = getDeck(code)
   const metaTable = i18n.language.startsWith('zh') ? deckMetaZh : deckMetaEn
   const meta = metaTable[code]
@@ -95,8 +103,36 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
   const [state, dispatch] = useReducer(reducer, undefined, () =>
     createInitialSetup(code, deck?.theme ?? 'hydra', lifeLabel),
   )
+  const stateRef = useRef(state)
+  stateRef.current = state
+  const pendingResumeRef = useRef(loadAssistantSave(code))
+  const [resumePromptOpen, setResumePromptOpen] = useState(
+    () => pendingResumeRef.current != null,
+  )
 
-  const act = useCallback((action: AssistantAction) => dispatch(action), [])
+  const act = useCallback(
+    (action: AssistantAction) => {
+      if (action.type === 'RESET') clearAssistantSave(code)
+      dispatch(action)
+    },
+    [code],
+  )
+
+  useEffect(() => {
+    if (state.status !== 'playing') return
+    const timer = window.setTimeout(() => {
+      saveAssistantSave(code, state)
+    }, 300)
+    return () => window.clearTimeout(timer)
+  }, [state, code])
+
+  useEffect(() => {
+    return () => {
+      if (stateRef.current.status === 'playing') {
+        saveAssistantSave(code, stateRef.current)
+      }
+    }
+  }, [code])
 
   const [assetLoading, setAssetLoading] = useState(false)
   const [assetProgress, setAssetProgress] = useState<ImagePreloadProgress>({
@@ -114,10 +150,20 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
   useArenaScale(arenaRef, playing)
   const boardPan = useBoardPan(boardStageRef, boardPanRef, playing)
 
+  const discardResume = useCallback(() => {
+    if (assetLoading) return
+    clearAssistantSave(code)
+    pendingResumeRef.current = null
+    setResumePromptOpen(false)
+  }, [assetLoading, code])
+
   useEffect(() => {
+    // Keep SiteHeader on setup; hide chrome only while the board is active.
+    setHideSiteChrome(playing)
     document.documentElement.classList.toggle('is-arena-playing', playing)
     document.documentElement.classList.toggle('is-assistant-fit', playing)
     return () => {
+      setHideSiteChrome(false)
       document.documentElement.classList.remove('is-arena-playing')
       document.documentElement.classList.remove('is-assistant-fit')
     }
@@ -159,6 +205,27 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
       }
       if (!assetsReadyRef.current) return
       act({ type: 'START' })
+    } finally {
+      setAssetLoading(false)
+    }
+  }, [act, assetLoading, warmAssistantAssets])
+
+  const resumeAssistant = useCallback(async () => {
+    const saved = pendingResumeRef.current
+    if (!saved || assetLoading) return
+    // Keep the dialog up until HYDRATE leaves setup to avoid a setup-page flash.
+    setAssetLoading(true)
+    try {
+      if (!assetsReadyRef.current) {
+        await (warmPromiseRef.current ?? warmAssistantAssets())
+      }
+      if (!assetsReadyRef.current) {
+        await warmAssistantAssets()
+      }
+      if (!assetsReadyRef.current) return
+      pendingResumeRef.current = null
+      setResumePromptOpen(false)
+      act({ type: 'HYDRATE', state: saved })
     } finally {
       setAssetLoading(false)
     }
@@ -445,23 +512,8 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
         act({ type: 'REORDER_LIBRARY', fromIndex: from, toIndex: target.index })
         return
       }
-      const fromRect = instanceRect(payload.instanceId)
-      const cardImage =
-        state.staging?.instanceId === payload.instanceId
-          ? state.staging.image
-          : state.battlefield.find((c) => c?.instanceId === payload.instanceId)
-              ?.image ??
-            state.graveyard.find((c) => c.instanceId === payload.instanceId)?.image ??
-            state.exile.find((c) => c.instanceId === payload.instanceId)?.image ??
-            state.library.find((c) => c.instanceId === payload.instanceId)?.image ??
-            ''
-
+      // Drag already followed the pointer — settle in place without a second flight.
       if (target.zone === 'library') {
-        queueMoveFlight(
-          { instanceId: payload.instanceId, image: cardImage },
-          'library',
-          fromRect,
-        )
         act({
           type: 'MOVE_CARD',
           instanceId: payload.instanceId,
@@ -471,11 +523,6 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
         return
       }
       if (target.zone === 'battlefield') {
-        queueMoveFlight(
-          { instanceId: payload.instanceId, image: cardImage },
-          'battlefield',
-          fromRect,
-        )
         act({
           type: 'MOVE_CARD',
           instanceId: payload.instanceId,
@@ -485,11 +532,6 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
         if (searchOpen && payload.source.zone === 'search') setSearchOpen(false)
         return
       }
-      queueMoveFlight(
-        { instanceId: payload.instanceId, image: cardImage },
-        target.zone,
-        fromRect,
-      )
       act({
         type: 'MOVE_CARD',
         instanceId: payload.instanceId,
@@ -500,13 +542,8 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
     [
       act,
       clearPreview,
-      queueMoveFlight,
       searchOpen,
       state.library,
-      state.staging,
-      state.battlefield,
-      state.graveyard,
-      state.exile,
     ],
   )
 
@@ -648,89 +685,117 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
         ? Math.round((assetProgress.done / assetProgress.total) * 100)
         : 0
     return (
-      <main className={`arena-root assistant-root theme-${deck.theme} is-setup`}>
-        <RemoteArtBackground className="arena-bg" localPath={heroArt} kind="art_crop" />
-        <div className="arena-bg-veil" />
-        <div className={`assistant-setup arena-setup${assetLoading ? ' is-preloading' : ''}`}>
-          {assetLoading ? (
-            <div className="setup-preload" role="status" aria-live="polite">
-              <div className="setup-preload-fx" aria-hidden="true">
-                <span className="setup-preload-card" />
-                <span className="setup-preload-card" />
-                <span className="setup-preload-card" />
+      <>
+        <main className={`arena-root assistant-root theme-${deck.theme} is-setup`}>
+          <RemoteArtBackground className="arena-bg" localPath={heroArt} kind="art_crop" />
+          <div className="arena-bg-veil" />
+          <div className={`assistant-setup arena-setup${assetLoading ? ' is-preloading' : ''}`}>
+            {assetLoading ? (
+              <div className="setup-preload" role="status" aria-live="polite">
+                <div className="setup-preload-fx" aria-hidden="true">
+                  <span className="setup-preload-card" />
+                  <span className="setup-preload-card" />
+                  <span className="setup-preload-card" />
+                </div>
+                <p className="setup-preload-title">{t('assistant.loadingTitle')}</p>
+                <p>
+                  {t('assistant.loadingAssets', {
+                    done: assetProgress.done,
+                    total: assetProgress.total || '…',
+                    pct: preloadPct,
+                  })}
+                </p>
+                <div className="setup-preload-bar" aria-hidden="true">
+                  <span style={{ width: `${preloadPct}%` }} />
+                </div>
               </div>
-              <p className="setup-preload-title">{t('assistant.loadingTitle')}</p>
-              <p>
-                {t('assistant.loadingAssets', {
-                  done: assetProgress.done,
-                  total: assetProgress.total || '…',
-                  pct: preloadPct,
-                })}
-              </p>
-              <div className="setup-preload-bar" aria-hidden="true">
-                <span style={{ width: `${preloadPct}%` }} />
-              </div>
-            </div>
-          ) : null}
-          <h1>{meta?.name ?? deck.name}</h1>
-          <p className="lede">{t('assistant.setupLead')}</p>
-
-          <div className="assistant-setup-modes">
-            <button
-              type="button"
-              className={`assistant-setup-card ${state.setupKind === 'blank' ? 'is-selected' : ''}`}
-              disabled={assetLoading}
-              onClick={() => act({ type: 'SET_SETUP_KIND', kind: 'blank' })}
-            >
-              <strong>{t('assistant.setupBlank')}</strong>
-              <span>{t('assistant.setupBlankHint')}</span>
-            </button>
-            <button
-              type="button"
-              className={`assistant-setup-card ${state.setupKind === 'rules' ? 'is-selected' : ''}`}
-              disabled={assetLoading}
-              onClick={() => act({ type: 'SET_SETUP_KIND', kind: 'rules' })}
-            >
-              <strong>{t('assistant.setupRules')}</strong>
-              <span>{t('assistant.setupRulesHint')}</span>
-            </button>
-          </div>
-
-          {state.setupKind === 'rules' && code === 'tfth' ? (
-            <label className="assistant-slider">
-              <span>
-                {t('assistant.startingHeads')}: {state.startingHeads}
-              </span>
-              <input
-                type="range"
-                min={1}
-                max={4}
-                value={state.startingHeads}
-                disabled={assetLoading}
-                onChange={(e) =>
-                  act({ type: 'SET_STARTING_HEADS', n: Number(e.target.value) })
-                }
-              />
-            </label>
-          ) : null}
-
-          <div className="setup-cta-begin">
-            {!assetsReady && assetProgress.total > 0 && !assetLoading ? (
-              <p className="setup-warm-hint" role="status">
-                {t('assistant.warmingAssets', { pct: preloadPct })}
-              </p>
             ) : null}
-            <button
-              type="button"
-              className={`btn primary${assetLoading ? ' is-busy' : ''}`}
-              disabled={assetLoading}
-              onClick={() => void beginAssistant()}
-            >
-              {assetLoading ? t('assistant.beginLoading') : t('assistant.begin')}
-            </button>
+            <h1>{meta?.name ?? deck.name}</h1>
+            <p className="lede">{t('assistant.setupLead')}</p>
+
+            <div className="assistant-setup-modes">
+              <button
+                type="button"
+                className={`assistant-setup-card ${state.setupKind === 'blank' ? 'is-selected' : ''}`}
+                disabled={assetLoading}
+                onClick={() => act({ type: 'SET_SETUP_KIND', kind: 'blank' })}
+              >
+                <strong>{t('assistant.setupBlank')}</strong>
+                <span>{t('assistant.setupBlankHint')}</span>
+              </button>
+              <button
+                type="button"
+                className={`assistant-setup-card ${state.setupKind === 'rules' ? 'is-selected' : ''}`}
+                disabled={assetLoading}
+                onClick={() => act({ type: 'SET_SETUP_KIND', kind: 'rules' })}
+              >
+                <strong>{t('assistant.setupRules')}</strong>
+                <span>{t('assistant.setupRulesHint')}</span>
+              </button>
+            </div>
+
+            {state.setupKind === 'rules' && code === 'tfth' ? (
+              <label className="assistant-slider">
+                <span>
+                  {t('assistant.startingHeads')}: {state.startingHeads}
+                </span>
+                <input
+                  type="range"
+                  min={1}
+                  max={4}
+                  value={state.startingHeads}
+                  disabled={assetLoading}
+                  onChange={(e) =>
+                    act({ type: 'SET_STARTING_HEADS', n: Number(e.target.value) })
+                  }
+                />
+              </label>
+            ) : null}
+
+            <div className="setup-cta-begin">
+              {!assetsReady && assetProgress.total > 0 && !assetLoading ? (
+                <p className="setup-warm-hint" role="status">
+                  {t('assistant.warmingAssets', { pct: preloadPct })}
+                </p>
+              ) : null}
+              <button
+                type="button"
+                className={`btn primary${assetLoading ? ' is-busy' : ''}`}
+                disabled={assetLoading}
+                onClick={() => void beginAssistant()}
+              >
+                {assetLoading ? t('assistant.beginLoading') : t('assistant.begin')}
+              </button>
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
+        {resumePromptOpen ? (
+          <AppOverlay
+            open
+            mode="modal"
+            onClose={discardResume}
+            closeOnBackdrop={false}
+            title={t('sessionResume.title')}
+            titleId="assistant-resume-title"
+            shellClassName="pack-confirm-dialog"
+            size="narrow"
+          >
+            <p id="assistant-resume-desc">{t('sessionResume.body')}</p>
+            <div className="pack-confirm-actions">
+              <UiButton variant="ghost" onClick={discardResume} disabled={assetLoading}>
+                {t('sessionResume.restart')}
+              </UiButton>
+              <UiButton
+                variant="primary"
+                onClick={() => void resumeAssistant()}
+                disabled={assetLoading}
+              >
+                {assetLoading ? t('assistant.beginLoading') : t('sessionResume.continue')}
+              </UiButton>
+            </div>
+          </AppOverlay>
+        ) : null}
+      </>
     )
   }
 
@@ -1066,9 +1131,20 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
       <div className="arena-topbar-shell">
         <div className="arena-topbar-hotzone" aria-hidden="true" />
         <header className="arena-topbar assistant-topbar">
-          <Link to="/" className="arena-link">
-            ← {t('app.home')}
-          </Link>
+          <div className="arena-topbar-actions is-back">
+            <ArenaToolButton
+              label={t('assistant.back')}
+              icon={arenaToolIcons.back}
+              onClick={() => {
+                const idx = window.history.state?.idx
+                if (typeof idx === 'number' && idx > 0) {
+                  navigate(-1)
+                  return
+                }
+                navigate(`/decks/${code}`)
+              }}
+            />
+          </div>
           <div className="arena-topbar-actions">
             <ArenaToolButton
               label={t('assistant.shuffle')}

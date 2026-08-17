@@ -20,3 +20,18 @@ export function pushLog(
 export function resetLogSeq(): void {
   logSeq = 0
 }
+
+export function ensureLogSeqAtLeast(n: number): void {
+  if (n > logSeq) logSeq = n
+}
+
+/** Parse numeric seq from ids shaped like `log-12`. */
+export function maxLogSeqFromIds(ids: Iterable<string>): number {
+  let max = 0
+  for (const id of ids) {
+    if (!id.startsWith('log-')) continue
+    const n = Number(id.slice(4))
+    if (Number.isFinite(n) && n > max) max = n
+  }
+  return max
+}

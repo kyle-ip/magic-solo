@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { groupLandStacks, type LandLike } from '../landStacks'
+import { groupLandStacks, landStackKey, type LandLike } from '../landStacks'
 
 function land(partial: Partial<LandLike> & Pick<LandLike, 'instanceId' | 'name'>): LandLike {
   return {
@@ -15,6 +15,16 @@ function land(partial: Partial<LandLike> & Pick<LandLike, 'instanceId' | 'name'>
 describe('groupLandStacks', () => {
   it('returns empty for no lands', () => {
     expect(groupLandStacks([])).toEqual([])
+  })
+
+  it('builds a stable stack key from face identity', () => {
+    expect(
+      landStackKey({
+        defId: 'forest',
+        name: 'Forest',
+        image: '/img/Forest.jpg',
+      }),
+    ).toBe('forest|Forest|/img/Forest.jpg')
   })
 
   it('stacks identical lands and counts taps', () => {

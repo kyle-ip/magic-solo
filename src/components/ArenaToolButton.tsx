@@ -64,4 +64,16 @@ export const arenaToolIcons = {
       />
     </svg>
   ),
+  back: (
+    <svg viewBox="0 0 24 24" width="18" height="18">
+      <path
+        d="M14.5 5.5 8 12l6.5 6.5M8 12h12"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  ),
 }

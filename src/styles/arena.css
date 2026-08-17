@@ -572,13 +572,14 @@ html.is-arena-playing body {
 .arena-bg {
   position: fixed;
   inset: 0;
-  background-color: #1c1612;
-  background-size: cover;
-  background-position: center;
-  filter: blur(14px) saturate(1.05) brightness(1.08);
-  transform: scale(1.08);
   z-index: 0;
   pointer-events: none;
+  overflow: hidden;
+  background-color: #1c1612;
+  background-size: 112%;
+  background-position: center;
+  /* Prefer size over transform — scale() expands scrollable overflow on setup pages */
+  filter: blur(14px) saturate(1.05) brightness(1.08);
 }
 
 .arena-root.is-playing .arena-bg,
@@ -590,7 +591,7 @@ html.is-arena-playing body {
 
 .arena-root.is-playing .arena-bg {
   filter: blur(14px) saturate(1.05) brightness(1.08);
-  transform: scale(1.08);
+  background-size: 112%;
 }
 
 .arena-bg-veil {
@@ -601,6 +602,36 @@ html.is-arena-playing body {
   background:
     linear-gradient(180deg, rgba(18, 14, 10, 0.12), rgba(18, 14, 10, 0.2) 45%, rgba(18, 14, 10, 0.28)),
     radial-gradient(ellipse 80% 50% at 50% 50%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 70%);
+}
+
+/* TBTH / horde art is high-key — crush luminance so white titles stay readable */
+.arena-root.theme-horde .arena-bg {
+  filter: blur(20px) saturate(0.75) contrast(1.12) brightness(0.28);
+}
+
+.arena-root.theme-horde .arena-bg-veil {
+  background-color: rgba(8, 4, 3, 0.42);
+  background-image:
+    linear-gradient(
+      90deg,
+      rgba(2, 1, 1, 0.88) 0%,
+      rgba(4, 2, 2, 0.72) 26%,
+      rgba(6, 3, 2, 0.4) 48%,
+      transparent 70%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(4, 2, 2, 0.7) 0%,
+      rgba(6, 3, 2, 0.5) 40%,
+      rgba(8, 4, 3, 0.48) 100%
+    );
+}
+
+.arena-root.theme-horde .arena-setup > h1,
+.arena-root.theme-horde .arena-setup > .lede {
+  text-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.95),
+    0 0 28px rgba(0, 0, 0, 0.65);
 }
 
 .arena-setup {
@@ -1313,7 +1344,7 @@ html.is-arena-playing body {
   justify-content: flex-end;
 }
 
-/* Assistant: no centered title — just back link + tools */
+/* Assistant: back tools + action tools — no centered title */
 .assistant-topbar.arena-topbar {
   display: flex;
   align-items: center;
@@ -1321,12 +1352,11 @@ html.is-arena-playing body {
   gap: 0.65rem;
 }
 
-.assistant-topbar.arena-topbar > .arena-link,
 .assistant-topbar.arena-topbar > .arena-topbar-actions {
   flex: 0 1 auto;
 }
 
-.assistant-topbar.arena-topbar > .arena-topbar-actions {
+.assistant-topbar.arena-topbar > .arena-topbar-actions:not(.is-back) {
   flex: 1 1 auto;
   justify-content: flex-end;
   flex-wrap: wrap;
@@ -2461,7 +2491,11 @@ button.arena-card {
 
 .arena-card.is-selected {
   outline: 2px solid #fff3c4;
+  box-shadow:
+    0 0 0 3px rgba(255, 243, 196, 0.28),
+    0 10px 24px rgba(0, 0, 0, 0.35);
   z-index: 4;
+  filter: brightness(1.06);
 }
 
 .arena-card-badge {
@@ -5184,7 +5218,12 @@ html.is-arena-playing,
 
 .arena-card.is-selected {
   outline: none;
-  box-shadow: 0 0 0 2px #fff3c4, 0 0 14px rgba(255, 230, 160, 0.45), var(--card-shadow);
+  box-shadow:
+    0 0 0 2px #fff3c4,
+    0 0 14px rgba(255, 230, 160, 0.45),
+    0 0 0 3px rgba(255, 243, 196, 0.22),
+    var(--card-shadow);
+  filter: brightness(1.05);
 }
 
 @keyframes card-die {
@@ -6562,12 +6601,27 @@ html.is-challenge-fit .challenge-preview-pane.is-text-only .card-preview-text {
 
 /* Primary Arena-style action button */
 .arena-play-actions .arena-primary-action {
+  min-height: var(--touch-min, 44px);
   background: linear-gradient(180deg, #ff9a4a 0%, #e06a28 45%, #b04318 100%);
   border: 1px solid rgba(255, 210, 160, 0.55);
   color: #fff8f0;
   box-shadow:
     0 4px 14px rgba(160, 60, 20, 0.2),
     inset 0 1px 0 rgba(255, 230, 200, 0.35);
+  transition:
+    transform var(--motion-ui-fast, 120ms) var(--motion-ease-out),
+    filter var(--motion-ui-fast, 120ms) ease,
+    box-shadow var(--motion-ui-fast, 120ms) ease;
+}
+
+.arena-play-actions .arena-primary-action:hover:not(:disabled) {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+}
+
+.arena-play-actions .arena-primary-action:active:not(:disabled) {
+  transform: scale(var(--press-scale, 0.97));
+  filter: brightness(0.96);
 }
 
 .arena-play-actions .arena-primary-action.is-combat {
@@ -6585,17 +6639,26 @@ html.is-challenge-fit .challenge-preview-pane.is-text-only .card-preview-text {
 }
 
 .arena-play-actions .arena-secondary-action {
+  min-height: var(--touch-min, 44px);
   background: var(--control-bg);
   border: 1px solid rgba(224, 180, 90, 0.38);
   color: rgba(245, 232, 210, 0.95);
   box-shadow:
     0 4px 12px rgba(0, 0, 0, 0.16),
     inset 0 1px 0 rgba(255, 236, 196, 0.1);
+  transition:
+    transform var(--motion-ui-fast, 120ms) var(--motion-ease-out),
+    border-color var(--motion-ui-fast, 120ms) ease,
+    color var(--motion-ui-fast, 120ms) ease;
 }
 
 .arena-play-actions .arena-secondary-action:hover {
   border-color: rgba(224, 180, 90, 0.55);
   color: #fff8ec;
+}
+
+.arena-play-actions .arena-secondary-action:active {
+  transform: scale(var(--press-scale, 0.97));
 }
 
 /* Minimal setup landmarks kept for CSS contract / CTA alignment */

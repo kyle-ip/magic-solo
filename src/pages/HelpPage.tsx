@@ -3,6 +3,7 @@ import { marked } from 'marked'
 import { useTranslation } from 'react-i18next'
 import guideEn from '../../docs/USER_GUIDE.en.md?raw'
 import guideZh from '../../docs/USER_GUIDE.zh.md?raw'
+import { PageSection } from '../components/ui'
 
 const README_URL =
   'https://github.com/kyle-ip/magic-solo/blob/main/README.md'
@@ -69,11 +70,13 @@ export function HelpPage() {
 
   return (
     <main className="page help-page">
-      <article
-        className="help-article"
-        onClick={onClick}
-        dangerouslySetInnerHTML={{ __html: html }}
-      />
+      <PageSection className="help-page-section">
+        <article
+          className="help-article"
+          onClick={onClick}
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      </PageSection>
     </main>
   )
 }

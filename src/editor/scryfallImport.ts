@@ -8,10 +8,11 @@ import {
 } from '../data/randomCard'
 import { blankEditorCard, inferKind, normalizeRarity } from './defaults'
 import type { EditorCardDocument } from './types'
+import { scryfallApiUrl } from '../utils/scryfallApi'
 
-const SEARCH_URL = 'https://api.scryfall.com/cards/search'
-const NAMED_URL = 'https://api.scryfall.com/cards/named'
-const RANDOM_URL = 'https://api.scryfall.com/cards/random'
+const SEARCH_URL = scryfallApiUrl('/cards/search')
+const NAMED_URL = scryfallApiUrl('/cards/named')
+const RANDOM_URL = scryfallApiUrl('/cards/random')
 const FETCH_MS = 12_000
 
 export interface ScryfallSearchHit {
@@ -154,7 +155,7 @@ export async function importScryfallById(
   id: string,
 ): Promise<EditorCardDocument> {
   const drawn = await drawnFromUrl(
-    `https://api.scryfall.com/cards/${encodeURIComponent(id)}`,
+    scryfallApiUrl(`/cards/${encodeURIComponent(id)}`),
   )
   return drawnToEditorDocument(drawn)
 }

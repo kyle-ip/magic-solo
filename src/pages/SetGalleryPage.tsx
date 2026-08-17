@@ -25,6 +25,7 @@ import {
   NlAiFilterChip,
   NlScryfallSearch,
 } from '../components/NlScryfallSearch'
+import { UiButton } from '../components/ui'
 import { useHasLlmApiKey } from '../hooks/useLlmSettings'
 import { printItemsFromDrawn } from '../print/printCards'
 import { rarityFrameClass } from '../utils/rarityFrame'
@@ -239,14 +240,13 @@ export function SetGalleryPage() {
                 : t('sets.loading')}
             </p>
             <div className="cta-row">
-              <button
-                type="button"
-                className="btn ghost"
+              <UiButton
+                variant="ghost"
                 disabled={!setMeta || loading}
                 onClick={() => setPrintOpen(true)}
               >
                 {t('printAssistant.open')}
-              </button>
+              </UiButton>
             </div>
           </div>
           <div className="deck-hero-card">
@@ -265,16 +265,18 @@ export function SetGalleryPage() {
         </div>
       </section>
 
-      <section id="cards" className="deck-section">
-        <header className="section-head">
-          <h2>{t('sets.cards')}</h2>
-          <p className="section-meta">
-            {t('sets.cardsLabel', {
-              shown: filtered.length,
-              loaded: cards.length,
-              total: totalCards || setMeta?.cardCount || 0,
-            })}
-          </p>
+      <section id="cards" className="deck-section page-section">
+        <header className="section-head page-section-head">
+          <div>
+            <h2 className="page-section-title">{t('sets.cards')}</h2>
+            <p className="section-meta page-section-desc">
+              {t('sets.cardsLabel', {
+                shown: filtered.length,
+                loaded: cards.length,
+                total: totalCards || setMeta?.cardCount || 0,
+              })}
+            </p>
+          </div>
         </header>
 
         <div

@@ -1,6 +1,8 @@
-.help-page {
-  padding-top: 1.5rem;
-  padding-bottom: calc(2.5rem + var(--safe-bottom));
+.help-page-section.page-section {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
 }
 
 .help-article {

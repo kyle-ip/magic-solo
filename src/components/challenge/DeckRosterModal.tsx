@@ -21,6 +21,7 @@ import { DrawnCardModal } from '../DrawnCardModal'
 import { ManaCost, ManaSymbol } from '../ManaCost'
 import { PackHeadIconButton } from '../PackHeadIconButton'
 import { CardImage } from '../../hooks/useCardImageSrc'
+import { AppOverlay, UiButton } from '../ui'
 import '../../styles/classic.css'
 
 interface DeckRosterModalProps {
@@ -105,30 +106,23 @@ export function DeckRosterModal({
     setInspectId(null)
   }, [deckId])
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        if (inspectId) {
-          setInspectId(null)
-          return
-        }
-        onClose()
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onClose, inspectId])
-
   return (
     <>
-      <div className="prompt-backdrop" role="presentation" onClick={onClose}>
-        <div
-          className="prompt-shell deck-roster-shell"
-          role="dialog"
-          aria-modal="true"
-          aria-label={zh ? deck.nameZh : deck.name}
-          onClick={(e) => e.stopPropagation()}
-        >
+      <AppOverlay
+        open
+        mode="modal"
+        onClose={onClose}
+        className="prompt-backdrop"
+        shellClassName="prompt-shell deck-roster-shell"
+        size="wide"
+        headerActions={
+          <PackHeadIconButton
+            icon="close"
+            label={t('deck.close')}
+            onClick={onClose}
+          />
+        }
+      >
           <header className="deck-roster-head">
             <div>
               <div className="deck-roster-title-row">
@@ -152,13 +146,6 @@ export function DeckRosterModal({
                 <span className="section-meta-label">{t('challenge.deckHint')}:</span>
                 {hint}
               </p>
-            </div>
-            <div className="deck-roster-head-actions">
-              <PackHeadIconButton
-                icon="close"
-                label={t('deck.close')}
-                onClick={onClose}
-              />
             </div>
           </header>
 
@@ -269,19 +256,17 @@ export function DeckRosterModal({
           </div>
 
           <footer className="deck-roster-foot">
-            <button
-              type="button"
-              className="btn primary"
+            <UiButton
+              variant="primary"
               onClick={() => {
                 onSelect(deckId)
                 onClose()
               }}
             >
               {t('challenge.useDeck')}
-            </button>
+            </UiButton>
           </footer>
-        </div>
-      </div>
+      </AppOverlay>
 
       <DrawnCardModal
         card={inspect}

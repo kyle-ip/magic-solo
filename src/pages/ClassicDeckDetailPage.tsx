@@ -15,6 +15,7 @@ import {
 } from '../data/randomCard'
 import { resolveCardsByNameProgressive } from '../data/resolveClassicCards'
 import { ClassicDeckLlmAssist } from '../components/ClassicDeckLlmAssist'
+import { PageHero, PageSection, UiButton } from '../components/ui'
 import { printItemsFromClassicList } from '../print/printCards'
 import { preloadImage } from '../utils/imageCache'
 import {
@@ -170,45 +171,53 @@ export function ClassicDeckDetailPage() {
 
   return (
     <main className="page classic-deck-detail-page">
-      <header className="classic-detail-hero">
-        {scryfallSearchUrl ? (
-          <a
-            className="classic-title-link"
-            href={scryfallSearchUrl}
-            target="_blank"
-            rel="noreferrer"
-            title={t('classicDecks.openOnScryfall')}
-          >
-            <h1>{title}</h1>
-          </a>
-        ) : (
-          <h1>{title}</h1>
-        )}
-        <p className="section-meta">
-          {t(`classicDecks.format.${deck.format}`)} ·{' '}
-          {t(`classicDecks.playstyle.${deck.playstyle}`)} · {deck.era}
-        </p>
-        <p className="lede">{summary}</p>
-        <div className="cta-row">
-          <button
-            type="button"
-            className="btn ghost"
+      <PageHero
+        className="classic-detail-hero"
+        kicker={
+          <>
+            {t(`classicDecks.format.${deck.format}`)} ·{' '}
+            {t(`classicDecks.playstyle.${deck.playstyle}`)} · {deck.era}
+          </>
+        }
+        title={
+          scryfallSearchUrl ? (
+            <a
+              className="classic-title-link"
+              href={scryfallSearchUrl}
+              target="_blank"
+              rel="noreferrer"
+              title={t('classicDecks.openOnScryfall')}
+            >
+              {title}
+            </a>
+          ) : (
+            title
+          )
+        }
+        lead={summary}
+        actions={
+          <UiButton
+            variant="ghost"
             disabled={galleryBusy || deck.sampleList.length === 0}
             onClick={() => setPrintOpen(true)}
           >
             {t('printAssistant.open')}
-          </button>
-        </div>
-      </header>
+          </UiButton>
+        }
+      />
 
-      <section className="classic-detail-section">
-        <h2>{t('classicDecks.howItWins')}</h2>
+      <PageSection
+        className="classic-detail-section"
+        title={t('classicDecks.howItWins')}
+      >
         <p>{howItWins}</p>
         <ClassicDeckLlmAssist deck={deck} />
-      </section>
+      </PageSection>
 
-      <section className="classic-detail-section classic-detail-gallery-section">
-        <h2>{t('classicDecks.fullList')}</h2>
+      <PageSection
+        className="classic-detail-section classic-detail-gallery-section"
+        title={t('classicDecks.fullList')}
+      >
         {galleryBusy ? (
           <p className="classic-loading" role="status" aria-live="polite">
             {loadPhase === 'warming'
@@ -242,11 +251,13 @@ export function ClassicDeckDetailPage() {
             />
           </>
         )}
-      </section>
+      </PageSection>
 
       {deck.links?.wiki ? (
-        <section className="classic-detail-section classic-detail-links">
-          <h2>{t('classicDecks.links')}</h2>
+        <PageSection
+          className="classic-detail-section classic-detail-links"
+          title={t('classicDecks.links')}
+        >
           <ul>
             <li>
               <a href={deck.links.wiki} target="_blank" rel="noreferrer">
@@ -254,7 +265,7 @@ export function ClassicDeckDetailPage() {
               </a>
             </li>
           </ul>
-        </section>
+        </PageSection>
       ) : null}
 
       <DrawnCardModal

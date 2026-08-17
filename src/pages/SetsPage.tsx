@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
   filterGallerySets,
@@ -15,6 +14,7 @@ import {
   NlAiFilterChip,
   NlScryfallSearch,
 } from '../components/NlScryfallSearch'
+import { CatalogTile, PageHero, UiButton } from '../components/ui'
 import '../styles/sets.css'
 import '../styles/cursors.css'
 
@@ -68,10 +68,11 @@ export function SetsPage() {
 
   return (
     <main className="page sets-page">
-      <header className="sets-hero">
-        <h1>{t('sets.title')}</h1>
-        <p className="lede">{t('sets.lead')}</p>
-      </header>
+      <PageHero
+        className="sets-hero"
+        title={t('sets.title')}
+        lead={t('sets.lead')}
+      />
 
       <div className={`sets-toolbar${useAi ? ' is-ai-search' : ''}`}>
         <div
@@ -157,9 +158,9 @@ export function SetsPage() {
       {error ? (
         <div className="sets-status sets-error">
           <p>{t('sets.error', { message: error })}</p>
-          <button type="button" className="btn ghost" onClick={reload}>
+          <UiButton variant="ghost" onClick={reload}>
             {t('sets.retry')}
-          </button>
+          </UiButton>
         </div>
       ) : null}
 
@@ -173,34 +174,35 @@ export function SetsPage() {
             const name = localizedSetName(set.code, set.name, i18n.language)
             return (
               <li key={set.code}>
-                <Link to={`/sets/${set.code}`} className="sets-card">
-                  <span className="sets-card-icon" aria-hidden="true">
-                    {set.iconSvgUri ? (
+                <CatalogTile
+                  to={`/sets/${set.code}`}
+                  className="sets-card"
+                  title={name}
+                  meta={
+                    <>
+                      {t(`sets.type.${set.setType}`, {
+                        defaultValue: set.setType,
+                      })}{' '}
+                      · {set.code.toUpperCase()}
+                    </>
+                  }
+                  media={
+                    set.iconSvgUri ? (
                       <img src={set.iconSvgUri} alt="" loading="lazy" />
                     ) : (
                       <span className="sets-card-icon-fallback">
                         {set.code.toUpperCase()}
                       </span>
-                    )}
+                    )
+                  }
+                >
+                  <span className="sets-card-footer">
+                    {set.releasedAt
+                      ? t('sets.released', { date: set.releasedAt })
+                      : null}
+                    <em>{t('sets.cardCount', { count: set.cardCount })}</em>
                   </span>
-                  <span className="sets-card-body">
-                    <span className="sets-card-meta">
-                      {t(`sets.type.${set.setType}`, {
-                        defaultValue: set.setType,
-                      })}{' '}
-                      · {set.code.toUpperCase()}
-                    </span>
-                    <strong className="sets-card-name">{name}</strong>
-                    <span className="sets-card-footer">
-                      {set.releasedAt
-                        ? t('sets.released', { date: set.releasedAt })
-                        : null}
-                      <em>
-                        {t('sets.cardCount', { count: set.cardCount })}
-                      </em>
-                    </span>
-                  </span>
-                </Link>
+                </CatalogTile>
               </li>
             )
           })}

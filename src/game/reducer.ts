@@ -33,8 +33,9 @@ import {
   emptyFlags,
   returnCreatureFromGraveyard,
 } from './helpers'
-import { pushLog } from './log'
+import { ensureLogSeqAtLeast, maxLogSeqFromIds, pushLog } from './log'
 import { canBlockAttacker } from './playerAbilities'
+import { ensureIdSeqAtLeast, maxSeqFromIds } from './buildDeck'
 
 export type GameAction =
   | { type: 'START'; config: SetupConfig }
@@ -54,6 +55,32 @@ export type GameAction =
   | { type: 'DEAL_DIRECT_HEAD'; headId: string; amount: number }
   | { type: 'CLEAR_FX' }
   | { type: 'RESET' }
+  | { type: 'HYDRATE'; state: GameState }
+
+function collectGameInstanceIds(state: GameState): string[] {
+  const ids: string[] = []
+  const push = (id: string | undefined) => {
+    if (id) ids.push(id)
+  }
+  for (const c of state.player.library) push(c.instanceId)
+  for (const c of state.player.hand) push(c.instanceId)
+  for (const c of state.player.lands) push(c.instanceId)
+  for (const c of state.player.creatures) push(c.instanceId)
+  for (const c of state.player.graveyard) push(c.instanceId)
+  for (const c of state.player.exile) push(c.instanceId)
+  for (const c of state.player.heroes) push(c.instanceId)
+  for (const c of state.challenge.library) push(c.instanceId)
+  for (const c of state.challenge.battlefield) push(c.instanceId)
+  for (const c of state.challenge.graveyard) push(c.instanceId)
+  for (const c of state.castQueue) push(c.instanceId)
+  for (const c of state.revealed) push(c.instanceId)
+  return ids
+}
+
+function syncSeqsFromGameState(state: GameState): void {
+  ensureIdSeqAtLeast(maxSeqFromIds(collectGameInstanceIds(state)))
+  ensureLogSeqAtLeast(maxLogSeqFromIds(state.log.map((e) => e.id)))
+}
 
 export function createInitialSetup(code: ChallengeCode): GameState {
   return {
@@ -353,6 +380,15 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'RESET':
       return createInitialSetup(state.code)
+
+    case 'HYDRATE': {
+      if (action.state.code !== state.code || action.state.status !== 'playing') {
+        return state
+      }
+      const next = { ...action.state, fx: null }
+      syncSeqsFromGameState(next)
+      return next
+    }
 
     default:
       return state

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { getDeckIndex, getSharedRules } from '../data/deckRegistry'
 import { deckMetaEn, deckMetaZh } from '../data/locale/deckMeta'
 import { CardImage, useResolvedCardImageUrl } from '../hooks/useCardImageSrc'
+import { PageSection } from '../components/ui'
 import { assetUrl } from '../utils/assetUrl'
 
 function PathArtBg({ art }: { art: string | null | undefined }) {
@@ -74,17 +75,17 @@ export function HomePage() {
           </div>
         </section>
 
-        <section className="shared-rules">
-          <div className="section-head">
-            <h2>{shared.title}</h2>
-            <p className="lede">{shared.summary}</p>
-          </div>
+        <PageSection
+          className="shared-rules"
+          title={shared.title}
+          description={shared.summary}
+        >
           <ul className="stone-list">
             {shared.points.map((point) => (
               <li key={point}>{point}</li>
             ))}
           </ul>
-        </section>
+        </PageSection>
 
         <section id="challenges" className="challenge-paths">
           {deckPreviews.map((deck, index) => (

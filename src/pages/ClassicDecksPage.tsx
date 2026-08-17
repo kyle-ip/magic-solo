@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
   getClassicDeck,
@@ -9,6 +8,7 @@ import {
   loadAllClassicDecks,
 } from '../data/classicDeckRegistry'
 import type { ClassicFormat } from '../types'
+import { CatalogTile, PageHero } from '../components/ui'
 import '../styles/classic.css'
 import '../styles/cursors.css'
 
@@ -69,10 +69,11 @@ export function ClassicDecksPage() {
 
   return (
     <main className="page classic-decks-page">
-      <header className="classic-decks-hero">
-        <h1>{t('classicDecks.title')}</h1>
-        <p className="lede">{t('classicDecks.lead')}</p>
-      </header>
+      <PageHero
+        className="classic-decks-hero"
+        title={t('classicDecks.title')}
+        lead={t('classicDecks.lead')}
+      />
 
       <div
         className="classic-format-filters"
@@ -99,29 +100,30 @@ export function ClassicDecksPage() {
         <ul className="classic-deck-grid">
           {decks.map((deck) => (
             <li key={deck.id}>
-              <Link
+              <CatalogTile
                 to={`/classic-decks/${deck.id}`}
                 className="classic-deck-card"
+                title={getClassicDeckLocalizedName(deck, i18n.language)}
+                meta={
+                  <>
+                    {t(`classicDecks.format.${deck.format}`)} ·{' '}
+                    {t(`classicDecks.playstyle.${deck.playstyle}`)}
+                  </>
+                }
               >
                 <div className="classic-deck-card-top">
                   <ColorDots colors={deck.colors} />
-                  <span className="classic-deck-meta">
-                    {t(`classicDecks.format.${deck.format}`)} ·{' '}
-                    {t(`classicDecks.playstyle.${deck.playstyle}`)}
-                  </span>
                 </div>
-                <h2>{getClassicDeckLocalizedName(deck, i18n.language)}</h2>
                 <p className="classic-deck-era">{deck.era}</p>
                 <p className="classic-deck-summary">{deck.summary}</p>
                 <span className="classic-deck-cta">
                   {t('classicDecks.viewDeck')}
                 </span>
-              </Link>
+              </CatalogTile>
             </li>
           ))}
         </ul>
       )}
-
     </main>
   )
 }

@@ -22,11 +22,18 @@ export interface LandStackGroup {
   lands: LandLike[]
 }
 
+/** Stack identity for Arena-style land piles (identical face). */
+export function landStackKey(
+  land: Pick<LandLike, 'defId' | 'name' | 'image'>,
+): string {
+  return `${land.defId}|${land.name}|${land.image}`
+}
+
 /** Group identical lands into Arena-style stacks (×N). */
 export function groupLandStacks(lands: LandLike[]): LandStackGroup[] {
   const map = new Map<string, LandStackGroup>()
   for (const land of lands) {
-    const key = `${land.defId}|${land.name}|${land.image}`
+    const key = landStackKey(land)
     const existing = map.get(key)
     if (!existing) {
       map.set(key, {

@@ -1,5 +1,4 @@
 import { useEffect, useId, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { LlmError, testLlmConnection } from '../llm/client'
 import { clearLlmCache, llmCacheStats } from '../llm/cache'
@@ -12,6 +11,7 @@ import {
 } from '../llm/settings'
 import { useLlmSettings } from '../hooks/useLlmSettings'
 import { PackHeadIconButton } from './PackHeadIconButton'
+import { AppOverlay, UiButton } from './ui'
 import '../styles/llm.css'
 
 interface LlmSettingsModalProps {
@@ -46,21 +46,10 @@ export function LlmSettingsModal({ open, onClose }: LlmSettingsModalProps) {
   }, [open, stored.baseUrl, stored.apiKey, stored.model])
 
   useEffect(() => {
-    if (!open) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [open, onClose])
-
-  useEffect(() => {
     return () => {
       abortRef.current?.abort()
     }
   }, [])
-
-  if (!open) return null
 
   const draft = (): LlmSettings => ({
     baseUrl: baseUrl.trim() || DEFAULT_LLM_SETTINGS.baseUrl,
@@ -114,140 +103,126 @@ export function LlmSettingsModal({ open, onClose }: LlmSettingsModalProps) {
     }
   }
 
-  return createPortal(
-    <div
+  return (
+    <AppOverlay
+      open={open}
+      onClose={onClose}
+      title={t('llm.title')}
+      titleId={titleId}
+      shellClassName="llm-modal-shell"
       className="llm-modal-backdrop"
-      role="presentation"
-      onClick={onClose}
+      headerActions={
+        <PackHeadIconButton
+          icon="close"
+          label={t('llm.close')}
+          onClick={onClose}
+        />
+      }
     >
-      <div
-        className="llm-modal-shell"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        onClick={(e) => e.stopPropagation()}
+      <p className="llm-modal-lead">{t('llm.lead')}</p>
+
+      <form
+        className="llm-form"
+        onSubmit={(e) => {
+          e.preventDefault()
+          save()
+        }}
       >
-        <header className="llm-modal-head">
-          <div className="llm-modal-head-copy">
-            <h2 id={titleId}>{t('llm.title')}</h2>
-          </div>
-          <div className="llm-modal-head-actions">
-            <PackHeadIconButton
-              icon="close"
-              label={t('llm.close')}
-              onClick={onClose}
-            />
-          </div>
-        </header>
-        <p className="llm-modal-lead">{t('llm.lead')}</p>
+        <label className="llm-field">
+          <span>{t('llm.baseUrl')}</span>
+          <input
+            type="url"
+            name="baseUrl"
+            autoComplete="off"
+            spellCheck={false}
+            placeholder={DEFAULT_LLM_SETTINGS.baseUrl}
+            value={baseUrl}
+            onChange={(e) => setBaseUrl(e.target.value)}
+          />
+        </label>
 
-        <form
-          className="llm-form"
-          onSubmit={(e) => {
-            e.preventDefault()
-            save()
-          }}
-        >
-          <label className="llm-field">
-            <span>{t('llm.baseUrl')}</span>
+        <label className="llm-field">
+          <span>{t('llm.apiKey')}</span>
+          <div className="llm-key-row">
             <input
-              type="url"
-              name="baseUrl"
+              type={showKey ? 'text' : 'password'}
+              name="apiKey"
               autoComplete="off"
               spellCheck={false}
-              placeholder={DEFAULT_LLM_SETTINGS.baseUrl}
-              value={baseUrl}
-              onChange={(e) => setBaseUrl(e.target.value)}
+              placeholder={t('llm.apiKeyPlaceholder')}
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
             />
-          </label>
-
-          <label className="llm-field">
-            <span>{t('llm.apiKey')}</span>
-            <div className="llm-key-row">
-              <input
-                type={showKey ? 'text' : 'password'}
-                name="apiKey"
-                autoComplete="off"
-                spellCheck={false}
-                placeholder={t('llm.apiKeyPlaceholder')}
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-              />
-              <button
-                type="button"
-                className="btn ghost llm-inline-btn"
-                onClick={() => setShowKey((v) => !v)}
-              >
-                {showKey ? t('llm.hideKey') : t('llm.showKey')}
-              </button>
-            </div>
-            {stored.apiKey ? (
-              <span className="llm-field-hint">
-                {t('llm.storedHint', { masked: maskApiKey(stored.apiKey) })}
-              </span>
-            ) : null}
-          </label>
-
-          <label className="llm-field">
-            <span>{t('llm.model')}</span>
-            <input
-              type="text"
-              name="model"
-              autoComplete="off"
-              spellCheck={false}
-              placeholder={DEFAULT_LLM_SETTINGS.model}
-              value={model}
-              onChange={(e) => setModel(e.target.value)}
-            />
-          </label>
-
-          <p className="llm-warning">{t('llm.warning')}</p>
-
-          <div className="llm-actions">
-            <button type="submit" className="btn primary">
-              {t('llm.save')}
-            </button>
-            <button
-              type="button"
-              className="btn ghost"
-              onClick={() => void test()}
-              disabled={status === 'testing' || !apiKey.trim()}
+            <UiButton
+              variant="ghost"
+              className="llm-inline-btn"
+              onClick={() => setShowKey((v) => !v)}
             >
-              {t('llm.test')}
-            </button>
-            <button
-              type="button"
-              className="btn ghost"
-              onClick={clearKey}
-              disabled={!apiKey && !stored.apiKey}
-            >
-              {t('llm.clearKey')}
-            </button>
-            <button
-              type="button"
-              className="btn ghost"
-              onClick={clearCache}
-              disabled={cacheCount === 0}
-            >
-              {t('llm.clearCache', { n: cacheCount })}
-            </button>
+              {showKey ? t('llm.hideKey') : t('llm.showKey')}
+            </UiButton>
           </div>
-
-          <p className="llm-field-hint">{t('llm.cacheHint')}</p>
-
-          {statusMsg ? (
-            <p
-              className={`llm-status ${status === 'error' ? 'is-error' : ''} ${
-                status === 'ok' || savedFlash ? 'is-ok' : ''
-              }`}
-              role="status"
-            >
-              {statusMsg}
-            </p>
+          {stored.apiKey ? (
+            <span className="llm-field-hint">
+              {t('llm.storedHint', { masked: maskApiKey(stored.apiKey) })}
+            </span>
           ) : null}
-        </form>
-      </div>
-    </div>,
-    document.body,
+        </label>
+
+        <label className="llm-field">
+          <span>{t('llm.model')}</span>
+          <input
+            type="text"
+            name="model"
+            autoComplete="off"
+            spellCheck={false}
+            placeholder={DEFAULT_LLM_SETTINGS.model}
+            value={model}
+            onChange={(e) => setModel(e.target.value)}
+          />
+        </label>
+
+        <p className="llm-warning">{t('llm.warning')}</p>
+
+        <div className="llm-actions">
+          <UiButton type="submit" variant="primary">
+            {t('llm.save')}
+          </UiButton>
+          <UiButton
+            variant="ghost"
+            onClick={() => void test()}
+            disabled={status === 'testing' || !apiKey.trim()}
+          >
+            {t('llm.test')}
+          </UiButton>
+          <UiButton
+            variant="ghost"
+            onClick={clearKey}
+            disabled={!apiKey && !stored.apiKey}
+          >
+            {t('llm.clearKey')}
+          </UiButton>
+          <UiButton
+            variant="ghost"
+            onClick={clearCache}
+            disabled={cacheCount === 0}
+          >
+            {t('llm.clearCache', { n: cacheCount })}
+          </UiButton>
+        </div>
+
+        <p className="llm-field-hint">{t('llm.cacheHint')}</p>
+
+        {statusMsg ? (
+          <p
+            className={`llm-status ${status === 'error' ? 'is-error' : ''} ${
+              status === 'ok' || savedFlash ? 'is-ok' : ''
+            }`}
+            role="status"
+          >
+            {statusMsg}
+          </p>
+        ) : null}
+      </form>
+    </AppOverlay>
   )
 }

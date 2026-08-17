@@ -10,8 +10,9 @@ import {
 } from './randomCard'
 import { preloadImage } from '../utils/imageCache'
 import { thumbUrlFromFaceUrl } from '../utils/remoteAsset'
+import { scryfallApiUrl } from '../utils/scryfallApi'
 
-const SCRYFALL_COLLECTION = 'https://api.scryfall.com/cards/collection'
+const SCRYFALL_COLLECTION = scryfallApiUrl('/cards/collection')
 const COLLECTION_TIMEOUT_MS = 12000
 const BATCH_SIZE = 75
 

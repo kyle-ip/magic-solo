@@ -21,6 +21,7 @@ import {
   thumbUrlFromFaceUrl,
   withPngFace,
 } from '../utils/remoteAsset'
+import { scryfallApiUrl } from '../utils/scryfallApi'
 
 export { withPngFace, withPngFace as withLargeFace }
 
@@ -32,8 +33,8 @@ export function pngFaceUrlFromDrawn(card: DrawnCard): string {
   return pngUrlFromFaceUrl(card.frontImageUrl)
 }
 
-const SETS_URL = 'https://api.scryfall.com/sets'
-const SEARCH_URL = 'https://api.scryfall.com/cards/search'
+const SETS_URL = scryfallApiUrl('/sets')
+const SEARCH_URL = scryfallApiUrl('/cards/search')
 const FETCH_TIMEOUT_MS = 12_000
 const SETS_CACHE_KEY = 'magic-solo:scryfall-sets-v1'
 const CARDS_CACHE_PREFIX = 'magic-solo:scryfall-set-cards-v1:'

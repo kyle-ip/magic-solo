@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
-import { createPortal } from 'react-dom'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getDeckIndex, getDeckRules, getSharedRules } from '../data/deckRegistry'
 import { PackHeadIconButton } from './PackHeadIconButton'
+import { AppOverlay } from './ui'
 
 export function ReferencesButton({ className }: { className?: string }) {
   const { t, i18n } = useTranslation()
@@ -37,59 +37,6 @@ export function ReferencesButton({ className }: { className?: string }) {
     })
   }, [decks, i18n.language, shared.sources])
 
-  useEffect(() => {
-    if (!open) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false)
-    }
-    const prevOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    window.addEventListener('keydown', onKey)
-    return () => {
-      document.body.style.overflow = prevOverflow
-      window.removeEventListener('keydown', onKey)
-    }
-  }, [open])
-
-  const dialog =
-    open && typeof document !== 'undefined'
-      ? createPortal(
-          <div
-            className="references-backdrop"
-            role="presentation"
-            onMouseDown={(e) => {
-              if (e.target === e.currentTarget) setOpen(false)
-            }}
-          >
-            <div
-              className="references-modal"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="references-modal-title"
-            >
-              <header className="references-modal-head">
-                <h2 id="references-modal-title">{t('home.references')}</h2>
-                <PackHeadIconButton
-                  icon="close"
-                  label={t('deck.close')}
-                  onClick={() => setOpen(false)}
-                />
-              </header>
-              <ul className="reference-list">
-                {referenceLinks.map((source) => (
-                  <li key={source.url}>
-                    <a href={source.url} target="_blank" rel="noreferrer">
-                      {source.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>,
-          document.body,
-        )
-      : null
-
   return (
     <>
       <button
@@ -99,7 +46,32 @@ export function ReferencesButton({ className }: { className?: string }) {
       >
         {t('home.references')}
       </button>
-      {dialog}
+      <AppOverlay
+        open={open}
+        onClose={() => setOpen(false)}
+        title={t('home.references')}
+        titleId="references-modal-title"
+        className="references-backdrop"
+        shellClassName="references-modal"
+        size="narrow"
+        headerActions={
+          <PackHeadIconButton
+            icon="close"
+            label={t('deck.close')}
+            onClick={() => setOpen(false)}
+          />
+        }
+      >
+        <ul className="reference-list">
+          {referenceLinks.map((source) => (
+            <li key={source.url}>
+              <a href={source.url} target="_blank" rel="noreferrer">
+                {source.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </AppOverlay>
     </>
   )
 }

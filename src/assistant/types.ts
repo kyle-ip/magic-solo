@@ -54,6 +54,7 @@ export type AssistantAction =
   | { type: 'SET_STARTING_HEADS'; n: number }
   | { type: 'START' }
   | { type: 'RESET' }
+  | { type: 'HYDRATE'; state: AssistantState }
   | { type: 'SHUFFLE_LIBRARY' }
   | { type: 'DRAW' }
   | {

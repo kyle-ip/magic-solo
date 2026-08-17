@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { CARD_EDITOR_ENABLED } from '../features'
 import { useHasLlmApiKey, useLlmReady } from '../hooks/useLlmSettings'
 import { requestOpenLlmSettings } from '../llm/openSettings'
 import { requestOpenPageChat } from '../llm/openPageChat'
+import { IconFab, IconFabLink } from './ui'
 import '../styles/llm.css'
 
 interface FloatingNavProps {
@@ -25,7 +26,8 @@ export function FloatingNav({ arenaMode = false }: FloatingNavProps) {
     pathname === '/sets' || pathname.startsWith('/sets/')
   const isHelp = pathname === '/help'
   const isEditor = CARD_EDITOR_ENABLED && pathname === '/editor'
-  const isDeckPage = isChallengeDeck || isClassicDeck || isSetGallery || isHelp || isEditor
+  const isDeckPage =
+    isChallengeDeck || isClassicDeck || isSetGallery || isHelp || isEditor
   const homeTo =
     isClassicDeck && pathname !== '/classic-decks'
       ? '/classic-decks'
@@ -56,23 +58,15 @@ export function FloatingNav({ arenaMode = false }: FloatingNavProps) {
 
   const showHome = !arenaMode && isDeckPage
   const showBackTop = !arenaMode && showTop
-  // Key button only after the user has configured a key (zero chrome when unused).
   const showLlm = hasKey
 
-  // Match pre-LLM visibility: nothing on plain pages until scroll, unless opted-in key.
   if (!showHome && !showBackTop && !showLlm) return null
-  // Challenge / assistant board: keep the arena chrome-free (no settings/chat FABs).
   if (arenaMode) return null
 
   return (
     <div className="floating-nav" role="navigation" aria-label={t('app.floatingNav')}>
       {showHome ? (
-        <Link
-          to={homeTo}
-          className="floating-nav-btn"
-          title={homeLabel}
-          aria-label={homeLabel}
-        >
+        <IconFabLink to={homeTo} title={homeLabel} aria-label={homeLabel}>
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path
               d="M4.5 11.2 12 4.8l7.5 6.4v8.5a.7.7 0 0 1-.7.7h-4.6v-5.2h-4.4v5.2H5.2a.7.7 0 0 1-.7-.7v-8.5Z"
@@ -82,12 +76,10 @@ export function FloatingNav({ arenaMode = false }: FloatingNavProps) {
               strokeLinejoin="round"
             />
           </svg>
-        </Link>
+        </IconFabLink>
       ) : null}
       {showBackTop ? (
-        <button
-          type="button"
-          className="floating-nav-btn"
+        <IconFab
           onClick={scrollTop}
           title={t('app.backToTop')}
           aria-label={t('app.backToTop')}
@@ -102,12 +94,11 @@ export function FloatingNav({ arenaMode = false }: FloatingNavProps) {
               strokeLinejoin="round"
             />
           </svg>
-        </button>
+        </IconFab>
       ) : null}
       {showLlm ? (
-        <button
-          type="button"
-          className={`floating-nav-btn${llmReady ? ' is-configured' : ''}`}
+        <IconFab
+          configured={llmReady}
           onClick={() => requestOpenLlmSettings()}
           title={t('llm.openSettings')}
           aria-label={t('llm.openSettings')}
@@ -123,12 +114,11 @@ export function FloatingNav({ arenaMode = false }: FloatingNavProps) {
               strokeLinejoin="round"
             />
           </svg>
-        </button>
+        </IconFab>
       ) : null}
       {showLlm ? (
-        <button
-          type="button"
-          className={`floating-nav-btn${llmReady ? ' is-configured' : ''}`}
+        <IconFab
+          configured={llmReady}
           onClick={() => requestOpenPageChat()}
           title={t('llm.openChat')}
           aria-label={t('llm.openChat')}
@@ -150,7 +140,7 @@ export function FloatingNav({ arenaMode = false }: FloatingNavProps) {
               strokeLinecap="round"
             />
           </svg>
-        </button>
+        </IconFab>
       ) : null}
     </div>
   )

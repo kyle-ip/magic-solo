@@ -26,6 +26,28 @@
   color-scheme: dark;
 }
 
+.app-overlay-shell.llm-modal-shell {
+  width: min(440px, 100%);
+  max-height: min(90dvh, 52rem);
+  overflow: hidden;
+}
+
+.app-overlay-shell.llm-modal-shell .app-overlay-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.app-overlay-shell.llm-page-chat-shell {
+  width: min(1040px, 100%);
+}
+
+.app-sheet-content.llm-modal-shell,
+.app-sheet-content.llm-page-chat-shell {
+  width: 100%;
+  max-height: min(92dvh, 44rem);
+}
+
 .llm-modal-head {
   display: flex;
   align-items: flex-start;

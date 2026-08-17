@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Link, Navigate, useParams } from 'react-router-dom'
+import { Navigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { BattleHistoryModal } from '../components/BattleHistoryModal'
 import { CardModal } from '../components/CardModal'
 import { CardTile } from '../components/CardTile'
 import { PrintAssistantModal } from '../components/PrintAssistantModal'
 import { RulesPanel } from '../components/RulesPanel'
+import { UiButton, UiButtonLink, AppOverlay } from '../components/ui'
 import {
   clearBattleHistory,
   deleteBattleHistory,
@@ -34,6 +35,7 @@ export function DeckPage() {
   const [printOpen, setPrintOpen] = useState(false)
   const [historyTick, setHistoryTick] = useState(0)
   const [viewing, setViewing] = useState<BattleHistoryRecord | null>(null)
+  const [historyClearOpen, setHistoryClearOpen] = useState(false)
   const metaTable = i18n.language.startsWith('zh') ? deckMetaZh : deckMetaEn
   const meta = metaTable[setCode]
   const zh = i18n.language.startsWith('zh')
@@ -100,29 +102,25 @@ export function DeckPage() {
             </p>
             <p className="lede">{meta?.overview}</p>
             <div className="cta-row">
-              <Link
-                className="btn primary"
+              <UiButtonLink
+                variant="primary"
                 to={`/challenge/${deck.code}`}
                 onPointerEnter={warmPlayAssets}
                 onFocus={warmPlayAssets}
               >
                 {t('deck.startExperience')}
-              </Link>
-              <Link
-                className="btn ghost"
+              </UiButtonLink>
+              <UiButtonLink
+                variant="ghost"
                 to={`/assistant/${deck.code}`}
                 onPointerEnter={warmPlayAssets}
                 onFocus={warmPlayAssets}
               >
                 {t('deck.startAssistant')}
-              </Link>
-              <button
-                type="button"
-                className="btn ghost"
-                onClick={() => setPrintOpen(true)}
-              >
+              </UiButtonLink>
+              <UiButton variant="ghost" onClick={() => setPrintOpen(true)}>
                 {t('printAssistant.open')}
-              </button>
+              </UiButton>
             </div>
           </div>
           <div className="deck-hero-card">
@@ -175,13 +173,7 @@ export function DeckPage() {
               <button
                 type="button"
                 className="btn ghost"
-                onClick={() => {
-                  if (window.confirm(t('deck.historyClearConfirm'))) {
-                    clearBattleHistory(deck.code as ChallengeCode)
-                    setViewing(null)
-                    refreshHistory()
-                  }
-                }}
+                onClick={() => setHistoryClearOpen(true)}
               >
                 {t('deck.historyClear')}
               </button>
@@ -261,6 +253,34 @@ export function DeckPage() {
           }}
         />
       ) : null}
+
+      <AppOverlay
+        open={historyClearOpen}
+        mode="modal"
+        onClose={() => setHistoryClearOpen(false)}
+        title={t('deck.historyClearTitle')}
+        titleId="deck-history-clear-title"
+        shellClassName="pack-confirm-dialog"
+        size="narrow"
+      >
+        <p id="deck-history-clear-desc">{t('deck.historyClearConfirm')}</p>
+        <div className="pack-confirm-actions">
+          <UiButton variant="ghost" onClick={() => setHistoryClearOpen(false)}>
+            {t('deck.cancel')}
+          </UiButton>
+          <UiButton
+            variant="primary"
+            onClick={() => {
+              clearBattleHistory(deck.code as ChallengeCode)
+              setViewing(null)
+              setHistoryClearOpen(false)
+              refreshHistory()
+            }}
+          >
+            {t('deck.historyClear')}
+          </UiButton>
+        </div>
+      </AppOverlay>
     </main>
   )
 }

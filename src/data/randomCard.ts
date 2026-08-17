@@ -2,6 +2,7 @@ import i18n from '../i18n'
 import type { DeckCard } from '../types'
 import { preloadImage } from '../utils/imageCache'
 import { preferredAssetUrl } from '../utils/remoteAsset'
+import { scryfallApiUrl } from '../utils/scryfallApi'
 import { getCardZh } from './locale/cardsZh'
 import { getDeckIndex } from './deckRegistry'
 import { getDeck } from './deckStore'
@@ -63,8 +64,8 @@ export interface DrawnCard {
 
 export { preloadImage }
 
-const SCRYFALL_RANDOM = 'https://api.scryfall.com/cards/random'
-const SCRYFALL_SEARCH = 'https://api.scryfall.com/cards/search'
+const SCRYFALL_RANDOM = scryfallApiUrl('/cards/random')
+const SCRYFALL_SEARCH = scryfallApiUrl('/cards/search')
 const FETCH_TIMEOUT_MS = 8000
 const ZHS_TIMEOUT_MS = 5000
 const MIN_DRAW_GAP_MS = 500

@@ -42,6 +42,10 @@ export function resetBoardCellSeq() {
   cellSeq = 0
 }
 
+export function ensureBoardCellSeqAtLeast(n: number): void {
+  if (n > cellSeq) cellSeq = n
+}
+
 export function nextBoardCellId(): string {
   cellSeq += 1
   return `seat-${cellSeq}`
