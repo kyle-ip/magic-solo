@@ -11,6 +11,7 @@ interface ResolvedArrow extends AttackLink {
   fromPt: Point
   toPt: Point
   curve: number
+  pathD: string
 }
 
 interface AttackArrowsProps {
@@ -18,6 +19,8 @@ interface AttackArrowsProps {
   links: AttackLink[]
   /** Remeasure when the board pan transform changes. */
   panOffset?: { x: number; y: number }
+  /** Combat resolve pulse — brighter trails + traveling bolts. */
+  resolving?: boolean
 }
 
 function centerOf(el: Element, root: DOMRect): Point {
@@ -47,7 +50,23 @@ function readUiScale(root: HTMLElement): number {
   return Number.isFinite(n) && n > 0 ? n : 1
 }
 
-export function AttackArrows({ rootRef, links, panOffset }: AttackArrowsProps) {
+function pathFor(from: Point, to: Point, curve: number): string {
+  const midX = (from.x + to.x) / 2
+  const midY = (from.y + to.y) / 2
+  const dx = to.x - from.x
+  const dy = to.y - from.y
+  const len = Math.hypot(dx, dy) || 1
+  const cx = midX - (dy / len) * curve
+  const cy = midY + (dx / len) * curve
+  return `M ${from.x} ${from.y} Q ${cx} ${cy} ${to.x} ${to.y}`
+}
+
+export function AttackArrows({
+  rootRef,
+  links,
+  panOffset,
+  resolving = false,
+}: AttackArrowsProps) {
   const [arrows, setArrows] = useState<ResolvedArrow[]>([])
   const [size, setSize] = useState({ w: 0, h: 0 })
 
@@ -66,8 +85,12 @@ export function AttackArrows({ rootRef, links, panOffset }: AttackArrowsProps) {
       setSize({ w: rr.width, h: rr.height })
       const next: ResolvedArrow[] = []
       for (const link of links) {
-        const fromEl = root.querySelector(`[data-instance-id="${CSS.escape(link.from)}"]`)
-        const toEl = root.querySelector(`[data-instance-id="${CSS.escape(link.to)}"]`)
+        const fromEl = root.querySelector(
+          `[data-instance-id="${CSS.escape(link.from)}"]`,
+        )
+        const toEl = root.querySelector(
+          `[data-instance-id="${CSS.escape(link.to)}"]`,
+        )
         if (!fromEl || !toEl) continue
         const rawFrom = centerOf(fromEl, rr)
         const rawTo = centerOf(toEl, rr)
@@ -78,6 +101,7 @@ export function AttackArrows({ rootRef, links, panOffset }: AttackArrowsProps) {
           fromPt: from,
           toPt: to,
           curve,
+          pathD: pathFor(from, to, curve),
         })
       }
       setArrows(next)
@@ -86,9 +110,9 @@ export function AttackArrows({ rootRef, links, panOffset }: AttackArrowsProps) {
     measure()
     const ro = new ResizeObserver(measure)
     ro.observe(root)
-    // Card rows / pan layer resize without always changing root box.
     const board =
-      root.querySelector('.arena-board-pan') ?? root.querySelector('.arena-battlefield')
+      root.querySelector('.arena-board-pan') ??
+      root.querySelector('.arena-battlefield')
     if (board) ro.observe(board)
     window.addEventListener('resize', measure)
     const raf = requestAnimationFrame(() => {
@@ -105,7 +129,7 @@ export function AttackArrows({ rootRef, links, panOffset }: AttackArrowsProps) {
 
   return (
     <svg
-      className="attack-arrows"
+      className={`attack-arrows${resolving ? ' is-resolving' : ''}`}
       width={size.w}
       height={size.h}
       viewBox={`0 0 ${size.w} ${size.h}`}
@@ -132,7 +156,10 @@ export function AttackArrows({ rootRef, links, panOffset }: AttackArrowsProps) {
           orient="auto"
           markerUnits="userSpaceOnUse"
         >
-          <path d="M0,0.4 L5,2.5 L0,4.6 Z" className="attack-arrow-head is-challenge" />
+          <path
+            d="M0,0.4 L5,2.5 L0,4.6 Z"
+            className="attack-arrow-head is-challenge"
+          />
         </marker>
         <marker
           id="attack-arrow-block"
@@ -145,24 +172,49 @@ export function AttackArrows({ rootRef, links, panOffset }: AttackArrowsProps) {
         >
           <path d="M0,0.4 L5,2.5 L0,4.6 Z" className="attack-arrow-head is-block" />
         </marker>
+        <radialGradient id="attack-bolt-glow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="rgba(255, 236, 196, 0.95)" />
+          <stop offset="55%" stopColor="rgba(232, 168, 90, 0.7)" />
+          <stop offset="100%" stopColor="rgba(232, 168, 90, 0)" />
+        </radialGradient>
+        <radialGradient id="attack-bolt-glow-challenge" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="rgba(255, 220, 200, 0.95)" />
+          <stop offset="55%" stopColor="rgba(255, 120, 80, 0.75)" />
+          <stop offset="100%" stopColor="rgba(255, 100, 60, 0)" />
+        </radialGradient>
       </defs>
       {arrows.map((a) => {
         const tone = a.tone ?? 'player'
-        const midX = (a.fromPt.x + a.toPt.x) / 2
-        const midY = (a.fromPt.y + a.toPt.y) / 2
-        const dx = a.toPt.x - a.fromPt.x
-        const dy = a.toPt.y - a.fromPt.y
-        const len = Math.hypot(dx, dy) || 1
-        const cx = midX - (dy / len) * a.curve
-        const cy = midY + (dx / len) * a.curve
         return (
-          <path
-            key={a.key}
-            className={`attack-arrow-line is-${tone}`}
-            d={`M ${a.fromPt.x} ${a.fromPt.y} Q ${cx} ${cy} ${a.toPt.x} ${a.toPt.y}`}
-            fill="none"
-            markerEnd={`url(#attack-arrow-${tone})`}
-          />
+          <g key={a.key} className={`attack-arrow-group is-${tone}`}>
+            <path
+              className={`attack-arrow-line is-${tone}`}
+              d={a.pathD}
+              fill="none"
+              markerEnd={`url(#attack-arrow-${tone})`}
+            />
+            {resolving ? (
+              <circle
+                className={`attack-bolt is-${tone}`}
+                r={tone === 'challenge' ? 7 : 6}
+                fill={
+                  tone === 'challenge'
+                    ? 'url(#attack-bolt-glow-challenge)'
+                    : 'url(#attack-bolt-glow)'
+                }
+              >
+                <animateMotion
+                  dur="0.55s"
+                  repeatCount="1"
+                  fill="freeze"
+                  path={a.pathD}
+                  keyTimes="0;1"
+                  calcMode="spline"
+                  keySplines="0.22 0.61 0.36 1"
+                />
+              </circle>
+            ) : null}
+          </g>
         )
       })}
     </svg>

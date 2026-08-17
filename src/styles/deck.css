@@ -662,12 +662,39 @@
   animation: single-draw-wait-spin var(--single-draw-spin-ms, 900ms) linear infinite;
 }
 
+/* Soften faces during continuous 3D spin (desktop) */
+.card-flip-inner.is-waiting-spin .card-face {
+  box-shadow: none;
+  filter: none;
+}
+
 @keyframes single-draw-wait-spin {
   from {
     transform: translate3d(0, 0, 0) rotateY(0deg);
   }
   to {
     transform: translate3d(0, 0, 0) rotateY(360deg);
+  }
+}
+
+/* Phone: pulse instead of continuous preserve-3d spin */
+@keyframes single-draw-wait-pulse {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(0, 0, 0) scale(1.03);
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .card-flip-inner.is-waiting-spin {
+    animation: single-draw-wait-pulse 1.05s ease-in-out infinite;
+  }
+
+  .card-flip-inner.is-waiting-spin .card-face.back {
+    visibility: hidden;
   }
 }
 

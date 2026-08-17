@@ -170,7 +170,14 @@ export function useBoardPan(
 
   const onPointerDown = useCallback(
     (e: ReactPointerEvent<HTMLElement>) => {
-      if (!enabled || e.button !== 0) return
+      if (!enabled) return
+      // Middle click recenters (and blocks browser auto-scroll).
+      if (e.button === 1) {
+        e.preventDefault()
+        resetPan()
+        return
+      }
+      if (e.button !== 0) return
       const target = e.target as HTMLElement | null
       // Don't steal drags from cards / buttons inside the board.
       if (
@@ -192,7 +199,7 @@ export function useBoardPan(
         armed: false,
       }
     },
-    [enabled, offset.x, offset.y, stageRef],
+    [enabled, offset.x, offset.y, resetPan, stageRef],
   )
 
   useEffect(() => {
@@ -231,15 +238,23 @@ export function useBoardPan(
       }
     }
 
+    const onAuxClick = (e: MouseEvent) => {
+      if (e.button !== 1) return
+      e.preventDefault()
+      resetPan()
+    }
+
     stage.addEventListener('pointermove', onMove)
     stage.addEventListener('pointerup', onUp)
     stage.addEventListener('pointercancel', onUp)
+    stage.addEventListener('auxclick', onAuxClick)
     return () => {
       stage.removeEventListener('pointermove', onMove)
       stage.removeEventListener('pointerup', onUp)
       stage.removeEventListener('pointercancel', onUp)
+      stage.removeEventListener('auxclick', onAuxClick)
     }
-  }, [enabled, measureAndClamp, stageRef])
+  }, [enabled, measureAndClamp, resetPan, stageRef])
 
   const offCenter = isBoardPanOffCenter(offset, center)
 

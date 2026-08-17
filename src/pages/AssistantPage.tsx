@@ -31,6 +31,7 @@ import { findDropAttr, usePointerDrag } from '../components/assistant/usePointer
 import { AssistantLlmAdvisor } from '../components/AssistantLlmAdvisor'
 import { ArenaCard } from '../components/challenge/ArenaCard'
 import { ZonePile } from '../components/challenge/ZonePile'
+import { CardFlightLayer } from '../components/CardFlightLayer'
 import {
   ArenaToolButton,
   arenaToolIcons,
@@ -44,7 +45,19 @@ import { defsFromDeck } from '../game/types'
 import { CardImage, RemoteArtBackground } from '../hooks/useCardImageSrc'
 import { useArenaScale } from '../hooks/useArenaScale'
 import { useBoardPan } from '../hooks/useBoardPan'
+import {
+  rectFromElement,
+  useCardFlight,
+  type FlightRect,
+} from '../hooks/useCardFlight'
+import { usePreviewCopyWheel } from '../hooks/usePreviewCopyWheel'
 import { preferredAssetUrl } from '../utils/remoteAsset'
+import {
+  flightImageUrl,
+  instanceRect,
+  zonePileRect,
+} from '../utils/cardFlightDom'
+import { isCoarsePointer } from '../utils/motionPrefs'
 import { clampPreviewPosition } from '../utils/previewFollow'
 import {
   preloadAssistantImages,
@@ -190,6 +203,141 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
     [localizeName, localizeCardText],
   )
   const clearPreview = useCallback(() => setPreview(null), [])
+  const previewPaneRef = useRef<HTMLElement | null>(null)
+  usePreviewCopyWheel(Boolean(preview) && !coarsePointer, previewPaneRef)
+
+  const { flights, enqueue } = useCardFlight()
+  const [flightHiddenIds, setFlightHiddenIds] = useState<Set<string>>(
+    () => new Set(),
+  )
+  const expectDrawRef = useRef(false)
+  const prevStagingIdRef = useRef<string | null>(null)
+  const pendingMoveRef = useRef<{
+    id: string
+    image: string
+    from: FlightRect
+    to:
+      | 'battlefield'
+      | 'graveyard'
+      | 'exile'
+      | 'library'
+  } | null>(null)
+
+  const hideDuringFlight = useCallback((id: string) => {
+    setFlightHiddenIds((prev) => {
+      const next = new Set(prev)
+      next.add(id)
+      return next
+    })
+  }, [])
+  const clearFlightHidden = useCallback((id: string) => {
+    setFlightHiddenIds((prev) => {
+      if (!prev.has(id)) return prev
+      const next = new Set(prev)
+      next.delete(id)
+      return next
+    })
+  }, [])
+
+  useEffect(() => {
+    const nodes: Element[] = []
+    for (const id of flightHiddenIds) {
+      document
+        .querySelectorAll(`[data-instance-id="${CSS.escape(id)}"]`)
+        .forEach((el) => {
+          el.classList.add('is-flight-hidden')
+          nodes.push(el)
+        })
+    }
+    return () => {
+      for (const el of nodes) el.classList.remove('is-flight-hidden')
+    }
+  }, [flightHiddenIds, state.staging, state.battlefield])
+
+  const queueMoveFlight = useCallback(
+    (
+      card: { instanceId: string; image: string },
+      to: 'battlefield' | 'graveyard' | 'exile' | 'library',
+      fromOverride?: FlightRect | null,
+    ) => {
+      const from =
+        fromOverride ??
+        instanceRect(card.instanceId) ??
+        zonePileRect('assistant-library')
+      if (!from) return
+      pendingMoveRef.current = {
+        id: card.instanceId,
+        image: card.image,
+        from,
+        to,
+      }
+    },
+    [],
+  )
+
+  // Draw: library → staging
+  useEffect(() => {
+    const id = state.staging?.instanceId ?? null
+    if (
+      expectDrawRef.current &&
+      id &&
+      id !== prevStagingIdRef.current &&
+      state.staging
+    ) {
+      expectDrawRef.current = false
+      const card = state.staging
+      hideDuringFlight(id)
+      enqueue({
+        id: `asst-draw-${id}`,
+        imageUrl: flightImageUrl(card.image),
+        from: () => zonePileRect('assistant-library'),
+        to: () =>
+          instanceRect(id) ??
+          rectFromElement(document.querySelector('.assistant-staging')),
+        durationMs: isCoarsePointer() ? 280 : 380,
+        trail: !isCoarsePointer(),
+        onComplete: () => clearFlightHidden(id),
+      })
+    }
+    prevStagingIdRef.current = id
+  }, [state.staging, enqueue, hideDuringFlight, clearFlightHidden])
+
+  // MOVE_CARD settle flights
+  useEffect(() => {
+    const pending = pendingMoveRef.current
+    if (!pending) return
+    pendingMoveRef.current = null
+    const { id, image, from, to } = pending
+    hideDuringFlight(id)
+    enqueue({
+      id: `asst-move-${id}-${to}`,
+      imageUrl: flightImageUrl(image),
+      from,
+      to: () => {
+        if (to === 'battlefield') {
+          return (
+            instanceRect(id) ??
+            rectFromElement(document.querySelector('.assistant-board-shell'))
+          )
+        }
+        if (to === 'graveyard') return zonePileRect('assistant-graveyard')
+        if (to === 'exile') return zonePileRect('assistant-exile')
+        return zonePileRect('assistant-library')
+      },
+      durationMs: isCoarsePointer() ? 260 : 360,
+      trail: to === 'battlefield' && !isCoarsePointer(),
+      onComplete: () => clearFlightHidden(id),
+    })
+  }, [
+    state.battlefield,
+    state.graveyard,
+    state.exile,
+    state.library,
+    state.staging,
+    enqueue,
+    hideDuringFlight,
+    clearFlightHidden,
+  ])
 
   useEffect(() => {
     if (!preview || coarsePointer) return
@@ -219,6 +367,7 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
     if (drawClickTimer.current != null) window.clearTimeout(drawClickTimer.current)
     drawClickTimer.current = window.setTimeout(() => {
       drawClickTimer.current = null
+      expectDrawRef.current = true
       act({ type: 'DRAW' })
     }, 220)
   }, [act])
@@ -228,6 +377,7 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
       window.clearTimeout(drawClickTimer.current)
       drawClickTimer.current = null
     }
+    expectDrawRef.current = false
     setSearchOpen(true)
   }, [])
 
@@ -268,7 +418,23 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
         act({ type: 'REORDER_LIBRARY', fromIndex: from, toIndex: target.index })
         return
       }
+      const fromRect = instanceRect(payload.instanceId)
+      const cardImage =
+        state.staging?.instanceId === payload.instanceId
+          ? state.staging.image
+          : state.battlefield.find((c) => c?.instanceId === payload.instanceId)
+              ?.image ??
+            state.graveyard.find((c) => c.instanceId === payload.instanceId)?.image ??
+            state.exile.find((c) => c.instanceId === payload.instanceId)?.image ??
+            state.library.find((c) => c.instanceId === payload.instanceId)?.image ??
+            ''
+
       if (target.zone === 'library') {
+        queueMoveFlight(
+          { instanceId: payload.instanceId, image: cardImage },
+          'library',
+          fromRect,
+        )
         act({
           type: 'MOVE_CARD',
           instanceId: payload.instanceId,
@@ -278,6 +444,11 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
         return
       }
       if (target.zone === 'battlefield') {
+        queueMoveFlight(
+          { instanceId: payload.instanceId, image: cardImage },
+          'battlefield',
+          fromRect,
+        )
         act({
           type: 'MOVE_CARD',
           instanceId: payload.instanceId,
@@ -287,6 +458,11 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
         if (searchOpen && payload.source.zone === 'search') setSearchOpen(false)
         return
       }
+      queueMoveFlight(
+        { instanceId: payload.instanceId, image: cardImage },
+        target.zone,
+        fromRect,
+      )
       act({
         type: 'MOVE_CARD',
         instanceId: payload.instanceId,
@@ -294,7 +470,17 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
       })
       if (searchOpen && payload.source.zone === 'search') setSearchOpen(false)
     },
-    [act, clearPreview, searchOpen, state.library],
+    [
+      act,
+      clearPreview,
+      queueMoveFlight,
+      searchOpen,
+      state.library,
+      state.staging,
+      state.battlefield,
+      state.graveyard,
+      state.exile,
+    ],
   )
 
   const battlefieldRef = useRef(state.battlefield)
@@ -386,18 +572,22 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
     if (id === 'note') setNoteEditId(card.instanceId)
     if (id === 'battlefield') {
       clearPreview()
+      queueMoveFlight(card, 'battlefield')
       act({ type: 'MOVE_CARD', instanceId: card.instanceId, to: 'battlefield' })
     }
     if (id === 'gy' || id === 'clear') {
       clearPreview()
+      queueMoveFlight(card, 'graveyard')
       act({ type: 'MOVE_CARD', instanceId: card.instanceId, to: 'graveyard' })
     }
     if (id === 'exile') {
       clearPreview()
+      queueMoveFlight(card, 'exile')
       act({ type: 'MOVE_CARD', instanceId: card.instanceId, to: 'exile' })
     }
     if (id === 'top') {
       clearPreview()
+      queueMoveFlight(card, 'library')
       act({
         type: 'MOVE_CARD',
         instanceId: card.instanceId,
@@ -407,6 +597,7 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
     }
     if (id === 'bottom') {
       clearPreview()
+      queueMoveFlight(card, 'library')
       act({
         type: 'MOVE_CARD',
         instanceId: card.instanceId,
@@ -414,6 +605,7 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
         libraryPlacement: 'bottom',
       })
     }
+    setMenu(null)
   }
 
   const noteCard = state.battlefield.find((c) => c?.instanceId === noteEditId)
@@ -755,6 +947,7 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
         drag ? ' is-dragging' : ''
       }${boardPan.dragging ? ' is-board-panning' : ''}`}
     >
+      <CardFlightLayer flights={flights} />
       <RemoteArtBackground className="arena-bg" localPath={heroArt} kind="art_crop" />
       <div className="arena-bg-veil" />
 
@@ -859,6 +1052,7 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
               kind="exile"
               label={t('assistant.exile')}
               count={state.exile.length}
+              dataZone="assistant-exile"
               onClick={() => setInspect('exile')}
               dropZone="exile"
               activeDrop={drag != null}
@@ -867,6 +1061,7 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
               kind="graveyard"
               label={t('assistant.graveyard')}
               count={state.graveyard.length}
+              dataZone="assistant-graveyard"
               onClick={() => setInspect('graveyard')}
               dropZone="graveyard"
               activeDrop={drag != null}
@@ -876,6 +1071,7 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
                 kind="library"
                 label={t('assistant.library')}
                 count={state.library.length}
+                dataZone="assistant-library"
                 hint={t('assistant.drawHint')}
                 stackImage={
                   deck?.cards[0]?.images.back
@@ -959,6 +1155,7 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
 
       {preview ? (
         <aside
+          ref={previewPaneRef}
           className={[
             'card-preview-pane',
             'assistant-preview-pane',
@@ -977,7 +1174,10 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
           }
         >
           <CardImage localPath={preview.image} kind="png" alt={preview.name} />
-          <div className="card-preview-copy">
+          <div
+            className="card-preview-copy"
+            key={`copy-${preview.instanceId ?? preview.name}`}
+          >
             <p className="card-preview-name">{preview.name}</p>
             <p className="card-preview-text">{preview.text}</p>
           </div>
@@ -1013,6 +1213,8 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
           onHoverCard={previewCard}
           onLeaveCard={clearPreview}
           onPlay={(instanceId) => {
+            const card = state.library.find((c) => c.instanceId === instanceId)
+            if (card) queueMoveFlight(card, 'battlefield')
             act({ type: 'MOVE_CARD', instanceId, to: 'battlefield' })
             setSearchOpen(false)
           }}

@@ -1,0 +1,43 @@
+/* Shared card flight overlay — transform/opacity only */
+
+.card-flight-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.card-flight-ghost,
+.card-flight-trail {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 64px;
+  height: 90px;
+  border-radius: 6px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.45);
+  will-change: transform, opacity;
+  transform: translate3d(-9999px, 0, 0);
+}
+
+.card-flight-trail {
+  filter: none;
+  opacity: 0.28;
+  box-shadow: none;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .card-flight-ghost {
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-flight-layer {
+    display: none;
+  }
+}

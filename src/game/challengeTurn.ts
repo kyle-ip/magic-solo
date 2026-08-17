@@ -17,7 +17,7 @@ import { discardCards } from './playerDraw'
 import { castHydraCard } from './hydra'
 import { castHordeCard, resolveHordeCombat } from './horde'
 import { castGodCard, resolveGodCombat } from './god'
-import { setFx } from './fx'
+import { challengeAttackLinks, setFx } from './fx'
 import { pushLog } from './log'
 import type { CardInstance, GameState } from './types'
 
@@ -343,6 +343,7 @@ function startHordeCombat(state: GameState): GameState {
       kind: 'attack' as const,
       amount: a.power ?? 0,
     })),
+    links: challengeAttackLinks(attackers, next.blockAssignments),
   })
 }
 
@@ -405,6 +406,7 @@ function startGodCombat(state: GameState): GameState {
       kind: 'attack' as const,
       amount: a.power ?? 0,
     })),
+    links: challengeAttackLinks(attackers, next.blockAssignments),
   })
 }
 

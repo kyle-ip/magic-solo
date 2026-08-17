@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useReducer,
   useRef,
@@ -93,8 +94,22 @@ import {
   useBoardExitGhosts,
   type BoardExitGhost,
 } from '../hooks/useBoardExitGhosts'
+import {
+  rectFromElement,
+  useCardFlight,
+  type FlightRect,
+} from '../hooks/useCardFlight'
+import { usePreviewCopyWheel } from '../hooks/usePreviewCopyWheel'
+import { CardFlightLayer } from '../components/CardFlightLayer'
 import { LlmRichText } from '../components/LlmRichText'
 import { preferredAssetUrl } from '../utils/remoteAsset'
+import {
+  flightImageUrl,
+  handDockFallbackRect,
+  instanceRect,
+  zonePileRect,
+} from '../utils/cardFlightDom'
+import { isCoarsePointer } from '../utils/motionPrefs'
 import { setHideSiteChrome } from '../utils/siteChrome'
 import { clampPreviewPosition } from '../utils/previewFollow'
 import type { ArenaCounterBadge } from '../components/challenge/ArenaCard'
@@ -122,22 +137,26 @@ const HAND_DRAG_THRESHOLD_PX = 14
 
 function ChallengeHandCard({
   index,
+  instanceId,
   image,
   unaffordable,
   pending,
   selected,
   touchUi,
+  flightHidden,
   onCast,
   onPreview,
   onClearPreview,
 }: {
   index: number
+  instanceId: string
   image: string
   unaffordable: boolean
   pending: boolean
   selected: boolean
   touchUi: boolean
-  onCast: () => void
+  flightHidden?: boolean
+  onCast: (from: FlightRect | null) => void
   onPreview: (point?: { clientX: number; clientY: number }) => void
   onClearPreview: () => void
 }) {
@@ -172,6 +191,9 @@ function ChallengeHandCard({
     setGhost(null)
     document.body.classList.remove('is-hand-casting')
   }
+
+  const captureFrom = (target: HTMLElement): FlightRect | null =>
+    rectFromElement(target)
 
   const onPointerDown = (e: ReactPointerEvent<HTMLButtonElement>) => {
     if (!touchUi || e.button > 0) return
@@ -222,6 +244,14 @@ function ChallengeHandCard({
       const el = document.elementFromPoint(ev.clientX, ev.clientY)
       const inHand = Boolean(el?.closest?.('.hand-dock'))
       const draggedUp = ev.clientY < startY - 40
+      const from: FlightRect | null = wasActive
+        ? {
+            left: ev.clientX - drag.w / 2,
+            top: ev.clientY - drag.h / 2,
+            width: drag.w,
+            height: drag.h,
+          }
+        : captureFrom(target)
       cleanupDrag()
       try {
         if (target.hasPointerCapture(ev.pointerId)) {
@@ -231,7 +261,7 @@ function ChallengeHandCard({
         /* ignore */
       }
       if (wasActive && (!inHand || draggedUp)) {
-        onCast()
+        onCast(from)
       }
     }
 
@@ -249,13 +279,16 @@ function ChallengeHandCard({
     <>
       <button
         type="button"
+        data-instance-id={instanceId}
         className={`hand-card${unaffordable ? ' is-disabled' : ' is-playable'}${
           pending ? ' is-pending' : ''
-        }${selected ? ' is-selected' : ''}${ghost ? ' is-hand-drag-source' : ''}`}
+        }${selected ? ' is-selected' : ''}${ghost ? ' is-hand-drag-source' : ''}${
+          flightHidden ? ' is-flight-hidden' : ''
+        }`}
         style={{ '--i': index } as CSSProperties}
         aria-disabled={unaffordable && !pending ? true : undefined}
         onPointerDown={onPointerDown}
-        onClick={() => {
+        onClick={(e) => {
           if (suppressClickRef.current) {
             suppressClickRef.current = false
             return
@@ -266,7 +299,7 @@ function ChallengeHandCard({
             return
           }
           if (unaffordable && !pending) return
-          onCast()
+          onCast(captureFrom(e.currentTarget))
         }}
         onMouseEnter={
           touchUi
@@ -481,11 +514,15 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
     const sync = () => {
       const coarse = mq.matches
       setTouchHandUi(coarse)
+      document.documentElement.classList.toggle('is-touch-ui', coarse)
       if (coarse) setHandPinned(false)
     }
     sync()
     mq.addEventListener('change', sync)
-    return () => mq.removeEventListener('change', sync)
+    return () => {
+      mq.removeEventListener('change', sync)
+      document.documentElement.classList.remove('is-touch-ui')
+    }
   }, [])
 
   useEffect(() => {
@@ -1015,6 +1052,8 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
     return () => window.removeEventListener('pointermove', onMove)
   }, [preview, touchHandUi])
 
+  usePreviewCopyWheel(Boolean(preview), previewPaneRef)
+
   useEffect(() => {
     if (!preview || !touchHandUi) return
     const onPointerDown = (e: PointerEvent) => {
@@ -1202,6 +1241,274 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
     state.status === 'playing',
   )
 
+  const { flights, enqueue } = useCardFlight()
+  const [flightHiddenIds, setFlightHiddenIds] = useState<Set<string>>(
+    () => new Set(),
+  )
+  const prevHandIdsRef = useRef<Set<string>>(new Set())
+  const skipDrawFxRef = useRef(true)
+  const castFromRectRef = useRef<Map<string, FlightRect>>(new Map())
+  const castMetaRef = useRef<
+    Map<string, { image: string; kind: string }>
+  >(new Map())
+  const boardRectCacheRef = useRef<Map<string, FlightRect>>(new Map())
+  const boardMetaCacheRef = useRef<
+    Map<string, { image: string; zone: BoardExitGhost['zone'] }>
+  >(new Map())
+  const prevBoardIdsRef = useRef<Set<string>>(new Set())
+  const seenExitFlightRef = useRef<Set<string>>(new Set())
+  const prevChallengeBfIdsRef = useRef<Set<string>>(new Set())
+  const skipChallengeEnterFxRef = useRef(true)
+  const prevRevealedIdsRef = useRef<string[]>([])
+
+  const hideDuringFlight = useCallback((id: string) => {
+    setFlightHiddenIds((prev) => {
+      const next = new Set(prev)
+      next.add(id)
+      return next
+    })
+  }, [])
+
+  const clearFlightHidden = useCallback((id: string) => {
+    setFlightHiddenIds((prev) => {
+      if (!prev.has(id)) return prev
+      const next = new Set(prev)
+      next.delete(id)
+      return next
+    })
+  }, [])
+
+  useEffect(() => {
+    const nodes: Element[] = []
+    for (const id of flightHiddenIds) {
+      document
+        .querySelectorAll(`[data-instance-id="${CSS.escape(id)}"]`)
+        .forEach((el) => {
+          el.classList.add('is-flight-hidden')
+          nodes.push(el)
+        })
+    }
+    return () => {
+      for (const el of nodes) el.classList.remove('is-flight-hidden')
+    }
+  }, [
+    flightHiddenIds,
+    state.player.hand,
+    state.player.creatures,
+    state.player.lands,
+    state.challenge.battlefield,
+  ])
+
+  // Snapshot board card rects + zone for exit flights (ghosts lag one effect tick).
+  useLayoutEffect(() => {
+    if (state.status !== 'playing') return
+    const next = new Map<string, FlightRect>()
+    for (const card of boardExitLive) {
+      const r = instanceRect(card.id)
+      if (r) next.set(card.id, r)
+      boardMetaCacheRef.current.set(card.id, {
+        image: card.image,
+        zone: card.zone,
+      })
+    }
+    boardRectCacheRef.current = next
+  }, [boardExitLive, state.status, boardPan.offset])
+
+  // Draw: library → hand
+  useEffect(() => {
+    if (state.status !== 'playing') {
+      prevHandIdsRef.current = new Set(
+        state.player.hand.map((c) => c.instanceId),
+      )
+      skipDrawFxRef.current = true
+      return
+    }
+    const prev = prevHandIdsRef.current
+    const added = state.player.hand.filter((c) => !prev.has(c.instanceId))
+    prevHandIdsRef.current = new Set(
+      state.player.hand.map((c) => c.instanceId),
+    )
+    if (skipDrawFxRef.current) {
+      skipDrawFxRef.current = false
+      return
+    }
+    if (!added.length) return
+    const stagger = isCoarsePointer() ? 55 : 48
+    const duration = isCoarsePointer() ? 300 : 400
+    added.forEach((card, i) => {
+      window.setTimeout(() => {
+        hideDuringFlight(card.instanceId)
+        enqueue({
+          id: `draw-${card.instanceId}-${i}`,
+          imageUrl: flightImageUrl(card.image),
+          alt: card.name,
+          from: () => zonePileRect('player-library'),
+          to: () =>
+            instanceRect(card.instanceId) ?? handDockFallbackRect(),
+          durationMs: duration,
+          trail: !isCoarsePointer(),
+          onComplete: () => clearFlightHidden(card.instanceId),
+        })
+      }, i * stagger)
+    })
+  }, [
+    state.player.hand,
+    state.status,
+    enqueue,
+    hideDuringFlight,
+    clearFlightHidden,
+  ])
+
+  // Cast: hand leave → board / graveyard
+  useEffect(() => {
+    if (state.status !== 'playing') return
+    const pending = castFromRectRef.current
+    if (!pending.size) return
+    for (const [id, from] of [...pending.entries()]) {
+      const stillInHand = state.player.hand.some((c) => c.instanceId === id)
+      if (stillInHand) continue
+      pending.delete(id)
+      const meta = castMetaRef.current.get(id)
+      castMetaRef.current.delete(id)
+      if (!meta) continue
+      const onBoard =
+        state.player.creatures.some((c) => c.instanceId === id) ||
+        state.player.lands.some((c) => c.instanceId === id)
+      hideDuringFlight(id)
+      enqueue({
+        id: `cast-${id}`,
+        imageUrl: flightImageUrl(meta.image),
+        from,
+        to: () =>
+          onBoard
+            ? instanceRect(id) ?? zonePileRect('player-graveyard')
+            : zonePileRect('player-graveyard'),
+        durationMs: isCoarsePointer() ? 300 : 420,
+        trail: !isCoarsePointer(),
+        onComplete: () => clearFlightHidden(id),
+      })
+    }
+  }, [
+    state.player.hand,
+    state.player.creatures,
+    state.player.lands,
+    state.player.graveyard,
+    state.status,
+    enqueue,
+    hideDuringFlight,
+    clearFlightHidden,
+  ])
+
+  // Clear / leave board → owning side's graveyard
+  useEffect(() => {
+    if (state.status !== 'playing') {
+      prevBoardIdsRef.current = new Set(boardExitLive.map((c) => c.id))
+      seenExitFlightRef.current.clear()
+      return
+    }
+    const prev = prevBoardIdsRef.current
+    const liveIds = new Set(boardExitLive.map((c) => c.id))
+    const gone = [...prev].filter((id) => !liveIds.has(id))
+    prevBoardIdsRef.current = liveIds
+    for (const id of gone) {
+      if (seenExitFlightRef.current.has(id)) continue
+      seenExitFlightRef.current.add(id)
+      const from = boardRectCacheRef.current.get(id)
+      const meta = boardMetaCacheRef.current.get(id)
+      const ghost = exitGhosts.find((g) => g.id === id)
+      const image = ghost?.image ?? meta?.image
+      const zone = ghost?.zone ?? meta?.zone
+      if (!from || !image || !zone) continue
+      const toPlayer = zone.startsWith('player-')
+      enqueue({
+        id: `exit-${id}`,
+        imageUrl: flightImageUrl(image),
+        from,
+        to: () =>
+          zonePileRect(toPlayer ? 'player-graveyard' : 'challenge-graveyard'),
+        durationMs: isCoarsePointer() ? 280 : 380,
+        trail: false,
+      })
+    }
+  }, [boardExitLive, exitGhosts, state.status, enqueue])
+
+  // Opponent cast: challenge library → battlefield
+  useEffect(() => {
+    const challengeCards = boardExitLive.filter((c) =>
+      c.zone.startsWith('challenge-'),
+    )
+    if (state.status !== 'playing') {
+      prevChallengeBfIdsRef.current = new Set(challengeCards.map((c) => c.id))
+      skipChallengeEnterFxRef.current = true
+      return
+    }
+    const prev = prevChallengeBfIdsRef.current
+    const added = challengeCards.filter((c) => !prev.has(c.id))
+    prevChallengeBfIdsRef.current = new Set(challengeCards.map((c) => c.id))
+    if (skipChallengeEnterFxRef.current) {
+      skipChallengeEnterFxRef.current = false
+      return
+    }
+    if (!added.length) return
+    const stagger = isCoarsePointer() ? 55 : 48
+    const duration = isCoarsePointer() ? 320 : 440
+    added.forEach((card, i) => {
+      window.setTimeout(() => {
+        hideDuringFlight(card.id)
+        enqueue({
+          id: `opp-cast-${card.id}-${i}`,
+          imageUrl: flightImageUrl(card.image),
+          alt: card.name,
+          from: () => zonePileRect('challenge-library'),
+          to: () =>
+            instanceRect(card.id) ?? zonePileRect('challenge-library'),
+          durationMs: duration,
+          trail: !isCoarsePointer(),
+          onComplete: () => clearFlightHidden(card.id),
+        })
+      }, i * stagger)
+    })
+  }, [
+    boardExitLive,
+    state.status,
+    enqueue,
+    hideDuringFlight,
+    clearFlightHidden,
+  ])
+
+  // Opponent spells: after CastStage resolve into challenge graveyard
+  useEffect(() => {
+    if (state.status !== 'playing') {
+      prevRevealedIdsRef.current = state.revealed.map((c) => c.instanceId)
+      return
+    }
+    const prev = prevRevealedIdsRef.current
+    const nextIds = state.revealed.map((c) => c.instanceId)
+    const left = prev.filter((id) => !nextIds.includes(id))
+    prevRevealedIdsRef.current = nextIds
+    for (const id of left) {
+      const inGy = state.challenge.graveyard.find((c) => c.instanceId === id)
+      if (!inGy) continue
+      // Permanents on the battlefield are handled by the enter-BF flight above.
+      if (state.challenge.battlefield.some((c) => c.instanceId === id)) continue
+      enqueue({
+        id: `opp-spell-${id}`,
+        imageUrl: flightImageUrl(inGy.image),
+        alt: inGy.name,
+        from: () => zonePileRect('challenge-library'),
+        to: () => zonePileRect('challenge-graveyard'),
+        durationMs: isCoarsePointer() ? 280 : 400,
+        trail: !isCoarsePointer(),
+      })
+    }
+  }, [
+    state.revealed,
+    state.challenge.graveyard,
+    state.challenge.battlefield,
+    state.status,
+    enqueue,
+  ])
+
   if (!deck) return <Navigate to="/" replace />
 
   const canTarget = (card: CardInstance) => {
@@ -1322,6 +1629,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
       rootRef={arenaRef}
       style={{ '--bf-density': String(boardDensity.density) } as CSSProperties}
     >
+      <CardFlightLayer flights={flights} />
       <div
         className="arena-rotate-gate"
         role="dialog"
@@ -1336,6 +1644,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
         rootRef={arenaRef}
         links={attackLinks}
         panOffset={boardPan.offset}
+        resolving={state.fx?.kind === 'attack'}
       />
 
       <div
@@ -1843,6 +2152,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
             label={t('challenge.graveyard')}
             count={state.challenge.graveyard.length}
             kind="graveyard"
+            dataZone="challenge-graveyard"
             onClick={() => setInspect('graveyard')}
           />
           <div className="zone-pile-wrap" data-instance-id={FX_HORDE}>
@@ -1850,6 +2160,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
               label={t('challenge.library')}
               count={state.challenge.library.length}
               kind="library"
+              dataZone="challenge-library"
               stackImage={
                 deck?.cards[0]?.images.back
                   ? preferredAssetUrl(deck.cards[0].images.back, { kind: 'card_back' })
@@ -1989,6 +2300,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
             label={t('challenge.graveyard')}
             count={state.player.graveyard.length}
             kind="graveyard"
+            dataZone="player-graveyard"
             onClick={() => setInspect('player-graveyard')}
             hint={
               state.player.graveyard.some((c) => c.flashback)
@@ -2001,6 +2313,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
               label={t('challenge.library')}
               count={state.player.library.length}
               kind="library"
+              dataZone="player-library"
             />
           </div>
           <ManaPoolHud pool={state.player.manaPool} />
@@ -2076,18 +2389,27 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                   <ChallengeHandCard
                     key={card.instanceId}
                     index={i}
+                    instanceId={card.instanceId}
                     unaffordable={unaffordable}
                     pending={pending}
                     selected={selected}
                     touchUi={touchHandUi}
+                    flightHidden={flightHiddenIds.has(card.instanceId)}
                     image={card.image}
-                    onCast={() => {
+                    onCast={(from) => {
                       if (pending) {
+                        castFromRectRef.current.delete(card.instanceId)
+                        castMetaRef.current.delete(card.instanceId)
                         act({ type: 'CANCEL_PENDING' })
                         return
                       }
                       if (unaffordable) return
                       dismissPreview()
+                      if (from) castFromRectRef.current.set(card.instanceId, from)
+                      castMetaRef.current.set(card.instanceId, {
+                        image: card.image,
+                        kind: card.kind,
+                      })
                       act({ type: 'CAST', handId: card.instanceId })
                     }}
                     onPreview={(point) => {
@@ -2177,12 +2499,18 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                       '--preview-y': `${previewPos.y}px`,
                     } as CSSProperties)
               }
+              onMouseEnter={() => {
+                window.clearTimeout(clearPreviewTimer.current)
+              }}
+              onMouseLeave={() => {
+                if (!touchHandUi) clearPreview()
+              }}
             >
               <div
                 className="card-preview-swap"
                 key={`${preview.image}|${preview.name}`}
               >
-                {!touchHandUi && preview.image ? (
+                {preview.image ? (
                   <div className="card-preview-art">
                     <CardImage
                       localPath={preview.image}
@@ -2191,7 +2519,7 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                     />
                   </div>
                 ) : null}
-                <div className="card-preview-copy">
+                <div className="card-preview-copy" key={`copy-${preview.instanceId ?? preview.name}`}>
                   <p className="card-preview-name">{preview.name}</p>
                   {preview.text ? (
                     <p className="card-preview-text">{preview.text}</p>
@@ -2539,7 +2867,10 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
         >
           <div className="prompt-shell inspect-shell" onClick={(e) => e.stopPropagation()}>
             <header className="inspect-shell-head">
-              <h2>{t('challenge.yourGraveyard')}</h2>
+              <div className="inspect-shell-titles">
+                <h2>{t('challenge.graveyard')}</h2>
+                <p className="inspect-shell-hint">{t('challenge.flashbackHint')}</p>
+              </div>
               <PackHeadIconButton
                 icon="close"
                 label={t('deck.close')}
@@ -2549,7 +2880,6 @@ function ChallengeGame({ code }: { code: ChallengeCode }) {
                 }}
               />
             </header>
-            <p className="setup-deck-hint">{t('challenge.flashbackHint')}</p>
             <div className="inspect-grid">
               {state.player.graveyard.map((c) => {
                 const label = zh ? c.nameZh || c.name : c.name

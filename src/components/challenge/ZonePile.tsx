@@ -18,6 +18,8 @@ interface ZonePileProps {
   activeDrop?: boolean
   /** Optional card-back art for a physical stack look (library). */
   stackImage?: string
+  /** Stable query hook for flight FX, e.g. `player-library`. */
+  dataZone?: string
 }
 
 function stackDepth(count: number): number {
@@ -41,6 +43,7 @@ export function ZonePile({
   hint,
   activeDrop,
   stackImage,
+  dataZone,
 }: ZonePileProps) {
   const interactive = Boolean(onClick || onDoubleClick || onPointerDown)
   const depth = stackDepth(count)
@@ -66,6 +69,7 @@ export function ZonePile({
       data-drop-zone={dropZone}
       data-drop-placement={dropPlacement}
       data-depth={depth}
+      data-zone={dataZone}
     >
       <span className="zone-pile-stack" aria-hidden="true">
         {Array.from({ length: sheets }, (_, i) => (

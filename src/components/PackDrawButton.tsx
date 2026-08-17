@@ -488,6 +488,8 @@ export function PackDrawButton() {
   const packShellRef = useRef<HTMLDivElement | null>(null)
   const peelEdgeRef = useRef<HTMLSpanElement | null>(null)
   const remainEdgeRef = useRef<HTMLSpanElement | null>(null)
+  /** Jagged clips are stable for an open — set once, then RAF only moves flaps. */
+  const tearClipsReadyRef = useRef(false)
   /** Bumps on each FX trigger so CSS one-shots remount and restart. */
   const [fxEpoch, setFxEpoch] = useState(0)
 
@@ -526,13 +528,23 @@ export function PackDrawButton() {
     el.style.setProperty('-webkit-clip-path', value)
   }
 
+  /** Stable seam polygons — writing them every RAF forces expensive re-clips on mobile. */
+  const applyTearClipsOnce = () => {
+    const spec = tearSpecRef.current
+    if (!spec || tearClipsReadyRef.current) return
+    if (!peelRef.current || !remainRef.current) return
+    applyClipPath(peelRef.current, spec.peelClip)
+    applyClipPath(remainRef.current, spec.remainClip)
+    tearClipsReadyRef.current = true
+  }
+
   const applyTearVisual = (progress: number) => {
     const spec = tearSpecRef.current
     if (!spec) return
     tearProgressRef.current = progress
+    applyTearClipsOnce()
     const flaps = tear2dStyles(spec, progress, measurePackAlong())
     if (peelRef.current) {
-      applyClipPath(peelRef.current, String(flaps.peel.clipPath ?? ''))
       peelRef.current.style.transformOrigin = String(
         flaps.peel.transformOrigin ?? '50% 50%',
       )
@@ -540,7 +552,6 @@ export function PackDrawButton() {
       peelRef.current.style.opacity = String(flaps.peel.opacity ?? 1)
     }
     if (remainRef.current) {
-      applyClipPath(remainRef.current, String(flaps.remain.clipPath ?? ''))
       remainRef.current.style.transformOrigin = String(
         flaps.remain.transformOrigin ?? '50% 50%',
       )
@@ -579,6 +590,7 @@ export function PackDrawButton() {
     setFlipTurns(Array.from({ length: PACK_SIZE }, () => 0))
     tearProgressRef.current = 0
     tearSpecRef.current = null
+    tearClipsReadyRef.current = false
     setFxIds([])
     setFxFadeIds([])
     setFxEpoch(0)
@@ -613,6 +625,7 @@ export function PackDrawButton() {
     setFlipTurns(Array.from({ length: PACK_SIZE }, () => 0))
     tearProgressRef.current = 0
     tearSpecRef.current = null
+    tearClipsReadyRef.current = false
     setFxIds([])
     setFxFadeIds([])
     setCollected(false)
@@ -777,8 +790,8 @@ export function PackDrawButton() {
     const spec = createTearSpec(angle)
     tearAngleRef.current = angle
     tearSpecRef.current = spec
+    tearClipsReadyRef.current = false
     setTearAngle(angle)
-    applyTearVisual(0)
 
     const reduced = prefersReducedMotion()
     // Concurrent pack draw starts immediately on click.
@@ -793,6 +806,7 @@ export function PackDrawButton() {
     await waitAnimationFrame()
     await waitAnimationFrame()
     if (gen !== openGen.current) return
+    applyTearClipsOnce()
     applyTearVisual(0)
 
     const tearPace = reduced ? Math.round(TEAR_PACE_MS * 0.45) : TEAR_PACE_MS
@@ -1114,8 +1128,21 @@ export function PackDrawButton() {
         measurePackAlong(),
       )
     : null
-  const peelStyle: CSSProperties = tearFlaps?.peel ?? {}
-  const remainStyle: CSSProperties = tearFlaps?.remain ?? {}
+  // Clip-paths are applied once via refs; React styles only seed transform/opacity.
+  const peelStyle: CSSProperties = tearFlaps?.peel
+    ? {
+        transformOrigin: tearFlaps.peel.transformOrigin,
+        transform: tearFlaps.peel.transform,
+        opacity: tearFlaps.peel.opacity,
+      }
+    : {}
+  const remainStyle: CSSProperties = tearFlaps?.remain
+    ? {
+        transformOrigin: tearFlaps.remain.transformOrigin,
+        transform: tearFlaps.remain.transform,
+        opacity: tearFlaps.remain.opacity,
+      }
+    : {}
   const tearEdgeStyle: CSSProperties = {
     backgroundImage: `url(${TEAR_EDGE})`,
     transform: `translate(-50%, -50%) rotate(${tearAngle + 90}deg)`,

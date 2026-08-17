@@ -1,0 +1,24 @@
+/* Shared motion tokens — durations/easings for UI + flight FX */
+
+:root {
+  --motion-fast: 140ms;
+  --motion-med: 220ms;
+  --motion-slow: 420ms;
+  --motion-ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --motion-ease-in-out: cubic-bezier(0.45, 0.05, 0.55, 0.95);
+}
+
+.reveal {
+  animation: rise var(--motion-slow) var(--motion-ease-out) both;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .orbit-card {
+    animation: none !important;
+  }
+
+  .home-atmosphere-bg {
+    /* Static atmosphere on phones — continuous blur+scale is expensive */
+    filter: blur(14px) saturate(1.05) brightness(1.06);
+  }
+}
