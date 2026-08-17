@@ -111,6 +111,12 @@ export function resolvePlayerCombat(state: GameState): GameState {
     }
     if (a.keywords.some((k) => /lifelink/i.test(k))) lifeGain += powers[i]
 
+    const enemyBefore = next.challenge.battlefield.find((c) => c.instanceId === target)
+    const toughBefore = enemyBefore
+      ? Math.max(0, (enemyBefore.toughness ?? 0) - enemyBefore.markedDamage)
+      : 0
+    const hasTrample = a.keywords.some((k) => /trample/i.test(k))
+
     if (next.code === 'tfth') {
       next = dealPlayerAttackDamage(next, target, powers[i], a)
     } else if (next.code === 'tdag') {
@@ -138,6 +144,38 @@ export function resolvePlayerCombat(state: GameState): GameState {
         )
       } else {
         next = dealPlayerAttackDamage(next, target, powers[i], a)
+        // Champion / trample: excess past lethal on a reveler spills to Xenagos.
+        if (hasTrample && !enemy.isGod) {
+          const deathtouch = creatureHasDeathtouch(a)
+          const absorbed = deathtouch && powers[i] > 0 ? toughBefore : Math.min(powers[i], toughBefore)
+          const excess = Math.max(0, powers[i] - absorbed)
+          if (excess > 0) {
+            const xenagos = next.challenge.battlefield.find((c) => c.isGod)
+            if (xenagos) {
+              if (next.challenge.battlefield.some((c) => c.isReveler)) {
+                next = {
+                  ...next,
+                  challenge: {
+                    ...next.challenge,
+                    battlefield: next.challenge.battlefield.map((c) =>
+                      c.instanceId === xenagos.instanceId
+                        ? { ...c, markedDamage: c.markedDamage + excess }
+                        : c,
+                    ),
+                  },
+                }
+                next = pushLog(next, 'xenagosDamagedStuck', 'info', { n: excess })
+                next = addFxPop(
+                  next,
+                  { targetId: xenagos.instanceId, kind: 'damage', amount: excess },
+                  'damage',
+                )
+              } else {
+                next = dealPlayerAttackDamage(next, xenagos.instanceId, excess, a)
+              }
+            }
+          }
+        }
       }
     }
   }

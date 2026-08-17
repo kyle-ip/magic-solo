@@ -58,26 +58,25 @@
     radial-gradient(ellipse 70% 55% at 70% 18%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 68%);
 }
 
-/* TBTH art crop is very bright — crush luminance behind white hero titles */
+/* TBTH art crop is high-key — mild dim + left veil so white titles stay readable */
 .deck-page.theme-horde .deck-atmosphere-bg {
-  filter: blur(20px) saturate(0.75) contrast(1.12) brightness(0.28);
+  filter: blur(16px) saturate(0.95) contrast(1.04) brightness(0.78);
 }
 
 .deck-page.theme-horde .deck-atmosphere-veil {
-  background-color: rgba(8, 4, 3, 0.4);
+  background-color: transparent;
   background-image:
     linear-gradient(
       90deg,
-      rgba(2, 1, 1, 0.9) 0%,
-      rgba(4, 2, 2, 0.75) 26%,
-      rgba(6, 3, 2, 0.4) 48%,
-      transparent 70%
+      rgba(18, 12, 8, 0.5) 0%,
+      rgba(18, 12, 8, 0.22) 38%,
+      transparent 68%
     ),
     linear-gradient(
       180deg,
-      rgba(4, 2, 2, 0.72) 0%,
-      rgba(6, 3, 2, 0.5) 40%,
-      rgba(8, 4, 3, 0.48) 100%
+      rgba(18, 12, 8, 0.1) 0%,
+      rgba(18, 12, 8, 0.06) 42%,
+      rgba(18, 12, 8, 0.16) 100%
     );
 }
 
@@ -131,6 +130,14 @@
   flex-wrap: wrap;
   gap: 0.75rem;
   margin-top: 1.5rem;
+}
+
+.deck-dual-door-hint {
+  margin: 0.55rem 0 0;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: rgba(231, 215, 184, 0.7);
+  max-width: 36rem;
 }
 
 .deck-hero-card {
@@ -1385,6 +1392,25 @@
   border-color: rgba(226, 192, 122, 0.85);
   box-shadow: inset 0 0 0 1px rgba(226, 192, 122, 0.45);
   background: rgba(184, 137, 58, 0.16);
+}
+
+.setup-hero-card.is-off-quest:not(.is-selected) {
+  opacity: 0.78;
+}
+
+.setup-honesty {
+  margin: -0.35rem 0 1rem;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: rgba(231, 215, 184, 0.72);
+}
+
+.setup-hero-quest-tag {
+  margin-left: 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: rgba(226, 192, 122, 0.65);
 }
 
 .setup-hero-card:disabled {

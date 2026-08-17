@@ -8,6 +8,10 @@ export function summarizeAssistantBoard(state: AssistantState) {
       const cell = state.boardCells[i]
       return {
         name: c.name,
+        power: c.power,
+        toughness: c.toughness,
+        markedDamage: c.markedDamage || undefined,
+        keywords: c.keywords?.length ? c.keywords : undefined,
         note: c.note || undefined,
         tapped: c.tapped,
         row: cell?.row,

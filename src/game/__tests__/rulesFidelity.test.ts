@@ -1,3 +1,4 @@
+import { castGodCard, resolveGodCombat } from '../god'
 import { describe, expect, it } from 'vitest'
 import type { CardInstance, GameState } from '../types'
 import {
@@ -24,8 +25,8 @@ function card(partial: Partial<CardInstance> & Pick<CardInstance, 'name'>): Card
     name: partial.name,
     typeLine: partial.typeLine ?? 'Creature',
     oracleText: partial.oracleText ?? '',
-    power: partial.power ?? 2,
-    toughness: partial.toughness ?? 3,
+    power: partial.power !== undefined ? partial.power : 2,
+    toughness: partial.toughness !== undefined ? partial.toughness : 3,
     markedDamage: partial.markedDamage ?? 0,
     tapped: partial.tapped ?? false,
     skipUntap: partial.skipUntap ?? false,
@@ -333,5 +334,113 @@ describe('Constructed player deck', () => {
     ]
     state = castFromHand(state, s1.instanceId, { targetId: 'horde' })
     expect(state.challenge.library).toHaveLength(0)
+  })
+})
+
+describe('Impulsive Destruction', () => {
+  it('pauses on a damage prompt instead of auto-damaging', () => {
+    let state = basePlaying('tdag')
+    state.activeSide = 'challenge'
+    state = castGodCard(
+      state,
+      card({
+        name: 'Impulsive Destruction',
+        typeLine: 'Sorcery',
+        power: null,
+        toughness: null,
+        isEnchantment: false,
+      }),
+    )
+    expect(state.prompt?.kind).toBe('impulsive_destruction')
+    expect(state.player.life).toBe(20)
+    expect(state.prompt?.options).toEqual([
+      { id: 'damage', labelKey: 'take3Damage' },
+    ])
+  })
+
+  it('deals 3 after answering the prompt', () => {
+    let state = basePlaying('tdag')
+    state.activeSide = 'challenge'
+    state = castGodCard(
+      state,
+      card({
+        name: 'Impulsive Destruction',
+        typeLine: 'Sorcery',
+        power: null,
+        toughness: null,
+      }),
+    )
+    state = gameReducer(state, { type: 'ANSWER_PROMPT', optionId: 'damage' })
+    expect(state.prompt).toBeNull()
+    expect(state.player.life).toBe(17)
+  })
+})
+
+describe('God combat blocker damage', () => {
+  it('uses remaining toughness and marks survivors', () => {
+    let state = basePlaying('tdag')
+    state.activeSide = 'challenge'
+    const attacker = card({
+      name: 'Rollicking Throng',
+      instanceId: 'atk',
+      isReveler: true,
+      power: 3,
+      toughness: 3,
+    })
+    state.revealed = [attacker]
+    state.challenge.battlefield = [attacker]
+    state.player.creatures = [
+      {
+        instanceId: 'b1',
+        defId: 'b1',
+        name: 'Wall',
+        power: 0,
+        toughness: 4,
+        markedDamage: 2,
+        tapped: false,
+        summoningSickness: false,
+        keywords: [],
+        image: '',
+      },
+    ]
+    state.blockAssignments = { b1: 'atk' }
+    state = resolveGodCombat(state)
+    // 3 damage into 2 remaining toughness → blocker dies
+    expect(state.player.creatures).toHaveLength(0)
+    expect(state.player.graveyard.some((c) => c.name === 'Wall')).toBe(true)
+  })
+
+  it('does not kill a blocker when power is below remaining toughness', () => {
+    let state = basePlaying('tdag')
+    state.activeSide = 'challenge'
+    const attacker = card({
+      name: 'Rollicking Throng',
+      instanceId: 'atk',
+      isReveler: true,
+      power: 2,
+      toughness: 2,
+    })
+    state.revealed = [attacker]
+    state.challenge.battlefield = [attacker]
+    state.player.creatures = [
+      {
+        instanceId: 'b1',
+        defId: 'b1',
+        name: 'Wall',
+        power: 0,
+        toughness: 5,
+        markedDamage: 0,
+        tapped: false,
+        summoningSickness: false,
+        keywords: [],
+        image: '',
+      },
+    ]
+    state.blockAssignments = { b1: 'atk' }
+    state = resolveGodCombat(state)
+    expect(state.player.creatures).toHaveLength(1)
+    // beginPlayerTurn at end of God combat clears marked damage
+    expect(state.player.creatures[0].name).toBe('Wall')
+    expect(state.player.life).toBe(20)
   })
 })

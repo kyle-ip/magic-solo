@@ -5,11 +5,9 @@ import {
   checkHordeWin,
   creatureToGyCard,
   damagePlayer,
-  damagePlayerCreatures,
   destroyChallengePermanent,
   millHorde,
   minotaursOf,
-  artifactsOf,
 } from './helpers'
 import { addFxPop, challengeAttackLinks, setFx } from './fx'
 import { pushLog, resetLogSeq } from './log'
@@ -132,104 +130,9 @@ export function castHordeCard(state: GameState, card: CardInstance): GameState {
   }
 }
 
+/** @deprecated Live path is `beginChallengeTurn` in challengeTurn.ts. */
 export function runHordeTurn(state: GameState): GameState {
-  let next: GameState = {
-    ...state,
-    activeSide: 'challenge',
-    phase: 'horde',
-    selectedAttackers: [],
-    attackAssignments: {},
-  }
-  next = pushLog(next, 'hordeTurn', 'cast')
-
-  // Untap minotaurs
-  next = {
-    ...next,
-    challenge: {
-      ...next.challenge,
-      battlefield: next.challenge.battlefield.map((c) =>
-        c.isMinotaur ? { ...c, tapped: false } : c,
-      ),
-    },
-  }
-
-  // Cast 2 + artifacts
-  const extra = artifactsOf(next).length
-  const castCount = 2 + extra
-  next = pushLog(next, 'revealAndCast', 'info', { n: castCount })
-
-  for (let i = 0; i < castCount; i += 1) {
-    const top = next.challenge.library[0]
-    if (!top) {
-      next = pushLog(next, 'hordeLibraryEmpty', 'info')
-      break
-    }
-    next = {
-      ...next,
-      challenge: { ...next.challenge, library: next.challenge.library.slice(1) },
-      revealed: [top],
-    }
-    next = castHordeCard(next, top)
-  }
-
-  // Combat
-  if (next.flags.interventionDamage) {
-    next = damagePlayerCreatures(next, 3)
-    // Also damage horde creatures? "each creature" — yes both
-    next = {
-      ...next,
-      challenge: {
-        ...next.challenge,
-        battlefield: next.challenge.battlefield.map((c) => {
-          if (c.power == null) return c
-          return { ...c, markedDamage: c.markedDamage + 3 }
-        }),
-      },
-    }
-    // Remove dead minotaurs
-    for (const c of [...next.challenge.battlefield]) {
-      if (c.power != null && (c.toughness ?? 0) - c.markedDamage <= 0) {
-        next = destroyChallengePermanent(next, c.instanceId)
-      }
-    }
-    next = {
-      ...next,
-      flags: { ...next.flags, interventionDamage: false },
-    }
-  }
-
-  const attackers = minotaursOf(next).filter((m) => {
-    // attacks each turn if able — Mogis's Chosen enters tapped so may not attack first turn
-    return !m.tapped
-  })
-
-  if (attackers.length === 0) {
-    next = clearHordeTurnFlags(next)
-    next = checkHordeWin(next)
-    if (next.status !== 'playing') return next
-    return beginPlayerTurn(next)
-  }
-
-  // Prompt for blockers
-  next = {
-    ...next,
-    phase: 'blocks',
-    prompt: {
-      id: `p-${Date.now()}`,
-      kind: 'choose_blockers',
-      titleKey: 'hordeAttack',
-      messageKey: 'hordeAttackersContinue',
-      messageParams: { n: attackers.length },
-      resume: 'horde_combat',
-      options: [
-        { id: 'resolve', labelKey: 'resolveCombat' },
-        { id: 'no_blocks', labelKey: 'takeDamageNoBlocks' },
-      ],
-    },
-  }
-  // Store attackers in revealed for UI
-  next = { ...next, revealed: attackers }
-  return next
+  return state
 }
 
 export function resolveHordeCombat(state: GameState): GameState {

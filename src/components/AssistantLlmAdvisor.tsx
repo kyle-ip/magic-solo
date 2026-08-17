@@ -28,7 +28,15 @@ export function AssistantLlmAdvisor({ state }: AssistantLlmAdvisorProps) {
   useEffect(() => {
     setAnswer('')
     setError(false)
-  }, [state.code, state.library.length, state.graveyard.length, state.exile.length, state.staging?.instanceId])
+  }, [
+    state.code,
+    state.library.length,
+    state.graveyard.length,
+    state.exile.length,
+    state.staging?.instanceId,
+    state.battlefield,
+    state.playerValues,
+  ])
 
   if (!hasKey || state.status !== 'playing') return null
 

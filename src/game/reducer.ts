@@ -29,6 +29,7 @@ import { startGod } from './god'
 import {
   beginPlayerTurn,
   checkHydraWin,
+  damagePlayer,
   dealDamageToChallengeCreature,
   emptyFlags,
   returnCreatureFromGraveyard,
@@ -344,6 +345,18 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
             xenagosMustAttack: false,
             xenagosTrample: false,
           },
+        }
+        return next
+      }
+
+      if (kind === 'impulsive_destruction') {
+        let next: GameState = { ...state, prompt: null }
+        // Only damage path today (no player artifact/enchantment permanents).
+        if (action.optionId === 'damage') {
+          next = damagePlayer(next, 3)
+        }
+        if (next.activeSide === 'challenge' && !next.prompt && next.status === 'playing') {
+          next = continueAfterPrompt(next)
         }
         return next
       }

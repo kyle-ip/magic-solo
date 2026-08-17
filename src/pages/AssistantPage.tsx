@@ -19,7 +19,6 @@ import {
   MAX_BOARD_COLS,
   MAX_BOARD_ROWS,
   boardBounds,
-  groupCellsByRow,
 } from '../assistant/layouts'
 import type { AssistantAction, AssistantCard } from '../assistant/types'
 import { ContextMenu, type ContextMenuItem } from '../components/assistant/ContextMenu'
@@ -29,6 +28,7 @@ import { NamedValuesEditor } from '../components/assistant/NamedValuesEditor'
 import { PackHeadIconButton } from '../components/PackHeadIconButton'
 import { findDropAttr, usePointerDrag } from '../components/assistant/usePointerDrag'
 import { AssistantLlmAdvisor } from '../components/AssistantLlmAdvisor'
+import { AssistantProcedurePanel } from '../components/assistant/AssistantProcedurePanel'
 import { ArenaCard } from '../components/challenge/ArenaCard'
 import { ZonePile } from '../components/challenge/ZonePile'
 import { CardFlightLayer } from '../components/CardFlightLayer'
@@ -592,6 +592,10 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
     setMenu({ x: e.clientX, y: e.clientY, card })
   }
 
+  const openCardMenuAt = (card: AssistantCard, x: number, y: number) => {
+    setMenu({ x, y, card })
+  }
+
   const menuZone = menu
     ? state.battlefield.some((c) => c?.instanceId === menu.card.instanceId)
       ? 'battlefield'
@@ -608,7 +612,13 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
     ? menuZone === 'battlefield'
       ? [
           { id: 'tap', label: t('assistant.toggleTap') },
+          { id: 'dmg+', label: t('assistant.damagePlus') },
+          { id: 'dmg-', label: t('assistant.damageMinus') },
+          { id: 'pt+', label: t('assistant.ptPlus') },
+          { id: 'pt-', label: t('assistant.ptMinus') },
           { id: 'note', label: t('assistant.editNote') },
+          { id: 'gy', label: t('assistant.moveToGraveyard') },
+          { id: 'exile', label: t('assistant.moveToExile') },
           { id: 'top', label: t('assistant.moveToLibraryTop') },
           { id: 'bottom', label: t('assistant.moveToLibraryBottom') },
         ]
@@ -633,6 +643,24 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
     if (!menu) return
     const { card } = menu
     if (id === 'tap') act({ type: 'TOGGLE_TAP', instanceId: card.instanceId })
+    if (id === 'dmg+')
+      act({ type: 'ADJUST_MARKED_DAMAGE', instanceId: card.instanceId, delta: 1 })
+    if (id === 'dmg-')
+      act({ type: 'ADJUST_MARKED_DAMAGE', instanceId: card.instanceId, delta: -1 })
+    if (id === 'pt+')
+      act({
+        type: 'ADJUST_POWER_TOUGHNESS',
+        instanceId: card.instanceId,
+        powerDelta: 1,
+        toughnessDelta: 1,
+      })
+    if (id === 'pt-')
+      act({
+        type: 'ADJUST_POWER_TOUGHNESS',
+        instanceId: card.instanceId,
+        powerDelta: -1,
+        toughnessDelta: -1,
+      })
     if (id === 'note') setNoteEditId(card.instanceId)
     if (id === 'battlefield') {
       clearPreview()
@@ -864,7 +892,7 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
     if (el instanceof HTMLElement) el.blur()
   }
 
-  const renderSlot = (slotIndex: number, compact?: boolean) => {
+  const renderSlot = (slotIndex: number) => {
     const card = state.battlefield[slotIndex]
     const cell = state.boardCells[slotIndex]
     const seatId = cell?.id ?? `slot-${slotIndex}`
@@ -883,7 +911,7 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
           .filter(Boolean)
           .join(' ')}
         style={
-          isBlankBoard && cell
+          cell
             ? ({
                 gridColumn: cell.col + 1,
                 gridRow: cell.row + 1,
@@ -962,7 +990,6 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
                   : null
             }
             showPt={card.power != null && card.toughness != null}
-            compact={compact}
             note={card.note || null}
             onMouseEnter={
               coarsePointer ? undefined : (e) => previewCard(card, e)
@@ -974,6 +1001,13 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
               act({ type: 'TOGGLE_TAP', instanceId: card.instanceId })
             }}
             onContextMenu={(e) => openCardMenu(e, card)}
+            onLongPress={() =>
+              openCardMenuAt(
+                card,
+                Math.round(window.innerWidth * 0.5),
+                Math.round(window.innerHeight * 0.4),
+              )
+            }
             onPointerDown={(e) =>
               startDrag(
                 e,
@@ -1077,7 +1111,7 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
             className="arena-battlefield assistant-battlefield-half"
           >
             <div
-              className={`assistant-board-shell${isBlankBoard ? ' is-dynamic' : ''}`}
+              className="assistant-board-shell is-dynamic"
               onClick={
                 canEditSlots && coarsePointer
                   ? () => setActiveSeatId(null)
@@ -1085,42 +1119,18 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
               }
             >
               <section
-                className={`assistant-slot-board${isBlankBoard ? ' is-sparse' : ''}`}
+                className="assistant-slot-board is-sparse"
                 data-rows={boardRows}
                 style={
                   {
                     '--assistant-row-slots': boardSlots,
                     '--assistant-rows': boardRows,
-                    ...(isBlankBoard
-                      ? {
-                          '--assistant-grid-cols': bounds.cols,
-                          '--assistant-grid-rows': bounds.rows,
-                          '--assistant-rows': bounds.rows,
-                        }
-                      : null),
+                    '--assistant-grid-cols': bounds.cols,
+                    '--assistant-grid-rows': bounds.rows,
                   } as CSSProperties
                 }
               >
-                {isBlankBoard
-                  ? state.boardCells.map((_, i) => renderSlot(i, false))
-                  : groupCellsByRow(state.boardCells).map((row, rowIndex, rows) => {
-                      const isLower = rowIndex === rows.length - 1
-                      return (
-                        <div
-                          key={`row-${row.row}`}
-                          className={`assistant-slot-row ${isLower ? 'is-front' : 'is-back'}`}
-                          style={
-                            {
-                              '--assistant-row-slots': row.entries.length,
-                            } as CSSProperties
-                          }
-                        >
-                          {row.entries.map(({ index }) =>
-                            renderSlot(index, !isLower && rows.length > 1),
-                          )}
-                        </div>
-                      )
-                    })}
+                {state.boardCells.map((_, i) => renderSlot(i))}
               </section>
             </div>
           </DropZone>
@@ -1147,6 +1157,15 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
           </div>
           <div className="arena-topbar-actions">
             <ArenaToolButton
+              label={t('assistant.reset')}
+              icon={arenaToolIcons.reset}
+              onClick={() => {
+                if (window.confirm(t('assistant.resetConfirm'))) {
+                  act({ type: 'RESET' })
+                }
+              }}
+            />
+            <ArenaToolButton
               label={t('assistant.shuffle')}
               icon={arenaToolIcons.shuffle}
               onClick={() => act({ type: 'SHUFFLE_LIBRARY' })}
@@ -1160,6 +1179,17 @@ function AssistantGame({ code }: { code: ChallengeCode }) {
             <LanguageSwitch compact asButton />
           </div>
         </header>
+      </div>
+
+      <div className="assistant-side-tools">
+        {state.staging ? (
+          <p className="assistant-hint-bar" role="status">
+            {t('assistant.hintBarStaging')}
+          </p>
+        ) : (
+          <p className="assistant-hint-bar is-muted">{t('assistant.hintBar')}</p>
+        )}
+        <AssistantProcedurePanel code={code} />
       </div>
 
       <div className="arena-opponent-rail assistant-opponent-rail">

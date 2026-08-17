@@ -21,6 +21,10 @@ export interface BattleHistoryRecord {
   playerDeckId: string
   playerDeckName: string
   playerDeckNameZh: string
+  /** Optional setup metadata (newer records) */
+  heroIds?: string[]
+  startingHeads?: number
+  playerTurnsBeforeHorde?: number
   turnNumber: number
   life: number
   creaturesAlive: number

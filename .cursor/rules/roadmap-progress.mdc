@@ -1,0 +1,29 @@
+---
+description: Prefer USER_GUIDE for product truth; do not invent multi-phase roadmaps.
+alwaysApply: true
+---
+
+# Product docs handoff
+
+`docs/ROADMAP.md` and `docs/PROGRESS.md` were removed. Do **not** recreate a multi-phase roadmap unless the user explicitly asks.
+
+## Required reading (session start)
+
+1. [docs/USER_GUIDE.en.md](docs/USER_GUIDE.en.md) / [docs/USER_GUIDE.zh.md](docs/USER_GUIDE.zh.md) — user-facing behavior
+2. Recent git status / the user’s request — current task scope
+
+## Scope discipline
+
+- Implement only what the user asked for in this session.
+- Challenge remains a **simplified** solo engine (not a full CR / Arena opponent).
+- AI stays optional (BYO key); do not make features unusable without a key.
+- Prefer finishing the asked slice over expanding into adjacent pillars.
+
+## Required writes (session end, if user-visible behavior changed)
+
+1. Update `docs/USER_GUIDE.zh.md` / `docs/USER_GUIDE.en.md` when behavior users see changed.
+2. Update README feature blurbs when positioning or major surfaces change.
+
+## UI stability
+
+New features must not collapse existing arena UI style, layout, or interactions. Prefer engine/docs fixes; UI changes should be minimal increments that reuse existing components.

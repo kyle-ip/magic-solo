@@ -12,6 +12,7 @@ import {
   type PlayerDeckId,
 } from '../../game/playerDecks'
 import type { ChallengeCode } from '../../game/types'
+import { isChallengeSimplifiedOracle } from '../../game/simplifiedOracle'
 import {
   defaultCardBackUrl,
   type DrawnCard,
@@ -215,9 +216,10 @@ export function DeckRosterModal({
                   <ul>
                     {group.cards.map((card) => {
                       const label = zh ? card.nameZh : card.name
-                      const simplified =
-                        /\(Challenge:|（挑战：/i.test(card.oracleText) ||
-                        /\(Challenge:|（挑战：/i.test(card.oracleTextZh)
+                      const simplified = isChallengeSimplifiedOracle(
+                        card.oracleText,
+                        card.oracleTextZh,
+                      )
                       return (
                         <li key={card.id}>
                           <button

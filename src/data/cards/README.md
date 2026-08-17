@@ -23,6 +23,8 @@ Each card entry has bilingual copy and asset paths under `images` (relative to `
 
 Setup lets you pick any list for all three challenges. Each deck includes `colors`, `archetype`, static `hint` / `hintZh` (optional `hintByChallenge`), plus card `quantity`, `manaCost`, `kind`, `effect` hooks, and `image`.
 
+Legacy Theros lists (`akroan`, `forge`, `meletis`, `nessian`) live under [`player/archive/`](./player/archive/) and are not playable until converted.
+
 Rebuild or refresh lists from Scryfall:
 
 ```bash

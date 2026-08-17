@@ -72,6 +72,13 @@ export type AssistantAction =
   | { type: 'UPDATE_PLAYER_VALUE'; id: string; label?: string; value?: number }
   | { type: 'REMOVE_PLAYER_VALUE'; id: string }
   | { type: 'SET_CARD_NOTE'; instanceId: string; note: string }
+  | { type: 'ADJUST_MARKED_DAMAGE'; instanceId: string; delta: number }
+  | {
+      type: 'ADJUST_POWER_TOUGHNESS'
+      instanceId: string
+      powerDelta?: number
+      toughnessDelta?: number
+    }
   | {
       type: 'ADD_BOARD_SLOT'
       fromIndex: number

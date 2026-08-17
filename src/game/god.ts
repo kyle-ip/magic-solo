@@ -4,7 +4,6 @@ import {
   beginPlayerTurn,
   creatureToGyCard,
   damagePlayer,
-  damagePlayerCreatures,
   destroyChallengePermanent,
   revelersOf,
 } from './helpers'
@@ -122,7 +121,9 @@ export function castGodCard(state: GameState, card: CardInstance): GameState {
       return pushLog(next, 'impulsiveCharge', 'bad')
 
     case 'Impulsive Destruction':
-      next = {
+      // Official: sac an artifact or enchantment, or take 3. Player Constructed
+      // lists have no artifact/enchantment permanents — only the damage choice.
+      return {
         ...next,
         challenge: {
           ...next.challenge,
@@ -134,17 +135,9 @@ export function castGodCard(state: GameState, card: CardInstance): GameState {
           titleKey: 'impulsiveDestruction',
           messageKey: 'impulsiveDestructionMsg',
           resume: 'impulsive_destruction',
-          options: [
-            { id: 'damage', labelKey: 'take3Damage' },
-            { id: 'skip', labelKey: 'take3Damage' },
-          ],
+          options: [{ id: 'damage', labelKey: 'take3Damage' }],
         },
       }
-      // Player has no artifacts in simplified mode — always damage unless we add them later
-      return damagePlayer(
-        { ...next, prompt: null },
-        3,
-      )
 
     case 'Impulsive Return': {
       next = {
@@ -228,99 +221,9 @@ export function castGodCard(state: GameState, card: CardInstance): GameState {
   }
 }
 
+/** @deprecated Live path is \eginChallengeTurn\ in challengeTurn.ts. */
 export function runGodTurn(state: GameState): GameState {
-  let next: GameState = {
-    ...state,
-    activeSide: 'challenge',
-    phase: 'god',
-    selectedAttackers: [],
-    attackAssignments: {},
-  }
-  next = pushLog(next, 'xenagosTurn', 'cast')
-
-  // Sync enchantment flags from board
-  next = {
-    ...next,
-    flags: {
-      ...next.flags,
-      danceOfFlame: next.challenge.battlefield.some((c) => c.name === 'Dance of Flame'),
-      danceOfPanic: next.challenge.battlefield.some((c) => c.name === 'Dance of Panic'),
-    },
-  }
-
-  // Cast top two
-  for (let i = 0; i < 2; i += 1) {
-    const top = next.challenge.library[0]
-    if (!top) break
-    next = {
-      ...next,
-      challenge: { ...next.challenge, library: next.challenge.library.slice(1) },
-      revealed: [top],
-    }
-    next = castGodCard(next, top)
-    if (next.prompt) return next
-  }
-
-  // Determine attackers
-  const revelers = revelersOf(next)
-  const revelerCount = revelers.length
-  const attackers: CardInstance[] = []
-
-  for (const r of revelers) {
-    let must = false
-    if (next.flags.impulsiveCharge) must = true
-    if (next.flags.danceOfPanic && revelerCount >= 5) must = true
-    if (r.name === 'Maddened Oread' && revelerCount >= 5) must = true
-    if (must) attackers.push(r)
-  }
-
-  const xenagos = next.challenge.battlefield.find((c) => c.isGod)
-  if (xenagos && next.flags.xenagosMustAttack) {
-    attackers.push(xenagos)
-  }
-
-  // Combat start triggers
-  if (next.flags.impulsiveReturnDamage) {
-    next = damagePlayer(next, revelersOf(next).length)
-    next = {
-      ...next,
-      flags: { ...next.flags, impulsiveReturnDamage: false },
-    }
-  }
-  if (next.flags.ripToPieces) {
-    const n = revelersOf(next).length
-    next = damagePlayer(next, n)
-    next = damagePlayerCreatures(next, n)
-    next = {
-      ...next,
-      flags: { ...next.flags, ripToPieces: false },
-    }
-  }
-
-  if (attackers.length === 0) {
-    next = clearGodCombatFlags(next)
-    if (next.status !== 'playing') return next
-    return beginPlayerTurn(next)
-  }
-
-  next = {
-    ...next,
-    phase: 'blocks',
-    revealed: attackers,
-    prompt: {
-      id: `p-${Date.now()}`,
-      kind: 'choose_blockers',
-      titleKey: 'revelAttack',
-      messageKey: 'godAttackers',
-      messageParams: { n: attackers.length },
-      resume: 'god_combat',
-      options: [
-        { id: 'resolve', labelKey: 'resolveCombat' },
-        { id: 'no_blocks', labelKey: 'takeTheDamage' },
-      ],
-    },
-  }
-  return next
+  return state
 }
 
 export function resolveGodCombat(state: GameState): GameState {
@@ -377,19 +280,47 @@ export function resolveGodCombat(state: GameState): GameState {
           },
         }
       } else {
-        const dead = blockers.filter((b) => b.toughness <= power)
-        next = {
-          ...next,
-          player: {
-            ...next.player,
-            creatures: next.player.creatures.filter(
-              (c) => !dead.some((d) => d.instanceId === c.instanceId),
-            ),
-            graveyard: [
-              ...dead.map((d) => creatureToGyCard(d, next.playerDeckId)),
-              ...next.player.graveyard,
-            ],
-          },
+        // Assign attacker damage across blockers (remaining toughness), like Horde.
+        let remaining = power
+        const deadIds: string[] = []
+        for (const b of blockers) {
+          const bTough = b.toughness - b.markedDamage
+          if (remaining <= 0) break
+          if (remaining >= bTough) {
+            deadIds.push(b.instanceId)
+            remaining -= bTough
+          } else {
+            next = {
+              ...next,
+              player: {
+                ...next.player,
+                creatures: next.player.creatures.map((c) =>
+                  c.instanceId === b.instanceId
+                    ? { ...c, markedDamage: c.markedDamage + remaining }
+                    : c,
+                ),
+              },
+            }
+            remaining = 0
+          }
+        }
+        if (deadIds.length) {
+          const dead = next.player.creatures.filter((c) =>
+            deadIds.includes(c.instanceId),
+          )
+          next = {
+            ...next,
+            player: {
+              ...next.player,
+              creatures: next.player.creatures.filter(
+                (c) => !deadIds.includes(c.instanceId),
+              ),
+              graveyard: [
+                ...dead.map((d) => creatureToGyCard(d, next.playerDeckId)),
+                ...next.player.graveyard,
+              ],
+            },
+          }
         }
       }
       // Damage to attacker (not Xenagos if revelers remain — lethal still marks)

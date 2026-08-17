@@ -56,10 +56,13 @@ export function rulesBattlefieldLayout(code: ChallengeCode): BattlefieldLayout {
 }
 
 export function cellsFromRows(rows: readonly number[]): BoardCell[] {
+  const maxCols = rows.length ? Math.max(...rows) : 1
   const cells: BoardCell[] = []
   rows.forEach((count, row) => {
-    for (let col = 0; col < count; col += 1) {
-      cells.push({ id: nextBoardCellId(), row, col })
+    // Center shorter rows over the widest row (same seat size as blank boards).
+    const startCol = Math.max(0, Math.floor((maxCols - count) / 2))
+    for (let i = 0; i < count; i += 1) {
+      cells.push({ id: nextBoardCellId(), row, col: startCol + i })
     }
   })
   return cells

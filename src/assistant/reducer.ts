@@ -417,7 +417,27 @@ export function createAssistantReducer(ctx: AssistantReducerContext) {
           action.index == null &&
           firstEmptySlot(state.battlefield) < 0
         ) {
-          return state
+          // Spill seat so paper swarms aren't stuck on a full rules grid.
+          if (state.battlefield.length >= MAX_BOARD_CELLS) return state
+          const spillRow =
+            Math.max(0, ...state.boardCells.map((c) => c.row)) + 1
+          const grown: AssistantState = {
+            ...state,
+            boardCells: [
+              ...state.boardCells,
+              { id: nextBoardCellId(), row: spillRow, col: 0 },
+            ],
+            battlefield: [...state.battlefield, null],
+          }
+          let next = grown
+          const removed = removeFromZone(next, found.zone, action.instanceId)
+          if (!removed.card) return state
+          next = removed.state
+          next = insertIntoZone(next, action.to, removed.card, {
+            libraryPlacement: action.libraryPlacement,
+            index: action.index,
+          })
+          return next
         }
 
         let next = state
@@ -477,6 +497,23 @@ export function createAssistantReducer(ctx: AssistantReducerContext) {
         return mapBattlefieldCard(state, action.instanceId, (c) => ({
           ...c,
           note: action.note,
+        }))
+      case 'ADJUST_MARKED_DAMAGE':
+        return mapBattlefieldCard(state, action.instanceId, (c) => ({
+          ...c,
+          markedDamage: Math.max(0, (c.markedDamage ?? 0) + action.delta),
+        }))
+      case 'ADJUST_POWER_TOUGHNESS':
+        return mapBattlefieldCard(state, action.instanceId, (c) => ({
+          ...c,
+          power:
+            c.power == null
+              ? c.power
+              : Math.max(0, c.power + (action.powerDelta ?? 0)),
+          toughness:
+            c.toughness == null
+              ? c.toughness
+              : Math.max(0, c.toughness + (action.toughnessDelta ?? 0)),
         }))
       case 'ADD_BOARD_SLOT':
         return addBoardSlot(state, action.fromIndex, action.direction)

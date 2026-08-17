@@ -91,6 +91,7 @@ export function ChallengeSetupView({
 
         <h1>{title}</h1>
         <p className="lede">{t('challenge.setupLead')}</p>
+        <p className="setup-honesty">{t('challenge.engineHonesty')}</p>
 
         {code === 'tfth' ? (
           <div className="setup-param">
@@ -144,6 +145,7 @@ export function ChallengeSetupView({
             {HERO_DEFS.map((hero) => {
               const selected = heroIds.includes(hero.id)
               const atCap = heroIds.length >= maxHeroes && !selected
+              const recommended = hero.quests.includes(code)
               return (
                 <button
                   key={hero.id}
@@ -151,8 +153,13 @@ export function ChallengeSetupView({
                   role="option"
                   aria-selected={selected}
                   disabled={atCap}
-                  className={`setup-hero-card ${selected ? 'is-selected' : ''}`}
+                  className={`setup-hero-card ${selected ? 'is-selected' : ''}${recommended ? '' : ' is-off-quest'}`}
                   onClick={() => onToggleHero(hero.id)}
+                  title={
+                    recommended
+                      ? undefined
+                      : t('challenge.heroOffQuestHint')
+                  }
                 >
                   <span
                     className="setup-hero-art"
@@ -160,7 +167,14 @@ export function ChallengeSetupView({
                       backgroundImage: `url(${preferredAssetUrl(hero.art || hero.image, { kind: 'art_crop' })})`,
                     }}
                   />
-                  <strong>{zh ? hero.nameZh : hero.name}</strong>
+                  <strong>
+                    {zh ? hero.nameZh : hero.name}
+                    {!recommended ? (
+                      <span className="setup-hero-quest-tag">
+                        {t('challenge.heroOffQuest')}
+                      </span>
+                    ) : null}
+                  </strong>
                   <span>{zh ? hero.oracleTextZh : hero.oracleText}</span>
                 </button>
               )

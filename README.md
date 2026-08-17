@@ -1,20 +1,18 @@
 # Magic Solo — Challenge Decks
 
-Solo fan site for the three *Magic: The Gathering* **Challenge Decks** from Theros-block Game Days (Face the Hydra, Battle the Horde, Defeat a God), with a simplified PvE **Challenge**, a paper-play **Game Assistant**, classic archetypes, Scryfall set gallery, local pack/collection toys, a **Print assistant** for proxy PDFs, and an optional BYO-key **AI Assistant**.
+Solo fan site for the three *Magic: The Gathering* **Challenge Decks** from Theros-block Game Days (Face the Hydra, Battle the Horde, Defeat a God), with simplified PvE **Digital Play** (Challenge), **Paper Play** (challenge half-board for table decks), classic archetypes, Scryfall set gallery, local pack/collection toys, a **Print assistant** for proxy PDFs, and an optional BYO-key **AI Assistant**.
 
 **Live:** [https://kyle-ip.github.io/magic-solo/](https://kyle-ip.github.io/magic-solo/)
 
 **User guides:** [English](docs/USER_GUIDE.en.md) · [中文](docs/USER_GUIDE.zh.md) · in-app `/help`
-
-**Roadmap / agent progress:** [docs/ROADMAP.md](docs/ROADMAP.md) · [docs/PROGRESS.md](docs/PROGRESS.md)
 
 ## Features
 
 | Area | Routes / entry | Summary |
 | --- | --- | --- |
 | Challenge Decks | `/`, `/decks/:code` | Rules + card gallery; CTAs to Challenge, Assistant, Print |
-| Challenge | `/challenge/:code` | Automated solo PvE; 4 curated player lists; heroes & difficulty |
-| Game Assistant | `/assistant/:code` | Manual challenge half-board for paper decks |
+| Challenge (Digital Play) | `/challenge/:code` | Automated solo PvE; 4 curated player lists; heroes & difficulty |
+| Paper Play | `/assistant/:code` | Challenge half-board for paper decks at the table |
 | Classic decks | `/classic-decks` | Curated archetypes + sample lists + print PDF |
 | Set gallery | `/sets` | Live Scryfall browsing + print PDF |
 | Pack / collection | Header | Weighted pack, single draw, local collection + print PDF |

@@ -604,26 +604,25 @@ html.is-arena-playing body {
     radial-gradient(ellipse 80% 50% at 50% 50%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 70%);
 }
 
-/* TBTH / horde art is high-key — crush luminance so white titles stay readable */
+/* TBTH / horde art is high-key — mild dim + left veil so white titles stay readable */
 .arena-root.theme-horde .arena-bg {
-  filter: blur(20px) saturate(0.75) contrast(1.12) brightness(0.28);
+  filter: blur(16px) saturate(0.95) contrast(1.04) brightness(0.78);
 }
 
 .arena-root.theme-horde .arena-bg-veil {
-  background-color: rgba(8, 4, 3, 0.42);
+  background-color: transparent;
   background-image:
     linear-gradient(
       90deg,
-      rgba(2, 1, 1, 0.88) 0%,
-      rgba(4, 2, 2, 0.72) 26%,
-      rgba(6, 3, 2, 0.4) 48%,
-      transparent 70%
+      rgba(18, 12, 8, 0.5) 0%,
+      rgba(18, 12, 8, 0.22) 38%,
+      transparent 68%
     ),
     linear-gradient(
       180deg,
-      rgba(4, 2, 2, 0.7) 0%,
-      rgba(6, 3, 2, 0.5) 40%,
-      rgba(8, 4, 3, 0.48) 100%
+      rgba(18, 12, 8, 0.1) 0%,
+      rgba(18, 12, 8, 0.06) 42%,
+      rgba(18, 12, 8, 0.16) 100%
     );
 }
 
@@ -1361,6 +1360,69 @@ html.is-arena-playing body {
   justify-content: flex-end;
   flex-wrap: wrap;
   min-width: 0;
+}
+
+.assistant-hint-bar {
+  margin: 0;
+  padding: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  color: rgba(231, 215, 184, 0.72);
+  pointer-events: none;
+}
+
+.assistant-hint-bar.is-muted {
+  opacity: 0.7;
+}
+
+.assistant-side-tools {
+  position: absolute;
+  top: calc(0.45rem * var(--arena-chrome-scale, 1) + var(--safe-top, 0px));
+  left: calc(0.65rem * var(--arena-chrome-scale, 1) + var(--safe-left, 0px));
+  z-index: 35;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  max-width: min(22rem, 42vw);
+  pointer-events: none;
+}
+
+.assistant-side-tools .assistant-procedure {
+  margin: 0;
+  max-width: 100%;
+  pointer-events: auto;
+}
+
+.assistant-procedure {
+  margin: 0;
+  max-width: min(22rem, 92vw);
+  pointer-events: auto;
+}
+
+.assistant-procedure-toggle {
+  appearance: none;
+  border: 1px solid rgba(184, 137, 58, 0.35);
+  background: rgba(0, 0, 0, 0.35);
+  color: rgba(226, 192, 122, 0.95);
+  font: inherit;
+  font-size: 0.75rem;
+  padding: 0.3rem 0.65rem;
+  cursor: pointer;
+}
+
+.assistant-procedure-list {
+  margin: 0.35rem 0 0;
+  padding: 0.55rem 0.75rem 0.55rem 1.4rem;
+  background: rgba(0, 0, 0, 0.42);
+  border: 1px solid rgba(184, 137, 58, 0.28);
+  color: rgba(231, 215, 184, 0.88);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.assistant-procedure-list li + li {
+  margin-top: 0.25rem;
 }
 
 .arena-topbar-actions {
@@ -4323,10 +4385,26 @@ button.arena-card {
   justify-items: center;
   margin: 0 auto;
   max-width: none;
+  /* Uniform seat size for blank + rules (no per-row shrink). */
+  --assistant-card-w: max(
+    72px,
+    min(
+      220px,
+      calc(
+        (100cqi - 1.25rem) / var(--assistant-row-slots) - var(--assistant-slot-gap)
+      ),
+      calc(
+        (
+            100cqb - 1.5rem -
+              (var(--assistant-rows) - 1) * var(--assistant-row-gap)
+          ) / var(--assistant-rows) * 744 / 1040
+      )
+    )
+  );
 }
 
 .assistant-root.setup-blank .assistant-slot-board.is-sparse {
-  /* Keep every seat the same size ? no back-row shrink. */
+  /* Same formula as rules sparse boards — kept for specificity with older CSS. */
   --assistant-card-w: max(
     72px,
     min(
@@ -5405,8 +5483,10 @@ html.is-arena-playing,
   display: block;
   position: absolute;
   top: 0;
-  left: 0;
-  right: 0;
+  /* Middle half — leave left/right free for procedure / zone chrome */
+  left: 25%;
+  width: 50%;
+  right: auto;
   height: max(0.85rem, calc(var(--safe-top, 0px) + 0.55rem));
   pointer-events: auto;
 }
@@ -6807,6 +6887,7 @@ html.is-challenge-fit .challenge-preview-pane.is-text-only .card-preview-text {
 
 .assistant-root.is-playing.is-assistant-fit .assistant-slot-board,
 .assistant-root.is-playing.is-assistant-fit .assistant-slot-board[data-rows='1'],
+.assistant-root.is-playing.is-assistant-fit .assistant-slot-board.is-sparse,
 .assistant-root.is-playing.is-assistant-fit.setup-blank .assistant-slot-board,
 .assistant-root.is-playing.is-assistant-fit.setup-blank .assistant-slot-board.is-sparse {
   --assistant-card-w: calc(var(--play-card-h) * 744 / 1040);

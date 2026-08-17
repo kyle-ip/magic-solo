@@ -37,11 +37,12 @@ Use the header language switch for **English** or **中文**. Challenge Deck car
 | Brand / logo | Header | Home (`/`) |
 | Classic decks / Sets | Header | Browse archetypes and Scryfall sets |
 | Card editor | Header | Grayed out while in development (see [§9](#9-card-editor)) |
+| Challenges | Header | Jump to a Challenge Deck hub (`/decks/:code`) |
 | Pack open / Single draw | Header | Local pack and random-card toys; collect from those flows |
-| References | Header | Official-source / rules reference modal |
 | Language | Header | English ↔ 中文 |
 | Floating buttons | Right gutter | Up one level (some pages), back to top; after an AI key: settings + **Page chat** |
 | Footer **Help** | Bottom | Open this guide in-app (`/help`; follows UI language) |
+| Footer **References** | Bottom | Official-source / rules reference modal |
 | Footer **AI Assistant** | Bottom | Open optional AI API settings |
 | Footer **Chat** | Bottom | **Page chat** (only after a key is saved) |
 
@@ -65,9 +66,9 @@ Overview of the three Challenge Decks; links go to each deck hub.
 
 - Rules summary (expandable sections)
 - Full card gallery (open a card for art, oracle text, quantity)
-- Links to **Challenge** and **Game Assistant**
+- Links to **Digital Play** (Challenge) and **Paper Play** (Game Assistant half-board)
 - **Print assistant** for the deck catalog, expanding each card by its quantity (see [§8](#8-print-assistant))
-- **Challenge switcher** to jump to a sibling challenge without returning home
+- Use the header **Challenges** menu or return to this hub to open a sibling challenge
 
 ---
 
@@ -96,7 +97,7 @@ A simplified solo PvE board (Arena-inspired), not a full Comprehensive Rules eng
 | `burn` | Challenge Burn | R aggro / burn |
 | `skies` | Azure Skies | WU flyers + removal |
 
-Only **implemented** abilities fire (supported evergreen today: haste, flash, vigilance, lifelink, prowess, flyer anthem, flying/reach blocking, deathtouch; double strike approximated as ×2 power; player-side trample has limited effect without multi-blocker assignment. Also Fog, fight, burn-to-any, mill/draw, flashback, delve discount, attack-reveal triggers, monstrosity activation, and choice prompts). Many printed cards are approximated or simplified. Azure Skies uses white removal you can actually pay with W/U mana.
+Only **implemented** abilities fire (supported evergreen today: haste, flash, vigilance, lifelink, prowess, flyer anthem, flying/reach blocking, deathtouch; double strike approximated as ×2 power; player-side trample spills excess to Xenagos in Defeat a God when Champion is selected. Also Fog, fight, burn-to-any, mill/draw, flashback, delve discount, attack-reveal triggers, limited monstrosity activation, and choice prompts). Many printed cards are approximated or simplified (roster **Simplified** badge). Azure Skies uses white removal you can actually pay with W/U mana.
 
 ### During play
 
@@ -105,7 +106,7 @@ Only **implemented** abilities fire (supported evergreen today: haste, flash, vi
 - Declare attackers, assign targets (where applicable), resolve combat
 - Toggle **coach tips** and a floating **battle log**
 - Win / loss **settlement** with match stats (and optional AI battle report)
-- Challenge switcher available from setup / related surfaces
+- Leave to the deck hub or use header **Challenges** (when chrome is visible) to open another challenge
 
 ### Challenge vs official Challenge Decks
 
@@ -113,18 +114,18 @@ Only **implemented** abilities fire (supported evergreen today: haste, flash, vi
 | --- | --- |
 | Any Constructed deck | Four curated lists; only implemented abilities fire |
 | Full stack / priority | Spells resolve immediately (Fog still stops breath / combat damage) |
-| All Theros mechanics | Evergreen + selected effects; monstrosity / bestow omitted |
+| All Theros mechanics | Evergreen + selected effects (incl. limited monstrosity); bestow omitted |
 | Multiplayer variants | Solo only |
 
 For an arbitrary paper deck, use the [Game Assistant](#4-game-assistant) instead.
 
 ---
 
-## 4. Game Assistant
+## 4. Game Assistant (Paper Play)
 
 Route: `/assistant/:setCode`
 
-Digital **challenge half-board** while you play a physical deck offline. No turn automation. Header/footer chrome is hidden on the play surface.
+**Paper Play** mode: digital **challenge half-board** while you play a physical deck at the table. No turn automation. Header/footer chrome is hidden on the play surface.
 
 ### Setup
 
@@ -135,11 +136,13 @@ Digital **challenge half-board** while you play a physical deck offline. No turn
 
 - Click library to blind-draw (move the staging card before drawing again)
 - Drag cards between library, battlefield, graveyard, exile
-- Right-click: tap, notes, library placement
+- Right-click or long-press: tap, ±damage, ±P/T, notes, zone moves
 - Double-click library: search / reorder / play
 - Named **player values** (e.g. life)
-- Challenge switcher between the three challenge modes
-- With AI configured: **Suggest next step** from the board + challenge rules
+- Collapsible **Challenge procedure** checklist (no AI required)
+- **Reset** returns to setup
+- Return to the deck hub or use header **Challenges** to open another mode
+- With AI configured: **Suggest next step** from the board + challenge rules (clears when the board changes)
 
 ---
 

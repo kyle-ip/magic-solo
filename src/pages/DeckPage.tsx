@@ -105,6 +105,7 @@ export function DeckPage() {
               <UiButtonLink
                 variant="primary"
                 to={`/challenge/${deck.code}`}
+                title={t('deck.startChallengeHint')}
                 onPointerEnter={warmPlayAssets}
                 onFocus={warmPlayAssets}
               >
@@ -113,6 +114,7 @@ export function DeckPage() {
               <UiButtonLink
                 variant="ghost"
                 to={`/assistant/${deck.code}`}
+                title={t('deck.startAssistantHint')}
                 onPointerEnter={warmPlayAssets}
                 onFocus={warmPlayAssets}
               >
@@ -122,6 +124,9 @@ export function DeckPage() {
                 {t('printAssistant.open')}
               </UiButton>
             </div>
+            <p className="deck-dual-door-hint">
+              {t('deck.startChallengeHint')} · {t('deck.startAssistantHint')}
+            </p>
           </div>
           <div className="deck-hero-card">
             <CardImage
