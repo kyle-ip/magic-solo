@@ -1071,16 +1071,17 @@
 
   .home-hero-art {
     order: -1;
-    height: min(38vh, 280px);
-    min-height: 200px;
+    z-index: 0;
+    height: min(34vw, 13.25rem);
+    min-height: 11.25rem;
     overflow: visible;
-    padding: 0.35rem 0.25rem 0.15rem;
+    padding: 0.2rem 0.15rem 0;
     perspective: none;
   }
 
   .home-hero-copy {
     position: relative;
-    z-index: 1;
+    z-index: 4;
   }
 
   .deck-hero {
@@ -1103,7 +1104,7 @@
   /* Keep a gentle float on phones — absolute cluster stays draggable */
   .orbit-card {
     position: absolute;
-    width: min(40%, 9.75rem);
+    width: min(32%, 6.85rem);
     margin-inline: 0;
     animation: floaty-mobile 7.5s ease-in-out infinite;
   }

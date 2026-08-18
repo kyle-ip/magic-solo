@@ -1403,7 +1403,7 @@ h2 {
   }
 
   .orbit-card {
-    width: min(42%, 9.5rem);
+    width: min(32%, 6.85rem);
   }
 
   .shared-rules,
@@ -1748,7 +1748,7 @@ h2 {
   }
 
   .orbit-card {
-    width: min(40%, 10rem);
+    width: min(32%, 7rem);
   }
 
   .deck-hero-card {

@@ -15,16 +15,48 @@ type OrbitPos = {
   z: number
 }
 
+/** Visual order: God left, Hydra center-front, Horde right-back. */
+const ORBIT_ORDER = [ 'tdag', 'tfth', 'tbth'] as const
+
 /**
- * Triangle fan matching the home hero reference:
- * Hydra left-back, Minotaur right-back (gap between top corners),
- * Xenagos upright in front, lower, overlapping both.
+ * Triangle fan:
+ * Xenagos left (over Horde), Hydra center on top of Xenagos,
+ * Minotaur right-back under Xenagos.
  */
 const ORBIT_DEFAULTS: OrbitPos[] = [
-  { leftPct: 8, topPct: 8, rotate: -7, z: 1 },
-  { leftPct: 50, topPct: -1, rotate: 7, z: 2 },
-  { leftPct: 30, topPct: 28, rotate: 0, z: 3 },
+  { leftPct: 8, topPct: 8, rotate: 0, z: 1 },
+  { leftPct: 28, topPct: 30, rotate: -4, z: 3 },
+  { leftPct: 50, topPct: 0, rotate: 8, z: 2 },
 ]
+
+/** Compact cluster so the front card stays inside the short mobile art box. */
+const ORBIT_DEFAULTS_NARROW: OrbitPos[] = [
+  { leftPct: 10, topPct: 7, rotate: 0, z: 1 },
+  { leftPct: 30, topPct: 20, rotate: -4, z: 3 },
+  { leftPct: 55, topPct: 3, rotate: 8, z: 2 },
+]
+
+function orderedOrbitDecks(decks: OrbitDeckPreview[]): OrbitDeckPreview[] {
+  const byCode = new Map(decks.map((d) => [d.code, d]))
+  const ordered: OrbitDeckPreview[] = []
+  for (const code of ORBIT_ORDER) {
+    const deck = byCode.get(code)
+    if (deck) ordered.push(deck)
+  }
+  for (const deck of decks) {
+    if (ordered.length >= 3) break
+    if (!ordered.some((d) => d.code === deck.code)) ordered.push(deck)
+  }
+  return ordered.slice(0, 3)
+}
+
+const NARROW_ORBIT_MQ = '(max-width: 900px)'
+
+function orbitDefaults(): OrbitPos[] {
+  const narrow =
+    typeof window !== 'undefined' && window.matchMedia(NARROW_ORBIT_MQ).matches
+  return (narrow ? ORBIT_DEFAULTS_NARROW : ORBIT_DEFAULTS).map((p) => ({ ...p }))
+}
 
 function clamp(n: number, min: number, max: number) {
   return Math.min(max, Math.max(min, n))
@@ -50,11 +82,15 @@ export function HomeOrbitArt({ decks }: Props) {
   const { t } = useTranslation()
   const artRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<DragSession | null>(null)
-  const [positions, setPositions] = useState<OrbitPos[]>(() =>
-    ORBIT_DEFAULTS.map((p) => ({ ...p })),
-  )
+  const [positions, setPositions] = useState<OrbitPos[]>(orbitDefaults)
   const positionsRef = useRef(positions)
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null)
+  const orbitDecks = orderedOrbitDecks(decks)
+
+  const commitPositions = useCallback((next: OrbitPos[]) => {
+    positionsRef.current = next
+    setPositions(next)
+  }, [])
 
   useEffect(() => {
     // Drop legacy home-orbit layout keys from earlier iterations.
@@ -67,10 +103,15 @@ export function HomeOrbitArt({ decks }: Props) {
     }
   }, [])
 
-  const commitPositions = useCallback((next: OrbitPos[]) => {
-    positionsRef.current = next
-    setPositions(next)
-  }, [])
+  useEffect(() => {
+    const mq = window.matchMedia(NARROW_ORBIT_MQ)
+    const apply = () => {
+      if (dragRef.current) return
+      commitPositions(orbitDefaults())
+    }
+    mq.addEventListener('change', apply)
+    return () => mq.removeEventListener('change', apply)
+  }, [commitPositions])
 
   useEffect(() => {
     if (draggingIndex === null) return
@@ -153,7 +194,7 @@ export function HomeOrbitArt({ decks }: Props) {
       role="group"
       aria-label={t('home.orbitArtLabel')}
     >
-      {decks.slice(0, 3).map((deck, i) => {
+      {orbitDecks.map((deck, i) => {
         const pos = positions[i] ?? ORBIT_DEFAULTS[i]
         const dragging = draggingIndex === i
         return (
@@ -164,7 +205,7 @@ export function HomeOrbitArt({ decks }: Props) {
             kind="normal"
             alt={deck.localizedName}
             draggable={false}
-            fetchPriority={i === 0 ? 'high' : undefined}
+            fetchPriority={i === 1 ? 'high' : undefined}
             style={{
               left: `${pos.leftPct}%`,
               top: `${pos.topPct}%`,
