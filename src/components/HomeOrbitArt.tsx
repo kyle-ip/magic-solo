@@ -24,9 +24,9 @@ const ORBIT_ORDER = [ 'tdag', 'tfth', 'tbth'] as const
  * Minotaur right-back under Xenagos.
  */
 const ORBIT_DEFAULTS: OrbitPos[] = [
-  { leftPct: 8, topPct: 8, rotate: 0, z: 1 },
-  { leftPct: 28, topPct: 30, rotate: -4, z: 3 },
-  { leftPct: 50, topPct: 0, rotate: 8, z: 2 },
+  { leftPct: 18, topPct: 8, rotate: 0, z: 1 },
+  { leftPct: 38, topPct: 30, rotate: -4, z: 3 },
+  { leftPct: 60, topPct: 0, rotate: 8, z: 2 },
 ]
 
 /** Compact cluster so the front card stays inside the short mobile art box. */
