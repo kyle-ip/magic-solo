@@ -34,7 +34,7 @@ export const DEFAULT_PRINT_SETTINGS: PrintAssistantSettings = {
   cardH: CARD_H_MM,
   pageMargin: DEFAULT_PAGE_MARGIN_MM,
   gap: DEFAULT_GAP_MM,
-  bleedMm: 1,
+  bleedMm: 0,
   fillEmpty: true,
   flushCut: false,
   showCutGuides: true,

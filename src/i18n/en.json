@@ -709,7 +709,7 @@
     "cardWidth": "Width (mm)",
     "cardHeight": "Height (mm)",
     "advanced": "Advanced",
-    "advancedLead": "Precise 63×88 mm cut size with 1 mm bleed by default. Change only if you need to.",
+    "advancedLead": "Precise 63×88 mm cut size. Change only if you need to.",
     "pageMargin": "Paper margins (mm)",
     "gap": "Card spacing (mm)",
     "bleed": "Bleed (mm)",

@@ -11,3 +11,4 @@ public/assets/cards/**/*.png
 public/assets/cards/**/*-display.jpg
 public/assets/covers/_probe/
 
+mtg-cache-sample.json
