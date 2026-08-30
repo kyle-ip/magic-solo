@@ -2,7 +2,7 @@
 
 Play *Magic: The Gathering* alone in the browser: official **Challenge Decks**, **Archenemy** schemes, **Automaton** duels, **Garruk the Slayer**, plus classic deck browsing, set gallery, print proxies, and optional AI help.
 
-**Live:** [kyle-ip.github.io/magic-solo](https://kyle-ip.github.io/magic-solo/)
+**Live:** [Magic Solo](https://kyle-ip.github.io/magic-solo/)
 
 This repository hosts the GitHub Pages deployment only.
 
