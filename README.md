@@ -4,7 +4,7 @@ Play *Magic: The Gathering* alone in the browser: official **Challenge Decks**, 
 
 **Live:** [kyle-ip.github.io/magic-solo](https://kyle-ip.github.io/magic-solo/)
 
-This repository hosts the GitHub Pages deployment only; the site is served from the `gh-pages` branch. The source code lives in a private repository.
+This repository hosts the GitHub Pages deployment only.
 
 ## License & attribution
 
